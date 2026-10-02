@@ -13,7 +13,7 @@ import {
 } from '@/lib/tickets';
 import { logAudit, AUDIT_ACTIONS, AUDIT_ENTITIES } from '@/lib/auditLog';
 import { triggerPush } from '@/lib/pushNotifications';
-import { isNotifTypeEnabled } from '@/lib/notificationSettings';
+import { isNotifTypeEnabled, isRoleNotifEnabled } from '@/lib/notificationSettings';
 
 const UNASSIGNED = '__none__';
 
@@ -89,7 +89,7 @@ const TicketProcessDialog = ({ open, onOpenChange, ticket, mode, actor, spaceKey
     // Push au technicien nouvellement (ré)assigné — avec le « sous-ensemble » à réparer
     // (terminal + priorité). Best-effort, respecte le réglage global « Assignation de ticket ».
     const wasAssignedTo = ticket.assigne_a_id ? String(ticket.assigne_a_id) : UNASSIGNED;
-    if (isTraitement && assigneId !== UNASSIGNED && assigneId !== wasAssignedTo && isNotifTypeEnabled('ticket_assigne')) {
+    if (isTraitement && assigneId !== UNASSIGNED && assigneId !== wasAssignedTo && isNotifTypeEnabled('ticket_assigne') && isRoleNotifEnabled('technicien')) {
       const body = [
         ticket.titre,
         ticket.terminal_reference ? `Terminal ${ticket.terminal_reference}` : null,

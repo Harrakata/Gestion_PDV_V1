@@ -8,6 +8,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useFeature } from '@/hooks/useFeatureFlags';
 import { markMessagesRead } from '@/lib/messaging';
+import { isRoleNotifEnabled } from '@/lib/notificationSettings';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -144,6 +145,8 @@ const NotificationBell = ({ notifications = [], totalCount = 0, onNavigate, stor
   // Fonctionnalité Notifications (multi-tenant) : masque la cloche dans tous les
   // espaces si désactivée pour ce client. (Placé après tous les hooks.)
   if (!notificationsEnabled) return null;
+  // Cohérence : espace désactivé par l'exploitation → pas de cloche.
+  if (reader?.role && !isRoleNotifEnabled(reader.role)) return null;
 
   // ── Actions ───────────────────────────────────────────────────────────────
   const go = (to) => {

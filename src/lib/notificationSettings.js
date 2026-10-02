@@ -19,14 +19,35 @@ export const NOTIFICATION_TYPES = [
   { key: 'rappel_planning',       label: 'Rappel de planning',           description: 'Rappeler au technicien son intervention planifiée à venir (déclenché côté serveur).' },
 ];
 
-export const buildDefaultNotificationSettings = () =>
-  NOTIFICATION_TYPES.reduce((acc, t) => { acc[t.key] = true; return acc; }, {});
+// Espaces destinataires activables globalement (coupe TOUTES leurs notifs si off).
+export const NOTIFICATION_SPACES = [
+  { spaceKey: 'espace-guichetiere',        role: 'guichetiere',        label: 'Guichetières' },
+  { spaceKey: 'espace-technicien',         role: 'technicien',         label: 'Techniciens' },
+  { spaceKey: 'espace-chef-agence',        role: 'chef_agence',        label: "Chefs d'agence" },
+  { spaceKey: 'espace-chef-secteur',       role: 'chef_secteur',       label: 'Chefs de secteur' },
+  { spaceKey: 'espace-directeur-regional', role: 'directeur_regional', label: 'Directeurs régionaux' },
+  { spaceKey: 'espace-directeur-general',  role: 'directeur_general',  label: 'Directeurs généraux' },
+];
+
+export const ROLE_TO_SPACE = NOTIFICATION_SPACES.reduce((acc, s) => { acc[s.role] = s.spaceKey; return acc; }, {});
+
+const buildDefaultSpaces = () => NOTIFICATION_SPACES.reduce((acc, s) => { acc[s.spaceKey] = true; return acc; }, {});
+
+export const buildDefaultNotificationSettings = () => ({
+  ...NOTIFICATION_TYPES.reduce((acc, t) => { acc[t.key] = true; return acc; }, {}),
+  spaces: buildDefaultSpaces(),
+});
 
 export const normalizeNotificationSettings = (value) => {
   const base = buildDefaultNotificationSettings();
   if (value && typeof value === 'object') {
     for (const t of NOTIFICATION_TYPES) {
       if (typeof value[t.key] === 'boolean') base[t.key] = value[t.key];
+    }
+    if (value.spaces && typeof value.spaces === 'object') {
+      for (const s of NOTIFICATION_SPACES) {
+        if (typeof value.spaces[s.spaceKey] === 'boolean') base.spaces[s.spaceKey] = value.spaces[s.spaceKey];
+      }
     }
   }
   return base;
@@ -40,6 +61,16 @@ export const getCachedNotificationSettings = () => {
 
 /** Un type de notification est-il activé pour ce client ? (par défaut : oui). */
 export const isNotifTypeEnabled = (key) => getCachedNotificationSettings()[key] !== false;
+
+/** Les notifications d'un espace sont-elles activées ? (par défaut : oui). */
+export const isSpaceNotifEnabled = (spaceKey) =>
+  getCachedNotificationSettings().spaces?.[spaceKey] !== false;
+
+/** Les notifications d'un rôle destinataire sont-elles activées ? (via son espace). */
+export const isRoleNotifEnabled = (role) => {
+  const spaceKey = ROLE_TO_SPACE[role];
+  return spaceKey ? isSpaceNotifEnabled(spaceKey) : true;
+};
 
 /** Charge les réglages depuis le serveur → met à jour le cache localStorage. */
 export const loadNotificationSettings = async () => {

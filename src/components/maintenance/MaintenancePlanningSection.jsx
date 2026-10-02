@@ -25,7 +25,7 @@ import KpiStatCard from '@/components/analytics/KpiStatCard';
 import MaintenanceAgenciesMap from '@/components/maintenance/MaintenanceAgenciesMap';
 import { supabase } from '@/lib/supabaseClient';
 import { triggerPush } from '@/lib/pushNotifications';
-import { isNotifTypeEnabled } from '@/lib/notificationSettings';
+import { isNotifTypeEnabled, isRoleNotifEnabled } from '@/lib/notificationSettings';
 import { isSupabaseAuthError } from '@/lib/guichetiereSpace';
 import { fetchApprovedAbsencesInRange, findBlockingAbsence } from '@/lib/absences';
 import { buildRegionOptions, fetchRegions } from '@/lib/regions';
@@ -656,7 +656,7 @@ const MaintenancePlanningSection = ({
       // Push au technicien planifié (création OU réassignation) — best-effort, respecte
       // le réglage global « Planning d'intervention ».
       const reassigned = !currentPlanning || String(currentPlanning.technicien_id || '') !== String(payload.technicien_id || '');
-      if (payload.technicien_id && reassigned && isNotifTypeEnabled('intervention_assignee')) {
+      if (payload.technicien_id && reassigned && isNotifTypeEnabled('intervention_assignee') && isRoleNotifEnabled('technicien')) {
         const body = [
           payload.agence_nom || 'Agence',
           payload.date_planification ? `le ${payload.date_planification}` : null,

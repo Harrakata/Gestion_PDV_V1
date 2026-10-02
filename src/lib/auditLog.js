@@ -47,6 +47,38 @@ const ENTITY_LABELS = {
 export const auditActionLabel = (action) => ACTION_LABELS[action] || action || '—';
 export const auditEntityLabel = (entity) => ENTITY_LABELS[entity] || entity || '—';
 
+const MAX_AUDIT_PREVIEW_ITEMS = 5;
+
+export const buildImportAuditSummary = ({
+  fileName = null,
+  count = 0,
+  itemNames = [],
+  mode = 'names',
+} = {}) => {
+  const safeItemNames = Array.from(
+    new Set(
+      (itemNames || [])
+        .map((name) => String(name ?? '').trim())
+        .filter(Boolean)
+    )
+  );
+  const previewItems = safeItemNames.slice(0, MAX_AUDIT_PREVIEW_ITEMS);
+
+  return {
+    entityLabel: [
+      fileName ? `Fichier ${fileName}` : null,
+      `${count} élément(s) chargé(s)`,
+    ].filter(Boolean).join(' · '),
+    details: {
+      mode,
+      fileName,
+      count,
+      itemNames: previewItems,
+      remainingItems: Math.max(0, safeItemNames.length - previewItems.length),
+    },
+  };
+};
+
 /**
  * Enregistre une action sensible dans le journal d'audit.
  * Ne lève JAMAIS d'erreur : l'audit ne doit pas bloquer l'action métier.

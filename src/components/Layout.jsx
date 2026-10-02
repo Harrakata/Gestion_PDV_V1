@@ -45,6 +45,22 @@ const Layout = () => {
     window.addEventListener('app-notification-settings-updated', onUpdate);
     return () => window.removeEventListener('app-notification-settings-updated', onUpdate);
   }, []);
+
+  // Auto-configuration de l'endpoint des rappels (cron serveur) à partir des variables
+  // d'env par-client — rend la migration SQL 100% générique (aucune valeur en dur).
+  // Idempotent, au plus une fois/jour.
+  React.useEffect(() => {
+    try {
+      const last = Number(localStorage.getItem('reminder_endpoint_synced') || 0);
+      if (Date.now() - last < 86400000) return;
+      const base = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '');
+      const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      if (!base || !key) return;
+      supabase.rpc('set_reminder_endpoint', { fn_url: `${base}/functions/v1/send-reminders`, api_key: key })
+        .then(() => { try { localStorage.setItem('reminder_endpoint_synced', String(Date.now())); } catch { /* quota */ } })
+        .catch(() => { /* best-effort */ });
+    } catch { /* ignore */ }
+  }, []);
   const [isDarkMode, setIsDarkMode] = React.useState(() => {
     // Lire le mode sombre depuis le cache thème pour éviter un flash au rechargement
     try {

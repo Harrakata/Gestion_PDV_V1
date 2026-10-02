@@ -64,6 +64,7 @@ const SuiviPointageExploitationPage         = lazy(() => import('@/pages/exploit
 const EcartsGpsPage                         = lazy(() => import('@/pages/exploitation/EcartsGpsPage'));
 const ActivitesEtAuditPage                  = lazy(() => import('@/pages/exploitation/ActivitesEtAuditPage'));
 const TableauDeBordPage                     = lazy(() => import('@/pages/exploitation/TableauDeBordPage'));
+const CentreOperationnelPage                = lazy(() => import('@/pages/exploitation/CentreOperationnelPage'));
 const NotificationsExploitationPage         = lazy(() => import('@/pages/exploitation/NotificationsExploitationPage'));
 const RapportsPage                          = lazy(() => import('@/pages/exploitation/RapportsPage'));
 const AbsencesExploitationPage              = lazy(() => import('@/pages/exploitation/AbsencesExploitationPage'));
@@ -144,6 +145,7 @@ const App = () => (
           <Route path="/espace-exploitation" element={<LazyRoute><EspaceExploitationPage /></LazyRoute>}>
             <Route index                              element={<Navigate to="maintenance-terminaux" replace />} />
             <Route path="tableau-de-bord"             element={<LazyRoute><TableauDeBordPage /></LazyRoute>} />
+            <Route path="centre-operationnel"         element={<LazyRoute><CentreOperationnelPage /></LazyRoute>} />
             <Route path="agences"                     element={<LazyRoute><AgencesPage /></LazyRoute>} />
             <Route path="chefs-agence"                element={<LazyRoute><ChefsAgencePage /></LazyRoute>} />
             <Route path="guichetieres"                element={<LazyRoute><GuichetieresPageExploitation /></LazyRoute>} />

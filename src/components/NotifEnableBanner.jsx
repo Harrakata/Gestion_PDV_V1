@@ -9,6 +9,7 @@ import {
   notificationsSupported, getNotifPermission, requestNotifPermission,
   setLocalNotifEnabled, isLocalNotifEnabled,
 } from '@/lib/localNotifications';
+import { isRoleNotifEnabled } from '@/lib/notificationSettings';
 
 const DISMISS_KEY = 'notif_banner_dismissed_until';
 const DISMISS_DAYS = 3;
@@ -45,6 +46,8 @@ const NotifEnableBanner = ({ reader = {}, className = '' }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Cohérence : espace désactivé par l'exploitation → pas d'incitation à activer.
+  if (reader?.role && !isRoleNotifEnabled(reader.role)) return null;
   if (!needs) return null;
 
   const enable = async () => {

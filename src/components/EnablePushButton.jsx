@@ -10,6 +10,7 @@ import {
   notificationsSupported, getNotifPermission, requestNotifPermission,
   setLocalNotifEnabled, isLocalNotifEnabled, notifyLocal,
 } from '@/lib/localNotifications';
+import { isRoleNotifEnabled } from '@/lib/notificationSettings';
 
 /**
  * Active/désactive les notifications pour cet appareil.
@@ -33,6 +34,8 @@ const EnablePushButton = ({ reader = {}, className = '', iconOnly = false, asNav
   }, [supported]);
 
   if (!supported) return null;
+  // Cohérence : si l'exploitation a désactivé les notifs de cet espace, on masque le bouton.
+  if (reader?.role && !isRoleNotifEnabled(reader.role)) return null;
 
   const enable = async () => {
     const perm = await requestNotifPermission();
@@ -74,13 +77,11 @@ const EnablePushButton = ({ reader = {}, className = '', iconOnly = false, asNav
         setEnabled(true);
         let description;
         if (res.pushOk) {
-          description = 'Y compris quand l’application est fermée (push).';
+          description = 'Vous serez alerté, même quand l’application est fermée.';
         } else if (res.pushReason === 'no-sw') {
-          description = 'Actives quand l’application est ouverte. (Service worker pas encore prêt — rechargez la page puis réessayez pour le mode app fermée.)';
-        } else if (res.pushReason === 'not-configured') {
-          description = 'Actives quand l’application est ouverte. (Push serveur non configuré → app fermée indisponible.)';
+          description = 'Rechargez la page puis réessayez pour être aussi alerté application fermée.';
         } else {
-          description = 'Actives quand l’application est ouverte.';
+          description = 'Vous serez alerté des nouveautés.';
         }
         toast({ title: 'Notifications activées', description });
       }

@@ -12,7 +12,7 @@ import { countBlockedDevices } from '@/lib/syncHealth';
 import { countUntreatedRemontees } from '@/lib/messaging';
 import { isLocalNotifEnabled, notifyLocal } from '@/lib/localNotifications';
 import { hasPushSubscription } from '@/lib/pushNotifications';
-import { isNotifTypeEnabled } from '@/lib/notificationSettings';
+import { isNotifTypeEnabled, isSpaceNotifEnabled } from '@/lib/notificationSettings';
 
 // Racine de chaque espace (pour ouvrir la cloche à la ré-ouverture depuis une notif message).
 const SPACE_ROOTS = {
@@ -417,7 +417,8 @@ const notifSettingKey = (n, spaceKey) => {
 export async function fireLocalForNew(spaceKey, list) {
   const sigs = new Set(list.flatMap(notifSignatures));
   const prev = loadSeen(spaceKey); // null = 1re fois sur cet appareil → baseline (pas de rafale)
-  if (prev && isLocalNotifEnabled()) {
+  // isSpaceNotifEnabled : coupe TOUTES les notifs locales d'un espace désactivé globalement.
+  if (prev && isLocalNotifEnabled() && isSpaceNotifEnabled(spaceKey)) {
     // Abonnement push actif ? → le push couvre déjà messages/remontées (ouvert comme fermé).
     let pushActive = false;
     try { pushActive = await hasPushSubscription(); } catch { /* pas de SW / pas d'abonnement */ }

@@ -34,14 +34,26 @@ Deno.serve(async () => {
   const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
 
-  // Réglages (toggles) + config horaires.
-  const [{ data: setRow }, { data: cfgRow }] = await Promise.all([
+  // Réglages (toggles) + config horaires + config pointage (Paramètres → clé 'general').
+  const [{ data: setRow }, { data: cfgRow }, { data: genRow }] = await Promise.all([
     supabase.from("app_settings").select("value").eq("key", NOTIFICATION_SETTINGS_KEY).maybeSingle(),
     supabase.from("app_settings").select("value").eq("key", REMINDER_CONFIG_KEY).maybeSingle(),
+    supabase.from("app_settings").select("value").eq("key", "general").maybeSingle(),
   ]);
-  const settings = (setRow?.value ?? {}) as Record<string, boolean>;
-  const pointageOn = settings.rappel_pointage !== false;
-  const planningOn = settings.rappel_planning !== false;
+  const settings = (setRow?.value ?? {}) as Record<string, unknown>;
+  const spaces = (settings.spaces ?? {}) as Record<string, boolean>;
+
+  // Créneaux de POINTAGE : définis dans Paramètres → Pointage (index = creneauIndex des pointages).
+  const general = (genRow?.value ?? {}) as Record<string, unknown>;
+  const rappelActif = general.rappelActif !== false; // interrupteur pointage côté Paramètres
+  const creneauxPointage = Array.isArray(general.creneauxPointage) ? general.creneauxPointage : [];
+  const GUICHETIERE_CRENEAUX = creneauxPointage
+    .map((c: { debut?: string }, i: number) => ({ index: i, start: String(c?.debut || ""), label: `N°${i + 1}` }))
+    .filter((c: { start: string }) => /^\d{1,2}:\d{2}$/.test(c.start));
+
+  // Rappel actif = type activé ET espace destinataire activé (+ rappelActif Paramètres pour le pointage).
+  const pointageOn = settings.rappel_pointage !== false && spaces["espace-guichetiere"] !== false && rappelActif;
+  const planningOn = settings.rappel_planning !== false && spaces["espace-technicien"] !== false;
 
   const cfg = { ...DEFAULTS, ...((cfgRow?.value ?? {}) as Record<string, unknown>) };
   const TZ_OFFSET_HOURS = Number(cfg.tzOffsetHours ?? 0);
@@ -49,10 +61,7 @@ Deno.serve(async () => {
   const matinStart = String(cfg.matinStart || "08:00");
   const apresMidiStart = String(cfg.apresMidiStart || "14:00");
 
-  const GUICHETIERE_CRENEAUX = [
-    { index: 0, start: matinStart,     label: "du matin" },
-    { index: 1, start: apresMidiStart, label: "de l'après-midi" },
-  ];
+  // Créneaux de MAINTENANCE (planning technicien) : matin / après-midi (valeurs fixes).
   const MAINTENANCE_CRENEAUX = [
     { value: "matin",      start: matinStart,     label: "Matin" },
     { value: "apres_midi", start: apresMidiStart, label: "Après-midi" },
@@ -123,5 +132,14 @@ Deno.serve(async () => {
     }
   }
 
-  return json({ ok: true, todayStr, minutesOfDay, config: { matinStart, apresMidiStart, PLANNING_LEAD_MIN, TZ_OFFSET_HOURS }, pointageOn, planningOn, pointageSent, planningSent });
+  return json({
+    ok: true, todayStr, minutesOfDay,
+    config: {
+      pointageCreneaux: GUICHETIERE_CRENEAUX.map((c) => c.start), // depuis Paramètres
+      rappelActif,
+      maintenance: { matinStart, apresMidiStart },
+      PLANNING_LEAD_MIN, TZ_OFFSET_HOURS,
+    },
+    pointageOn, planningOn, pointageSent, planningSent,
+  });
 });

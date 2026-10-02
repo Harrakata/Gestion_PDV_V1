@@ -421,6 +421,7 @@ const MaintenanceAgenciesMap = ({
   title = 'Carte des agences',
   description = "Les marqueurs utilisent uniquement le champ Adresse de chaque agence et colorent l'état du suivi maintenance.",
   emptyMessage = 'Aucune agence ne correspond aux filtres de suivi actuels.',
+  headerActions = null,
 }) => {
   const [locations, setLocations] = useState({});
   const [selectedAgencyKey, setSelectedAgencyKey] = useState(null);
@@ -634,32 +635,67 @@ const MaintenanceAgenciesMap = ({
 
   if (agencyRows.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed bg-muted/30 p-8 text-center text-sm text-muted-foreground">
-        {emptyMessage}
+      <div className="overflow-hidden rounded-2xl border bg-white shadow-sm">
+        <div className="flex flex-col gap-3 border-b bg-gradient-to-br from-primary/5 via-white to-cyan-50/50 px-5 py-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <h3 className="flex items-center gap-2 text-xl font-semibold text-primary">
+                <MapPinned className="h-5 w-5" />
+                {title}
+              </h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {description}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2 text-xs">
+              <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">
+                Localisées : 0/0
+              </Badge>
+              <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">
+                À préciser : 0
+              </Badge>
+            </div>
+          </div>
+          {headerActions ? (
+            <div className="min-w-0">
+              {headerActions}
+            </div>
+          ) : null}
+        </div>
+        <div className="p-8 text-center text-sm text-muted-foreground">
+          {emptyMessage}
+        </div>
       </div>
     );
   }
 
   return (
     <div className="overflow-hidden rounded-2xl border bg-white shadow-sm">
-      <div className="flex flex-col gap-3 border-b bg-gradient-to-br from-primary/5 via-white to-cyan-50/50 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <h3 className="flex items-center gap-2 text-xl font-semibold text-primary">
-            <MapPinned className="h-5 w-5" />
-            {title}
-          </h3>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {description}
-          </p>
+      <div className="flex flex-col gap-3 border-b bg-gradient-to-br from-primary/5 via-white to-cyan-50/50 px-5 py-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <h3 className="flex items-center gap-2 text-xl font-semibold text-primary">
+              <MapPinned className="h-5 w-5" />
+              {title}
+            </h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {description}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2 text-xs">
+            <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">
+              Localisées : {markers.length}/{agencyRows.length}
+            </Badge>
+            <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">
+              À préciser : {unresolvedCount}
+            </Badge>
+          </div>
         </div>
-        <div className="flex flex-wrap gap-2 text-xs">
-          <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">
-            Localisées : {markers.length}/{agencyRows.length}
-          </Badge>
-          <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">
-            À préciser : {unresolvedCount}
-          </Badge>
-        </div>
+        {headerActions ? (
+          <div className="min-w-0">
+            {headerActions}
+          </div>
+        ) : null}
       </div>
 
       <div className="grid gap-0 xl:grid-cols-[minmax(0,1fr),360px]">
