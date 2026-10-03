@@ -22,6 +22,11 @@ const regionMatchesValue = (region, value) => {
   );
 };
 
+const sortRegions = (regions = []) =>
+  [...regions].sort((firstRegion, secondRegion) =>
+    String(firstRegion?.nom || '').localeCompare(String(secondRegion?.nom || ''), 'fr')
+  );
+
 export const fetchRegions = async ({ activeOnly = false } = {}) => {
   if (_cache.data && Date.now() - _cache.ts < TTL) {
     return { data: _cache.data, error: null };
@@ -30,8 +35,13 @@ export const fetchRegions = async ({ activeOnly = false } = {}) => {
     'ref:regions',
     () => supabase.from('regions').select('id, nom, codeRegion, description').order('nom', { ascending: true }),
   );
-  if (!result.error) { _cache.data = result.data; _cache.ts = Date.now(); }
-  return result;
+  if (!result.error) {
+    _cache.data = sortRegions(result.data || []);
+    _cache.ts = Date.now();
+    return { ...result, data: _cache.data };
+  }
+  if (_cache.data) return { data: _cache.data, error: null, stale: true };
+  return { ...result, data: [] };
 };
 
 export const buildRegionOptions = (
@@ -45,7 +55,7 @@ export const buildRegionOptions = (
 ) => {
   const filteredRegions = (regions || [])
     .filter((region) => region?.nom)
-    .sort((firstRegion, secondRegion) => firstRegion.nom.localeCompare(secondRegion.nom));
+    .sort((firstRegion, secondRegion) => firstRegion.nom.localeCompare(secondRegion.nom, 'fr'));
 
   const options = Array.from(
     new Map(

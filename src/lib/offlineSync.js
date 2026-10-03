@@ -106,28 +106,34 @@ export async function flushQueue() {
   if (syncing || !isOnline()) return { synced: 0 };
   syncing = true;
   let synced = 0;
+  let failed = 0;
   try {
+    try {
+      window.dispatchEvent(new CustomEvent('offline-queue-sync-started'));
+    } catch { /* noop */ }
     const items = await getQueued();
     for (const item of items) {
       try {
         const { ok, drop } = await replayItem(item);
         if (ok) synced++;
         if (drop) await removeQueued(item.id);
-        else if (!ok) await updateQueued(item.id, { retries: (item.retries || 0) + 1, lastError: 'Rejeu non confirmé' });
+        else if (!ok) {
+          failed++;
+          await updateQueued(item.id, { retries: (item.retries || 0) + 1, lastError: 'Rejeu non confirmé' });
+        }
       } catch (e) {
         // Échec (réseau / serveur) → on garde l'élément en file et on trace l'erreur.
+        failed++;
         await updateQueued(item.id, { retries: (item.retries || 0) + 1, lastError: String(e?.message || e).slice(0, 300) });
       }
     }
   } finally {
     syncing = false;
   }
-  if (synced > 0) {
-    try {
-      window.dispatchEvent(new CustomEvent('offline-queue-synced', { detail: { synced } }));
-    } catch { /* noop */ }
-  }
-  return { synced };
+  try {
+    window.dispatchEvent(new CustomEvent('offline-queue-synced', { detail: { synced, failed } }));
+  } catch { /* noop */ }
+  return { synced, failed };
 }
 
 /** Initialise la synchro automatique (au retour en ligne + au démarrage). */

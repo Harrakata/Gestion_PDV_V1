@@ -10,7 +10,7 @@ export const normalizeSecteurText = (value) =>
   String(value ?? '')
     .trim()
     .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
+    .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase();
 
 const secteurMatchesValue = (secteur, value) => {
@@ -21,6 +21,11 @@ const secteurMatchesValue = (secteur, value) => {
   );
 };
 
+const sortSecteurs = (secteurs = []) =>
+  [...secteurs].sort((firstSecteur, secondSecteur) =>
+    String(firstSecteur?.nom || '').localeCompare(String(secondSecteur?.nom || ''), 'fr')
+  );
+
 export const fetchSecteurs = async () => {
   if (_cache.data && Date.now() - _cache.ts < TTL) {
     return { data: _cache.data, error: null };
@@ -29,8 +34,13 @@ export const fetchSecteurs = async () => {
     'ref:secteurs',
     () => supabase.from('secteurs').select('id, nom, codeSecteur, region, attributaire').order('nom', { ascending: true }),
   );
-  if (!result.error) { _cache.data = result.data; _cache.ts = Date.now(); }
-  return result;
+  if (!result.error) {
+    _cache.data = sortSecteurs(result.data || []);
+    _cache.ts = Date.now();
+    return { ...result, data: _cache.data };
+  }
+  if (_cache.data) return { data: _cache.data, error: null, stale: true };
+  return { ...result, data: [] };
 };
 
 /**
@@ -43,7 +53,7 @@ export const buildSecteurOptions = (
   const filtered = (secteurs || [])
     .filter((s) => s?.nom)
     .filter((s) => !region || normalizeSecteurText(s.region) === normalizeSecteurText(region))
-    .sort((a, b) => a.nom.localeCompare(b.nom));
+    .sort((a, b) => a.nom.localeCompare(b.nom, 'fr'));
 
   const options = Array.from(
     new Map(

@@ -149,6 +149,16 @@ export async function countQueued() {
   }
 }
 
+export async function getQueueSummary() {
+  const items = await getQueued();
+  return {
+    count: items.length,
+    failed: items.filter((item) => (item.retries || 0) > 0).length,
+    oldestCreatedAt: items[0]?.createdAt || null,
+    lastError: items.find((item) => item.lastError)?.lastError || null,
+  };
+}
+
 // ──────────────────────────────────────────────────────────────────────────
 // Cache de lecture
 // ──────────────────────────────────────────────────────────────────────────
