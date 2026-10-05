@@ -30,3 +30,4 @@ add_messages_remontee.sql
 add_push_subscriptions.sql
 enable_realtime_notifications.sql
 add_reminder_cron_autosync.sql
+add_operational_assistant.sql

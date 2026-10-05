@@ -81,29 +81,46 @@ export default function SalaryCashAssistant({ rows, month, loading, error, onMon
       </Button>
     </div>
 
-    <div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-      <label className="min-w-0 space-y-1 text-xs text-muted-foreground">Période
-        <Input type="month" aria-label="Période de rapprochement" className="h-9 w-full min-w-0 bg-white" value={month.monthKey} onChange={(event) => {
-          if (event.target.value) { setPage(1); setExpanded(null); onMonthChange(event.target.value); }
-        }} />
-      </label>
-      <label className="min-w-0 space-y-1 text-xs text-muted-foreground">Recherche
-        <div className="relative">
-          <Search className="absolute left-3 top-2.5 h-4 w-4" />
-          <Input aria-label="Rechercher un préposé" type="search" value={filters.search} onChange={(event) => setFilter('search', event.target.value)} placeholder="Nom, code, agence, région, secteur…" className="h-9 min-w-0 bg-white pl-9" />
-        </div>
-      </label>
-      <FilterSelect label="Dossiers" value={filters.status} onChange={(value) => setFilter('status', value)} options={[
-        ['gaps', 'Tous les écarts'], ['missing', 'Manques'], ['surplus', 'Surplus'], ['ok', 'Rapprochés'], ['all', 'Tous les dossiers'],
-      ]} />
-      <FilterSelect label="Trier par" value={filters.sort} onChange={(value) => setFilter('sort', value)} options={[
-        ['gap_desc', 'Écart décroissant'], ['gap_asc', 'Écart croissant'], ['due_desc', 'À verser décroissant'], ['name', 'Nom et prénom'], ['agency', 'Agence'],
-      ]} />
-      <div className="flex items-end gap-2">
-        <Button type="button" variant="outline" size="sm" className="h-9 gap-2" aria-expanded={advanced} aria-controls="salary-advanced-filters" onClick={() => setAdvanced(!advanced)}>
-          <SlidersHorizontal className="h-4 w-4" />Filtres{activeFilters.length ? ` (${activeFilters.length})` : ''}
+    <div className="flex min-w-0 flex-wrap items-center gap-1 rounded-lg border border-border bg-muted/20 px-1.5 py-1">
+      <Input type="month" aria-label="Période de rapprochement" className="h-7 w-[10.5rem] shrink-0 border-none bg-transparent px-2 text-xs focus:bg-background focus:ring-1 focus:ring-primary/30" value={month.monthKey} onChange={(event) => {
+        if (event.target.value) { setPage(1); setExpanded(null); onMonthChange(event.target.value); }
+      }} />
+      <div className="w-px h-5 bg-border mx-0.5" aria-hidden />
+      <div className="relative min-w-[16rem] flex-1">
+        <Search className="absolute left-3 top-1.5 h-4 w-4 text-muted-foreground" />
+        <Input aria-label="Rechercher un préposé" type="search" value={filters.search} onChange={(event) => setFilter('search', event.target.value)} placeholder="Nom, code, agence, région, secteur…" className="h-7 min-w-0 border-transparent bg-transparent pl-9 text-xs focus:bg-background focus:ring-1 focus:ring-primary/30" />
+      </div>
+      <div className="w-40 shrink-0">
+        <Select value={filters.status} onValueChange={(value) => setFilter('status', value)}>
+          <SelectTrigger aria-label="Dossiers" className="h-7 w-full min-w-0 gap-1.5 border-transparent bg-transparent text-xs hover:bg-background focus:bg-background [&>span]:truncate">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {[
+              ['gaps', 'Tous les écarts'], ['missing', 'Manques'], ['surplus', 'Surplus'], ['ok', 'Rapprochés'], ['all', 'Tous les dossiers'],
+            ].map(([key, title]) => <SelectItem key={key} value={key}>{title}</SelectItem>)}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="w-44 shrink-0">
+        <Select value={filters.sort} onValueChange={(value) => setFilter('sort', value)}>
+          <SelectTrigger aria-label="Trier par" className="h-7 w-full min-w-0 gap-1.5 border-transparent bg-transparent text-xs hover:bg-background focus:bg-background [&>span]:truncate">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {[
+              ['gap_desc', 'Écart décroissant'], ['gap_asc', 'Écart croissant'], ['due_desc', 'À verser décroissant'], ['name', 'Nom et prénom'], ['agency', 'Agence'],
+            ].map(([key, title]) => <SelectItem key={key} value={key}>{title}</SelectItem>)}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="ml-auto flex items-center gap-1">
+        <Button type="button" variant="ghost" size="sm" className="h-7 gap-1.5 px-2 text-xs" aria-expanded={advanced} aria-controls="salary-advanced-filters" onClick={() => setAdvanced(!advanced)}>
+          <SlidersHorizontal className="h-3.5 w-3.5" />Filtres{activeFilters.length ? ` (${activeFilters.length})` : ''}
         </Button>
-        <IconButton label="Réinitialiser les filtres" onClick={reset}><RotateCcw className="h-4 w-4" /></IconButton>
+        <Button type="button" variant="ghost" size="icon" title="Réinitialiser les filtres" aria-label="Réinitialiser les filtres" className="h-7 w-7 shrink-0" onClick={reset}>
+          <RotateCcw className="h-3.5 w-3.5" />
+        </Button>
       </div>
     </div>
 
@@ -145,28 +162,28 @@ export default function SalaryCashAssistant({ rows, month, loading, error, onMon
           <p>Manques : <span className="font-semibold text-red-700">{amount(summary.missing)}</span> · Surplus : <span className="font-semibold text-emerald-700">{amount(summary.surplus)}</span></p>
         </div>
 
-        <div ref={resultsRef} className="max-h-[60vh] min-w-0 divide-y overflow-y-auto border-y bg-white" tabIndex={0} aria-label="Résultats du rapprochement">
-          <div className="sticky top-0 z-10 hidden grid-cols-[minmax(0,2fr)_repeat(3,minmax(0,1fr))_80px] gap-3 bg-slate-50 px-3 py-2 text-xs font-semibold text-muted-foreground md:grid">
-            <span>Préposé / agence</span><span className="text-right">À verser</span><span className="text-right">Versé</span><span className="text-right">Écart</span><span className="text-right">Détail</span>
+        <div ref={resultsRef} className="max-h-[64vh] w-full min-w-0 divide-y overflow-x-hidden overflow-y-auto rounded-xl border border-slate-200/80 bg-white shadow-[0_18px_45px_-32px_rgba(15,23,42,0.22)]" tabIndex={0} aria-label="Résultats du rapprochement">
+          <div className="sticky top-0 z-10 hidden min-h-12 grid-cols-[minmax(16rem,2fr)_repeat(3,minmax(10rem,1fr))_6rem] items-center gap-3 border-b border-slate-200/80 bg-slate-50 px-5 py-2 text-[0.78rem] font-semibold uppercase tracking-[0.08em] text-muted-foreground md:grid">
+            <span>Préposé / agence</span><span className="text-center">À verser</span><span className="text-center">Versé</span><span className="text-center">Écart</span><span className="text-center">Détail</span>
           </div>
           {visibleRows.length === 0 ? <div className="py-10 text-center text-sm text-muted-foreground">
             <p>{rows.length ? 'Aucun dossier ne correspond aux filtres.' : 'Aucune opération ni aucun versement sur cette période.'}</p>
             {rows.length > 0 && <Button variant="ghost" size="sm" onClick={reset}>Réinitialiser les filtres</Button>}
           </div> : visibleRows.map((row) => <div key={row.code}>
-            <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-3 py-3 md:grid-cols-[minmax(0,2fr)_repeat(3,minmax(0,1fr))_80px]">
+            <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-2.5 md:grid-cols-[minmax(16rem,2fr)_repeat(3,minmax(10rem,1fr))_6rem] md:px-5">
               <button type="button" className="min-w-0 text-left hover:text-primary focus-visible:outline-primary" onClick={() => onOpenPrepose(row.code)} title={`Ouvrir le préposé ${row.code}`}>
                 <p className="break-words text-sm font-semibold">{row.nom}</p>
                 <p className="break-words text-xs text-muted-foreground">{row.code} · {row.agence || 'Agence non renseignée'}</p>
                 {(row.region || row.secteur) && <p className="break-words text-xs text-muted-foreground">{[row.region, row.secteur].filter(Boolean).join(' · ')}</p>}
               </button>
-              <div className="col-span-2 grid grid-cols-3 gap-2 text-right text-sm tabular-nums md:contents">
-                <div className="min-w-0 break-words"><span className="block text-xs text-muted-foreground md:hidden">À verser</span>{amount(row.soldeCaisse)}</div>
-                <div className="min-w-0 break-words"><span className="block text-xs text-muted-foreground md:hidden">Versé</span>{amount(row.mtVerse)}</div>
-                <div className={`min-w-0 break-words font-semibold ${row.status === 'missing' ? 'text-red-700' : 'text-emerald-700'}`}>
+              <div className="col-span-2 grid grid-cols-3 gap-2 text-center text-sm tabular-nums md:contents">
+                <div className="min-w-0 break-words md:text-center"><span className="block text-xs text-muted-foreground md:hidden">À verser</span>{amount(row.soldeCaisse)}</div>
+                <div className="min-w-0 break-words md:text-center"><span className="block text-xs text-muted-foreground md:hidden">Versé</span>{amount(row.mtVerse)}</div>
+                <div className={`min-w-0 break-words font-semibold md:text-center ${row.status === 'missing' ? 'text-red-700' : 'text-emerald-700'}`}>
                   <span className="block text-xs font-normal">{statusLabels[row.status]}</span>{amount(row.absEcart)}
                 </div>
               </div>
-              <div className="col-start-2 row-start-1 flex justify-end gap-1 md:col-start-auto md:row-start-auto">
+              <div className="col-start-2 row-start-1 flex justify-end gap-1 md:col-start-auto md:row-start-auto md:justify-center">
                 <IconButton label={`Calcul du préposé ${row.code}`} aria-expanded={expanded === row.code} aria-controls={`salary-detail-${row.code}`} onClick={() => setExpanded(expanded === row.code ? null : row.code)}><ChevronDown className={`h-4 w-4 ${expanded === row.code ? 'rotate-180' : ''}`} /></IconButton>
                 <IconButton label={`Ouvrir le préposé ${row.code}`} onClick={() => onOpenPrepose(row.code)}><ArrowRight className="h-4 w-4" /></IconButton>
               </div>

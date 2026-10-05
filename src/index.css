@@ -256,6 +256,98 @@ aside,
   background-color: #fff !important;
 }
 
+/* ── Maintenance Terminaux : tables et cartes des sous-onglets ──────────────
+   Harmonisation avec les tables de gestion : conteneur contenu, en-têtes
+   clairs, bordures propres et scroll interne quand une table devient large. */
+.maintenance-terminal-workspace {
+  min-width: 0;
+}
+
+.maintenance-terminal-workspace [data-maintenance-panel],
+.maintenance-terminal-workspace [data-maintenance-panel] > [data-state="active"],
+.maintenance-terminal-workspace [role="tabpanel"] {
+  min-width: 0;
+}
+
+.maintenance-terminal-workspace .surface-glass,
+.maintenance-terminal-workspace .glassmorphism,
+.maintenance-terminal-workspace .rounded-2xl.border.bg-card {
+  border-color: hsl(var(--primary) / 0.2);
+  box-shadow: 0 22px 60px -30px rgba(15, 23, 42, 0.28);
+}
+
+.maintenance-terminal-workspace table {
+  width: 100%;
+}
+
+.maintenance-terminal-workspace table thead {
+  background: hsl(210 40% 98%);
+}
+
+.maintenance-terminal-workspace table thead tr {
+  border-bottom: 1px solid rgb(226 232 240 / 0.8);
+}
+
+.maintenance-terminal-workspace table th {
+  height: 3rem;
+  background: hsl(210 40% 98%);
+  color: hsl(var(--muted-foreground));
+  font-size: 0.78rem;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.maintenance-terminal-workspace table td {
+  vertical-align: middle;
+}
+
+.maintenance-terminal-workspace table caption {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.maintenance-terminal-workspace .maintenance-table-shell,
+.maintenance-terminal-workspace div:has(> table) {
+  width: calc(100% - 3rem);
+  max-width: 100%;
+  max-height: 64vh;
+  margin: 0 auto 1.5rem;
+  min-width: 0;
+  overflow: auto;
+  border: 1px solid rgb(226 232 240 / 0.8);
+  border-radius: 0.75rem;
+  background: #fff;
+  box-shadow: 0 18px 45px -32px rgba(15, 23, 42, 0.22);
+}
+
+@media (max-width: 767px) {
+  .maintenance-terminal-workspace .maintenance-table-shell,
+  .maintenance-terminal-workspace div:has(> table) {
+    width: calc(100% - 1.5rem);
+    margin-bottom: 1rem;
+  }
+}
+
+.maintenance-terminal-workspace .maintenance-table-shell > div {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.maintenance-terminal-workspace .maintenance-table-shell thead,
+.maintenance-terminal-workspace div:has(> table) thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 1px 0 rgb(226 232 240 / 0.8);
+}
+
 .surface-glass .bg-muted\/30,
 .surface-glass .bg-muted\/20,
 .surface-glass .bg-primary\/5,

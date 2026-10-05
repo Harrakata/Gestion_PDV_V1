@@ -173,14 +173,14 @@ const EquipmentTable = ({ type, config, allEquipments, filteredEquipments, hasDa
       {isLoading && !hasData ? (
         <p className="py-8 text-center text-muted-foreground">Chargement...</p>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-border/70 bg-white shadow-sm">
-        <Table>
+        <div className="overflow-hidden rounded-lg border border-border/70 bg-transparent">
+        <Table containerClassName="border-0 bg-transparent shadow-none">
           <TableCaption>
             {filteredEquipments.length === 0
               ? `Aucun ${config.singular.toLowerCase()} trouvé.`
               : `Liste de ${filteredEquipments.length} ${config.label.toLowerCase()}.`}
           </TableCaption>
-          <TableHeader>
+          <TableHeader className="bg-slate-50/80">
             <TableRow>
               <TableHead>Référence</TableHead>
               <TableHead>Modèle</TableHead>
@@ -190,7 +190,7 @@ const EquipmentTable = ({ type, config, allEquipments, filteredEquipments, hasDa
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
+          <TableBody className="bg-transparent">
             {filteredEquipments.map((equipment) => (
               <TableRow key={equipment.id}>
                 <TableCell className="font-medium">{equipment.reference}</TableCell>

@@ -62,3 +62,14 @@ test('filters and rows fit narrow and wide viewports', async ({ page }, testInfo
     await page.getByRole('button', { name: /^Filtres/ }).click();
   }
 });
+
+test('keeps the period selector compact on wide screens', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const periodBox = await page.getByLabel('Période de rapprochement').boundingBox();
+  const searchBox = await page.getByRole('searchbox', { name: 'Rechercher un préposé' }).boundingBox();
+  const filterButton = await page.getByRole('button', { name: /^Filtres/ }).boundingBox();
+
+  expect(periodBox?.width).toBeLessThanOrEqual(210);
+  expect(searchBox?.width).toBeGreaterThan(periodBox?.width ?? 0);
+  expect(Math.abs((filterButton?.y ?? 0) - (periodBox?.y ?? 0))).toBeLessThanOrEqual(8);
+});

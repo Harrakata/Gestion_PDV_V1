@@ -1,0 +1,40 @@
+/* Keep the floating assistant independent of the global mobile dialog layout. */
+[role="dialog"][data-operational-assistant] {
+  top: auto !important;
+  left: auto !important;
+  right: 12px !important;
+  bottom: max(1rem, env(safe-area-inset-bottom, 0px)) !important;
+  transform: none !important;
+  width: calc(100vw - 24px) !important;
+  max-width: 440px !important;
+  height: min(680px, 85vh) !important;
+  height: min(680px, 85dvh) !important;
+  max-height: calc(100dvh - 2rem - env(safe-area-inset-bottom, 0px)) !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  gap: 0 !important;
+  border-radius: 8px !important;
+}
+
+[data-operational-assistant] [role="tablist"] {
+  display: grid !important;
+  width: calc(100% - 2rem) !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  padding: 4px !important;
+}
+
+[data-operational-assistant] [role="tablist"] [role="tab"] {
+  min-width: 0;
+  max-width: 100%;
+  padding: 6px 4px !important;
+  gap: 4px;
+  white-space: normal;
+  font-size: 12px;
+}
+
+@media (min-width: 768px) {
+  [role="dialog"][data-operational-assistant] {
+    right: 24px !important;
+  }
+}
