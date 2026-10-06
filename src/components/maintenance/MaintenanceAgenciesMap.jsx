@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { normalizeMaintenanceText } from '@/lib/maintenanceMonitoring';
 import { supabase } from '@/lib/supabaseClient';
+import { cn } from '@/lib/utils';
 
 const TILE_SIZE = 256;
 const MAP_WIDTH = 960;
@@ -422,6 +423,7 @@ const MaintenanceAgenciesMap = ({
   description = "Les marqueurs utilisent uniquement le champ Adresse de chaque agence et colorent l'état du suivi maintenance.",
   emptyMessage = 'Aucune agence ne correspond aux filtres de suivi actuels.',
   headerActions = null,
+  appearance = 'default',
 }) => {
   const [locations, setLocations] = useState({});
   const [selectedAgencyKey, setSelectedAgencyKey] = useState(null);
@@ -604,6 +606,17 @@ const MaintenanceAgenciesMap = ({
   const mapEmbedUrl = selectedAgency
     ? buildGoogleEmbedUrl(selectedAgency.adresse)
     : '';
+  const isOperationalCard = appearance === 'operational';
+  const cardClassName = cn(
+    'overflow-hidden rounded-2xl border shadow-sm',
+    isOperationalCard ? 'surface-glass border-primary/15' : 'bg-white'
+  );
+  const headerClassName = cn(
+    'flex flex-col gap-3 border-b',
+    isOperationalCard
+      ? 'bg-transparent px-6 py-6'
+      : 'bg-gradient-to-br from-primary/5 via-white to-cyan-50/50 px-5 py-4'
+  );
 
   useEffect(() => {
     setViewportOverride(null);
@@ -635,15 +648,18 @@ const MaintenanceAgenciesMap = ({
 
   if (agencyRows.length === 0) {
     return (
-      <div className="overflow-hidden rounded-2xl border bg-white shadow-sm">
-        <div className="flex flex-col gap-3 border-b bg-gradient-to-br from-primary/5 via-white to-cyan-50/50 px-5 py-4">
+      <div className={cardClassName}>
+        <div className={headerClassName}>
           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-            <div>
-              <h3 className="flex items-center gap-2 text-xl font-semibold text-primary">
+            <div className={isOperationalCard ? 'space-y-1.5' : undefined}>
+              <h3 className={cn(
+                'flex items-center gap-2 text-xl font-semibold text-primary',
+                isOperationalCard && 'leading-none tracking-tight'
+              )}>
                 <MapPinned className="h-5 w-5" />
                 {title}
               </h3>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <p className={cn('text-sm text-muted-foreground', !isOperationalCard && 'mt-1')}>
                 {description}
               </p>
             </div>
@@ -670,15 +686,18 @@ const MaintenanceAgenciesMap = ({
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border bg-white shadow-sm">
-      <div className="flex flex-col gap-3 border-b bg-gradient-to-br from-primary/5 via-white to-cyan-50/50 px-5 py-4">
+    <div className={cardClassName}>
+      <div className={headerClassName}>
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-          <div>
-            <h3 className="flex items-center gap-2 text-xl font-semibold text-primary">
+          <div className={isOperationalCard ? 'space-y-1.5' : undefined}>
+            <h3 className={cn(
+              'flex items-center gap-2 text-xl font-semibold text-primary',
+              isOperationalCard && 'leading-none tracking-tight'
+            )}>
               <MapPinned className="h-5 w-5" />
               {title}
             </h3>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className={cn('text-sm text-muted-foreground', !isOperationalCard && 'mt-1')}>
               {description}
             </p>
           </div>
@@ -834,9 +853,15 @@ const MaintenanceAgenciesMap = ({
           )}
         </div>
 
-        <div className="flex max-h-[520px] flex-col border-t bg-slate-50/70 xl:border-l xl:border-t-0">
+        <div className={cn(
+          'flex max-h-[520px] flex-col border-t xl:border-l xl:border-t-0',
+          isOperationalCard ? 'bg-transparent' : 'bg-slate-50/70'
+        )}>
           {selectedAgency ? (
-            <div className="border-b bg-white px-4 py-3">
+            <div className={cn(
+              'border-b px-4 py-3',
+              isOperationalCard ? 'bg-transparent' : 'bg-white'
+            )}>
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="truncate font-semibold text-slate-900">{selectedAgency.nom}</p>

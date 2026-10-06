@@ -421,7 +421,7 @@ const MaintenanceTab = ({ technicien }) => {
 
   const loadTerminaux = async (agenceId) => {
     const agence = agences.find((item) => String(item.id) === String(agenceId));
-    const terminalSelect = 'id, reference, type_terminal, position, statut, adresse_ip, agence_id, imprimante_reference, lecteur_reference, ecran_reference, afficheur_reference, buc_reference, carrosserie_reference';
+    const terminalSelect = 'id, reference, type_terminal, position, statut, adresse_ip, agence_id, imprimante_reference, lecteur_reference, ecran_reference, afficheur_reference, buc_reference, carrosserie_reference, alimentation_reference, bouton_marche_arret_reference, afficheur_terminal_reference, circuit_afficheur_client_reference, circuit_bac_uc_reference, carte_mere_bac_uc_reference, ssd_reference';
 
     try {
       let { data, error } = await cachedQuery(
@@ -649,34 +649,28 @@ const MaintenanceTab = ({ technicien }) => {
       return;
     }
 
-    let type = null;
-    if (terminal.imprimante_reference === form.sousEnsemble) type = 'imprimante';
-    else if (terminal.lecteur_reference === form.sousEnsemble) type = 'lecteur';
-    else if (terminal.ecran_reference === form.sousEnsemble) type = 'ecran';
-    else if (terminal.afficheur_reference === form.sousEnsemble) type = 'afficheur';
-    else if (terminal.buc_reference === form.sousEnsemble) type = 'buc';
-    else if (terminal.carrosserie_reference === form.sousEnsemble) type = 'carrosserie';
+    const fieldConfigs = [
+      { type: 'imprimante', field: 'imprimante_reference', table: 'equipments_imprimantes', label: 'Imprimante' },
+      { type: 'lecteur', field: 'lecteur_reference', table: 'equipments_lecteurs', label: 'Lecteur' },
+      { type: 'ecran', field: 'ecran_reference', table: 'equipments_ecrans', label: 'Écran' },
+      { type: 'afficheur', field: 'afficheur_reference', table: 'equipments_afficheurs', label: 'Afficheur client' },
+      { type: 'buc', field: 'buc_reference', table: 'equipments_bucs', label: 'BUC' },
+      { type: 'carrosserie', field: 'carrosserie_reference', table: 'equipments_carrosseries', label: 'Carrosserie' },
+      { type: 'alimentation', field: 'alimentation_reference', table: 'equipments_alimentations', label: 'Alimentation' },
+      { type: 'bouton_marche_arret', field: 'bouton_marche_arret_reference', table: 'equipments_boutons_marche_arret', label: 'Bouton marche/arrêt' },
+      { type: 'afficheur_terminal', field: 'afficheur_terminal_reference', table: 'equipments_afficheurs_terminal', label: 'Afficheur' },
+      { type: 'circuit_afficheur_client', field: 'circuit_afficheur_client_reference', table: 'equipments_circuits_afficheur_client', label: 'Circuit afficheur client' },
+      { type: 'circuit_bac_uc', field: 'circuit_bac_uc_reference', table: 'equipments_circuits_bac_uc', label: 'Circuit BAC UC' },
+      { type: 'carte_mere_bac_uc', field: 'carte_mere_bac_uc_reference', table: 'equipments_cartes_meres_bac_uc', label: 'Carte mère BAC UC' },
+      { type: 'ssd', field: 'ssd_reference', table: 'equipments_ssd', label: 'SSD' },
+    ];
+    const selectedConfig = fieldConfigs.find((config) => terminal[config.field] === form.sousEnsemble);
+    const type = selectedConfig?.type || null;
 
     if (!type) {
       setReplacementOptions([]);
       return;
     }
-
-    const tableMap = {
-      imprimante: 'equipments_imprimantes',
-      lecteur: 'equipments_lecteurs',
-      ecran: 'equipments_ecrans',
-      afficheur: 'equipments_afficheurs',
-    };
-
-    const terminalFieldMap = {
-      imprimante: 'imprimante_reference',
-      lecteur: 'lecteur_reference',
-      ecran: 'ecran_reference',
-      afficheur: 'afficheur_reference',
-      buc: 'buc_reference',
-      carrosserie: 'carrosserie_reference',
-    };
 
     const normalizeRef = (v) => String(v ?? '').trim().toLowerCase();
 
@@ -685,12 +679,12 @@ const MaintenanceTab = ({ technicien }) => {
       // Récupérer toutes les références déjà assignées à d'autres terminaux (tous agences confondus)
       const { data: autresTerminaux, error: termError } = await supabase
         .from('terminaux')
-        .select('id, imprimante_reference, lecteur_reference, ecran_reference, afficheur_reference, buc_reference, carrosserie_reference')
+        .select('id, imprimante_reference, lecteur_reference, ecran_reference, afficheur_reference, buc_reference, carrosserie_reference, alimentation_reference, bouton_marche_arret_reference, afficheur_terminal_reference, circuit_afficheur_client_reference, circuit_bac_uc_reference, carte_mere_bac_uc_reference, ssd_reference')
         .neq('id', terminal.id);
 
       if (termError) console.error('Erreur filtre terminaux:', termError);
 
-      const refField = terminalFieldMap[type];
+      const refField = selectedConfig.field;
       const refsAssignees = new Set(
         (autresTerminaux || [])
           .map((t) => normalizeRef(t[refField]))
@@ -698,7 +692,7 @@ const MaintenanceTab = ({ technicien }) => {
       );
 
       const { data, error } = await supabase
-        .from(tableMap[type])
+        .from(selectedConfig.table)
         .select('reference, modele, statut')
         .order('reference', { ascending: true });
 
@@ -750,6 +744,27 @@ const MaintenanceTab = ({ technicien }) => {
     }
     if (terminal.carrosserie_reference) {
       sousEnsembles.push({ value: terminal.carrosserie_reference, label: `Carrosserie - ${terminal.carrosserie_reference}` });
+    }
+    if (terminal.alimentation_reference) {
+      sousEnsembles.push({ value: terminal.alimentation_reference, label: `Alimentation - ${terminal.alimentation_reference}` });
+    }
+    if (terminal.bouton_marche_arret_reference) {
+      sousEnsembles.push({ value: terminal.bouton_marche_arret_reference, label: `Bouton marche/arrêt - ${terminal.bouton_marche_arret_reference}` });
+    }
+    if (terminal.afficheur_terminal_reference) {
+      sousEnsembles.push({ value: terminal.afficheur_terminal_reference, label: `Afficheur - ${terminal.afficheur_terminal_reference}` });
+    }
+    if (terminal.circuit_afficheur_client_reference) {
+      sousEnsembles.push({ value: terminal.circuit_afficheur_client_reference, label: `Circuit afficheur client - ${terminal.circuit_afficheur_client_reference}` });
+    }
+    if (terminal.circuit_bac_uc_reference) {
+      sousEnsembles.push({ value: terminal.circuit_bac_uc_reference, label: `Circuit BAC UC - ${terminal.circuit_bac_uc_reference}` });
+    }
+    if (terminal.carte_mere_bac_uc_reference) {
+      sousEnsembles.push({ value: terminal.carte_mere_bac_uc_reference, label: `Carte mère BAC UC - ${terminal.carte_mere_bac_uc_reference}` });
+    }
+    if (terminal.ssd_reference) {
+      sousEnsembles.push({ value: terminal.ssd_reference, label: `SSD - ${terminal.ssd_reference}` });
     }
 
     return sousEnsembles;
@@ -1771,24 +1786,31 @@ const MaintenanceTab = ({ technicien }) => {
     if (interventionData.remplace !== 'oui' || !interventionData.remplacement || !interventionData.sousEnsemble) return;
     const terminal = terminaux.find((t) => String(t.id) === String(interventionData.terminal));
     if (!terminal) return;
-    let type = null;
-    if (terminal.imprimante_reference === interventionData.sousEnsemble) type = 'imprimante';
-    else if (terminal.lecteur_reference === interventionData.sousEnsemble) type = 'lecteur';
-    else if (terminal.ecran_reference === interventionData.sousEnsemble) type = 'ecran';
-    else if (terminal.afficheur_reference === interventionData.sousEnsemble) type = 'afficheur';
-    else if (terminal.buc_reference === interventionData.sousEnsemble) type = 'buc';
-    else if (terminal.carrosserie_reference === interventionData.sousEnsemble) type = 'carrosserie';
-    if (!type) return;
-    const fieldMap = { imprimante: 'imprimante_reference', lecteur: 'lecteur_reference', ecran: 'ecran_reference', afficheur: 'afficheur_reference', buc: 'buc_reference', carrosserie: 'carrosserie_reference' };
-    const equipTableMap = { imprimante: 'equipments_imprimantes', lecteur: 'equipments_lecteurs', ecran: 'equipments_ecrans', afficheur: 'equipments_afficheurs', buc: 'equipments_bucs', carrosserie: 'equipments_carrosseries' };
+    const fieldConfigs = [
+      { type: 'imprimante', field: 'imprimante_reference', table: 'equipments_imprimantes' },
+      { type: 'lecteur', field: 'lecteur_reference', table: 'equipments_lecteurs' },
+      { type: 'ecran', field: 'ecran_reference', table: 'equipments_ecrans' },
+      { type: 'afficheur', field: 'afficheur_reference', table: 'equipments_afficheurs' },
+      { type: 'buc', field: 'buc_reference', table: 'equipments_bucs' },
+      { type: 'carrosserie', field: 'carrosserie_reference', table: 'equipments_carrosseries' },
+      { type: 'alimentation', field: 'alimentation_reference', table: 'equipments_alimentations' },
+      { type: 'bouton_marche_arret', field: 'bouton_marche_arret_reference', table: 'equipments_boutons_marche_arret' },
+      { type: 'afficheur_terminal', field: 'afficheur_terminal_reference', table: 'equipments_afficheurs_terminal' },
+      { type: 'circuit_afficheur_client', field: 'circuit_afficheur_client_reference', table: 'equipments_circuits_afficheur_client' },
+      { type: 'circuit_bac_uc', field: 'circuit_bac_uc_reference', table: 'equipments_circuits_bac_uc' },
+      { type: 'carte_mere_bac_uc', field: 'carte_mere_bac_uc_reference', table: 'equipments_cartes_meres_bac_uc' },
+      { type: 'ssd', field: 'ssd_reference', table: 'equipments_ssd' },
+    ];
+    const selectedConfig = fieldConfigs.find((config) => terminal[config.field] === interventionData.sousEnsemble);
+    if (!selectedConfig) return;
     await Promise.all([
-      supabase.from('terminaux').update({ [fieldMap[type]]: interventionData.remplacement }).eq('id', terminal.id),
-      supabase.from(equipTableMap[type]).update({ statut: 'En maintenance' }).eq('reference', interventionData.sousEnsemble),
-      supabase.from(equipTableMap[type]).update({ statut: 'En service' }).eq('reference', interventionData.remplacement),
+      supabase.from('terminaux').update({ [selectedConfig.field]: interventionData.remplacement }).eq('id', terminal.id),
+      supabase.from(selectedConfig.table).update({ statut: 'En maintenance' }).eq('reference', interventionData.sousEnsemble),
+      supabase.from(selectedConfig.table).update({ statut: 'En service' }).eq('reference', interventionData.remplacement),
     ]);
     await ajouterAuStockDefectueux({
       referenceSousEnsemble: interventionData.sousEnsemble,
-      typeSousEnsemble: type,
+      typeSousEnsemble: selectedConfig.type,
       typeTerminal: terminal.type_terminal || null,
       agenceProvenance: interventionData.agence || terminal.agence_id || null,
       dateEntree: new Date().toISOString(),

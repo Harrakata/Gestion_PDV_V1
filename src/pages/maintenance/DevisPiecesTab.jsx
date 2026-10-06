@@ -45,6 +45,13 @@ const SOUS_ENSEMBLE_LABELS = {
   afficheur: 'Afficheur client',
   buc: 'BUC',
   carrosserie: 'Carrosserie',
+  alimentation: 'Alimentation',
+  bouton_marche_arret: 'Bouton marche/arrêt',
+  afficheur_terminal: 'Afficheur',
+  circuit_afficheur_client: 'Circuit afficheur client',
+  circuit_bac_uc: 'Circuit BAC UC',
+  carte_mere_bac_uc: 'Carte mère BAC UC',
+  ssd: 'SSD',
 };
 
 const moneyFormatter = new Intl.NumberFormat('fr-FR', {
@@ -567,7 +574,7 @@ const DevisPiecesTab = () => {
         </Card>
 
         <Card className="lg:col-span-2">
-          <CardHeader>
+          <CardHeader className="bg-transparent">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <CardTitle className="text-lg text-primary">Pièces consommées</CardTitle>
@@ -578,7 +585,7 @@ const DevisPiecesTab = () => {
           </CardHeader>
           <CardContent className="p-0">
             {/* Ajout manuel d'une pièce consommée depuis le catalogue */}
-            <div className="flex flex-wrap items-end gap-2 border-b bg-muted/20 p-3">
+            <div className="flex flex-wrap items-end gap-2 border-b bg-transparent p-3">
               <div className="grid min-w-[180px] flex-1 gap-1">
                 <Label className="text-xs">Ajouter une pièce du catalogue</Label>
                 <Combobox

@@ -70,7 +70,7 @@ export default function SalaryCashAssistant({ rows, month, loading, error, onMon
     { key: 'operationCount', label: 'Lignes CCOPE' }, { key: 'paymentCount', label: 'Versements' },
   ], `rapprochement-${month.monthKey}.csv`);
 
-  return <section className="min-w-0 space-y-4 border-t border-blue-200 pt-4" aria-label="Assistant salaire/caisse" aria-busy={loading}>
+  return <section className="surface-glass min-w-0 space-y-4 overflow-hidden rounded-2xl border border-primary/20 p-4 pt-6 shadow-sm sm:p-6 sm:pt-7" aria-label="Assistant salaire/caisse" aria-busy={loading}>
     <div className="flex flex-wrap items-start justify-between gap-3">
       <div className="min-w-0">
         <h2 className="flex items-center gap-2 text-lg font-semibold text-primary"><Sparkles className="h-5 w-5 shrink-0" />Assistant salaire/caisse</h2>
@@ -81,7 +81,7 @@ export default function SalaryCashAssistant({ rows, month, loading, error, onMon
       </Button>
     </div>
 
-    <div className="flex min-w-0 flex-wrap items-center gap-1 rounded-lg border border-border bg-muted/20 px-1.5 py-1">
+    <div className="flex min-w-0 flex-wrap items-center gap-1 rounded-xl border border-slate-200/80 bg-white px-1.5 py-1 shadow-sm">
       <Input type="month" aria-label="Période de rapprochement" className="h-7 w-[10.5rem] shrink-0 border-none bg-transparent px-2 text-xs focus:bg-background focus:ring-1 focus:ring-primary/30" value={month.monthKey} onChange={(event) => {
         if (event.target.value) { setPage(1); setExpanded(null); onMonthChange(event.target.value); }
       }} />

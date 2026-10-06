@@ -5,11 +5,11 @@
   right: 12px !important;
   bottom: max(1rem, env(safe-area-inset-bottom, 0px)) !important;
   transform: none !important;
-  width: calc(100vw - 24px) !important;
+  width: min(22rem, calc(100vw - 56px)) !important;
   max-width: 440px !important;
-  height: min(680px, 85vh) !important;
-  height: min(680px, 85dvh) !important;
-  max-height: calc(100dvh - 2rem - env(safe-area-inset-bottom, 0px)) !important;
+  height: min(560px, 76vh) !important;
+  height: min(560px, 76dvh) !important;
+  max-height: calc(100dvh - 7.5rem - env(safe-area-inset-bottom, 0px)) !important;
   overflow: hidden !important;
   padding: 0 !important;
   gap: 0 !important;
@@ -36,5 +36,8 @@
 @media (min-width: 768px) {
   [role="dialog"][data-operational-assistant] {
     right: 24px !important;
+    width: min(440px, calc(100vw - 48px)) !important;
+    height: min(680px, 85dvh) !important;
+    max-height: calc(100dvh - 2rem - env(safe-area-inset-bottom, 0px)) !important;
   }
 }

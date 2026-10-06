@@ -17,6 +17,13 @@ const SOUS_ENSEMBLE_LABELS = {
   afficheur: 'Afficheur client',
   buc: 'BUC',
   carrosserie: 'Carrosserie',
+  alimentation: 'Alimentation',
+  bouton_marche_arret: 'Bouton marche/arrêt',
+  afficheur_terminal: 'Afficheur',
+  circuit_afficheur_client: 'Circuit afficheur client',
+  circuit_bac_uc: 'Circuit BAC UC',
+  carte_mere_bac_uc: 'Carte mère BAC UC',
+  ssd: 'SSD',
 };
 
 const STATUT_CONFIG = {
@@ -79,6 +86,13 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
     afficheur: 'equipments_afficheurs',
     buc: 'equipments_bucs',
     carrosserie: 'equipments_carrosseries',
+    alimentation: 'equipments_alimentations',
+    bouton_marche_arret: 'equipments_boutons_marche_arret',
+    afficheur_terminal: 'equipments_afficheurs_terminal',
+    circuit_afficheur_client: 'equipments_circuits_afficheur_client',
+    circuit_bac_uc: 'equipments_circuits_bac_uc',
+    carte_mere_bac_uc: 'equipments_cartes_meres_bac_uc',
+    ssd: 'equipments_ssd',
   };
 
   const load = useCallback(async () => {

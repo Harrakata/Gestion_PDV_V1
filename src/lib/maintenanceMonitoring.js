@@ -74,6 +74,12 @@ export const getTerminalSousEnsembles = (terminal) =>
     { key: 'buc', label: 'BUC', reference: terminal?.buc_reference || '' },
     { key: 'carrosserie', label: 'Carrosserie', reference: terminal?.carrosserie_reference || '' },
     { key: 'alimentation', label: 'Alimentation', reference: terminal?.alimentation_reference || '' },
+    { key: 'bouton_marche_arret', label: 'Bouton marche/arrêt', reference: terminal?.bouton_marche_arret_reference || '' },
+    { key: 'afficheur_terminal', label: 'Afficheur', reference: terminal?.afficheur_terminal_reference || '' },
+    { key: 'circuit_afficheur_client', label: 'Circuit afficheur client', reference: terminal?.circuit_afficheur_client_reference || '' },
+    { key: 'circuit_bac_uc', label: 'Circuit BAC UC', reference: terminal?.circuit_bac_uc_reference || '' },
+    { key: 'carte_mere_bac_uc', label: 'Carte mère BAC UC', reference: terminal?.carte_mere_bac_uc_reference || '' },
+    { key: 'ssd', label: 'SSD', reference: terminal?.ssd_reference || '' },
   ].filter((item) => item.reference);
 
 const getSousEnsemblePrefix = (reference) =>

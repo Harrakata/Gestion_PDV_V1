@@ -16,6 +16,7 @@ add_scd2_guichetieres.sql
 add_geolocation.sql
 add_geo_refusal.sql
 add_equipments_alimentations.sql
+add_additional_equipment_categories.sql
 add_audit_log.sql
 add_user_activity_tracking.sql
 add_profils_exploitation_photo.sql
@@ -31,3 +32,4 @@ add_push_subscriptions.sql
 enable_realtime_notifications.sql
 add_reminder_cron_autosync.sql
 add_operational_assistant.sql
+202610060956_fix_equipment_import_rls.sql

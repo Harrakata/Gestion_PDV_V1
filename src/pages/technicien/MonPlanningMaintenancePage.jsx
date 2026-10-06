@@ -82,6 +82,13 @@ const SOUS_ENSEMBLE_LABELS_TECH = {
   afficheur: 'Afficheur client',
   buc: 'BUC',
   carrosserie: 'Carrosserie',
+  alimentation: 'Alimentation',
+  bouton_marche_arret: 'Bouton marche/arrêt',
+  afficheur_terminal: 'Afficheur',
+  circuit_afficheur_client: 'Circuit afficheur client',
+  circuit_bac_uc: 'Circuit BAC UC',
+  carte_mere_bac_uc: 'Carte mère BAC UC',
+  ssd: 'SSD',
 };
 
 const STATUT_CONFIG_TECH = {

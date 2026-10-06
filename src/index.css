@@ -365,21 +365,42 @@ aside,
   position: fixed !important;
 }
 
-/* Custom scrollbar (optional, for aesthetics) */
+/* Barres discrètes : le script global ajoute .is-scrolling uniquement à la
+   zone qui défile, puis la retire après une courte pause. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: hsl(var(--secondary));
+  background: transparent;
   border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--primary) / 0.7);
+  background: transparent;
   border-radius: 10px;
 }
-::-webkit-scrollbar-thumb:hover {
+
+.is-scrolling {
+  scrollbar-color: hsl(var(--primary) / 0.7) transparent;
+}
+
+.is-scrolling::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary) / 0.7);
+}
+
+.is-scrolling::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--primary));
+}
+
+@media (forced-colors: active) {
+  * {
+    scrollbar-color: auto;
+  }
 }
 
 /* ── Libellés de filtres intégrés au champ (UI épurée) ──────────────────────
@@ -452,10 +473,10 @@ aside,
     -webkit-backdrop-filter: blur(16px) saturate(1.4);
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
-    scrollbar-color: hsl(var(--primary) / 0.5) transparent;
+    scrollbar-color: transparent transparent;
   }
 
-  /* Barre de défilement latérale visible du tiroir */
+  /* Même comportement automatique pour le tiroir latéral mobile. */
   .app-space-sidebar.is-open::-webkit-scrollbar {
     width: 6px;
   }
@@ -463,10 +484,19 @@ aside,
     background: transparent;
   }
   .app-space-sidebar.is-open::-webkit-scrollbar-thumb {
-    background: hsl(var(--primary) / 0.5);
+    background: transparent;
     border-radius: 999px;
   }
-  .app-space-sidebar.is-open::-webkit-scrollbar-thumb:hover {
+
+  .app-space-sidebar.is-open.is-scrolling {
+    scrollbar-color: hsl(var(--primary) / 0.5) transparent;
+  }
+
+  .app-space-sidebar.is-open.is-scrolling::-webkit-scrollbar-thumb {
+    background: hsl(var(--primary) / 0.5);
+  }
+
+  .app-space-sidebar.is-open.is-scrolling::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--primary) / 0.7);
   }
 

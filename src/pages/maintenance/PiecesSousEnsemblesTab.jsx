@@ -25,6 +25,12 @@ const SOUS_ENSEMBLE_LABELS = {
   buc: 'BUC',
   carrosserie: 'Carrosserie',
   alimentation: 'Alimentation',
+  bouton_marche_arret: 'Bouton marche/arrêt',
+  afficheur_terminal: 'Afficheur',
+  circuit_afficheur_client: 'Circuit afficheur client',
+  circuit_bac_uc: 'Circuit BAC UC',
+  carte_mere_bac_uc: 'Carte mère BAC UC',
+  ssd: 'SSD',
 };
 
 const DEFAULT_PIECE = { nom: '', reference: '', prix_unitaire_ht: 0, sous_ensemble: 'imprimante', type_terminal: 'tous', commentaire: '', photo_url: '', description_aide: '' };
@@ -1588,7 +1594,9 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
             <div className="rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800 space-y-1">
               <p className="font-semibold">Format attendu (colonnes CSV) :</p>
               <p className="font-mono text-xs">Nom, Référence, Prix unitaire HT (€), Sous-ensemble, Type terminal, Commentaire</p>
-              <p className="text-xs mt-1">Valeurs Sous-ensemble : <span className="font-mono">imprimante | lecteur | ecran | afficheur | buc | carrosserie</span> (ou leur libellé français)</p>
+              <p className="text-xs mt-1">
+                Valeurs Sous-ensemble : <span className="font-mono">{Object.keys(SOUS_ENSEMBLE_LABELS).join(' | ')}</span> (ou leur libellé français)
+              </p>
               <p className="text-xs">Valeurs Type terminal : <span className="font-mono">tous | 2020 | 2031</span></p>
               <p className="text-xs">Les anciens fichiers sans colonne prix restent acceptés, avec un prix HT à 0.</p>
             </div>

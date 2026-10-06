@@ -9,7 +9,27 @@ import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, Tabl
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Edit, Monitor, PlusCircle, Printer, Scan, Search, Trash2, Tv, CheckCircle2, Wrench, XCircle, Package, Box, Shield, Plug, FileUp, FileDown } from 'lucide-react';
+import {
+  Box,
+  CheckCircle2,
+  CircuitBoard,
+  Edit,
+  FileDown,
+  FileUp,
+  HardDrive,
+  Monitor,
+  Package,
+  Plug,
+  PlusCircle,
+  Power,
+  Printer,
+  Scan,
+  Search,
+  Trash2,
+  Tv,
+  Wrench,
+  XCircle,
+} from 'lucide-react';
 import KpiStatCard from '@/components/analytics/KpiStatCard';
 import { supabase } from '@/lib/supabaseClient';
 
@@ -66,19 +86,54 @@ const EQUIPMENT_TYPES = {
     table: 'equipments_bucs',
     sousEnsemble: 'buc',
   },
-  carrosseries: {
-    label: 'Carrosseries',
-    singular: 'Carrosserie',
-    icon: <Shield className="h-5 w-5" />,
-    table: 'equipments_carrosseries',
-    sousEnsemble: 'carrosserie',
-  },
   alimentations: {
     label: 'Alimentation',
     singular: 'Alimentation',
     icon: <Plug className="h-5 w-5" />,
     table: 'equipments_alimentations',
     sousEnsemble: 'alimentation',
+  },
+  boutons_marche_arret: {
+    label: 'Boutons marche/arrêt',
+    singular: 'Bouton marche/arrêt',
+    icon: <Power className="h-5 w-5" />,
+    table: 'equipments_boutons_marche_arret',
+    sousEnsemble: 'bouton_marche_arret',
+  },
+  afficheurs_terminal: {
+    label: 'Afficheurs',
+    singular: 'Afficheur',
+    icon: <Tv className="h-5 w-5" />,
+    table: 'equipments_afficheurs_terminal',
+    sousEnsemble: 'afficheur_terminal',
+  },
+  circuits_afficheur_client: {
+    label: 'Circuits afficheur client',
+    singular: 'Circuit afficheur client',
+    icon: <CircuitBoard className="h-5 w-5" />,
+    table: 'equipments_circuits_afficheur_client',
+    sousEnsemble: 'circuit_afficheur_client',
+  },
+  circuits_bac_uc: {
+    label: 'Circuits BAC UC',
+    singular: 'Circuit BAC UC',
+    icon: <CircuitBoard className="h-5 w-5" />,
+    table: 'equipments_circuits_bac_uc',
+    sousEnsemble: 'circuit_bac_uc',
+  },
+  cartes_meres_bac_uc: {
+    label: 'Cartes mère BAC UC',
+    singular: 'Carte mère BAC UC',
+    icon: <CircuitBoard className="h-5 w-5" />,
+    table: 'equipments_cartes_meres_bac_uc',
+    sousEnsemble: 'carte_mere_bac_uc',
+  },
+  ssds: {
+    label: 'SSD',
+    singular: 'SSD',
+    icon: <HardDrive className="h-5 w-5" />,
+    table: 'equipments_ssd',
+    sousEnsemble: 'ssd',
   },
 };
 
@@ -264,8 +319,13 @@ const EquipmentManager = ({ canManage = true, readOnlyMessage = '' }) => {
     lecteurs: [],
     afficheurs: [],
     bucs: [],
-    carrosseries: [],
     alimentations: [],
+    boutons_marche_arret: [],
+    afficheurs_terminal: [],
+    circuits_afficheur_client: [],
+    circuits_bac_uc: [],
+    cartes_meres_bac_uc: [],
+    ssds: [],
   });
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [currentEquipment, setCurrentEquipment] = useState(null);
@@ -283,8 +343,13 @@ const EquipmentManager = ({ canManage = true, readOnlyMessage = '' }) => {
     lecteurs: '',
     afficheurs: '',
     bucs: '',
-    carrosseries: '',
     alimentations: '',
+    boutons_marche_arret: '',
+    afficheurs_terminal: '',
+    circuits_afficheur_client: '',
+    circuits_bac_uc: '',
+    cartes_meres_bac_uc: '',
+    ssds: '',
   });
   const [isLoading, setIsLoading] = useState(false);
   const [modeleOptions, setModeleOptions] = useState([]);
@@ -292,7 +357,7 @@ const EquipmentManager = ({ canManage = true, readOnlyMessage = '' }) => {
   const syncStatutsDepuisTerminaux = async () => {
     const { data: allTerminaux } = await supabase
       .from('terminaux')
-      .select('imprimante_reference, lecteur_reference, ecran_reference, afficheur_reference, buc_reference, carrosserie_reference, alimentation_reference');
+      .select('imprimante_reference, lecteur_reference, ecran_reference, afficheur_reference, buc_reference, alimentation_reference, bouton_marche_arret_reference, afficheur_terminal_reference, circuit_afficheur_client_reference, circuit_bac_uc_reference, carte_mere_bac_uc_reference, ssd_reference');
 
     if (!allTerminaux?.length) return;
 
@@ -302,8 +367,13 @@ const EquipmentManager = ({ canManage = true, readOnlyMessage = '' }) => {
       { field: 'ecran_reference',       table: 'equipments_ecrans' },
       { field: 'afficheur_reference',   table: 'equipments_afficheurs' },
       { field: 'buc_reference',         table: 'equipments_bucs' },
-      { field: 'carrosserie_reference', table: 'equipments_carrosseries' },
       { field: 'alimentation_reference', table: 'equipments_alimentations' },
+      { field: 'bouton_marche_arret_reference', table: 'equipments_boutons_marche_arret' },
+      { field: 'afficheur_terminal_reference', table: 'equipments_afficheurs_terminal' },
+      { field: 'circuit_afficheur_client_reference', table: 'equipments_circuits_afficheur_client' },
+      { field: 'circuit_bac_uc_reference', table: 'equipments_circuits_bac_uc' },
+      { field: 'carte_mere_bac_uc_reference', table: 'equipments_cartes_meres_bac_uc' },
+      { field: 'ssd_reference', table: 'equipments_ssd' },
     ];
 
     const ops = [];
@@ -546,39 +616,59 @@ const EquipmentManager = ({ canManage = true, readOnlyMessage = '' }) => {
         <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
         <CardHeader className="relative">
           <CardTitle className="text-2xl font-bold text-primary">Gestion de sous-ensembles</CardTitle>
-          <CardDescription>Gérez les imprimantes, écrans, lecteurs, afficheur client, BUC, carrosseries et alimentations disponibles pour les terminaux.</CardDescription>
+          <CardDescription>Gérez les sous-ensembles disponibles pour les terminaux.</CardDescription>
         </CardHeader>
       </Card>
 
       <Tabs defaultValue="imprimantes" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3 md:grid-cols-7">
-          <TabsTrigger value="imprimantes" className="flex items-center gap-2">
+        <TabsList className="flex w-full justify-start gap-1 overflow-x-auto">
+          <TabsTrigger value="imprimantes" className="flex shrink-0 items-center gap-2">
             <Printer className="h-4 w-4" />
             Imprimantes
           </TabsTrigger>
-          <TabsTrigger value="ecrans" className="flex items-center gap-2">
+          <TabsTrigger value="ecrans" className="flex shrink-0 items-center gap-2">
             <Monitor className="h-4 w-4" />
             Écrans
           </TabsTrigger>
-          <TabsTrigger value="lecteurs" className="flex items-center gap-2">
+          <TabsTrigger value="lecteurs" className="flex shrink-0 items-center gap-2">
             <Scan className="h-4 w-4" />
             Lecteurs
           </TabsTrigger>
-          <TabsTrigger value="afficheurs" className="flex items-center gap-2">
+          <TabsTrigger value="afficheurs" className="flex shrink-0 items-center gap-2">
             <Tv className="h-4 w-4" />
             Afficheur client
           </TabsTrigger>
-          <TabsTrigger value="bucs" className="flex items-center gap-2">
+          <TabsTrigger value="bucs" className="flex shrink-0 items-center gap-2">
             <Box className="h-4 w-4" />
             BUC
           </TabsTrigger>
-          <TabsTrigger value="carrosseries" className="flex items-center gap-2">
-            <Shield className="h-4 w-4" />
-            Carrosseries
-          </TabsTrigger>
-          <TabsTrigger value="alimentations" className="flex items-center gap-2">
+          <TabsTrigger value="alimentations" className="flex shrink-0 items-center gap-2">
             <Plug className="h-4 w-4" />
             Alimentation
+          </TabsTrigger>
+          <TabsTrigger value="boutons_marche_arret" className="flex shrink-0 items-center gap-2">
+            <Power className="h-4 w-4" />
+            Bouton marche/arrêt
+          </TabsTrigger>
+          <TabsTrigger value="afficheurs_terminal" className="flex shrink-0 items-center gap-2">
+            <Tv className="h-4 w-4" />
+            Afficheur
+          </TabsTrigger>
+          <TabsTrigger value="circuits_afficheur_client" className="flex shrink-0 items-center gap-2">
+            <CircuitBoard className="h-4 w-4" />
+            Circuit afficheur client
+          </TabsTrigger>
+          <TabsTrigger value="circuits_bac_uc" className="flex shrink-0 items-center gap-2">
+            <CircuitBoard className="h-4 w-4" />
+            Circuit BAC UC
+          </TabsTrigger>
+          <TabsTrigger value="cartes_meres_bac_uc" className="flex shrink-0 items-center gap-2">
+            <CircuitBoard className="h-4 w-4" />
+            Carte mère BAC UC
+          </TabsTrigger>
+          <TabsTrigger value="ssds" className="flex shrink-0 items-center gap-2">
+            <HardDrive className="h-4 w-4" />
+            SSD
           </TabsTrigger>
         </TabsList>
 

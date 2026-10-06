@@ -48,7 +48,7 @@ export async function lookupAssistantData(client, access, rawInput) {
   const terminals = { rows: [], truncated: agencies.truncated };
   for (let i = 0; i < agencies.rows.length; i += 100) {
     const batch = await readBounded(() => client.from('terminaux')
-      .select('id, agence_id, reference, type_terminal, statut, imprimante_reference, lecteur_reference, ecran_reference, afficheur_reference, buc_reference, carrosserie_reference')
+      .select('id, agence_id, reference, type_terminal, statut, imprimante_reference, lecteur_reference, ecran_reference, afficheur_reference, buc_reference, carrosserie_reference, alimentation_reference, bouton_marche_arret_reference, afficheur_terminal_reference, circuit_afficheur_client_reference, circuit_bac_uc_reference, carte_mere_bac_uc_reference, ssd_reference')
       .in('agence_id', agencies.rows.slice(i, i + 100).map((agency) => agency.id)).order('id'), 1000 - terminals.rows.length);
     terminals.rows.push(...batch.rows);
     terminals.truncated ||= batch.truncated;

@@ -121,7 +121,7 @@ const MaintenanceTerminauxPage = () => {
 
       const terminauxResponse = await supabase
         .from('terminaux')
-        .select('id, agence_id, reference, type_terminal, position, statut, adresse_ip, imprimante_reference, lecteur_reference, ecran_reference')
+        .select('id, agence_id, reference, type_terminal, position, statut, adresse_ip, imprimante_reference, lecteur_reference, ecran_reference, afficheur_reference, buc_reference, carrosserie_reference, alimentation_reference, bouton_marche_arret_reference, afficheur_terminal_reference, circuit_afficheur_client_reference, circuit_bac_uc_reference, carte_mere_bac_uc_reference, ssd_reference')
         .eq('agence_id', agence.id)
         .order('reference', { ascending: true });
 

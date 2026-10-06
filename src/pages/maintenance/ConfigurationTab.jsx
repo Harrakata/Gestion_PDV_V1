@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Edit, MapPinned, Search, Trash2 } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ChevronDown, ChevronUp, Download, Edit, FileUp, MapPinned, PackageCheck, Search, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,6 +26,13 @@ const normalizeText = (value) =>
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase();
 
+const normalizeCsvHeader = (value) =>
+  normalizeText(value)
+    .replace(/[_-]+/g, ' ')
+    .replace(/[^\w\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
 const BLOCKED_EQUIPMENT_STATUSES = new Set(['en panne', 'hors service']);
 const isEquipmentAvailableStatus = (status) => !BLOCKED_EQUIPMENT_STATUSES.has(normalizeText(status));
 
@@ -39,8 +46,13 @@ const DEFAULT_FORM_DATA = {
   ecran: '',
   afficheur: '',
   buc: '',
-  carrosserie: '',
   alimentation: '',
+  boutonMarcheArret: '',
+  afficheurTerminal: '',
+  circuitAfficheurClient: '',
+  circuitBacUc: '',
+  carteMereBacUc: '',
+  ssd: '',
 };
 
 const EQUIPMENT_FIELD_CONFIG = [
@@ -80,20 +92,184 @@ const EQUIPMENT_FIELD_CONFIG = [
     label: 'BUC',
   },
   {
-    formKey: 'carrosserie',
-    pluralKey: 'carrosseries',
-    terminalKey: 'carrosserie_reference',
-    table: 'equipments_carrosseries',
-    label: 'Carrosserie',
-  },
-  {
     formKey: 'alimentation',
     pluralKey: 'alimentations',
     terminalKey: 'alimentation_reference',
     table: 'equipments_alimentations',
     label: 'Alimentation',
   },
+  {
+    formKey: 'boutonMarcheArret',
+    pluralKey: 'boutonsMarcheArret',
+    terminalKey: 'bouton_marche_arret_reference',
+    table: 'equipments_boutons_marche_arret',
+    label: 'Bouton marche/arrêt',
+  },
+  {
+    formKey: 'afficheurTerminal',
+    pluralKey: 'afficheursTerminal',
+    terminalKey: 'afficheur_terminal_reference',
+    table: 'equipments_afficheurs_terminal',
+    label: 'Afficheur',
+  },
+  {
+    formKey: 'circuitAfficheurClient',
+    pluralKey: 'circuitsAfficheurClient',
+    terminalKey: 'circuit_afficheur_client_reference',
+    table: 'equipments_circuits_afficheur_client',
+    label: 'Circuit afficheur client',
+  },
+  {
+    formKey: 'circuitBacUc',
+    pluralKey: 'circuitsBacUc',
+    terminalKey: 'circuit_bac_uc_reference',
+    table: 'equipments_circuits_bac_uc',
+    label: 'Circuit BAC UC',
+  },
+  {
+    formKey: 'carteMereBacUc',
+    pluralKey: 'cartesMeresBacUc',
+    terminalKey: 'carte_mere_bac_uc_reference',
+    table: 'equipments_cartes_meres_bac_uc',
+    label: 'Carte mère BAC UC',
+  },
+  {
+    formKey: 'ssd',
+    pluralKey: 'ssds',
+    terminalKey: 'ssd_reference',
+    table: 'equipments_ssd',
+    label: 'SSD',
+  },
 ];
+
+const ASSEMBLED_TERMINAL_FIELD_CONFIG = [
+  { header: 'ID_TRM', dbKey: 'reference', aliases: ['id_trm', 'id trm', 'reference'] },
+  { header: 'MAC ADRESS', dbKey: 'mac_address', aliases: ['mac adress', 'mac address', 'mac_adress', 'mac_address'] },
+  { header: 'ECRAN', dbKey: 'ecran_reference', aliases: ['ecran', 'ecran_reference'] },
+  { header: 'ALIMENTATION', dbKey: 'alimentation_reference', aliases: ['alimentation', 'alimentation_reference'] },
+  { header: 'BAC UC', dbKey: 'buc_reference', aliases: ['bac uc', 'buc', 'buc_reference'] },
+  { header: 'LECTEUR', dbKey: 'lecteur_reference', aliases: ['lecteur', 'lecteur_reference'] },
+  {
+    header: 'BOUTON MARCHE/ARRET',
+    dbKey: 'bouton_marche_arret_reference',
+    aliases: ['bouton marche/arret', 'bouton marche arret', 'bouton_marche_arret_reference'],
+  },
+  {
+    header: 'AFFICHEUR CLIENT',
+    dbKey: 'afficheur_reference',
+    aliases: ['afficheur_reference'],
+    legacyHeaders: [{ header: 'AFFICHEUR', occurrence: 1 }],
+  },
+  { header: 'IMPRIMANTE', dbKey: 'imprimante_reference', aliases: ['imprimante', 'imprimante_reference'] },
+  {
+    header: 'CIRCUIT AFFICHEUR CLIENT',
+    dbKey: 'circuit_afficheur_client_reference',
+    aliases: ['circuit afficheur client', 'circuit_afficheur_client_reference'],
+  },
+  {
+    header: 'CIRCUIT BAC UC',
+    dbKey: 'circuit_bac_uc_reference',
+    aliases: ['circuit bac uc', 'circuit_bac_uc_reference'],
+  },
+  {
+    header: 'CARTE MERE BAC UC',
+    dbKey: 'carte_mere_bac_uc_reference',
+    aliases: ['carte mere bac uc', 'carte mère bac uc', 'carte_mere_bac_uc_reference'],
+  },
+  { header: 'SSD', dbKey: 'ssd_reference', aliases: ['ssd', 'ssd_reference'] },
+  {
+    header: 'AFFICHEUR TERMINAL',
+    dbKey: 'afficheur_terminal_reference',
+    aliases: ['afficheur terminal', 'afficheur_terminal_reference'],
+    legacyHeaders: [{ header: 'AFFICHEUR', occurrence: 2 }],
+  },
+  { header: 'IDENTIFIANT', dbKey: 'identifiant', aliases: ['identifiant'] },
+  { header: 'N° SECU', dbKey: 'numero_secu', aliases: ['n secu', 'n° secu', 'no secu', 'numero secu', 'numero_secu'] },
+];
+
+const ASSEMBLED_TERMINAL_HEADERS = ASSEMBLED_TERMINAL_FIELD_CONFIG.map((field) => field.header);
+const ASSEMBLED_EQUIPMENT_FIELD_CONFIG = ASSEMBLED_TERMINAL_FIELD_CONFIG.filter((field) =>
+  EQUIPMENT_FIELD_CONFIG.some((equipment) => equipment.terminalKey === field.dbKey)
+);
+
+const isMissingTableError = (error) =>
+  error?.code === 'PGRST205' || /could not find the table/i.test(error?.message || '');
+
+const findHeaderIndex = (normalizedHeaders, header, occurrence = 1) => {
+  const normalizedHeader = normalizeCsvHeader(header);
+  let currentOccurrence = 0;
+
+  for (let index = 0; index < normalizedHeaders.length; index += 1) {
+    if (normalizedHeaders[index] !== normalizedHeader) continue;
+    currentOccurrence += 1;
+    if (currentOccurrence === occurrence) return index;
+  }
+
+  return -1;
+};
+
+const findCsvFieldIndex = (normalizedHeaders, fieldConfig) => {
+  const directHeaders = [fieldConfig.header, ...(fieldConfig.aliases || [])];
+  for (const header of directHeaders) {
+    const index = findHeaderIndex(normalizedHeaders, header);
+    if (index >= 0) return index;
+  }
+
+  for (const legacyHeader of fieldConfig.legacyHeaders || []) {
+    const index = findHeaderIndex(normalizedHeaders, legacyHeader.header, legacyHeader.occurrence || 1);
+    if (index >= 0) return index;
+  }
+
+  return -1;
+};
+
+const getCsvFieldValue = (values, normalizedHeaders, fieldConfig) => {
+  const index = findCsvFieldIndex(normalizedHeaders, fieldConfig);
+  return index >= 0 ? String(values[index] ?? '').trim() : '';
+};
+
+const readSpreadsheetRows = async (file) => {
+  const XLSX = await import('xlsx');
+  const workbook = XLSX.read(await file.arrayBuffer(), { type: 'array', raw: false });
+  const firstSheetName = workbook.SheetNames[0];
+  if (!firstSheetName) return [];
+
+  return XLSX.utils
+    .sheet_to_json(workbook.Sheets[firstSheetName], {
+      header: 1,
+      raw: false,
+      defval: '',
+      blankrows: false,
+    })
+    .map((row) => row.map((value) => String(value ?? '').trim()))
+    .filter((row) => row.some(Boolean));
+};
+
+const escapeCsvValue = (value) => `"${String(value ?? '').replace(/"/g, '""')}"`;
+
+const downloadCsvFile = (fileName, rows) => {
+  const csv = rows.map((row) => row.map(escapeCsvValue).join(';')).join('\n');
+  const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', fileName);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
+
+const mapAssembledTerminalToFormData = (terminal, previousState = DEFAULT_FORM_DATA) => ({
+  ...previousState,
+  ref: terminal?.reference || '',
+  type: terminal?.type_terminal || previousState.type || '2020',
+  ip: terminal?.adresse_ip || '',
+  ...EQUIPMENT_FIELD_CONFIG.reduce((accumulator, config) => {
+    accumulator[config.formKey] = terminal?.[config.terminalKey] || '';
+    return accumulator;
+  }, {}),
+});
 
 const getTerminalStatusBadgeClass = (status) => {
   const normalizedStatus = normalizeText(status);
@@ -121,6 +297,7 @@ const ConfigurationTab = ({
   readOnlyMessage = '',
 }) => {
   const { toast } = useToast();
+  const assembledImportInputRef = useRef(null);
   const [regions, setRegions] = useState([]);
   const [agences, setAgences] = useState([]);
   const [secteurs, setSecteurs] = useState([]);
@@ -130,14 +307,23 @@ const ConfigurationTab = ({
     lecteurs: [],
     afficheurs: [],
     bucs: [],
-    carrosseries: [],
     alimentations: [],
+    boutonsMarcheArret: [],
+    afficheursTerminal: [],
+    circuitsAfficheurClient: [],
+    circuitsBacUc: [],
+    cartesMeresBacUc: [],
+    ssds: [],
   });
   const [agenceId, setAgenceId] = useState('');
   const [formRegion, setFormRegion] = useState('');
   const [formSecteur, setFormSecteur] = useState('');
   const [terminaux, setTerminaux] = useState([]);
+  const [assembledTerminals, setAssembledTerminals] = useState([]);
+  const [expandedAssembledTerminalId, setExpandedAssembledTerminalId] = useState(null);
   const [formData, setFormData] = useState(DEFAULT_FORM_DATA);
+  const [configurationMode, setConfigurationMode] = useState('manual');
+  const [selectedAssembledTerminalId, setSelectedAssembledTerminalId] = useState('');
   const [editingTerminalId, setEditingTerminalId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -166,8 +352,14 @@ const ConfigurationTab = ({
         lecteursResponse,
         afficheurResponse,
         bucsResponse,
-        carrosseriesResponse,
         alimentationsResponse,
+        boutonsMarcheArretResponse,
+        afficheursTerminalResponse,
+        circuitsAfficheurClientResponse,
+        circuitsBacUcResponse,
+        cartesMeresBacUcResponse,
+        ssdsResponse,
+        assembledTerminalsResponse,
       ] = await Promise.all([
         fetchRegions(),
         supabase.from('agences').select('id, nom, nbreTerminaux, codePDV, region, secteur').eq('is_current', true).order('nom', { ascending: true }),
@@ -175,7 +367,7 @@ const ConfigurationTab = ({
         supabase
           .from('terminaux')
           .select(
-            'id, reference, type_terminal, position, adresse_ip, agence_id, imprimante_reference, lecteur_reference, ecran_reference, afficheur_reference, buc_reference, carrosserie_reference, alimentation_reference, statut'
+            'id, reference, type_terminal, position, adresse_ip, agence_id, imprimante_reference, lecteur_reference, ecran_reference, afficheur_reference, buc_reference, alimentation_reference, bouton_marche_arret_reference, afficheur_terminal_reference, circuit_afficheur_client_reference, circuit_bac_uc_reference, carte_mere_bac_uc_reference, ssd_reference, statut'
           )
           .order('reference', { ascending: true }),
         supabase.from('equipments_imprimantes').select('*').order('reference', { ascending: true }),
@@ -183,8 +375,14 @@ const ConfigurationTab = ({
         supabase.from('equipments_lecteurs').select('*').order('reference', { ascending: true }),
         supabase.from('equipments_afficheurs').select('*').order('reference', { ascending: true }),
         supabase.from('equipments_bucs').select('*').order('reference', { ascending: true }),
-        supabase.from('equipments_carrosseries').select('*').order('reference', { ascending: true }),
         supabase.from('equipments_alimentations').select('*').order('reference', { ascending: true }),
+        supabase.from('equipments_boutons_marche_arret').select('*').order('reference', { ascending: true }),
+        supabase.from('equipments_afficheurs_terminal').select('*').order('reference', { ascending: true }),
+        supabase.from('equipments_circuits_afficheur_client').select('*').order('reference', { ascending: true }),
+        supabase.from('equipments_circuits_bac_uc').select('*').order('reference', { ascending: true }),
+        supabase.from('equipments_cartes_meres_bac_uc').select('*').order('reference', { ascending: true }),
+        supabase.from('equipments_ssd').select('*').order('reference', { ascending: true }),
+        supabase.from('terminaux_assembles').select('*').order('reference', { ascending: true }),
       ]);
 
       if (regionsResponse.error) {
@@ -278,8 +476,13 @@ const ConfigurationTab = ({
         { key: 'lecteurs', response: lecteursResponse },
         { key: 'afficheurs', response: afficheurResponse },
         { key: 'bucs', response: bucsResponse },
-        { key: 'carrosseries', response: carrosseriesResponse },
         { key: 'alimentations', response: alimentationsResponse },
+        { key: 'boutonsMarcheArret', response: boutonsMarcheArretResponse },
+        { key: 'afficheursTerminal', response: afficheursTerminalResponse },
+        { key: 'circuitsAfficheurClient', response: circuitsAfficheurClientResponse },
+        { key: 'circuitsBacUc', response: circuitsBacUcResponse },
+        { key: 'cartesMeresBacUc', response: cartesMeresBacUcResponse },
+        { key: 'ssds', response: ssdsResponse },
       ];
 
       const equipmentData = {};
@@ -297,6 +500,19 @@ const ConfigurationTab = ({
       });
 
       setEquipments(equipmentData);
+
+      if (assembledTerminalsResponse.error) {
+        if (!isMissingTableError(assembledTerminalsResponse.error)) {
+          toast({
+            title: 'Erreur chargement terminaux assemblés',
+            description: assembledTerminalsResponse.error.message,
+            variant: 'destructive',
+          });
+        }
+        setAssembledTerminals([]);
+      } else {
+        setAssembledTerminals(assembledTerminalsResponse.data || []);
+      }
     } catch (error) {
       console.error('Erreur chargement configuration terminaux:', error);
       toast({
@@ -336,6 +552,8 @@ const ConfigurationTab = ({
 
   const resetForm = useCallback(() => {
     setFormData(DEFAULT_FORM_DATA);
+    setConfigurationMode('manual');
+    setSelectedAssembledTerminalId('');
     setEditingTerminalId(null);
     setIsEditDialogOpen(false);
 
@@ -419,6 +637,18 @@ const ConfigurationTab = ({
   const selectedAgencyTerminalCount = selectedAgency
     ? (terminauxByAgence[String(selectedAgency.id)] || []).length
     : 0;
+  const suggestedAgencyPosition = useMemo(() => {
+    if (!agenceId) return '';
+    const occupiedPositions = new Set(
+      (terminauxByAgence[String(agenceId)] || [])
+        .map((terminal) => String(terminal.position || '').match(/^guichet\s+(\d+)$/i)?.[1])
+        .filter(Boolean)
+        .map(Number)
+    );
+    let positionNumber = 1;
+    while (occupiedPositions.has(positionNumber)) positionNumber += 1;
+    return `Guichet ${positionNumber}`;
+  }, [agenceId, terminauxByAgence]);
   const selectedAgencyTerminalLimit = selectedAgency?.nbreTerminaux;
   const hasSelectedAgencyTerminalLimit =
     selectedAgencyTerminalLimit !== null &&
@@ -444,6 +674,46 @@ const ConfigurationTab = ({
     hasSelectedAgencyTerminalLimit &&
     !isEditingOnSameAgency &&
     selectedAgencyTerminalCount >= normalizedSelectedAgencyTerminalLimit;
+  const selectedAssembledTerminal = useMemo(
+    () =>
+      selectedAssembledTerminalId
+        ? assembledTerminals.find((terminal) => String(terminal.id) === String(selectedAssembledTerminalId)) || null
+        : null,
+    [assembledTerminals, selectedAssembledTerminalId]
+  );
+  const availableAssembledTerminalOptions = useMemo(
+    () =>
+      assembledTerminals
+        .filter(
+          (terminal) =>
+            normalizeText(terminal.statut) !== 'assigne' ||
+            String(terminal.id) === String(selectedAssembledTerminalId)
+        )
+        .map((terminal) => ({
+          value: String(terminal.id),
+          label: `${terminal.reference}${terminal.mac_address ? ` • ${terminal.mac_address}` : ''}${
+            terminal.identifiant ? ` • ${terminal.identifiant}` : ''
+          }`,
+        })),
+    [assembledTerminals, selectedAssembledTerminalId]
+  );
+
+  useEffect(() => {
+    if (configurationMode !== 'assembled' || !selectedAssembledTerminal) {
+      return;
+    }
+
+    setFormData((previousState) => mapAssembledTerminalToFormData(selectedAssembledTerminal, previousState));
+  }, [configurationMode, selectedAssembledTerminal]);
+
+  useEffect(() => {
+    if (!agenceId || editingTerminalId || !suggestedAgencyPosition) return;
+    setFormData((previousState) =>
+      previousState.position
+        ? previousState
+        : { ...previousState, position: suggestedAgencyPosition }
+    );
+  }, [agenceId, editingTerminalId, suggestedAgencyPosition]);
 
   useEffect(() => {
     if (!agenceId || resolvedLockedAgence) {
@@ -470,45 +740,27 @@ const ConfigurationTab = ({
   };
 
   const assignedEquipmentReferences = useMemo(
-    () =>
-      terminaux
-        .filter((terminal) => String(terminal.id) !== String(editingTerminalId ?? ''))
+    () => {
+      const referencesByEquipment = [...terminaux
+        .filter((terminal) => String(terminal.id) !== String(editingTerminalId ?? '')), ...assembledTerminals]
         .reduce(
           (accumulator, terminal) => {
-            if (terminal.imprimante_reference) {
-              accumulator.imprimantes.add(normalizeText(terminal.imprimante_reference));
-            }
-            if (terminal.lecteur_reference) {
-              accumulator.lecteurs.add(normalizeText(terminal.lecteur_reference));
-            }
-            if (terminal.ecran_reference) {
-              accumulator.ecrans.add(normalizeText(terminal.ecran_reference));
-            }
-            if (terminal.afficheur_reference) {
-              accumulator.afficheurs.add(normalizeText(terminal.afficheur_reference));
-            }
-            if (terminal.buc_reference) {
-              accumulator.bucs.add(normalizeText(terminal.buc_reference));
-            }
-            if (terminal.carrosserie_reference) {
-              accumulator.carrosseries.add(normalizeText(terminal.carrosserie_reference));
-            }
-            if (terminal.alimentation_reference) {
-              accumulator.alimentations.add(normalizeText(terminal.alimentation_reference));
-            }
+            EQUIPMENT_FIELD_CONFIG.forEach((config) => {
+              if (terminal[config.terminalKey]) {
+                accumulator[config.pluralKey].add(normalizeText(terminal[config.terminalKey]));
+              }
+            });
             return accumulator;
           },
-          {
-            imprimantes: new Set(),
-            lecteurs: new Set(),
-            ecrans: new Set(),
-            afficheurs: new Set(),
-            bucs: new Set(),
-            carrosseries: new Set(),
-            alimentations: new Set(),
-          }
-        ),
-    [editingTerminalId, terminaux]
+          EQUIPMENT_FIELD_CONFIG.reduce((accumulator, config) => {
+            accumulator[config.pluralKey] = new Set();
+            return accumulator;
+          }, {})
+        );
+
+      return referencesByEquipment;
+    },
+    [assembledTerminals, editingTerminalId, terminaux]
   );
 
   const buildEquipmentOptions = useCallback(
@@ -517,7 +769,7 @@ const ConfigurationTab = ({
         .filter((equipment) => {
           const normalizedReference = normalizeText(equipment.reference);
           const isSelectedEquipment = normalizeText(selectedReference) === normalizedReference;
-          const isAssigned = assignedEquipmentReferences[equipmentType].has(normalizedReference);
+          const isAssigned = assignedEquipmentReferences[equipmentType]?.has(normalizedReference);
           return isSelectedEquipment || (!isAssigned && isEquipmentAvailableStatus(equipment.statut));
         })
         .map((equipment) => ({
@@ -547,13 +799,33 @@ const ConfigurationTab = ({
     () => buildEquipmentOptions(equipments.bucs || [], 'bucs', formData.buc),
     [buildEquipmentOptions, equipments.bucs, formData.buc]
   );
-  const carrosseriesOptions = useMemo(
-    () => buildEquipmentOptions(equipments.carrosseries || [], 'carrosseries', formData.carrosserie),
-    [buildEquipmentOptions, equipments.carrosseries, formData.carrosserie]
-  );
   const alimentationsOptions = useMemo(
     () => buildEquipmentOptions(equipments.alimentations || [], 'alimentations', formData.alimentation),
     [buildEquipmentOptions, equipments.alimentations, formData.alimentation]
+  );
+  const boutonsMarcheArretOptions = useMemo(
+    () => buildEquipmentOptions(equipments.boutonsMarcheArret || [], 'boutonsMarcheArret', formData.boutonMarcheArret),
+    [buildEquipmentOptions, equipments.boutonsMarcheArret, formData.boutonMarcheArret]
+  );
+  const afficheursTerminalOptions = useMemo(
+    () => buildEquipmentOptions(equipments.afficheursTerminal || [], 'afficheursTerminal', formData.afficheurTerminal),
+    [buildEquipmentOptions, equipments.afficheursTerminal, formData.afficheurTerminal]
+  );
+  const circuitsAfficheurClientOptions = useMemo(
+    () => buildEquipmentOptions(equipments.circuitsAfficheurClient || [], 'circuitsAfficheurClient', formData.circuitAfficheurClient),
+    [buildEquipmentOptions, equipments.circuitsAfficheurClient, formData.circuitAfficheurClient]
+  );
+  const circuitsBacUcOptions = useMemo(
+    () => buildEquipmentOptions(equipments.circuitsBacUc || [], 'circuitsBacUc', formData.circuitBacUc),
+    [buildEquipmentOptions, equipments.circuitsBacUc, formData.circuitBacUc]
+  );
+  const cartesMeresBacUcOptions = useMemo(
+    () => buildEquipmentOptions(equipments.cartesMeresBacUc || [], 'cartesMeresBacUc', formData.carteMereBacUc),
+    [buildEquipmentOptions, equipments.cartesMeresBacUc, formData.carteMereBacUc]
+  );
+  const ssdsOptions = useMemo(
+    () => buildEquipmentOptions(equipments.ssds || [], 'ssds', formData.ssd),
+    [buildEquipmentOptions, equipments.ssds, formData.ssd]
   );
 
   const findEquipmentConflict = useCallback(
@@ -584,10 +856,27 @@ const ConfigurationTab = ({
       return;
     }
 
-    if (!formRegion || !agenceId || !formData.ref || !formData.type || !formData.position) {
+    if (configurationMode === 'assembled' && !selectedAssembledTerminal) {
+      toast({
+        title: 'Terminal assemblé requis',
+        description: 'Sélectionnez un terminal assemblé disponible ou basculez sur le montage manuel.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const missingFields = [
+      !formRegion ? 'région' : null,
+      !agenceId ? 'agence' : null,
+      !formData.ref?.trim() ? 'référence' : null,
+      !formData.type?.trim() ? 'type' : null,
+      !formData.position?.trim() ? 'position' : null,
+    ].filter(Boolean);
+
+    if (missingFields.length > 0) {
       toast({
         title: 'Champs requis',
-        description: 'Veuillez renseigner la région, l’agence, la référence, le type et la position.',
+        description: `Veuillez renseigner : ${missingFields.join(', ')}.`,
         variant: 'destructive',
       });
       return;
@@ -641,18 +930,23 @@ const ConfigurationTab = ({
       ecran_reference: formData.ecran || null,
       afficheur_reference: formData.afficheur || null,
       buc_reference: formData.buc || null,
-      carrosserie_reference: formData.carrosserie || null,
       alimentation_reference: formData.alimentation || null,
+      bouton_marche_arret_reference: formData.boutonMarcheArret || null,
+      afficheur_terminal_reference: formData.afficheurTerminal || null,
+      circuit_afficheur_client_reference: formData.circuitAfficheurClient || null,
+      circuit_bac_uc_reference: formData.circuitBacUc || null,
+      carte_mere_bac_uc_reference: formData.carteMereBacUc || null,
+      ssd_reference: formData.ssd || null,
       statut: editingTerminal?.statut || 'Actif',
     };
 
     setIsLoading(true);
 
     const query = editingTerminalId
-      ? supabase.from('terminaux').update(payload).eq('id', editingTerminalId)
-      : supabase.from('terminaux').insert(payload);
+      ? supabase.from('terminaux').update(payload).eq('id', editingTerminalId).select('id, reference').single()
+      : supabase.from('terminaux').insert(payload).select('id, reference').single();
 
-    const { error } = await query;
+    const { data: savedTerminal, error } = await query;
 
     if (error) {
       toast({
@@ -662,6 +956,33 @@ const ConfigurationTab = ({
       });
       setIsLoading(false);
       return;
+    }
+
+    if (configurationMode === 'assembled' && selectedAssembledTerminalId) {
+      const { data: assignedTerminal, error: assignmentError } = await supabase
+        .from('terminaux_assembles')
+        .update({
+          statut: 'Assigné',
+          agence_id: agenceId,
+          terminal_id: savedTerminal?.id || editingTerminalId || null,
+          assigned_at: new Date().toISOString(),
+        })
+        .eq('id', selectedAssembledTerminalId)
+        .select('id, statut, agence_id, terminal_id')
+        .single();
+
+      if (assignmentError || !assignedTerminal) {
+        if (!editingTerminalId && savedTerminal?.id) {
+          await supabase.from('terminaux').delete().eq('id', savedTerminal.id);
+        }
+        toast({
+          title: "Erreur d'assignation",
+          description: assignmentError?.message || 'Le terminal assemblé n’a pas pu être marqué comme assigné.',
+          variant: 'destructive',
+        });
+        setIsLoading(false);
+        return;
+      }
     }
 
     // Mise à jour automatique des statuts sous-ensembles
@@ -676,7 +997,18 @@ const ConfigurationTab = ({
         statusOps.push(supabase.from(config.table).update({ statut: 'Disponible' }).eq('reference', oldRef));
       }
     }
-    if (statusOps.length > 0) await Promise.all(statusOps);
+
+    if (statusOps.length > 0) {
+      const statusResults = await Promise.all(statusOps);
+      const statusError = statusResults.find((result) => result.error)?.error;
+      if (statusError) {
+        toast({
+          title: 'Terminal assigné avec avertissement',
+          description: `Le terminal est assigné, mais un statut de sous-ensemble n’a pas été actualisé : ${statusError.message}`,
+          variant: 'destructive',
+        });
+      }
+    }
 
     toast({
       title: editingTerminalId ? 'Terminal mis à jour' : 'Terminal ajouté',
@@ -700,6 +1032,8 @@ const ConfigurationTab = ({
     const agency = agenciesById[String(terminal.agence_id)];
 
     setEditingTerminalId(terminal.id);
+    setConfigurationMode('manual');
+    setSelectedAssembledTerminalId('');
     setAgenceId(String(terminal.agence_id));
     setFormRegion(agency?.region || '');
     setFormSecteur(agency?.secteur || '');
@@ -713,8 +1047,13 @@ const ConfigurationTab = ({
       ecran: terminal.ecran_reference || '',
       afficheur: terminal.afficheur_reference || '',
       buc: terminal.buc_reference || '',
-      carrosserie: terminal.carrosserie_reference || '',
       alimentation: terminal.alimentation_reference || '',
+      boutonMarcheArret: terminal.bouton_marche_arret_reference || '',
+      afficheurTerminal: terminal.afficheur_terminal_reference || '',
+      circuitAfficheurClient: terminal.circuit_afficheur_client_reference || '',
+      circuitBacUc: terminal.circuit_bac_uc_reference || '',
+      carteMereBacUc: terminal.carte_mere_bac_uc_reference || '',
+      ssd: terminal.ssd_reference || '',
     });
 
     setIsEditDialogOpen(true);
@@ -743,6 +1082,11 @@ const ConfigurationTab = ({
       return;
     }
 
+    await supabase
+      .from('terminaux_assembles')
+      .update({ statut: 'Disponible', agence_id: null, terminal_id: null, assigned_at: null })
+      .eq('terminal_id', terminal.id);
+
     toast({
       title: 'Terminal supprimé',
       description: `Le terminal ${terminal.reference} a été supprimé du parc.`,
@@ -755,6 +1099,193 @@ const ConfigurationTab = ({
 
     await loadData();
     setIsLoading(false);
+  };
+
+  const downloadAssembledTerminalTemplate = () => {
+    downloadCsvFile('modele_terminaux_assembles.csv', [ASSEMBLED_TERMINAL_HEADERS]);
+  };
+
+  const exportAssembledTerminals = () => {
+    const headers = [...ASSEMBLED_TERMINAL_HEADERS, 'statut', 'agence_id', 'terminal_id'];
+    const rows = assembledTerminals.map((terminal) =>
+      [
+        ...ASSEMBLED_TERMINAL_FIELD_CONFIG.map((field) => terminal[field.dbKey] ?? ''),
+        terminal.statut ?? '',
+        terminal.agence_id ?? '',
+        terminal.terminal_id ?? '',
+      ]
+    );
+    downloadCsvFile('stock_terminaux_assembles.csv', [headers, ...rows]);
+  };
+
+  const handleAssembledTerminalImport = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    if (!canManage) {
+      showReadOnlyToast();
+      event.target.value = '';
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const spreadsheetRows = await readSpreadsheetRows(file);
+      if (spreadsheetRows.length < 2) {
+        throw new Error('Le fichier doit contenir une ligne d’en-têtes et au moins un terminal.');
+      }
+
+      const [headerRow, ...dataRows] = spreadsheetRows;
+      const normalizedHeaders = headerRow.map(normalizeCsvHeader);
+      const missingHeaders = ASSEMBLED_TERMINAL_FIELD_CONFIG
+        .filter((field) => findCsvFieldIndex(normalizedHeaders, field) < 0)
+        .map((field) => field.header);
+      if (missingHeaders.length > 0) {
+        throw new Error(`En-tête(s) manquant(s) : ${missingHeaders.join(', ')}.`);
+      }
+
+      const rows = dataRows
+        .map((values) => {
+          return ASSEMBLED_TERMINAL_FIELD_CONFIG.reduce((accumulator, field) => {
+            accumulator[field.dbKey] = getCsvFieldValue(values, normalizedHeaders, field);
+            return accumulator;
+          }, {
+            type_terminal: getCsvFieldValue(values, normalizedHeaders, {
+              header: 'TYPE TERMINAL',
+              aliases: ['type_terminal', 'type terminal', 'type'],
+            }),
+            statut: getCsvFieldValue(values, normalizedHeaders, {
+              header: 'STATUT',
+              aliases: ['statut'],
+            }),
+          });
+        })
+        .filter((row) => row.reference);
+
+      if (rows.length === 0) {
+        throw new Error('Aucun terminal assemblé exploitable dans le fichier.');
+      }
+
+      const payloadByReference = new Map(rows.map((row) => [normalizeText(row.reference), {
+        reference: row.reference,
+        type_terminal: row.type_terminal || '2020',
+        mac_address: row.mac_address || null,
+        identifiant: row.identifiant || null,
+        numero_secu: row.numero_secu || null,
+        commentaire: row.commentaire || null,
+        statut: normalizeText(row.statut) === 'assigne' ? 'Assigné' : 'Disponible',
+        ...EQUIPMENT_FIELD_CONFIG.reduce((accumulator, config) => {
+          accumulator[config.terminalKey] = row[config.terminalKey] || null;
+          return accumulator;
+        }, {}),
+      }]));
+      const payload = [...payloadByReference.values()];
+
+      const equipmentStockResults = await Promise.all(
+        ASSEMBLED_EQUIPMENT_FIELD_CONFIG.map(async (field) => {
+          const equipmentConfig = EQUIPMENT_FIELD_CONFIG.find((config) => config.terminalKey === field.dbKey);
+          const references = [...new Set(payload.map((terminal) => terminal[field.dbKey]).filter(Boolean))];
+          if (!equipmentConfig || references.length === 0) return { error: null };
+
+          return supabase.from(equipmentConfig.table).upsert(
+            references.map((reference) => ({
+              reference,
+              modele: 'Terminal assemblé',
+              marque: 'Non renseignée',
+              statut: 'En service',
+              description: 'Sous-ensemble importé avec un terminal assemblé',
+            })),
+            { onConflict: 'reference', ignoreDuplicates: true }
+          );
+        })
+      );
+      const equipmentStockError = equipmentStockResults.find((result) => result.error)?.error;
+      if (equipmentStockError) {
+        throw new Error(`Synchronisation du stock des sous-ensembles impossible : ${equipmentStockError.message}`);
+      }
+
+      const { error } = await supabase
+        .from('terminaux_assembles')
+        .upsert(payload, { onConflict: 'reference' });
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: 'Terminaux assemblés importés',
+        description: `${payload.length} terminal(aux) ajouté(s) ou mis à jour avec les ${ASSEMBLED_TERMINAL_FIELD_CONFIG.length} champs du modèle.`,
+        className: 'bg-green-500 text-white',
+      });
+
+      await loadData();
+    } catch (error) {
+      toast({
+        title: 'Erreur import terminaux assemblés',
+        description: error.message || 'Impossible de lire le fichier CSV.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+      event.target.value = '';
+    }
+  };
+
+  const handleReleaseAssembledTerminal = async (terminal) => {
+    if (!canManage) {
+      showReadOnlyToast();
+      return;
+    }
+
+    const { error } = await supabase
+      .from('terminaux_assembles')
+      .update({ statut: 'Disponible', agence_id: null, terminal_id: null, assigned_at: null })
+      .eq('id', terminal.id);
+
+    if (error) {
+      toast({
+        title: 'Erreur de libération',
+        description: error.message,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    await loadData();
+  };
+
+  const handleDeleteAssembledTerminal = async (terminal) => {
+    if (!canManage) {
+      showReadOnlyToast();
+      return;
+    }
+
+    if (normalizeText(terminal.statut) === 'assigne') {
+      toast({
+        title: 'Terminal assemblé assigné',
+        description: 'Libérez le terminal assemblé avant de le supprimer du stock.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!window.confirm(`Supprimer le terminal assemblé ${terminal.reference} du stock ?`)) {
+      return;
+    }
+
+    const { error } = await supabase.from('terminaux_assembles').delete().eq('id', terminal.id);
+    if (error) {
+      toast({
+        title: 'Erreur de suppression',
+        description: error.message,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    await loadData();
   };
 
   const filteredAgencesForPark = useMemo(
@@ -838,6 +1369,14 @@ const ConfigurationTab = ({
             terminal.lecteur_reference,
             terminal.ecran_reference,
             terminal.afficheur_reference,
+            terminal.buc_reference,
+            terminal.alimentation_reference,
+            terminal.bouton_marche_arret_reference,
+            terminal.afficheur_terminal_reference,
+            terminal.circuit_afficheur_client_reference,
+            terminal.circuit_bac_uc_reference,
+            terminal.carte_mere_bac_uc_reference,
+            terminal.ssd_reference,
             terminal.statut,
           ].some((value) => normalizeText(value).includes(normalizedSearch))
       );
@@ -910,6 +1449,7 @@ const ConfigurationTab = ({
                   value={agenceId}
                   onSelect={(value) => {
                     setAgenceId(value);
+                    setFormData((previousState) => ({ ...previousState, position: '' }));
                     const nextAgency = agenciesById[String(value)];
                     if (nextAgency?.region) {
                       setFormRegion(nextAgency.region);
@@ -925,6 +1465,75 @@ const ConfigurationTab = ({
                 />
               </div>
             )}
+
+            <div className="space-y-3 rounded-xl border border-primary/15 bg-white/80 p-3 md:col-span-4">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                <div className="space-y-1">
+                  <Label>Mode de configuration</Label>
+                  <p className="text-xs text-slate-500">
+                    Assignez un terminal déjà assemblé ou composez manuellement ses sous-ensembles.
+                  </p>
+                </div>
+                <div className="grid gap-2 sm:grid-cols-2 lg:min-w-[520px]">
+                  <Button
+                    type="button"
+                    variant={configurationMode === 'assembled' ? 'default' : 'outline'}
+                    onClick={() => setConfigurationMode('assembled')}
+                    disabled={isLoading || Boolean(editingTerminalId)}
+                    className="gap-2"
+                  >
+                    <PackageCheck className="h-4 w-4" />
+                    Assigner un terminal assemblé
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={configurationMode === 'manual' ? 'default' : 'outline'}
+                    onClick={() => {
+                      setConfigurationMode('manual');
+                      setSelectedAssembledTerminalId('');
+                    }}
+                    disabled={isLoading || Boolean(editingTerminalId)}
+                    className="gap-2"
+                  >
+                    Assembler un terminal
+                  </Button>
+                </div>
+              </div>
+
+              {configurationMode === 'assembled' ? (
+                <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+                  <div className="space-y-2">
+                    <Label>Terminal assemblé disponible</Label>
+                    <Combobox
+                      options={availableAssembledTerminalOptions}
+                      value={selectedAssembledTerminalId}
+                      onSelect={setSelectedAssembledTerminalId}
+                      placeholder="Choisir un terminal assemblé"
+                      searchPlaceholder="Référence, type, IP..."
+                      emptyText="Aucun terminal assemblé disponible."
+                      disabled={isLoading || Boolean(editingTerminalId)}
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={downloadAssembledTerminalTemplate}
+                    className="gap-2"
+                  >
+                    <Download className="h-4 w-4" />
+                    Modèle CSV
+                  </Button>
+                </div>
+              ) : null}
+
+              {configurationMode === 'assembled' && selectedAssembledTerminal ? (
+                <div className="rounded-lg border border-blue-100 bg-blue-50/70 px-3 py-2 text-xs text-slate-600">
+                  Le terminal {selectedAssembledTerminal.reference} préremplit l’ID_TRM et les sous-ensembles.
+                  La prochaine position libre est proposée automatiquement. L’adresse IP peut être renseignée si elle est connue.
+                </div>
+              ) : null}
+            </div>
+
             <div className="space-y-2">
               <Label>Type de terminal</Label>
               <Combobox
@@ -947,7 +1556,7 @@ const ConfigurationTab = ({
                 value={formData.ref}
                 onChange={(event) => setFormData((previousState) => ({ ...previousState, ref: event.target.value }))}
                 placeholder="Ex: TERM-001"
-                disabled={isLoading}
+                disabled={isLoading || configurationMode === 'assembled'}
               />
             </div>
             <div className="space-y-2">
@@ -962,7 +1571,7 @@ const ConfigurationTab = ({
               />
             </div>
             <div className="space-y-2">
-              <Label>Adresse IP</Label>
+              <Label>Adresse IP <span className="font-normal text-muted-foreground">(facultative)</span></Label>
               <Input
                 value={formData.ip}
                 onChange={(event) => setFormData((previousState) => ({ ...previousState, ip: event.target.value }))}
@@ -1034,18 +1643,6 @@ const ConfigurationTab = ({
               />
             </div>
             <div className="space-y-2">
-              <Label>Carrosserie</Label>
-              <Combobox
-                options={carrosseriesOptions}
-                value={formData.carrosserie}
-                onSelect={(value) => setFormData((previousState) => ({ ...previousState, carrosserie: value }))}
-                placeholder="Carrosserie"
-                searchPlaceholder="Rechercher une carrosserie..."
-                emptyText="Aucune carrosserie disponible."
-                disabled={isLoading}
-              />
-            </div>
-            <div className="space-y-2">
               <Label>Alimentation</Label>
               <Combobox
                 options={alimentationsOptions}
@@ -1054,6 +1651,78 @@ const ConfigurationTab = ({
                 placeholder="Alimentation"
                 searchPlaceholder="Rechercher une alimentation..."
                 emptyText="Aucune alimentation disponible."
+                disabled={isLoading}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Bouton marche/arrêt</Label>
+              <Combobox
+                options={boutonsMarcheArretOptions}
+                value={formData.boutonMarcheArret}
+                onSelect={(value) => setFormData((previousState) => ({ ...previousState, boutonMarcheArret: value }))}
+                placeholder="Bouton marche/arrêt"
+                searchPlaceholder="Rechercher un bouton..."
+                emptyText="Aucun bouton disponible."
+                disabled={isLoading}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Afficheur</Label>
+              <Combobox
+                options={afficheursTerminalOptions}
+                value={formData.afficheurTerminal}
+                onSelect={(value) => setFormData((previousState) => ({ ...previousState, afficheurTerminal: value }))}
+                placeholder="Afficheur"
+                searchPlaceholder="Rechercher un afficheur..."
+                emptyText="Aucun afficheur disponible."
+                disabled={isLoading}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Circuit afficheur client</Label>
+              <Combobox
+                options={circuitsAfficheurClientOptions}
+                value={formData.circuitAfficheurClient}
+                onSelect={(value) => setFormData((previousState) => ({ ...previousState, circuitAfficheurClient: value }))}
+                placeholder="Circuit afficheur client"
+                searchPlaceholder="Rechercher un circuit..."
+                emptyText="Aucun circuit disponible."
+                disabled={isLoading}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Circuit BAC UC</Label>
+              <Combobox
+                options={circuitsBacUcOptions}
+                value={formData.circuitBacUc}
+                onSelect={(value) => setFormData((previousState) => ({ ...previousState, circuitBacUc: value }))}
+                placeholder="Circuit BAC UC"
+                searchPlaceholder="Rechercher un circuit..."
+                emptyText="Aucun circuit disponible."
+                disabled={isLoading}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Carte mère BAC UC</Label>
+              <Combobox
+                options={cartesMeresBacUcOptions}
+                value={formData.carteMereBacUc}
+                onSelect={(value) => setFormData((previousState) => ({ ...previousState, carteMereBacUc: value }))}
+                placeholder="Carte mère BAC UC"
+                searchPlaceholder="Rechercher une carte mère..."
+                emptyText="Aucune carte mère disponible."
+                disabled={isLoading}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>SSD</Label>
+              <Combobox
+                options={ssdsOptions}
+                value={formData.ssd}
+                onSelect={(value) => setFormData((previousState) => ({ ...previousState, ssd: value }))}
+                placeholder="SSD"
+                searchPlaceholder="Rechercher un SSD..."
+                emptyText="Aucun SSD disponible."
                 disabled={isLoading}
               />
             </div>
@@ -1102,7 +1771,11 @@ const ConfigurationTab = ({
           <div className="flex flex-wrap gap-3">
             <Button
               onClick={handleSaveTerminal}
-              disabled={!agenceId || !formData.ref || isLoading || !canManage || selectedAgencyHasReachedCapacity || Boolean(editingTerminalId)}
+              disabled={
+                isLoading ||
+                !canManage ||
+                Boolean(editingTerminalId)
+              }
               className="bg-primary hover:bg-primary/90"
             >
               Sauvegarder le terminal
@@ -1111,6 +1784,179 @@ const ConfigurationTab = ({
               Réinitialiser
             </Button>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card className="relative overflow-hidden shadow-lg">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-emerald-500 via-primary/80 to-primary/35" />
+        <CardHeader className="relative space-y-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <PackageCheck className="h-5 w-5 text-primary" />
+                Stock de terminaux assemblés
+              </CardTitle>
+              <CardDescription>
+                Importez les terminaux déjà montés et suivez leur disponibilité avant affectation en agence.
+              </CardDescription>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <input
+                ref={assembledImportInputRef}
+                type="file"
+                accept=".csv,.xlsx,.xls,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                className="hidden"
+                onChange={handleAssembledTerminalImport}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={downloadAssembledTerminalTemplate}
+                className="gap-2"
+              >
+                <Download className="h-4 w-4" />
+                Modèle
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => assembledImportInputRef.current?.click()}
+                disabled={!canManage || isLoading}
+                className="gap-2"
+              >
+                <FileUp className="h-4 w-4" />
+                Importer
+              </Button>
+              <Button type="button" variant="outline" onClick={exportAssembledTerminals} className="gap-2">
+                <Download className="h-4 w-4" />
+                Exporter
+              </Button>
+            </div>
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-3">
+            <div className="rounded-xl border border-blue-100 bg-white px-4 py-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Total</p>
+              <p className="text-2xl font-bold text-slate-900">{assembledTerminals.length}</p>
+            </div>
+            <div className="rounded-xl border border-emerald-100 bg-white px-4 py-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Disponibles</p>
+              <p className="text-2xl font-bold text-emerald-700">
+                {assembledTerminals.filter((terminal) => normalizeText(terminal.statut) !== 'assigne').length}
+              </p>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-white px-4 py-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Assignés</p>
+              <p className="text-2xl font-bold text-primary">
+                {assembledTerminals.filter((terminal) => normalizeText(terminal.statut) === 'assigne').length}
+              </p>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Table containerClassName="rounded-xl shadow-none">
+            <TableHeader>
+              <TableRow>
+                <TableHead>ID_TRM</TableHead>
+                <TableHead>MAC adress</TableHead>
+                <TableHead>Identifiant</TableHead>
+                <TableHead>N° secu</TableHead>
+                <TableHead>Sous-ensembles</TableHead>
+                <TableHead>Statut</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {assembledTerminals.slice(0, 8).map((terminal) => {
+                const assignedAgency = agenciesById[String(terminal.agence_id)];
+                const filledPartsCount = ASSEMBLED_EQUIPMENT_FIELD_CONFIG.filter((field) => terminal[field.dbKey]).length;
+                const isAssigned = normalizeText(terminal.statut) === 'assigne';
+                const isExpanded = String(expandedAssembledTerminalId) === String(terminal.id);
+                return (
+                  <React.Fragment key={terminal.id}>
+                    <TableRow>
+                      <TableCell className="font-semibold">{terminal.reference}</TableCell>
+                      <TableCell>{terminal.mac_address || 'N/A'}</TableCell>
+                      <TableCell>{terminal.identifiant || 'N/A'}</TableCell>
+                      <TableCell>{terminal.numero_secu || 'N/A'}</TableCell>
+                      <TableCell>
+                        <span className="text-sm text-slate-600">
+                          {filledPartsCount}/{ASSEMBLED_EQUIPMENT_FIELD_CONFIG.length} référencé(s)
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={isAssigned ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-emerald-200 bg-emerald-50 text-emerald-700'}>
+                          {isAssigned ? `Assigné${assignedAgency?.nom ? ` à ${assignedAgency.nom}` : ''}` : 'Disponible'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => setExpandedAssembledTerminalId(isExpanded ? null : terminal.id)}
+                            title={isExpanded ? 'Masquer les sous-ensembles' : 'Afficher tous les sous-ensembles'}
+                          >
+                            {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                          </Button>
+                          {isAssigned ? (
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleReleaseAssembledTerminal(terminal)}
+                              disabled={!canManage}
+                            >
+                              Libérer
+                            </Button>
+                          ) : null}
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => handleDeleteAssembledTerminal(terminal)}
+                            disabled={!canManage || isAssigned}
+                            title="Supprimer du stock"
+                          >
+                            <Trash2 className="h-4 w-4 text-red-500" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                    {isExpanded ? (
+                      <TableRow className="bg-slate-50/70 hover:bg-slate-50/70">
+                        <TableCell colSpan={7} className="px-5 py-4">
+                          <div className="grid gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                            {ASSEMBLED_EQUIPMENT_FIELD_CONFIG.map((field) => (
+                              <div key={field.dbKey} className="min-w-0">
+                                <p className="text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-slate-500">
+                                  {field.header}
+                                </p>
+                                <p className="truncate text-sm font-medium text-slate-900" title={terminal[field.dbKey] || 'Non renseigné'}>
+                                  {terminal[field.dbKey] || 'Non renseigné'}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ) : null}
+                  </React.Fragment>
+                );
+              })}
+              {assembledTerminals.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="py-8 text-center text-muted-foreground">
+                    Aucun terminal assemblé importé pour le moment.
+                  </TableCell>
+                </TableRow>
+              ) : null}
+            </TableBody>
+            {assembledTerminals.length > 8 ? (
+              <TableCaption>{assembledTerminals.length - 8} terminal(aux) supplémentaire(s) disponible(s) dans l’export.</TableCaption>
+            ) : null}
+          </Table>
         </CardContent>
       </Card>
 
@@ -1268,8 +2114,13 @@ const ConfigurationTab = ({
                   <TableHead>Écran</TableHead>
                   <TableHead>Afficheur client</TableHead>
                   <TableHead>BUC</TableHead>
-                  <TableHead>Carrosserie</TableHead>
                   <TableHead>Alimentation</TableHead>
+                  <TableHead>Bouton marche/arrêt</TableHead>
+                  <TableHead>Afficheur</TableHead>
+                  <TableHead>Circuit afficheur client</TableHead>
+                  <TableHead>Circuit BAC UC</TableHead>
+                  <TableHead>Carte mère BAC UC</TableHead>
+                  <TableHead>SSD</TableHead>
                   <TableHead>Statut</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -1293,8 +2144,13 @@ const ConfigurationTab = ({
                     <TableCell>{terminal.ecran_reference || 'Non affecté'}</TableCell>
                     <TableCell>{terminal.afficheur_reference || 'Non affecté'}</TableCell>
                     <TableCell>{terminal.buc_reference || 'Non affecté'}</TableCell>
-                    <TableCell>{terminal.carrosserie_reference || 'Non affectée'}</TableCell>
                     <TableCell>{terminal.alimentation_reference || 'Non affectée'}</TableCell>
+                    <TableCell>{terminal.bouton_marche_arret_reference || 'Non affecté'}</TableCell>
+                    <TableCell>{terminal.afficheur_terminal_reference || 'Non affecté'}</TableCell>
+                    <TableCell>{terminal.circuit_afficheur_client_reference || 'Non affecté'}</TableCell>
+                    <TableCell>{terminal.circuit_bac_uc_reference || 'Non affecté'}</TableCell>
+                    <TableCell>{terminal.carte_mere_bac_uc_reference || 'Non affectée'}</TableCell>
+                    <TableCell>{terminal.ssd_reference || 'Non affecté'}</TableCell>
                     <TableCell>
                       <Badge variant="outline" className={getTerminalStatusBadgeClass(terminal.statut)}>
                         {terminal.statut || 'N/A'}
@@ -1396,7 +2252,7 @@ const ConfigurationTab = ({
               <Input value={formData.position} onChange={(e) => setFormData((s) => ({ ...s, position: e.target.value }))} placeholder="Ex: Guichet 1" disabled={isLoading} />
             </div>
             <div className="space-y-2">
-              <Label>Adresse IP</Label>
+              <Label>Adresse IP <span className="font-normal text-muted-foreground">(facultative)</span></Label>
               <Input
                 value={formData.ip}
                 onChange={(event) => setFormData((s) => ({ ...s, ip: event.target.value }))}
@@ -1425,12 +2281,32 @@ const ConfigurationTab = ({
               <Combobox options={bucsOptions} value={formData.buc} onSelect={(v) => setFormData((s) => ({ ...s, buc: v }))} placeholder="BUC" searchPlaceholder="Rechercher..." emptyText="Aucun disponible." disabled={isLoading} />
             </div>
             <div className="space-y-2">
-              <Label>Carrosserie</Label>
-              <Combobox options={carrosseriesOptions} value={formData.carrosserie} onSelect={(v) => setFormData((s) => ({ ...s, carrosserie: v }))} placeholder="Carrosserie" searchPlaceholder="Rechercher..." emptyText="Aucune disponible." disabled={isLoading} />
-            </div>
-            <div className="space-y-2">
               <Label>Alimentation</Label>
               <Combobox options={alimentationsOptions} value={formData.alimentation} onSelect={(v) => setFormData((s) => ({ ...s, alimentation: v }))} placeholder="Alimentation" searchPlaceholder="Rechercher..." emptyText="Aucune disponible." disabled={isLoading} />
+            </div>
+            <div className="space-y-2">
+              <Label>Bouton marche/arrêt</Label>
+              <Combobox options={boutonsMarcheArretOptions} value={formData.boutonMarcheArret} onSelect={(v) => setFormData((s) => ({ ...s, boutonMarcheArret: v }))} placeholder="Bouton marche/arrêt" searchPlaceholder="Rechercher..." emptyText="Aucun disponible." disabled={isLoading} />
+            </div>
+            <div className="space-y-2">
+              <Label>Afficheur</Label>
+              <Combobox options={afficheursTerminalOptions} value={formData.afficheurTerminal} onSelect={(v) => setFormData((s) => ({ ...s, afficheurTerminal: v }))} placeholder="Afficheur" searchPlaceholder="Rechercher..." emptyText="Aucun disponible." disabled={isLoading} />
+            </div>
+            <div className="space-y-2">
+              <Label>Circuit afficheur client</Label>
+              <Combobox options={circuitsAfficheurClientOptions} value={formData.circuitAfficheurClient} onSelect={(v) => setFormData((s) => ({ ...s, circuitAfficheurClient: v }))} placeholder="Circuit afficheur client" searchPlaceholder="Rechercher..." emptyText="Aucun disponible." disabled={isLoading} />
+            </div>
+            <div className="space-y-2">
+              <Label>Circuit BAC UC</Label>
+              <Combobox options={circuitsBacUcOptions} value={formData.circuitBacUc} onSelect={(v) => setFormData((s) => ({ ...s, circuitBacUc: v }))} placeholder="Circuit BAC UC" searchPlaceholder="Rechercher..." emptyText="Aucun disponible." disabled={isLoading} />
+            </div>
+            <div className="space-y-2">
+              <Label>Carte mère BAC UC</Label>
+              <Combobox options={cartesMeresBacUcOptions} value={formData.carteMereBacUc} onSelect={(v) => setFormData((s) => ({ ...s, carteMereBacUc: v }))} placeholder="Carte mère BAC UC" searchPlaceholder="Rechercher..." emptyText="Aucune disponible." disabled={isLoading} />
+            </div>
+            <div className="space-y-2">
+              <Label>SSD</Label>
+              <Combobox options={ssdsOptions} value={formData.ssd} onSelect={(v) => setFormData((s) => ({ ...s, ssd: v }))} placeholder="SSD" searchPlaceholder="Rechercher..." emptyText="Aucun disponible." disabled={isLoading} />
             </div>
           </div>
 
