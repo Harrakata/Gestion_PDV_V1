@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Combobox } from '@/components/ui/Combobox';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/components/ui/use-toast';
 import {
   AlertTriangle, AlertOctagon, BookOpen, Check, CheckCircle2, ChevronDown, ChevronRight, Download, Edit, FileUp, HelpCircle,
@@ -625,7 +626,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                     <TableHead>Type terminal</TableHead>
                     <TableHead>Stock</TableHead>
                     <TableHead>Commentaire</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead className="w-[148px] text-center">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -646,16 +647,61 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                           ) : <span className="text-muted-foreground text-xs">Non géré</span>}
                         </TableCell>
                         <TableCell className="max-w-[180px] truncate text-muted-foreground text-sm">{p.commentaire || '—'}</TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-0.5">
-                            <Button variant="ghost" size="icon" title="Aide réparation" className="h-7 w-7 text-primary" onClick={() => openHelp(p)}><HelpCircle className="h-4 w-4" /></Button>
-                            {canManage && (
-                              <>
-                                <Button variant="ghost" size="icon" className="h-7 w-7 text-blue-500" onClick={() => { setPieceForm({ ...DEFAULT_PIECE, ...p, prix_unitaire_ht: p.prix_unitaire_ht ?? 0 }); setEditingPiece(p); resetPhotoState(); setIsPieceOpen(true); }}><Edit className="h-4 w-4" /></Button>
-                                <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => deletePiece(p.id)}><Trash2 className="h-4 w-4" /></Button>
-                              </>
-                            )}
-                          </div>
+                        <TableCell className="w-[148px] text-center">
+                          <TooltipProvider delayDuration={200}>
+                            <div className="mx-auto inline-flex h-10 items-center gap-1 rounded-lg border border-border/80 bg-background p-1 shadow-sm">
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    aria-label={`Consulter l'aide de réparation de ${p.nom}`}
+                                    className="h-8 w-8 rounded-md text-primary hover:bg-primary/10 hover:text-primary"
+                                    onClick={() => openHelp(p)}
+                                  >
+                                    <HelpCircle className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent side="top">Aide à la réparation</TooltipContent>
+                              </Tooltip>
+                              {canManage && (
+                                <>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        aria-label={`Modifier ${p.nom}`}
+                                        className="h-8 w-8 rounded-md text-primary hover:bg-primary/10 hover:text-primary"
+                                        onClick={() => { setPieceForm({ ...DEFAULT_PIECE, ...p, prix_unitaire_ht: p.prix_unitaire_ht ?? 0 }); setEditingPiece(p); resetPhotoState(); setIsPieceOpen(true); }}
+                                      >
+                                        <Edit className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top">Modifier la pièce</TooltipContent>
+                                  </Tooltip>
+                                  <span className="mx-0.5 h-5 w-px bg-border" aria-hidden="true" />
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        aria-label={`Supprimer ${p.nom}`}
+                                        className="h-8 w-8 rounded-md text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                        onClick={() => deletePiece(p.id)}
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top">Supprimer la pièce</TooltipContent>
+                                  </Tooltip>
+                                </>
+                              )}
+                            </div>
+                          </TooltipProvider>
                         </TableCell>
                       </TableRow>
                     );

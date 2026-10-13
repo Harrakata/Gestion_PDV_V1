@@ -37,6 +37,8 @@ const Button = React.forwardRef(({ className, variant, size, asChild = false, ..
 	return (
 		<Comp
 			className={cn(buttonVariants({ variant, size, className }))}
+			data-ui-button-size={size}
+			data-ui-button-variant={variant}
 			ref={ref}
 			{...props}
 		/>

@@ -49,17 +49,24 @@ const TableRow = React.forwardRef(({ className, ...props }, ref) => (
 ));
 TableRow.displayName = 'TableRow';
 
-const TableHead = React.forwardRef(({ className, ...props }, ref) => (
-  <th
-    ref={ref}
-    className={cn(
-      'h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0',
-      'text-[0.78rem] uppercase tracking-[0.08em]',
-      className
-    )}
-    {...props}
-  />
-));
+const TableHead = React.forwardRef(({ className, children, ...props }, ref) => {
+  const isActionsColumn = typeof children === 'string' && children.trim().toLowerCase() === 'actions';
+
+  return (
+    <th
+      ref={ref}
+      data-table-actions={isActionsColumn ? '' : undefined}
+      className={cn(
+        'h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0',
+        'text-[0.78rem] uppercase tracking-[0.08em]',
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </th>
+  );
+});
 TableHead.displayName = 'TableHead';
 
 const TableCell = React.forwardRef(({ className, ...props }, ref) => (

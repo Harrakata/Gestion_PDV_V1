@@ -110,6 +110,26 @@ export const ASSISTANT_GUIDES = [
     steps: ["Identifier la référence du terminal et le sous-ensemble concerné.", "Dans Maintenance Terminaux, consulter Réparation puis le sous-onglet disponible : Atelier, Stock Défectueux, Pièces détachées ou Devis pièces.", "Consulter la description, la procédure et les pièces associées au dossier.", "Après l'opération terrain, faire mettre à jour le dossier et le statut par la personne habilitée, puis vérifier le suivi maintenance."],
   },
   {
+    id: 'terminal-assemble', title: 'Affecter un terminal déjà assemblé', keywords: 'terminal assemble stock assigner affecter agence configuration mac adresse ip sous ensemble', tabs: ['maintenance-terminaux'],
+    text: "Un terminal assemblé regroupe une référence terminal et les références de ses sous-ensembles. Disponible signifie qu'il peut être affecté ; Assigné signifie qu'il est déjà rattaché à un terminal ou une agence. Les sous-ensembles montés restent identifiables dans le stock des sous-ensembles. Une affectation ne doit pas créer une seconde référence pour le même équipement.",
+    steps: ["Dans Maintenance Terminaux, ouvrir Configuration puis Configuration Terminaux.", "Sélectionner la région, le secteur et l'agence ; vérifier la capacité restante de l'agence.", "Choisir Assigner un terminal assemblé, puis sélectionner une référence marquée Disponible.", "Contrôler le type de terminal, la position au guichet et l'adresse IP demandée.", "Enregistrer et vérifier que le terminal passe à Assigné et que ses sous-ensembles sont rattachés au terminal configuré."],
+  },
+  {
+    id: 'diagnostic-guide', title: 'Utiliser le diagnostic guidé', keywords: 'diagnostic guide symptome controle action documentation panne piece procedure test', tabs: ['maintenance-terminaux'],
+    text: "Le diagnostic guidé s'appuie sur le modèle du sous-ensemble, les pannes connues, les contrôles configurés et la documentation des pièces. Il aide à ordonner les vérifications ; il ne remplace pas la validation du technicien. Une panne déclarée est un signal initial, pas un diagnostic confirmé.",
+    steps: ["Dans Réparation, sélectionner une seule ligne de sous-ensemble à traiter.", "Ouvrir Diagnostiquer et choisir le symptôme correspondant ; la panne déclarée est proposée en priorité lorsqu'elle est reconnue.", "Effectuer les contrôles dans l'ordre et cocher uniquement ceux réellement réalisés.", "Consulter Documentation pour la description de la pièce et la procédure disponible.", "Indiquer Nettoyer ou Remplacer pour les pièces traitées, puis passer le sous-ensemble en test lorsque les contrôles requis sont terminés."],
+  },
+  {
+    id: 'stocks-maintenance', title: 'Comprendre les stocks de maintenance', keywords: 'stock maintenance sous ensemble piece disponible assigne defectueux repare doublon mouvement quantite seuil', tabs: ['maintenance-terminaux'],
+    text: "Les stocks de maintenance distinguent le matériel disponible, assigné, défectueux, en réparation et réparé. Une même référence physique ne doit apparaître qu'une fois parmi les dossiers actifs. Le catalogue décrit les pièces ; le stock indique leurs quantités et mouvements. Un sous-ensemble intégré à un terminal assemblé reste suivi par sa référence, mais il n'est pas disponible pour une autre affectation.",
+    steps: ["Rechercher d'abord la référence exacte dans Gestion de sous-ensembles et dans Stock Défectueux.", "Vérifier le statut, le terminal associé, l'agence de provenance et l'intervention active avant toute création.", "Pour une pièce détachée, contrôler le stock disponible et le seuil d'alerte avant de confirmer un remplacement.", "Après réparation ou test, mettre à jour le dossier existant au lieu d'ajouter une seconde ligne.", "Contrôler l'historique de mouvement lorsque la quantité ou l'état ne correspond pas au matériel physique."],
+  },
+  {
+    id: 'rapports-export', title: 'Préparer un rapport ou un export', keywords: 'rapport export word pdf imprimer csv filtre periode donnees document', tabs: ['rapports', 'centre-operationnel', 'activites-et-audit'],
+    text: "Un rapport reprend le périmètre, la période et les filtres actifs au moment de sa génération. Avant un export Word, PDF, impression ou CSV, vérifier le compteur de lignes et les filtres visibles. Un export vide ou incomplet provient souvent d'une période, d'un périmètre ou d'un droit de lecture trop restrictif.",
+    steps: ["Choisir la période et le périmètre géographique attendus.", "Réinitialiser les filtres inutiles, puis appliquer seulement ceux nécessaires.", "Comparer le compteur affiché avec le volume attendu et ouvrir quelques lignes de contrôle.", "Lancer l'export dans le format adapté : CSV pour retraiter les données, Word ou PDF pour un document figé.", "Conserver la période et les filtres avec le fichier afin de rendre le résultat vérifiable."],
+  },
+  {
     id: 'cartographie', title: 'Lire la cartographie opérationnelle', keywords: 'carte cartographie localisation gps coordonnees position agence localisee', tabs: ['centre-operationnel', 'agences'],
     text: "La cartographie présente les agences et leur suivi opérationnel. Une localisation absente ou à préciser n'indique pas que l'agence est inactive.",
     steps: ["Ouvrir Centre d'actions opérationnel puis Cartographie.", "Rechercher l'agence par nom, code ou adresse ; ajuster les filtres de région et d'état.", "Consulter les informations de l'agence et les signaux de maintenance associés.", "Pour une position incorrecte, faire vérifier les coordonnées de la fiche Agence. Ne pas utiliser la position de votre appareil si vous n'êtes pas sur le site concerné."],
@@ -138,9 +158,9 @@ export const ASSISTANT_GUIDES = [
 export const ASSISTANT_GUIDE_CATEGORIES = [
   { id: 'demarrer', title: 'Premiers pas', guides: ['navigation', 'connexion', 'droits', 'recherche', 'lexique'] },
   { id: 'reseau', title: 'Agences et personnel', guides: ['agences', 'creer-agence', 'regions', 'guichetieres', 'affectation', 'mobi'] },
-  { id: 'materiel', title: 'Terminaux et maintenance', guides: ['terminaux', 'maintenance', 'reparation', 'prediction', 'cartographie', 'tickets'] },
+  { id: 'materiel', title: 'Terminaux et maintenance', guides: ['terminaux', 'maintenance', 'terminal-assemble', 'diagnostic-guide', 'stocks-maintenance', 'reparation', 'prediction', 'cartographie', 'tickets'] },
   { id: 'caisse', title: 'Caisse et objectifs', guides: ['salaire', 'prepose-inconnu', 'objectifs', 'paiement'] },
-  { id: 'quotidien', title: 'Suivi quotidien', guides: ['planning', 'csv', 'offline', 'notifications', 'audit'] },
+  { id: 'quotidien', title: 'Suivi quotidien', guides: ['planning', 'csv', 'rapports-export', 'offline', 'notifications', 'audit'] },
 ];
 
 const STOP_WORDS = new Set('les des une pour dans avec quels quelles quel quelle comment est sont mon mes sur aux du de le la un et ou en je il que qui a au ce cet cette ces faire peux peut moi vous nous'.split(' '));
@@ -179,7 +199,7 @@ export function assistantSuggestions(currentTab = '') {
 
 export function guideReply(query, currentTab = '', menus = []) {
   if (/^(bonjour|salut|bonsoir|merci|aide|help)[ !?.]*$/.test(normalizeAssistantText(query))) {
-    return { mode: 'guide', answer: "Bonjour ! Je peux vous aider à retrouver un menu, créer une agence, affecter une guichetière, comprendre un statut, préparer un import ou analyser un écart de caisse. Quel sujet souhaitez-vous aborder ?", sources: [] };
+    return { mode: 'guide', answer: "Bonjour ! Sans IA, je peux consulter le guide métier, expliquer la page actuelle, suivre la file de synchronisation locale et vous aider sur les agences, terminaux assemblés, diagnostics, stocks, imports, rapports, pointages ou écarts de caisse. Quel sujet souhaitez-vous aborder ?", sources: [] };
   }
   const guides = searchAssistantGuides(query, currentTab);
   return {

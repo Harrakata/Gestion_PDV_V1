@@ -7,12 +7,14 @@ import {
   isFloatingAssistantVisible,
 } from '@/lib/assistantPreferences';
 import { assistantSpaceFromPath } from '../../../supabase/functions/_shared/assistantAccess.js';
+import { useFeature } from '@/hooks/useFeatureFlags';
 import AssistantPanel from './AssistantPanel';
 
 export default function FloatingAssistant() {
   const location = useLocation();
   const navigate = useNavigate();
   const space = assistantSpaceFromPath(location.pathname);
+  const aiConnectionEnabled = useFeature('assistant_ai_connection');
   const client = useMemo(() => getCurrentSupabaseClient(), [space]);
   const [authUser, setAuthUser] = useState(null);
   const [authResolved, setAuthResolved] = useState(false);
@@ -56,5 +58,6 @@ export default function FloatingAssistant() {
     || (identity && !visible)
   ) return null;
   return <AssistantPanel key={`${space || 'public'}:${identity || 'guest'}`} space={space}
-    currentTab={location.pathname.split('/')[2] || ''} authenticated={Boolean(identity)} request={request} onNavigate={navigate} />;
+    currentTab={location.pathname.split('/')[2] || ''} authenticated={Boolean(identity)} identity={identity}
+    aiConnectionEnabled={aiConnectionEnabled} request={request} onNavigate={navigate} />;
 }

@@ -2093,9 +2093,8 @@ const ConfigurationTab = ({
           </div>
         </CardHeader>
 
-        <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
+        <CardContent className="min-w-0">
+            <Table className="min-w-[2800px] whitespace-nowrap" containerClassName="park-terminals-table-scroll">
               <TableCaption>
                 {filteredParkTerminalRows.length === 0
                   ? 'Aucun terminal ne correspond aux filtres actuels.'
@@ -2184,7 +2183,6 @@ const ConfigurationTab = ({
                 ))}
               </TableBody>
             </Table>
-          </div>
         </CardContent>
       </Card>
     </div>

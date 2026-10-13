@@ -151,11 +151,17 @@ export async function countQueued() {
 
 export async function getQueueSummary() {
   const items = await getQueued();
+  const byType = items.reduce((summary, item) => {
+    const key = String(item.type || 'autre');
+    summary[key] = (summary[key] || 0) + 1;
+    return summary;
+  }, {});
   return {
     count: items.length,
     failed: items.filter((item) => (item.retries || 0) > 0).length,
     oldestCreatedAt: items[0]?.createdAt || null,
     lastError: items.find((item) => item.lastError)?.lastError || null,
+    byType,
   };
 }
 
@@ -182,5 +188,22 @@ export async function getCache(key) {
     return rec ? { data: rec.data, ts: rec.ts } : null;
   } catch {
     return null;
+  }
+}
+
+/** Résumé non sensible des instantanés locaux, destiné aux indicateurs UI. */
+export async function getCacheSummary() {
+  try {
+    const db = await openDB();
+    const t = db.transaction(CACHE_STORE, 'readonly');
+    const all = await reqToPromise(t.objectStore(CACHE_STORE).getAll());
+    const timestamps = (all || []).map((item) => Number(item.ts || 0)).filter(Boolean);
+    return {
+      count: (all || []).length,
+      latestUpdatedAt: timestamps.length ? Math.max(...timestamps) : null,
+      oldestUpdatedAt: timestamps.length ? Math.min(...timestamps) : null,
+    };
+  } catch {
+    return { count: 0, latestUpdatedAt: null, oldestUpdatedAt: null };
   }
 }

@@ -1,35 +1,84 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { ArrowUp, ArrowUpRight, BookOpen, Bot, Loader2, MessageCircle, RefreshCw, Square, Trash2, X } from 'lucide-react';
+import { ArrowLeft, ArrowUp, ArrowUpRight, BookOpen, Bot, Loader2, MessageCircle, RefreshCw, Square, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { assistantGuideReply, assistantSuggestions, guideReply } from '../../../supabase/functions/_shared/assistantKnowledge.js';
+import { ASSISTANT_GUIDES, assistantGuideReply, assistantSuggestions, guideReply, normalizeAssistantText } from '../../../supabase/functions/_shared/assistantKnowledge.js';
+import { getCacheSummary, getQueueSummary } from '@/lib/offlineQueue';
 import AssistantGuideBrowser from './AssistantGuideBrowser';
 import './assistant.css';
 
-export default function AssistantPanel({ space, currentTab, authenticated, request, onNavigate }) {
+const menuCacheKey = (space, identity) => space && identity ? `assistant-menus:${space}:${identity}` : null;
+
+const readCachedMenus = (space, identity) => {
+  const key = menuCacheKey(space, identity);
+  if (!key) return [];
+  try {
+    const parsed = JSON.parse(sessionStorage.getItem(key) || '[]');
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
+const writeCachedMenus = (space, identity, menus) => {
+  const key = menuCacheKey(space, identity);
+  if (!key) return;
+  try { sessionStorage.setItem(key, JSON.stringify(Array.isArray(menus) ? menus : [])); } catch { /* noop */ }
+};
+
+const clearCachedMenus = (space, identity) => {
+  const key = menuCacheKey(space, identity);
+  if (!key) return;
+  try { sessionStorage.removeItem(key); } catch { /* noop */ }
+};
+
+const localDataReply = async (question, currentTab, menus) => {
+  const normalized = normalizeAssistantText(question);
+  const asksForLocalData = /(sans ia|donnees? locales?|cache|synchron|operation.*attente|hors ligne|page actuelle|contexte actuel)/.test(normalized);
+  if (!asksForLocalData) return guideReply(question, currentTab, menus);
+
+  const [queue, cache] = await Promise.all([getQueueSummary(), getCacheSummary()]);
+  const queueTypes = Object.entries(queue.byType || {}).map(([type, count]) => `${type} : ${count}`).join(', ');
+  const cacheDate = cache.latestUpdatedAt ? new Date(cache.latestUpdatedAt).toLocaleString('fr-FR') : 'aucun instantané';
+  const page = String(currentTab || 'page courante').split('-').join(' ');
+  return {
+    mode: 'guide',
+    answer: [
+      'Données disponibles sans IA',
+      `Page actuelle : ${page}.`,
+      `Guide métier : ${ASSISTANT_GUIDES.length} fiches consultables et interrogeables.`,
+      `Synchronisation locale : ${queue.count} opération(s) en attente${queue.failed ? `, dont ${queue.failed} en erreur` : ''}${queueTypes ? ` (${queueTypes})` : ''}.`,
+      `Cache local : ${cache.count} instantané(s), dernière mise à jour : ${cacheDate}.`,
+      'Les états métier en temps réel qui ne sont pas déjà en cache nécessitent une connexion au service concerné.',
+    ].join('\n'),
+    sources: [{ id: 'offline', title: 'Mode hors ligne et synchronisation', path: menus.find((menu) => menu.key === 'activites-et-audit')?.path || null }],
+  };
+};
+
+export default function AssistantPanel({ space, currentTab, authenticated, identity, aiConnectionEnabled = true, request, onNavigate }) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false);
   const [checking, setChecking] = useState(false);
   const [online, setOnline] = useState(() => navigator.onLine);
-  const [capabilities, setCapabilities] = useState({ mode: 'guide', menus: [] });
+  const [capabilities, setCapabilities] = useState(() => ({ mode: 'guide', menus: readCachedMenus(space, identity) }));
   const [notice, setNotice] = useState('');
   const [revision, setRevision] = useState(0);
   const [view, setView] = useState('conversation');
   const pending = useRef(null);
   const scrollRef = useRef(null);
   const inputRef = useRef(null);
-  const effectiveMode = online ? capabilities.mode : 'guide';
+  const effectiveMode = online && aiConnectionEnabled ? capabilities.mode : 'guide';
   const menus = capabilities.menus || [];
   const currentMenu = menus.find((menu) => menu.key === currentTab);
 
   useEffect(() => {
     const connect = () => setOnline(true);
     const disconnect = () => { setOnline(false); pending.current?.abort(); };
-    const rightsChanged = () => { pending.current?.abort(); setMessages([]); setCapabilities({ mode: 'guide', menus: [] }); setRevision((value) => value + 1); };
+    const rightsChanged = () => { pending.current?.abort(); clearCachedMenus(space, identity); setMessages([]); setCapabilities({ mode: 'guide', menus: [] }); setRevision((value) => value + 1); };
     window.addEventListener('online', connect);
     window.addEventListener('offline', disconnect);
     window.addEventListener('app-functionalities-updated', rightsChanged);
@@ -39,14 +88,20 @@ export default function AssistantPanel({ space, currentTab, authenticated, reque
       window.removeEventListener('offline', disconnect);
       window.removeEventListener('app-functionalities-updated', rightsChanged);
     };
-  }, []);
+  }, [identity, space]);
 
   useEffect(() => {
     if (!open) return;
+    if (!aiConnectionEnabled) {
+      pending.current?.abort();
+      setCapabilities((previous) => ({ mode: 'guide', menus: previous.menus }));
+      setNotice('');
+      setChecking(false);
+      return;
+    }
     if (!authenticated || !space || !online) {
-      setCapabilities({ mode: 'guide', menus: [] });
-      setNotice(!online ? 'Hors ligne : guide intégré disponible, sans consultation des états actuels.'
-        : '');
+      setCapabilities((previous) => ({ mode: 'guide', menus: authenticated && space ? previous.menus : [] }));
+      setNotice(!online ? 'Hors ligne : guide, contexte de page et données locales restent disponibles.' : '');
       setChecking(false);
       return;
     }
@@ -56,17 +111,19 @@ export default function AssistantPanel({ space, currentTab, authenticated, reque
     request({ action: 'capabilities', space }, controller.signal).then((result) => {
       if (controller.signal.aborted) return;
       setCapabilities(result);
+      writeCachedMenus(space, identity, result.menus);
       setNotice(result.notice || '');
     }).catch((error) => {
       if (controller.signal.aborted) return;
-      setCapabilities({ mode: 'guide', menus: [] });
-      setNotice([401, 403].includes(error.status) ? error.message : 'IA indisponible. Le guide intégré reste accessible, sans données actuelles.');
-      if ([401, 403].includes(error.status)) setMessages([]);
+      const authorizationError = [401, 403].includes(error.status);
+      setCapabilities((previous) => ({ mode: 'guide', menus: authorizationError ? [] : previous.menus }));
+      setNotice(authorizationError ? error.message : 'IA indisponible. Le guide et les données locales restent accessibles.');
+      if (authorizationError) { clearCachedMenus(space, identity); setMessages([]); }
     }).finally(() => { clearTimeout(timer); if (!controller.signal.aborted) setChecking(false); });
-    const abortListener = () => { setChecking(false); setCapabilities({ mode: 'guide', menus: [] }); setNotice('Connexion IA interrompue. Le guide intégré reste accessible.'); };
+    const abortListener = () => { setChecking(false); setCapabilities((previous) => ({ mode: 'guide', menus: previous.menus })); setNotice('Connexion IA interrompue. Le guide et les données locales restent accessibles.'); };
     controller.signal.addEventListener('abort', abortListener);
     return () => { clearTimeout(timer); controller.signal.removeEventListener('abort', abortListener); controller.abort(); };
-  }, [open, authenticated, space, online, request, revision]);
+  }, [open, authenticated, identity, space, online, aiConnectionEnabled, request, revision]);
 
   useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight; }, [messages, busy, open, view]);
 
@@ -91,7 +148,7 @@ export default function AssistantPanel({ space, currentTab, authenticated, reque
     try {
       const reply = effectiveMode === 'ai'
         ? await request({ action: 'chat', space, currentTab, messages: next.slice(-7).map(({ role, content }) => ({ role, content: content.slice(0, 4000) })) }, controller.signal)
-        : guideReply(text, currentTab, menus);
+        : await localDataReply(text, currentTab, menus);
       if (controller.signal.aborted) return;
       if (typeof reply.answer !== 'string') throw new Error('Réponse indisponible.');
       setMessages((previous) => [...previous, { role: 'assistant', content: reply.answer, mode: reply.mode, sources: reply.sources || [], incomplete: reply.incomplete }]);
@@ -104,7 +161,7 @@ export default function AssistantPanel({ space, currentTab, authenticated, reque
         setNotice(error.message);
       } else {
         setNotice(`${error.message} Vous pouvez réessayer ou consulter le guide.`);
-        const fallback = guideReply(text, currentTab, menus);
+        const fallback = await localDataReply(text, currentTab, menus);
         setMessages((previous) => [...previous, { role: 'assistant', content: fallback.answer, mode: 'guide', sources: fallback.sources }]);
       }
     } finally {
@@ -138,15 +195,14 @@ export default function AssistantPanel({ space, currentTab, authenticated, reque
           </span>
           <div className="min-w-0 flex-1">
             <Dialog.Title className="text-base font-semibold text-primary">Assistant GestionPDV</Dialog.Title>
-            <Dialog.Description className="truncate text-xs text-muted-foreground">{checking ? 'Connexion…' : effectiveMode === 'ai' ? 'IA · Consultation en lecture seule' : 'Guide intégré · Sans données actuelles'}</Dialog.Description>
+            <Dialog.Description className={aiConnectionEnabled ? 'truncate text-xs text-muted-foreground' : 'sr-only'}>{checking ? 'Connexion…' : effectiveMode === 'ai' ? 'IA · Consultation en lecture seule' : aiConnectionEnabled ? 'Guide intégré · Données locales' : 'Assistant en mode guide local'}</Dialog.Description>
           </div>
-          <Button type="button" size="icon" variant="ghost" className="h-8 w-8 shrink-0 rounded-full bg-white shadow-sm" title="Nouvelle conversation" aria-label="Nouvelle conversation" onClick={reset}><Trash2 className="h-4 w-4" /></Button>
           <Dialog.Close asChild><Button type="button" size="icon" variant="ghost" className="h-8 w-8 shrink-0 rounded-full bg-white shadow-sm" title="Fermer l’assistant" aria-label="Fermer l’assistant"><X className="h-4 w-4" /></Button></Dialog.Close>
         </header>
         {currentMenu && <p className="mx-4 mb-3 shrink-0 truncate rounded-lg border border-primary/15 bg-white px-3 py-2 text-xs text-muted-foreground" title={currentMenu.title}>Page : {currentMenu.title}</p>}
-        {notice && <div className="mx-4 mb-3 flex shrink-0 items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900" role="status">
+        {notice && aiConnectionEnabled && <div className="mx-4 mb-3 flex shrink-0 items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900" role="status">
           <p className="min-w-0 flex-1 break-words">{notice}</p>
-          {authenticated && online && space && <Button type="button" size="icon" variant="ghost" className="h-7 w-7 shrink-0" title="Reconnecter l’IA" aria-label="Reconnecter l’IA" disabled={checking || busy} onClick={() => setRevision((value) => value + 1)}><RefreshCw className="h-3.5 w-3.5" /></Button>}
+          {authenticated && online && space && aiConnectionEnabled && <Button type="button" size="icon" variant="ghost" className="h-7 w-7 shrink-0" title="Reconnecter l’IA" aria-label="Reconnecter l’IA" disabled={checking || busy} onClick={() => setRevision((value) => value + 1)}><RefreshCw className="h-3.5 w-3.5" /></Button>}
         </div>}
         <Tabs value={view} onValueChange={setView} className="flex min-h-0 flex-1 flex-col">
           <TabsList aria-label="Rubriques de l’assistant" className="mx-4 mb-3 grid shrink-0 grid-cols-2 rounded-xl border-white bg-white p-1.5 shadow-sm">
@@ -158,6 +214,7 @@ export default function AssistantPanel({ space, currentTab, authenticated, reque
           </TabsContent>
           <TabsContent value="conversation" className="mt-0 flex min-h-0 flex-1 flex-col data-[state=inactive]:hidden">
         <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4" role="log" aria-label="Conversation avec l’assistant" aria-live="polite" aria-relevant="additions text">
+          {messages.length > 0 && <Button type="button" variant="ghost" size="sm" className="mb-3 -ml-2 gap-2" onClick={reset}><ArrowLeft className="h-4 w-4" />Accueil</Button>}
           {!messages.length && <div className="space-y-4">
             <p className="text-sm font-medium">Bonjour, quelle est votre question ?</p>
             <div className="overflow-hidden rounded-xl border border-slate-200 bg-white px-4 shadow-sm">{suggestions.map((guide) => <button key={guide.id} type="button" disabled={busy} onClick={() => readGuide(guide)} className="flex w-full items-center justify-between gap-2 border-b border-slate-200 py-3 text-left text-sm last:border-b-0 hover:text-primary disabled:opacity-50"><span>{guide.title}</span><ArrowUpRight className="h-4 w-4 shrink-0" /></button>)}</div>
@@ -187,7 +244,7 @@ export default function AssistantPanel({ space, currentTab, authenticated, reque
             {busy ? <Button type="button" size="icon" variant="outline" className="h-10 w-10 shrink-0" title="Arrêter la réponse" aria-label="Arrêter la réponse" onClick={() => pending.current?.abort()}><Square className="h-4 w-4" /></Button>
               : <Button type="submit" size="icon" className="h-10 w-10 shrink-0" title="Envoyer la question" aria-label="Envoyer la question" disabled={!draft.trim() || checking}><ArrowUp className="h-4 w-4" /></Button>}
           </div>
-          <p className="text-[11px] text-muted-foreground">{effectiveMode === 'ai' ? 'Questions et données autorisées utiles traitées par le service IA.' : 'Les états actuels nécessitent une connexion au service IA.'}</p>
+          {aiConnectionEnabled && <p className="text-[11px] text-muted-foreground">{effectiveMode === 'ai' ? 'Questions et données autorisées utiles traitées par le service IA.' : 'Guide métier, page courante, cache et synchronisation disponibles sans IA.'}</p>}
         </form>
           </TabsContent>
         </Tabs>

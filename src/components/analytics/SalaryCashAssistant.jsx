@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowRight, ChevronDown, ChevronLeft, ChevronRight, Download, RotateCcw, Search, SlidersHorizontal, Sparkles, X } from 'lucide-react';
+import { ArrowRight, ChevronDown, ChevronLeft, ChevronRight, CircleDollarSign, Download, RotateCcw, Scale, Search, SlidersHorizontal, Sparkles, Wallet, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { usePageState } from '@/hooks/usePageState';
 import { downloadCsv } from '@/lib/csv';
 import { DEFAULT_RECONCILIATION_FILTERS, filterReconciliationRows, summarizeReconciliation } from '@/lib/salaryReconciliation';
+import KpiStatCard from '@/components/analytics/KpiStatCard';
 
 const amount = (value) => Number(value || 0).toLocaleString('fr-FR', { maximumFractionDigits: 0 });
 const date = (value) => value ? new Date(value).toLocaleDateString('fr-FR') : 'Aucun';
@@ -153,9 +154,10 @@ export default function SalaryCashAssistant({ rows, month, loading, error, onMon
     {error ? <div role="alert" className="border-l-4 border-red-500 bg-red-50 p-4 text-sm text-red-700">{error}<Button variant="outline" size="sm" className="ml-3" onClick={() => onMonthChange(month.monthKey)}>Réessayer</Button></div>
       : loading ? <p role="status" className="py-12 text-center text-sm text-muted-foreground">Chargement du rapprochement de {month.label}…</p>
       : <>
-        <div className="grid gap-3 border-y bg-white/60 py-3 sm:grid-cols-3" aria-label="Totaux des résultats filtrés">
-          {[[summary.due, 'À verser', 'text-blue-700'], [summary.paid, 'Versé', 'text-emerald-700'], [summary.gap, 'Écart net', summary.gap < 0 ? 'text-red-700' : 'text-emerald-700']].map(([value, label, color]) =>
-            <div key={label} className="min-w-0 px-3"><p className="text-xs text-muted-foreground">{label} · sélection</p><p className={`break-words text-xl font-semibold tabular-nums ${color}`}>{amount(value)}</p></div>)}
+        <div className="grid gap-3 sm:grid-cols-3" aria-label="Totaux des résultats filtrés">
+          <KpiStatCard icon={Wallet} label="À verser" value={amount(summary.due)} tone="blue" helper="Montant attendu sur la sélection." />
+          <KpiStatCard icon={CircleDollarSign} label="Versé" value={amount(summary.paid)} tone="emerald" helper="Montant versé sur la sélection." />
+          <KpiStatCard icon={Scale} label="Écart net" value={amount(summary.gap)} tone={summary.gap < 0 ? 'red' : 'emerald'} helper="Différence entre le versé et le montant attendu." />
         </div>
         <div className="flex flex-wrap justify-between gap-2 text-xs text-muted-foreground" role="status">
           <p>{filtered.length} dossier(s) retenu(s) sur {rows.length} · {summary.unknown} non identifié(s)</p>

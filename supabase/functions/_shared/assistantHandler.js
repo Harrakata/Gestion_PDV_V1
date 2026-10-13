@@ -52,11 +52,16 @@ export function createAssistantHandler({ createClient, env, fetchImpl = fetch })
       let access;
       try { access = resolveAssistantAccess(body.space, profile, settings); } catch (error) { return json({ error: error.message }, 403); }
       const apiKey = env('OPENAI_API_KEY'), model = env('OPENAI_MODEL');
-      const ready = Boolean(apiKey && model);
+      const aiConnectionEnabled = settings.functionalites_espaces?.assistant_ai_connection !== false;
+      const ready = aiConnectionEnabled && Boolean(apiKey && model);
       if (body.action === 'capabilities') return json({ mode: ready ? 'ai' : 'guide', menus: access.menus,
-        notice: ready ? null : "L'IA n'est pas configurée. Le guide intégré est disponible ; les états actuels ne sont pas consultés." });
+        notice: ready ? null : aiConnectionEnabled
+          ? "L'IA n'est pas configurée. Le guide intégré est disponible ; les états actuels ne sont pas consultés."
+          : 'Connexion IA désactivée dans Fonctionnalités. Les fiches pratiques et les données locales restent disponibles.' });
       const currentTab = typeof body.currentTab === 'string' && access.menus.some((menu) => menu.key === body.currentTab) ? body.currentTab : '';
-      if (!ready) return json({ ...guideReply(messages.at(-1).content, currentTab, access.menus), notice: "IA non configurée : réponse issue du guide, sans consultation des données actuelles." });
+      if (!ready) return json({ ...guideReply(messages.at(-1).content, currentTab, access.menus), notice: aiConnectionEnabled
+        ? "IA non configurée : réponse issue du guide, sans consultation des données actuelles."
+        : 'Connexion IA désactivée : réponse issue uniquement du guide intégré.' });
       const { data: quota, error: quotaError } = await callerClient.rpc('consume_assistant_request');
       if (quotaError) return json({ error: 'Le service IA nécessite sa configuration de quota côté serveur.' }, 503);
       if (quota !== true) return json({ error: 'Limite de questions atteinte. Réessayez dans quelques minutes.' }, 429);
