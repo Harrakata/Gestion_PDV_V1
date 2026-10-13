@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { ArrowLeft, ArrowUp, ArrowUpRight, BookOpen, Bot, Loader2, MessageCircle, RefreshCw, Square, X } from 'lucide-react';
+import { ArrowLeft, ArrowUp, ArrowUpRight, BookOpen, Bot, Loader2, MessageCircle, Square, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -65,7 +65,6 @@ export default function AssistantPanel({ space, currentTab, authenticated, ident
   const [checking, setChecking] = useState(false);
   const [online, setOnline] = useState(() => navigator.onLine);
   const [capabilities, setCapabilities] = useState(() => ({ mode: 'guide', menus: readCachedMenus(space, identity) }));
-  const [notice, setNotice] = useState('');
   const [revision, setRevision] = useState(0);
   const [view, setView] = useState('conversation');
   const pending = useRef(null);
@@ -95,13 +94,11 @@ export default function AssistantPanel({ space, currentTab, authenticated, ident
     if (!aiConnectionEnabled) {
       pending.current?.abort();
       setCapabilities((previous) => ({ mode: 'guide', menus: previous.menus }));
-      setNotice('');
       setChecking(false);
       return;
     }
     if (!authenticated || !space || !online) {
       setCapabilities((previous) => ({ mode: 'guide', menus: authenticated && space ? previous.menus : [] }));
-      setNotice(!online ? 'Hors ligne : guide, contexte de page et données locales restent disponibles.' : '');
       setChecking(false);
       return;
     }
@@ -112,15 +109,13 @@ export default function AssistantPanel({ space, currentTab, authenticated, ident
       if (controller.signal.aborted) return;
       setCapabilities(result);
       writeCachedMenus(space, identity, result.menus);
-      setNotice(result.notice || '');
     }).catch((error) => {
       if (controller.signal.aborted) return;
       const authorizationError = [401, 403].includes(error.status);
       setCapabilities((previous) => ({ mode: 'guide', menus: authorizationError ? [] : previous.menus }));
-      setNotice(authorizationError ? error.message : 'IA indisponible. Le guide et les données locales restent accessibles.');
       if (authorizationError) { clearCachedMenus(space, identity); setMessages([]); }
     }).finally(() => { clearTimeout(timer); if (!controller.signal.aborted) setChecking(false); });
-    const abortListener = () => { setChecking(false); setCapabilities((previous) => ({ mode: 'guide', menus: previous.menus })); setNotice('Connexion IA interrompue. Le guide et les données locales restent accessibles.'); };
+    const abortListener = () => { setChecking(false); setCapabilities((previous) => ({ mode: 'guide', menus: previous.menus })); };
     controller.signal.addEventListener('abort', abortListener);
     return () => { clearTimeout(timer); controller.signal.removeEventListener('abort', abortListener); controller.abort(); };
   }, [open, authenticated, identity, space, online, aiConnectionEnabled, request, revision]);
@@ -152,15 +147,12 @@ export default function AssistantPanel({ space, currentTab, authenticated, ident
       if (controller.signal.aborted) return;
       if (typeof reply.answer !== 'string') throw new Error('Réponse indisponible.');
       setMessages((previous) => [...previous, { role: 'assistant', content: reply.answer, mode: reply.mode, sources: reply.sources || [], incomplete: reply.incomplete }]);
-      if (reply.notice) setNotice(reply.notice);
     } catch (error) {
       if (controller.signal.aborted) return;
       if ([401, 403].includes(error.status)) {
         setMessages([]);
         setCapabilities({ mode: 'guide', menus: [] });
-        setNotice(error.message);
       } else {
-        setNotice(`${error.message} Vous pouvez réessayer ou consulter le guide.`);
         const fallback = await localDataReply(text, currentTab, menus);
         setMessages((previous) => [...previous, { role: 'assistant', content: fallback.answer, mode: 'guide', sources: fallback.sources }]);
       }
@@ -169,7 +161,6 @@ export default function AssistantPanel({ space, currentTab, authenticated, ident
       if (pending.current === controller) {
         pending.current = null;
         setBusy(false);
-        if (controller.signal.aborted) setNotice('Réponse interrompue. Vous pouvez poser une nouvelle question.');
       }
     }
   };
@@ -200,10 +191,6 @@ export default function AssistantPanel({ space, currentTab, authenticated, ident
           <Dialog.Close asChild><Button type="button" size="icon" variant="ghost" className="h-8 w-8 shrink-0 rounded-full bg-white shadow-sm" title="Fermer l’assistant" aria-label="Fermer l’assistant"><X className="h-4 w-4" /></Button></Dialog.Close>
         </header>
         {currentMenu && <p className="mx-4 mb-3 shrink-0 truncate rounded-lg border border-primary/15 bg-white px-3 py-2 text-xs text-muted-foreground" title={currentMenu.title}>Page : {currentMenu.title}</p>}
-        {notice && aiConnectionEnabled && <div className="mx-4 mb-3 flex shrink-0 items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900" role="status">
-          <p className="min-w-0 flex-1 break-words">{notice}</p>
-          {authenticated && online && space && aiConnectionEnabled && <Button type="button" size="icon" variant="ghost" className="h-7 w-7 shrink-0" title="Reconnecter l’IA" aria-label="Reconnecter l’IA" disabled={checking || busy} onClick={() => setRevision((value) => value + 1)}><RefreshCw className="h-3.5 w-3.5" /></Button>}
-        </div>}
         <Tabs value={view} onValueChange={setView} className="flex min-h-0 flex-1 flex-col">
           <TabsList aria-label="Rubriques de l’assistant" className="mx-4 mb-3 grid shrink-0 grid-cols-2 rounded-xl border-white bg-white p-1.5 shadow-sm">
             <TabsTrigger value="conversation" className="min-w-0 gap-2 rounded-lg px-2 text-xs"><MessageCircle className="h-4 w-4 shrink-0" />Conversation</TabsTrigger>

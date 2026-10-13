@@ -374,31 +374,37 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) {
 
 table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) > :is(.flex, .inline-flex):has(button[data-ui-button-size="icon"]) {
   display: inline-flex;
-  min-height: 2.5rem;
+  min-height: 2rem;
   width: max-content;
   margin-inline: auto;
   align-items: center;
   justify-content: center;
   gap: 0.25rem;
-  padding: 0.25rem;
+  padding: 0.0625rem;
   overflow: hidden;
-  border: 1px solid hsl(var(--border) / 0.9);
-  border-radius: 0.5rem;
-  background: hsl(var(--background));
-  box-shadow: 0 1px 2px rgb(15 23 42 / 0.06);
+  border: 1px solid hsl(var(--primary) / 0.22);
+  border-radius: var(--radius);
+  background: hsl(var(--primary) / 0.08);
+  box-shadow: 0 1px 2px hsl(var(--primary) / 0.08);
 }
 
 table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data-ui-button-size="icon"] {
   width: 2rem;
-  height: 2rem;
+  height: 1.875rem;
   flex: 0 0 2rem;
-  border-radius: 0.375rem;
+  border-radius: max(0px, calc(var(--radius) - 0.25rem));
+}
+
+table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data-ui-button-size="icon"] svg {
+  width: 0.875rem;
+  height: 0.875rem;
 }
 
 table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) > button[data-ui-button-size="icon"] {
-  border: 1px solid hsl(var(--border) / 0.9);
-  background: hsl(var(--background));
-  box-shadow: 0 1px 2px rgb(15 23 42 / 0.06);
+  border: 1px solid hsl(var(--primary) / 0.22);
+  border-radius: var(--radius);
+  background: hsl(var(--primary) / 0.08);
+  box-shadow: 0 1px 2px hsl(var(--primary) / 0.08);
 }
 
 table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data-ui-button-size="icon"]:hover {
