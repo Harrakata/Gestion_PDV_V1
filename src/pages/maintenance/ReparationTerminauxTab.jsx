@@ -801,9 +801,9 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
 
               {isSEHelpOpen && seHelpItem?.id === selectedItem.id && (
                 <Dialog open={isSEHelpOpen} onOpenChange={setIsSEHelpOpen}>
-                <DialogContent className="sm:max-w-3xl w-[min(94vw,52rem)] max-h-[84vh] flex flex-col gap-0 overflow-hidden border-primary/25 p-0 !bg-background !backdrop-blur-none">
+                <DialogContent className="diagnostic-guided-dialog sm:max-w-3xl w-[min(94vw,52rem)] max-h-[84vh] flex flex-col gap-0 overflow-hidden border-primary/25 p-0">
                   <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
-                  <div className="relative shrink-0 border-b bg-primary/5 px-6 pb-3 pt-5 pr-14">
+                  <div className="relative shrink-0 border-b bg-transparent px-6 pb-3 pt-5 pr-14">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <CardTitle className="flex items-center gap-2 text-lg text-primary">
