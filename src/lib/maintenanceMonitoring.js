@@ -150,6 +150,7 @@ export const buildTerminalSousEnsembleRows = (terminaux, interventions, agencesB
         terminalStatus: terminal.statut || 'N/A',
         agenceNom: agence?.nom || terminal.agence_nom || 'N/A',
         regionNom: agence?.region || terminal.agence_region || 'N/A',
+        sousEnsembleKey: sousEnsemble.key,
         sousEnsembleLabel: sousEnsemble.label,
         sousEnsembleReference: sousEnsemble.reference,
         latestIntervention,

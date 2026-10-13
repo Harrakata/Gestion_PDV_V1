@@ -608,7 +608,7 @@ const MaintenanceAgenciesMap = ({
     : '';
   const isOperationalCard = appearance === 'operational';
   const cardClassName = cn(
-    'overflow-hidden rounded-2xl border shadow-sm',
+    'w-full min-w-0 max-w-full overflow-hidden rounded-2xl border shadow-sm',
     isOperationalCard ? 'surface-glass border-primary/15' : 'bg-white'
   );
   const headerClassName = cn(
@@ -717,8 +717,8 @@ const MaintenanceAgenciesMap = ({
         ) : null}
       </div>
 
-      <div className="grid gap-0 xl:grid-cols-[minmax(0,1fr),360px]">
-        <div className="relative h-[520px] overflow-hidden bg-slate-100" onWheel={handleMapWheel}>
+      <div className="grid w-full min-w-0 max-w-full gap-0 overflow-hidden xl:grid-cols-[minmax(0,1fr)_minmax(18rem,22.5rem)]">
+        <div className="relative h-[520px] w-full min-w-0 overflow-hidden bg-slate-100" onWheel={handleMapWheel}>
           {markers.length > 0 && viewport ? (
             <>
               {tiles.map((tile) => (
@@ -854,7 +854,7 @@ const MaintenanceAgenciesMap = ({
         </div>
 
         <div className={cn(
-          'flex max-h-[520px] flex-col border-t xl:border-l xl:border-t-0',
+          'flex w-full min-w-0 max-w-full flex-col border-t xl:max-h-[520px] xl:border-l xl:border-t-0',
           isOperationalCard ? 'bg-transparent' : 'bg-slate-50/70'
         )}>
           {selectedAgency ? (

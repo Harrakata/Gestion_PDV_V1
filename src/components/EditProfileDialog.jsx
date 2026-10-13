@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState, useRef, useCallback } from 'react';
-import { UserCog, Loader2, Camera, UploadCloud, X, Mail, Phone, KeyRound, ShieldCheck, Eye, EyeOff, User } from 'lucide-react';
+import { UserCog, Loader2, Camera, UploadCloud, X, Mail, Phone, KeyRound, ShieldCheck, Eye, EyeOff, User, Bot } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -14,6 +14,11 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabaseClient';
 import { STORAGE_BUCKET } from '@/lib/clientConfig';
+import {
+  ASSISTANT_VISIBILITY_METADATA_KEY,
+  isFloatingAssistantVisible,
+  notifyAssistantVisibilityChanged,
+} from '@/lib/assistantPreferences';
 
 const MIN_PASSWORD_LENGTH = 6;
 
@@ -63,6 +68,11 @@ const EditProfileDialog = ({
   const [showPassword, setShowPassword] = useState(false);
   const [isSavingPassword, setIsSavingPassword] = useState(false);
 
+  // ── Préférences ──
+  const [assistantUserId, setAssistantUserId] = useState(null);
+  const [assistantVisible, setAssistantVisible] = useState(true);
+  const [isSavingAssistant, setIsSavingAssistant] = useState(false);
+
   useEffect(() => {
     if (open) {
       setForm({
@@ -77,8 +87,25 @@ const EditProfileDialog = ({
       setShowPassword(false);
       setIsSavingProfile(false);
       setIsSavingPassword(false);
+      setIsSavingAssistant(false);
+      setAssistantUserId(null);
+      setAssistantVisible(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  useEffect(() => {
+    let active = true;
+    if (!open) return () => { active = false; };
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (!active) return;
+      const user = data.session?.user || null;
+      setAssistantUserId(user?.id || null);
+      setAssistantVisible(isFloatingAssistantVisible(user));
+    });
+
+    return () => { active = false; };
   }, [open]);
 
   const displayName = useMemo(
@@ -90,7 +117,45 @@ const EditProfileDialog = ({
     [form.prenom, form.nom, initialData.email]
   );
 
-  const busy = isSavingProfile || isSavingPassword;
+  const busy = isSavingProfile || isSavingPassword || isSavingAssistant;
+
+  const toggleAssistantVisibility = async () => {
+    if (isSavingAssistant) return;
+    const nextVisible = !assistantVisible;
+    setIsSavingAssistant(true);
+
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const user = sessionData?.session?.user;
+      if (!user) {
+        toast({ title: 'Session requise', description: 'Reconnectez-vous pour modifier cette préférence.', variant: 'destructive' });
+        return;
+      }
+
+      const { error } = await supabase.auth.updateUser({
+        data: {
+          ...(user.user_metadata || {}),
+          [ASSISTANT_VISIBILITY_METADATA_KEY]: nextVisible,
+        },
+      });
+      if (error) {
+        toast({ title: 'Préférence non enregistrée', description: error.message, variant: 'destructive' });
+        return;
+      }
+
+      setAssistantUserId(user.id);
+      setAssistantVisible(nextVisible);
+      notifyAssistantVisibilityChanged(user.id, nextVisible);
+      toast({
+        title: nextVisible ? 'Assistant affiché' : 'Assistant masqué',
+        description: nextVisible
+          ? "Le bouton d'aide flottant est de nouveau disponible."
+          : "Le bouton d'aide flottant est masqué pour votre compte.",
+      });
+    } finally {
+      setIsSavingAssistant(false);
+    }
+  };
 
   const handlePhotoUpload = (event) => {
     const file = event.target.files?.[0];
@@ -274,11 +339,12 @@ const EditProfileDialog = ({
         </DialogHeader>
 
         <Tabs defaultValue={allowProfileEdit ? 'profil' : 'securite'} className="mt-1">
-          <TabsList className={`grid w-full ${allowProfileEdit ? 'grid-cols-2' : 'grid-cols-1'}`}>
+          <TabsList className={`grid w-full ${allowProfileEdit ? 'grid-cols-3' : 'grid-cols-2'}`}>
             {allowProfileEdit && (
               <TabsTrigger value="profil" className="gap-1.5"><User className="h-4 w-4" /> Profil</TabsTrigger>
             )}
             <TabsTrigger value="securite" className="gap-1.5"><ShieldCheck className="h-4 w-4" /> Sécurité</TabsTrigger>
+            <TabsTrigger value="preferences" className="gap-1.5"><Bot className="h-4 w-4" /> Préférences</TabsTrigger>
           </TabsList>
 
           {/* ── Onglet Profil ── */}
@@ -416,6 +482,36 @@ const EditProfileDialog = ({
                 </Button>
               </div>
             </form>
+          </TabsContent>
+
+          <TabsContent value="preferences" className="mt-4">
+            <div className="flex items-start justify-between gap-4 rounded-xl border border-border/60 bg-white p-4">
+              <div className="min-w-0">
+                <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                  <Bot className="h-4 w-4 text-primary" />
+                  Assistant d'aide flottant
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Affiche le bouton donnant accès au guide intégré et à l'assistant IA dans l'application.
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={assistantVisible}
+                aria-label="Afficher l'assistant d'aide flottant"
+                disabled={!assistantUserId || isSavingAssistant}
+                onClick={toggleAssistantVisibility}
+                className={`relative mt-0.5 inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${assistantVisible ? 'bg-primary' : 'bg-slate-300'}`}
+              >
+                <span className={`inline-flex h-5 w-5 items-center justify-center rounded-full bg-white shadow transition-transform ${assistantVisible ? 'translate-x-5' : 'translate-x-0.5'}`}>
+                  {isSavingAssistant ? <Loader2 className="h-3 w-3 animate-spin text-primary" /> : null}
+                </span>
+              </button>
+            </div>
+            <p className="mt-3 text-xs text-muted-foreground">
+              Cette préférence est liée à votre compte et s'applique dès sa modification.
+            </p>
           </TabsContent>
         </Tabs>
       </DialogContent>
