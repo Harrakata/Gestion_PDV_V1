@@ -11,6 +11,7 @@ import { Combobox } from '@/components/ui/Combobox';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/components/ui/use-toast';
 import KpiStatCard from '@/components/analytics/KpiStatCard';
+import { getStockDefectueuxRecordIds, regrouperStockDefectueuxActif } from '@/lib/stockDefectueux';
 import { AlertTriangle, Package, UserCheck, Wrench, CheckCircle2, Search } from 'lucide-react';
 
 const ALL = '__all__';
@@ -78,7 +79,7 @@ const StockDefectueuxTab = ({ canManage = true, technicienId = null }) => {
       supabase.from('agences').select('id, nom, codePDV').eq('is_current', true).order('nom'),
       supabase.from('techniciens').select('id, nom, prenom, matricule').order('nom').limit(200),
     ]);
-    if (!sRes.error) setStock(sRes.data || []);
+    if (!sRes.error) setStock(regrouperStockDefectueuxActif(sRes.data || []));
     if (!aRes.error) setAgences(aRes.data || []);
     if (!tRes.error) setTechniciens(tRes.data || []);
     setIsLoading(false);
@@ -111,9 +112,10 @@ const StockDefectueuxTab = ({ canManage = true, technicienId = null }) => {
     if (!selectedItem || !assignForm.technicien_id) { showErr('Sélectionnez un technicien.'); return; }
     setIsLoading(true);
     const tech = techniciens.find(t => String(t.id) === String(assignForm.technicien_id));
+    const itemIds = getStockDefectueuxRecordIds(selectedItem);
     const { error } = await supabase.from('stock_defectueux')
       .update({ statut: 'assigne', technicien_id: String(assignForm.technicien_id), technicien_nom: tech?.nom || assignForm.technicien_nom })
-      .eq('id', selectedItem.id);
+      .in('id', itemIds);
     if (error) { showErr(error.message); } else { showOk('Sous-ensemble assigné.'); setIsAssignOpen(false); load(); }
     setIsLoading(false);
   };
@@ -134,15 +136,15 @@ const StockDefectueuxTab = ({ canManage = true, technicienId = null }) => {
     ssd: 'equipments_ssd',
   };
 
-  const updateStatut = async (id, statut) => {
+  const updateStatut = async (item, statut) => {
     const updates = { statut };
     if (statut === 'repare') updates.date_sortie = new Date().toISOString();
-    const { error } = await supabase.from('stock_defectueux').update(updates).eq('id', id);
+    const itemIds = getStockDefectueuxRecordIds(item);
+    const { error } = await supabase.from('stock_defectueux').update(updates).in('id', itemIds);
     if (error) { showErr(error.message); return; }
 
     // Quand réparé → remettre le sous-ensemble à Disponible dans sa table équipement
     if (statut === 'repare') {
-      const item = stock.find(s => String(s.id) === String(id));
       const table = item?.type_sous_ensemble ? EQUIP_TABLE_MAP[item.type_sous_ensemble] : null;
       if (table && item?.reference_sous_ensemble) {
         const { error: eqErr } = await supabase
@@ -165,7 +167,7 @@ const StockDefectueuxTab = ({ canManage = true, technicienId = null }) => {
     const { data } = await supabase
       .from('stock_pieces_mouvements')
       .select('*, piece:pieces_sous_ensembles(nom, reference)')
-      .eq('stock_defectueux_id', item.id)
+      .in('stock_defectueux_id', getStockDefectueuxRecordIds(item))
       .order('created_at', { ascending: true });
     setDetailMouvements(data || []);
     setIsLoadingDetail(false);
@@ -265,12 +267,12 @@ const StockDefectueuxTab = ({ canManage = true, technicienId = null }) => {
                         </Button>
                       )}
                       {canManage && item.statut === 'assigne' && (
-                        <Button size="sm" variant="outline" onClick={() => updateStatut(item.id, 'a_tester')}>
+                        <Button size="sm" variant="outline" onClick={() => updateStatut(item, 'a_tester')}>
                           Marquer À tester
                         </Button>
                       )}
                       {canManage && item.statut === 'a_tester' && (
-                        <Button size="sm" className="bg-green-600 text-white hover:bg-green-700" onClick={() => updateStatut(item.id, 'repare')}>
+                        <Button size="sm" className="bg-green-600 text-white hover:bg-green-700" onClick={() => updateStatut(item, 'repare')}>
                           Marquer Réparé
                         </Button>
                       )}
@@ -416,12 +418,12 @@ const StockDefectueuxTab = ({ canManage = true, technicienId = null }) => {
                     </Button>
                   )}
                   {detailItem.statut === 'assigne' && (
-                    <Button size="sm" variant="outline" onClick={() => { updateStatut(detailItem.id, 'a_tester'); setIsDetailOpen(false); }}>
+                    <Button size="sm" variant="outline" onClick={() => { updateStatut(detailItem, 'a_tester'); setIsDetailOpen(false); }}>
                       Marquer À tester
                     </Button>
                   )}
                   {detailItem.statut === 'a_tester' && (
-                    <Button size="sm" className="bg-green-600 text-white hover:bg-green-700" onClick={() => { updateStatut(detailItem.id, 'repare'); setIsDetailOpen(false); }}>
+                    <Button size="sm" className="bg-green-600 text-white hover:bg-green-700" onClick={() => { updateStatut(detailItem, 'repare'); setIsDetailOpen(false); }}>
                       Marquer Réparé
                     </Button>
                   )}

@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/components/ui/use-toast';
-import { AlertTriangle, CheckCircle2, HelpCircle, Package2, Wrench, ArrowRight, FlaskConical, ChevronDown, ChevronUp, ChevronRight, ChevronLeft, Sparkles, CheckCheck, Search, X, Check, ListChecks, Stethoscope } from 'lucide-react';
+import { getStockDefectueuxRecordIds, regrouperStockDefectueuxActif } from '@/lib/stockDefectueux';
+import { AlertTriangle, CheckCircle2, HelpCircle, Package2, Wrench, ArrowRight, FlaskConical, ChevronDown, ChevronRight, ChevronLeft, Sparkles, CheckCheck, Search, X, Check, ListChecks, Stethoscope } from 'lucide-react';
 
 const SOUS_ENSEMBLE_LABELS = {
   imprimante: 'Imprimante',
@@ -77,7 +78,14 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
   const [isSEHelpOpen, setIsSEHelpOpen] = useState(false);
   const [seHelpItem, setSeHelpItem] = useState(null);
   const [seHelpPannes, setSeHelpPannes] = useState([]);
-  const [seHelpShowAll, setSeHelpShowAll] = useState(false);
+  const [seHelpChecksMap, setSeHelpChecksMap] = useState({});
+  const [seDiagnosticPanne, setSeDiagnosticPanne] = useState(null);
+  const [seDiagnosticCheckedIds, setSeDiagnosticCheckedIds] = useState(new Set());
+  const [seDiagnosticView, setSeDiagnosticView] = useState('guide');
+  const [seDiagnosticProcedures, setSeDiagnosticProcedures] = useState([]);
+  const [isDiagnosticDocsLoading, setIsDiagnosticDocsLoading] = useState(false);
+  const [isDiagnosticLoading, setIsDiagnosticLoading] = useState(false);
+  const [diagnosticSessions, setDiagnosticSessions] = useState({});
 
   const EQUIP_TABLE_MAP = {
     imprimante: 'equipments_imprimantes',
@@ -141,7 +149,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
       });
     }
 
-    if (!sRes.error) { setStock(stockData); setItemPiecesCache({}); }
+    if (!sRes.error) { setStock(regrouperStockDefectueuxActif(stockData)); setItemPiecesCache({}); }
     if (!pRes.error) setPieces(pRes.data || []);
     if (!spRes.error) setStockPieces(spRes.data || []);
     setIsLoading(false);
@@ -178,10 +186,26 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
     return result;
   }, [wizardCheckedIds, wizardChecks]);
 
-  const pannesWithChecks = useMemo(
-    () => pannes.filter(p => (panneChecksMap[p.id] || []).length > 0),
-    [pannes, panneChecksMap]
+  const seDiagnosticChecks = useMemo(
+    () => (seDiagnosticPanne ? (seHelpChecksMap[seDiagnosticPanne.id] || []) : []),
+    [seDiagnosticPanne, seHelpChecksMap]
   );
+
+  const seDiagnosticPieces = useMemo(() => {
+    const seen = new Set();
+    const checkedPieces = seDiagnosticChecks
+      .filter(check => seDiagnosticCheckedIds.has(check.id) && check.piece)
+      .map(check => check.piece);
+    const candidates = seDiagnosticCheckedIds.size > 0
+      ? [seDiagnosticPanne?.piece, ...checkedPieces].filter(Boolean)
+      : [];
+    return candidates
+      .filter(piece => {
+        if (seen.has(piece.id)) return false;
+        seen.add(piece.id);
+        return true;
+      });
+  }, [seDiagnosticCheckedIds, seDiagnosticChecks, seDiagnosticPanne]);
 
   // Auto-expand items whose cached pieces match the search, and trigger load for uncached ones
   useEffect(() => {
@@ -258,18 +282,26 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
   const formatDate = (d) => d ? new Date(d).toLocaleDateString('fr-FR') : '—';
 
   const openSousEnsembleHelp = async (item, e) => {
-    e.stopPropagation();
+    e?.stopPropagation();
+    setSelectedItem(item);
+    loadItemDetail(item);
     setSeHelpItem(item);
     setSeHelpPannes([]);
-    setSeHelpShowAll(false);
+    setSeHelpChecksMap({});
+    setSeDiagnosticPanne(null);
+    setSeDiagnosticCheckedIds(new Set());
+    setSeDiagnosticView('guide');
+    setSeDiagnosticProcedures([]);
+    setIsDiagnosticDocsLoading(false);
+    setIsDiagnosticLoading(true);
     setIsSEHelpOpen(true);
-    if (!item.modele_id) return;
+    if (!item.modele_id) { setIsDiagnosticLoading(false); return; }
     const { data: modelePieces } = await supabase
       .from('modeles_pieces')
       .select('piece_id, piece:pieces_sous_ensembles(id, nom, reference, sous_ensemble, description_aide, photo_url, commentaire)')
       .eq('modele_id', item.modele_id);
     const pieceIds = (modelePieces || []).map(mp => mp.piece_id).filter(Boolean);
-    if (!pieceIds.length) return;
+    if (!pieceIds.length) { setIsDiagnosticLoading(false); return; }
     const pieceMap = {};
     for (const mp of (modelePieces || [])) {
       if (mp.piece?.id) pieceMap[mp.piece.id] = mp.piece;
@@ -279,21 +311,72 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
       .select('*')
       .in('piece_id', pieceIds)
       .order('poids', { ascending: false });
-    setSeHelpPannes((allPannes || []).map(p => ({ ...p, piece: pieceMap[p.piece_id] || null })));
+    const enrichedPannes = (allPannes || []).map(p => ({ ...p, piece: pieceMap[p.piece_id] || null }));
+    setSeHelpPannes(enrichedPannes);
+
+    const panneIds = enrichedPannes.map(p => p.id).filter(Boolean);
+    if (panneIds.length > 0) {
+      const { data: checks } = await supabase
+        .from('pieces_pannes_checks')
+        .select('*, piece:pieces_sous_ensembles(id, nom, reference)')
+        .in('panne_id', panneIds)
+        .order('ordre');
+      const checksMap = {};
+      for (const check of (checks || [])) {
+        if (!checksMap[check.panne_id]) checksMap[check.panne_id] = [];
+        checksMap[check.panne_id].push(check);
+      }
+      setSeHelpChecksMap(checksMap);
+    }
+    setIsDiagnosticLoading(false);
   };
 
-  const markATester = async (itemId) => {
-    const { error } = await supabase.from('stock_defectueux').update({ statut: 'a_tester' }).eq('id', itemId);
+  const selectDiagnosticPanne = async (panne) => {
+    setSeDiagnosticPanne(panne);
+    setSeDiagnosticCheckedIds(new Set());
+    setSeDiagnosticView('guide');
+    setSeDiagnosticProcedures([]);
+    setIsDiagnosticDocsLoading(false);
+    if (!panne?.piece?.id) return;
+    setIsDiagnosticDocsLoading(true);
+    const { data } = await supabase
+      .from('pieces_procedures')
+      .select('*')
+      .eq('piece_id', panne.piece.id)
+      .order('ordre');
+    setSeDiagnosticProcedures(data || []);
+    setIsDiagnosticDocsLoading(false);
+  };
+
+  const completeDiagnostic = () => {
+    if (!seHelpItem || !seDiagnosticPanne || seDiagnosticCheckedIds.size === 0) return;
+    setDiagnosticSessions(prev => ({
+      ...prev,
+      [seHelpItem.id]: {
+        panne: seDiagnosticPanne.description,
+        piece: seDiagnosticPanne.piece?.nom || null,
+        checkedCount: seDiagnosticCheckedIds.size,
+        totalChecks: seDiagnosticChecks.length,
+        completedAt: new Date().toISOString(),
+      },
+    }));
+    setIsSEHelpOpen(false);
+    showOk('Diagnostic validé. Vous pouvez maintenant traiter la pièce concernée.');
+  };
+
+  const markATester = async (item) => {
+    const itemIds = getStockDefectueuxRecordIds(item);
+    const { error } = await supabase.from('stock_defectueux').update({ statut: 'a_tester' }).in('id', itemIds);
     if (error) { showErr(error.message); return; }
     showOk('Sous-ensemble passé à "À tester".');
-    setSelectedItem(prev => prev ? { ...prev, statut: 'a_tester' } : prev);
-    setStock(prev => prev.map(s => s.id === itemId ? { ...s, statut: 'a_tester' } : s));
-    setTreatedPieces(prev => { const n = { ...prev }; delete n[itemId]; return n; });
+    setSelectedItem(prev => prev && itemIds.includes(prev.id) ? { ...prev, statut: 'a_tester' } : prev);
+    setStock(prev => prev.map(s => itemIds.includes(s.id) ? { ...s, statut: 'a_tester' } : s));
+    setTreatedPieces(prev => { const n = { ...prev }; delete n[item.id]; return n; });
   };
 
-  const markRepare = async (itemId) => {
-    const item = stock.find(s => s.id === itemId) || selectedItem;
-    const { error } = await supabase.from('stock_defectueux').update({ statut: 'repare', date_sortie: new Date().toISOString() }).eq('id', itemId);
+  const markRepare = async (item) => {
+    const itemIds = getStockDefectueuxRecordIds(item);
+    const { error } = await supabase.from('stock_defectueux').update({ statut: 'repare', date_sortie: new Date().toISOString() }).in('id', itemIds);
     if (error) { showErr(error.message); return; }
     const table = item?.type_sous_ensemble ? EQUIP_TABLE_MAP[item.type_sous_ensemble] : null;
     if (table && item?.reference_sous_ensemble) {
@@ -516,45 +599,12 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                                           ×{sp.quantite}
                                         </span>
                                       )}
-                                      {mp.piece && (
-                                        <Button variant="ghost" size="icon" className="h-6 w-6 text-primary shrink-0" title="Aide à la réparation" onClick={() => loadPieceHelp(mp.piece)}>
-                                          <HelpCircle className="h-3.5 w-3.5" />
-                                        </Button>
-                                      )}
-                                      {canManage && mp.piece && !pieceAction && (
-                                        <>
-                                          <Button size="sm" variant="outline" className="h-6 text-xs px-2 text-green-700 border-green-300 shrink-0" onClick={() => markNettoye(mp.piece, item)}>
-                                            <Sparkles className="mr-1 h-3 w-3" />Nettoyée
-                                          </Button>
-                                          <Button size="sm" variant="outline" className="h-6 text-xs px-2 shrink-0" onClick={() => openReplace(mp.piece, item)}>
-                                            <ArrowRight className="mr-1 h-3 w-3" />Remplacer
-                                          </Button>
-                                        </>
-                                      )}
                                     </div>
                                   );
                                 })}
-                                {canManage && item.statut !== 'a_tester' && item.statut !== 'repare' && (
-                                  <div className="pt-1.5 border-t border-dashed border-muted-foreground/20">
-                                    {Object.keys(treatedPieces[item.id] || {}).length > 0 ? (
-                                      <Button
-                                        size="sm"
-                                        className="w-full h-7 text-xs bg-yellow-500 hover:bg-yellow-600 text-white"
-                                        onClick={() => markATester(item.id)}
-                                      >
-                                        <FlaskConical className="mr-1.5 h-3.5 w-3.5" />
-                                        Passer en test ({Object.keys(treatedPieces[item.id]).length} pièce{Object.keys(treatedPieces[item.id]).length > 1 ? 's' : ''} traitée{Object.keys(treatedPieces[item.id]).length > 1 ? 's' : ''})
-                                      </Button>
-                                    ) : (
-                                      <p className="text-[10px] text-center text-muted-foreground italic">
-                                        Traitez au moins une pièce pour passer en test.
-                                      </p>
-                                    )}
-                                  </div>
-                                )}
                                 {item.statut === 'a_tester' && (
                                   <div className="pt-1.5 border-t border-dashed border-muted-foreground/20">
-                                    <p className="text-[10px] text-center text-yellow-700 font-medium">En attente de test — sélectionnez pour marquer Réparé</p>
+                                    <p className="text-[10px] text-center text-yellow-700 font-medium">En attente de validation du test</p>
                                   </div>
                                 )}
                               </>
@@ -635,13 +685,78 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                   })()}
                 </CardHeader>
                 <CardContent className="space-y-3">
+                  {(() => {
+                    const session = diagnosticSessions[selectedItem.id];
+                    const treatedCount = Object.keys(treatedPieces[selectedItem.id] || {}).length;
+                    const diagnosticIsOpen = isSEHelpOpen && seHelpItem?.id === selectedItem.id;
+                    const steps = [
+                      { label: 'Signalement', detail: 'Panne reçue', done: true, active: false },
+                      {
+                        label: 'Diagnostic',
+                        detail: session ? `${session.checkedCount} contrôle(s)` : diagnosticIsOpen ? 'En cours' : 'À réaliser',
+                        done: Boolean(session),
+                        active: diagnosticIsOpen,
+                      },
+                      {
+                        label: 'Intervention',
+                        detail: treatedCount > 0 ? `${treatedCount} pièce(s) traitée(s)` : 'À réaliser',
+                        done: treatedCount > 0,
+                        active: Boolean(session) && treatedCount === 0,
+                      },
+                      {
+                        label: 'Test',
+                        detail: selectedItem.statut === 'a_tester' ? 'À valider' : 'En attente',
+                        done: selectedItem.statut === 'repare',
+                        active: selectedItem.statut === 'a_tester',
+                      },
+                    ];
+                    return (
+                      <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+                        {steps.map((step, index) => (
+                          <div
+                            key={step.label}
+                            className={`min-w-0 rounded-md border px-3 py-2 ${
+                              step.done
+                                ? 'border-emerald-200 bg-emerald-50'
+                                : step.active
+                                  ? 'border-primary/40 bg-primary/5'
+                                  : 'border-border bg-muted/20'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${
+                                step.done
+                                  ? 'bg-emerald-500 text-white'
+                                  : step.active
+                                    ? 'bg-primary text-primary-foreground'
+                                    : 'bg-muted text-muted-foreground'
+                              }`}>
+                                {step.done ? <Check className="h-3 w-3" /> : index + 1}
+                              </span>
+                              <span className="truncate text-xs font-semibold">{step.label}</span>
+                            </div>
+                            <p className="mt-1 truncate pl-7 text-[10px] text-muted-foreground">{step.detail}</p>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
                   <div className="flex flex-wrap gap-2">
+                    {selectedItem.statut !== 'a_tester' && selectedItem.statut !== 'repare' && (
+                      <Button
+                        size="sm"
+                        onClick={() => openSousEnsembleHelp(selectedItem)}
+                      >
+                        <Stethoscope className="mr-2 h-4 w-4" />
+                        {diagnosticSessions[selectedItem.id] ? 'Reprendre le diagnostic' : 'Lancer le diagnostic'}
+                      </Button>
+                    )}
                     {canManage && selectedItem.statut !== 'repare' && selectedItem.statut !== 'a_tester' && (
                       <Button
                         size="sm"
                         variant="outline"
                         className={Object.keys(treatedPieces[selectedItem.id] || {}).length > 0 ? 'bg-yellow-500 text-white border-yellow-500 hover:bg-yellow-600' : 'text-yellow-700 border-yellow-300'}
-                        onClick={() => markATester(selectedItem.id)}
+                        onClick={() => markATester(selectedItem)}
                       >
                         <FlaskConical className="mr-2 h-4 w-4" />
                         Passer en test
@@ -653,7 +768,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                       </Button>
                     )}
                     {canManage && selectedItem.statut === 'a_tester' && (
-                      <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white" onClick={() => markRepare(selectedItem.id)}>
+                      <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white" onClick={() => markRepare(selectedItem)}>
                         <CheckCircle2 className="mr-2 h-4 w-4" /> Marquer Réparé
                       </Button>
                     )}
@@ -683,6 +798,302 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                   )}
                 </CardContent>
               </Card>
+
+              {isSEHelpOpen && seHelpItem?.id === selectedItem.id && (
+                <Dialog open={isSEHelpOpen} onOpenChange={setIsSEHelpOpen}>
+                <DialogContent className="sm:max-w-3xl w-[min(94vw,52rem)] max-h-[84vh] flex flex-col gap-0 overflow-hidden border-primary/25 p-0 !bg-background !backdrop-blur-none">
+                  <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+                  <div className="relative shrink-0 border-b bg-primary/5 px-6 pb-3 pt-5 pr-14">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <CardTitle className="flex items-center gap-2 text-lg text-primary">
+                          <Stethoscope className="h-5 w-5" /> Diagnostic guidé
+                          <span className="font-mono text-foreground">{seHelpItem?.reference_sous_ensemble}</span>
+                        </CardTitle>
+                        <CardDescription className="mt-1">
+                          {seDiagnosticPanne
+                            ? `${seDiagnosticPanne.piece?.nom || 'Pièce'} · ${seDiagnosticPanne.description}`
+                            : 'Sélectionnez le symptôme ou la pièce à contrôler.'}
+                        </CardDescription>
+                      </div>
+                      {seDiagnosticPanne?.piece && <Badge variant="outline" className="shrink-0 bg-background">{seDiagnosticPanne.piece.reference || seDiagnosticPanne.piece.nom}</Badge>}
+                    </div>
+
+                    <div className="mt-3 grid grid-cols-3 gap-1 rounded-md border bg-background p-1">
+                      {['Symptôme', 'Contrôles', 'Action'].map((label, index) => {
+                        const activeIndex = seDiagnosticPanne ? (seDiagnosticCheckedIds.size > 0 ? 2 : 1) : 0;
+                        const done = index < activeIndex;
+                        const active = index === activeIndex;
+                        return (
+                          <div key={label} className={`flex min-w-0 items-center justify-center gap-1.5 rounded px-2 py-1.5 text-[11px] font-medium ${active ? 'bg-primary text-primary-foreground' : done ? 'bg-emerald-50 text-emerald-700' : 'text-muted-foreground'}`}>
+                            {done ? <Check className="h-3 w-3" /> : <span>{index + 1}</span>}
+                            <span className="truncate">{label}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <div className="mt-3 grid grid-cols-2 gap-1 rounded-md border bg-background p-1">
+                      <button
+                        type="button"
+                        onClick={() => setSeDiagnosticView('guide')}
+                        className={`flex items-center justify-center gap-2 rounded px-3 py-2 text-xs font-semibold transition-colors ${seDiagnosticView === 'guide' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'}`}
+                      >
+                        <Stethoscope className="h-4 w-4" /> Guide diagnostic
+                      </button>
+                      <button
+                        type="button"
+                        disabled={!seDiagnosticPanne?.piece}
+                        onClick={() => setSeDiagnosticView('documentation')}
+                        className={`flex items-center justify-center gap-2 rounded px-3 py-2 text-xs font-semibold transition-colors ${
+                          seDiagnosticView === 'documentation'
+                            ? 'bg-primary text-primary-foreground'
+                            : seDiagnosticPanne?.piece
+                              ? 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
+                              : 'cursor-not-allowed text-muted-foreground/40'
+                        }`}
+                        title={seDiagnosticPanne?.piece ? 'Consulter la documentation de la pièce' : 'Sélectionnez d’abord une pièce'}
+                      >
+                        <HelpCircle className="h-4 w-4" /> Documentation
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex-1 space-y-3 overflow-y-auto px-6 py-5">
+                    {seDiagnosticView === 'documentation' ? (
+                      <div className="space-y-5">
+                        <div className="flex flex-wrap items-start justify-between gap-3 border-b pb-4">
+                          <div className="min-w-0">
+                            <p className="text-xs font-semibold uppercase text-muted-foreground">Aide à la réparation</p>
+                            <h3 className="mt-1 text-lg font-bold text-foreground">{seDiagnosticPanne?.piece?.nom}</h3>
+                            {seDiagnosticPanne?.piece?.reference && (
+                              <p className="font-mono text-xs text-muted-foreground">{seDiagnosticPanne.piece.reference}</p>
+                            )}
+                          </div>
+                          <Button type="button" variant="outline" size="sm" onClick={() => setSeDiagnosticView('guide')}>
+                            <ChevronLeft className="mr-1 h-4 w-4" /> Revenir aux contrôles
+                          </Button>
+                        </div>
+
+                        {seDiagnosticPanne?.piece?.description_aide ? (
+                          <section className="border-b pb-4">
+                            <h4 className="flex items-center gap-2 text-sm font-semibold">
+                              <HelpCircle className="h-4 w-4 text-primary" /> Description
+                            </h4>
+                            <p className="mt-2 whitespace-pre-line text-sm leading-6 text-muted-foreground">{seDiagnosticPanne.piece.description_aide}</p>
+                          </section>
+                        ) : (
+                          <p className="border-b pb-4 text-sm text-muted-foreground">Aucune description d'aide n'est renseignée pour cette pièce.</p>
+                        )}
+
+                        {seDiagnosticPanne?.piece?.photo_url && (
+                          <section className="border-b pb-4">
+                            <h4 className="mb-2 text-sm font-semibold">Repère visuel</h4>
+                            <img
+                              src={seDiagnosticPanne.piece.photo_url}
+                              alt={seDiagnosticPanne.piece.nom}
+                              className="max-h-64 w-full rounded-md border bg-white object-contain"
+                            />
+                          </section>
+                        )}
+
+                        <section className="border-b pb-4">
+                          <h4 className="flex items-center gap-2 text-sm font-semibold">
+                            <AlertTriangle className="h-4 w-4 text-amber-500" /> Pannes connues
+                          </h4>
+                          <div className="mt-2 divide-y rounded-md border bg-background">
+                            {seHelpPannes
+                              .filter(panne => String(panne.piece_id) === String(seDiagnosticPanne?.piece?.id))
+                              .map(panne => (
+                                <button
+                                  key={panne.id}
+                                  type="button"
+                                  onClick={() => { selectDiagnosticPanne(panne); setSeDiagnosticView('guide'); }}
+                                  className={`flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm hover:bg-muted/40 ${panne.id === seDiagnosticPanne?.id ? 'bg-amber-50 text-amber-900' : ''}`}
+                                >
+                                  <span className="min-w-0 flex-1">{panne.description}</span>
+                                  {panne.id === seDiagnosticPanne?.id && <Badge className="bg-amber-100 text-amber-800">En cours</Badge>}
+                                  <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                                </button>
+                              ))}
+                          </div>
+                        </section>
+
+                        <section>
+                          <h4 className="flex items-center gap-2 text-sm font-semibold">
+                            <ListChecks className="h-4 w-4 text-primary" /> Procédure de réparation
+                          </h4>
+                          {isDiagnosticDocsLoading ? (
+                            <p className="mt-3 text-sm text-muted-foreground">Chargement de la procédure...</p>
+                          ) : seDiagnosticProcedures.length === 0 ? (
+                            <p className="mt-3 text-sm text-muted-foreground">Aucune procédure n'est encore renseignée pour cette pièce.</p>
+                          ) : (
+                            <ol className="mt-3 space-y-3">
+                              {seDiagnosticProcedures.map((procedure, index) => (
+                                <li key={procedure.id} className="flex gap-3 border-b pb-3 last:border-b-0 last:pb-0">
+                                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">{index + 1}</span>
+                                  <div className="min-w-0 flex-1">
+                                    <p className="whitespace-pre-line text-sm leading-6">{procedure.description}</p>
+                                    {procedure.image_url && (
+                                      <img src={procedure.image_url} alt={`Étape ${index + 1}`} className="mt-2 max-h-56 w-full rounded-md border bg-white object-contain" />
+                                    )}
+                                  </div>
+                                </li>
+                              ))}
+                            </ol>
+                          )}
+                        </section>
+                      </div>
+                    ) : isDiagnosticLoading ? (
+                      <div className="py-8 text-center text-sm text-muted-foreground">Chargement du référentiel de diagnostic...</div>
+                    ) : !seHelpItem?.modele_id ? (
+                      <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                        Aucun modèle n'est associé à ce sous-ensemble.
+                      </div>
+                    ) : seHelpPannes.length === 0 ? (
+                      <div className="rounded-md border px-4 py-6 text-center text-sm text-muted-foreground">
+                        Aucun diagnostic n'est configuré pour ce modèle.
+                      </div>
+                    ) : !seDiagnosticPanne ? (
+                      <>
+                        {(() => {
+                          const normalize = value => String(value || '').trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+                          const declaredFault = seHelpItem?.intervention?.code_panne?.libelle || '';
+                          const sortedPannes = [...seHelpPannes].sort((a, b) => {
+                            const aMatch = declaredFault && normalize(a.description) === normalize(declaredFault) ? 1 : 0;
+                            const bMatch = declaredFault && normalize(b.description) === normalize(declaredFault) ? 1 : 0;
+                            return bMatch - aMatch || (b.poids || 3) - (a.poids || 3);
+                          });
+                          return (
+                            <div className="max-h-[24rem] space-y-2 overflow-y-auto pr-1">
+                              {sortedPannes.map(panne => {
+                                const checks = seHelpChecksMap[panne.id] || [];
+                                const recommended = declaredFault && normalize(panne.description) === normalize(declaredFault);
+                                return (
+                                  <button
+                                    key={panne.id}
+                                    type="button"
+                                    disabled={checks.length === 0}
+                                    onClick={() => selectDiagnosticPanne(panne)}
+                                    className={`flex w-full items-center gap-3 rounded-md border px-3 py-3 text-left transition-colors ${
+                                      checks.length === 0
+                                        ? 'cursor-not-allowed bg-muted/20 opacity-55'
+                                        : recommended
+                                          ? 'border-amber-300 bg-amber-50 hover:bg-amber-100/70'
+                                          : 'bg-background hover:border-primary/30 hover:bg-primary/5'
+                                    }`}
+                                  >
+                                    <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-xs font-bold ${recommended ? 'bg-amber-500 text-white' : 'bg-primary/10 text-primary'}`}>
+                                      {panne.poids || 3}
+                                    </span>
+                                    <span className="min-w-0 flex-1">
+                                      <span className="flex flex-wrap items-center gap-2">
+                                        <span className="truncate text-sm font-semibold">{panne.piece?.nom || 'Pièce non renseignée'}</span>
+                                        {recommended && <Badge className="bg-amber-100 text-amber-800">Panne déclarée</Badge>}
+                                      </span>
+                                      <span className="mt-0.5 block truncate text-xs text-muted-foreground">{panne.description}</span>
+                                    </span>
+                                    <span className="shrink-0 text-[11px] text-muted-foreground">{checks.length} contrôle{checks.length > 1 ? 's' : ''}</span>
+                                    <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          );
+                        })()}
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-primary/20 bg-primary/5 px-3 py-2">
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-semibold">{seDiagnosticPanne.piece?.nom || 'Pièce'}</p>
+                            <p className="truncate text-xs text-muted-foreground">{seDiagnosticPanne.description}</p>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => { setSeDiagnosticPanne(null); setSeDiagnosticCheckedIds(new Set()); }}
+                          >
+                            <ChevronLeft className="mr-1 h-4 w-4" /> Changer
+                          </Button>
+                        </div>
+
+                        <div className="space-y-2">
+                          {seDiagnosticChecks.map((check, index) => {
+                            const checked = seDiagnosticCheckedIds.has(check.id);
+                            return (
+                              <button
+                                key={check.id}
+                                type="button"
+                                onClick={() => setSeDiagnosticCheckedIds(prev => {
+                                  const next = new Set(prev);
+                                  if (next.has(check.id)) next.delete(check.id); else next.add(check.id);
+                                  return next;
+                                })}
+                                className={`flex w-full items-start gap-3 rounded-md border px-3 py-2.5 text-left transition-colors ${checked ? 'border-emerald-300 bg-emerald-50' : 'bg-background hover:bg-muted/30'}`}
+                              >
+                                <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border ${checked ? 'border-emerald-500 bg-emerald-500 text-white' : 'border-muted-foreground/30'}`}>
+                                  {checked && <Check className="h-3 w-3" />}
+                                </span>
+                                <span className="min-w-0 flex-1">
+                                  <span className="block text-sm">{check.description_verification}</span>
+                                  {check.piece && <span className="mt-0.5 block text-[11px] text-muted-foreground">Pièce concernée : {check.piece.nom}</span>}
+                                </span>
+                                <span className="text-[10px] font-semibold text-muted-foreground">{index + 1}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {seDiagnosticCheckedIds.size > 0 && (
+                          <div className="space-y-2 rounded-md border border-emerald-200 bg-emerald-50/70 p-3">
+                            <div className="flex items-center justify-between gap-2">
+                              <p className="text-xs font-semibold text-emerald-800">Résultat du diagnostic</p>
+                              <span className="text-[11px] text-emerald-700">{seDiagnosticCheckedIds.size}/{seDiagnosticChecks.length} contrôles</span>
+                            </div>
+                            {seDiagnosticPieces.length === 0 ? (
+                              <p className="text-xs text-muted-foreground">Aucune pièce spécifique n'est liée aux contrôles sélectionnés.</p>
+                            ) : seDiagnosticPieces.map(piece => {
+                              const action = treatedPieces[selectedItem.id]?.[piece.id];
+                              return (
+                                <div key={piece.id} className="flex flex-wrap items-center gap-2 border-t border-emerald-200 pt-2 first:border-t-0 first:pt-0">
+                                  <span className="min-w-0 flex-1 truncate text-sm font-medium">{piece.nom}</span>
+                                  {action ? (
+                                    <Badge className="bg-emerald-100 text-emerald-800">{action === 'nettoyage' ? 'Nettoyée' : 'Remplacée'}</Badge>
+                                  ) : canManage ? (
+                                    <>
+                                      <Button size="sm" variant="outline" className="h-7 text-xs text-emerald-700" onClick={() => markNettoye(piece, selectedItem)}>
+                                        <Sparkles className="mr-1 h-3 w-3" /> Nettoyer
+                                      </Button>
+                                      <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => openReplace(piece, selectedItem)}>
+                                        <ArrowRight className="mr-1 h-3 w-3" /> Remplacer
+                                      </Button>
+                                    </>
+                                  ) : null}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+
+                        <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-3">
+                          <div className="min-w-[12rem] flex-1">
+                            <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                              <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${Math.round((seDiagnosticCheckedIds.size / Math.max(seDiagnosticChecks.length, 1)) * 100)}%` }} />
+                            </div>
+                            <p className="mt-1 text-[10px] text-muted-foreground">Cochez les contrôles réellement effectués.</p>
+                          </div>
+                          <Button type="button" size="sm" disabled={seDiagnosticCheckedIds.size === 0} onClick={completeDiagnostic}>
+                            <CheckCheck className="mr-2 h-4 w-4" /> Valider le diagnostic
+                          </Button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </DialogContent>
+                </Dialog>
+              )}
 
               {/* Pièces du modèle */}
               {(itemPieces.length > 0 || selectedItem.modele_id) && (
@@ -735,162 +1146,6 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
           )}
         </div>
       </div>
-
-      {/* Dialog pannes sous-ensemble */}
-      <Dialog open={isSEHelpOpen} onOpenChange={setIsSEHelpOpen}>
-        <DialogContent className="sm:max-w-lg w-full flex flex-col h-[62vh] p-0 gap-0 overflow-hidden !rounded-2xl">
-
-          {/* Bande de couleur supérieure — accent primary (style des fenêtres flottantes) */}
-          <div className="h-1.5 w-full shrink-0 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
-
-          {/* Header */}
-          <div className="shrink-0 px-6 pt-5 pb-4 border-b bg-gradient-to-b from-primary/8 to-white">
-            <h2 className="text-xl font-bold text-primary leading-tight">
-              {seHelpItem?.reference_sous_ensemble}
-            </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {SOUS_ENSEMBLE_LABELS[seHelpItem?.type_sous_ensemble] || seHelpItem?.type_sous_ensemble}
-              {' · '}Pièces à inspecter classées par priorité de panne
-            </p>
-          </div>
-
-          {/* Body */}
-          <div className="flex-1 overflow-y-auto px-6 py-5">
-            {!seHelpItem?.modele_id ? (
-              <div className="flex flex-col items-center gap-2 py-10 text-center">
-                <Package2 className="h-8 w-8 text-muted-foreground/40" />
-                <p className="text-sm text-muted-foreground">Aucun modèle associé à ce sous-ensemble.</p>
-              </div>
-            ) : seHelpPannes.length === 0 ? (
-              <div className="flex flex-col items-center gap-2 py-10 text-center">
-                <HelpCircle className="h-8 w-8 text-muted-foreground/40" />
-                <p className="text-sm text-muted-foreground">Aucune panne configurée pour ce sous-ensemble.</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {(() => {
-                  const norm = s => (s || '').trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-                  const interventionLibelle = seHelpItem?.intervention?.code_panne?.libelle || '';
-                  const matchKey = norm(interventionLibelle);
-                  const INITIAL_GROUPS = 3;
-
-                  const groupMap = seHelpPannes.reduce((acc, p) => {
-                    const key = p.description || '(sans description)';
-                    if (!acc[key]) acc[key] = [];
-                    acc[key].push(p);
-                    return acc;
-                  }, {});
-                  const allEntries = Object.entries(groupMap);
-
-                  const matchedEntries = matchKey
-                    ? allEntries.filter(([desc]) => norm(desc) === matchKey)
-                    : [];
-                  const otherEntries = allEntries.filter(([desc]) => !matchedEntries.some(([d]) => d === desc));
-
-                  const hasMatch = matchedEntries.length > 0;
-                  const visibleEntries = hasMatch
-                    ? (seHelpShowAll ? [...matchedEntries, ...otherEntries] : matchedEntries)
-                    : (seHelpShowAll ? otherEntries : otherEntries.slice(0, INITIAL_GROUPS));
-                  const hiddenCount = hasMatch ? otherEntries.length : otherEntries.length - INITIAL_GROUPS;
-                  const showToggle = hasMatch ? otherEntries.length > 0 : otherEntries.length > INITIAL_GROUPS;
-
-                  const renderPanneCard = (p, isMatched) => {
-                    const poids = p.poids || 3;
-                    const cfg = poids >= 5
-                      ? { border: 'border-l-red-400',    grad: 'from-red-50 to-rose-50/40',     badge: 'bg-red-100 text-red-700',       dot: 'bg-gradient-to-br from-red-500 to-rose-400',     text: 'Critique' }
-                      : poids === 4
-                      ? { border: 'border-l-orange-400', grad: 'from-orange-50 to-amber-50/40', badge: 'bg-orange-100 text-orange-700',  dot: 'bg-gradient-to-br from-orange-500 to-amber-400', text: 'Élevé' }
-                      : poids === 3
-                      ? { border: 'border-l-amber-400',  grad: 'from-amber-50 to-yellow-50/30', badge: 'bg-amber-100 text-amber-700',    dot: 'bg-gradient-to-br from-amber-400 to-yellow-300', text: 'Moyen' }
-                      : poids === 2
-                      ? { border: 'border-l-blue-300',   grad: 'from-blue-50 to-sky-50/30',     badge: 'bg-blue-100 text-blue-600',     dot: 'bg-gradient-to-br from-blue-400 to-sky-300',    text: 'Faible' }
-                      : { border: 'border-l-gray-200',   grad: 'from-muted/40 to-muted/10',     badge: 'bg-gray-100 text-gray-500',     dot: 'bg-gradient-to-br from-gray-300 to-gray-200',   text: 'Minimal' };
-                    return (
-                      <div
-                        key={p.id}
-                        className={`flex items-center gap-3 rounded-xl border border-l-4 ${cfg.border} bg-gradient-to-r ${cfg.grad} pl-3 pr-3 py-2.5 shadow-sm`}
-                      >
-                        <div className={`shrink-0 h-6 w-6 rounded-lg ${cfg.dot} flex items-center justify-center`}>
-                          <span className="text-[9px] font-bold text-white">{poids}</span>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          {p.piece ? (
-                            <button
-                              onClick={() => { setIsSEHelpOpen(false); loadPieceHelp(p.piece, p.id, p.description); }}
-                              className="group flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
-                            >
-                              <HelpCircle className="h-3.5 w-3.5 shrink-0 opacity-60 group-hover:opacity-100" />
-                              <span className="truncate">{p.piece.nom}</span>
-                              <ArrowRight className="h-3 w-3 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </button>
-                          ) : (
-                            <span className="text-xs text-muted-foreground italic">Pièce non renseignée</span>
-                          )}
-                        </div>
-                        <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${cfg.badge}`}>{cfg.text}</span>
-                      </div>
-                    );
-                  };
-
-                  return (
-                    <div className="space-y-4">
-                      {/* Bannière intervention */}
-                      {hasMatch && (
-                        <div className="flex items-center gap-3 rounded-xl border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 px-4 py-3">
-                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber-300 to-orange-400">
-                            <AlertTriangle className="h-4 w-4 text-white" />
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-amber-500">Code panne déclaré lors de l'intervention</p>
-                            <p className="mt-0.5 truncate text-[13px] font-semibold text-amber-800">{interventionLibelle}</p>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Groupes visibles */}
-                      {visibleEntries.map(([description, items]) => {
-                        const isMatched = matchedEntries.some(([d]) => d === description);
-                        return (
-                          <div key={description} className="space-y-2">
-                            {/* Divider titre de groupe */}
-                            <div className={`flex items-center gap-2 ${isMatched ? 'text-amber-700' : 'text-muted-foreground'}`}>
-                              <div className={`h-px flex-1 ${isMatched ? 'bg-gradient-to-r from-transparent to-amber-300' : 'bg-border'}`} />
-                              <span className="shrink-0 text-[10px] font-bold uppercase tracking-widest">{description}</span>
-                              {isMatched && (
-                                <span className="shrink-0 rounded-full bg-gradient-to-r from-amber-100 to-orange-100 px-2 py-0.5 text-[9px] font-bold text-amber-700 ring-1 ring-amber-200">
-                                  Intervention
-                                </span>
-                              )}
-                              <div className={`h-px flex-1 ${isMatched ? 'bg-gradient-to-l from-transparent to-amber-300' : 'bg-border'}`} />
-                            </div>
-                            <div className="space-y-1.5">
-                              {items.map(p => renderPanneCard(p, isMatched))}
-                            </div>
-                          </div>
-                        );
-                      })}
-
-                      {/* Bouton Voir plus / Voir moins */}
-                      {showToggle && (
-                        <button
-                          onClick={() => setSeHelpShowAll(v => !v)}
-                          className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed py-2.5 text-xs font-medium text-muted-foreground hover:border-primary/40 hover:bg-muted/40 hover:text-foreground transition-colors"
-                        >
-                          {seHelpShowAll ? (
-                            <><ChevronUp className="h-3.5 w-3.5" />Voir moins</>
-                          ) : (
-                            <><ChevronDown className="h-3.5 w-3.5" />Voir {hiddenCount} autre{hiddenCount > 1 ? 's' : ''} type{hiddenCount > 1 ? 's' : ''} de panne</>
-                          )}
-                        </button>
-                      )}
-                    </div>
-                  );
-                })()}
-              </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* Dialog aide réparation */}
       <Dialog open={isHelpOpen} onOpenChange={setIsHelpOpen}>

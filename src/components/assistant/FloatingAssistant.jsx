@@ -18,6 +18,8 @@ export default function FloatingAssistant() {
   const [authResolved, setAuthResolved] = useState(false);
   const [visible, setVisible] = useState(true);
   const identity = authUser?.id || null;
+  const normalizedPath = location.pathname.replace(/\/+$/, '') || '/';
+  const isHomePage = normalizedPath === '/';
   useEffect(() => {
     let active = true;
     setAuthResolved(false);
@@ -47,7 +49,12 @@ export default function FloatingAssistant() {
   }, [identity]);
 
   const request = useCallback((body, signal) => requestAssistant(client, body, signal), [client]);
-  if (import.meta.env.VITE_ASSISTANT_ENABLED === 'false' || !authResolved || (identity && !visible)) return null;
+  if (
+    import.meta.env.VITE_ASSISTANT_ENABLED === 'false'
+    || isHomePage
+    || !authResolved
+    || (identity && !visible)
+  ) return null;
   return <AssistantPanel key={`${space || 'public'}:${identity || 'guest'}`} space={space}
     currentTab={location.pathname.split('/')[2] || ''} authenticated={Boolean(identity)} request={request} onNavigate={navigate} />;
 }

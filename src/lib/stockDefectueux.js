@@ -1,5 +1,64 @@
 import { supabase } from '@/lib/supabaseClient';
 
+const normalizeReference = (value) => String(value || '').trim().toLocaleUpperCase('fr-FR');
+
+const STATUS_PRIORITY = {
+  defectueux: 0,
+  assigne: 1,
+  a_tester: 2,
+};
+
+export const getStockDefectueuxRecordIds = (item) => {
+  if (!item) return [];
+  return [...new Set([item.id, ...(item.duplicate_ids || [])].filter(Boolean))];
+};
+
+/**
+ * Regroupe uniquement les doublons encore actifs. Les lignes réparées restent
+ * distinctes afin de conserver l'historique des passages en atelier.
+ */
+export const regrouperStockDefectueuxActif = (rows = []) => {
+  const groupedRows = [];
+  const activeByKey = new Map();
+
+  for (const row of rows) {
+    const reference = normalizeReference(row.reference_sous_ensemble);
+    const type = String(row.type_sous_ensemble || '').trim().toLowerCase();
+    const isActive = row.statut !== 'repare';
+
+    if (!isActive || !reference || !type) {
+      groupedRows.push({ ...row, duplicate_ids: [row.id].filter(Boolean), duplicate_count: 1 });
+      continue;
+    }
+
+    const key = `${type}::${reference}`;
+    const existingIndex = activeByKey.get(key);
+
+    if (existingIndex === undefined) {
+      activeByKey.set(key, groupedRows.length);
+      groupedRows.push({ ...row, duplicate_ids: [row.id].filter(Boolean), duplicate_count: 1 });
+      continue;
+    }
+
+    const existing = groupedRows[existingIndex];
+    const rowHasAdvancedStatus = (STATUS_PRIORITY[row.statut] ?? -1) > (STATUS_PRIORITY[existing.statut] ?? -1);
+    const duplicateIds = [...new Set([...existing.duplicate_ids, row.id].filter(Boolean))];
+
+    groupedRows[existingIndex] = {
+      ...existing,
+      ...(rowHasAdvancedStatus ? {
+        statut: row.statut,
+        technicien_id: row.technicien_id || existing.technicien_id,
+        technicien_nom: row.technicien_nom || existing.technicien_nom,
+      } : {}),
+      duplicate_ids: duplicateIds,
+      duplicate_count: duplicateIds.length,
+    };
+  }
+
+  return groupedRows;
+};
+
 /**
  * Ajoute un sous-ensemble remplacé lors d'une maintenance curative au stock défectueux.
  * À appeler depuis le formulaire d'enregistrement d'intervention curative.
@@ -27,8 +86,29 @@ export const ajouterAuStockDefectueux = async ({
     return { data: null, error: new Error('Référence et type de sous-ensemble requis.') };
   }
 
+  const normalizedReference = String(referenceSousEnsemble).trim();
+
+  // Une référence physique ne peut avoir qu'un seul cycle de réparation actif.
+  // On conserve néanmoins les anciennes lignes réparées pour l'historique.
+  const { data: activeRows, error: lookupError } = await supabase
+    .from('stock_defectueux')
+    .select('*')
+    .eq('type_sous_ensemble', typeSousEnsemble)
+    .neq('statut', 'repare')
+    .order('date_entree', { ascending: false });
+
+  if (lookupError) return { data: null, error: lookupError };
+
+  const existing = (activeRows || []).find(
+    (row) => normalizeReference(row.reference_sous_ensemble) === normalizeReference(normalizedReference)
+  );
+
+  if (existing) {
+    return { data: existing, error: null, deduplicated: true };
+  }
+
   const payload = {
-    reference_sous_ensemble: referenceSousEnsemble,
+    reference_sous_ensemble: normalizedReference,
     type_sous_ensemble: typeSousEnsemble,
     type_terminal: typeTerminal || null,
     statut: 'defectueux',

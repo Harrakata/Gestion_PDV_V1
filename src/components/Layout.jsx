@@ -10,7 +10,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Toaster } from '@/components/ui/toaster';
 import OfflineSyncIndicator from '@/components/OfflineSyncIndicator';
 const FloatingAssistant = React.lazy(() => import('@/components/assistant/FloatingAssistant'));
 import { Home, Briefcase, Users, Settings, BarChart3, LogIn, Sun, Moon, Menu, Wrench, ShieldCheck, Wallet, User } from 'lucide-react';
@@ -361,7 +360,6 @@ const Layout = () => {
         </div>
       </footer>
       <React.Suspense fallback={null}><FloatingAssistant /></React.Suspense>
-      <Toaster />
     </div>
   );
 };

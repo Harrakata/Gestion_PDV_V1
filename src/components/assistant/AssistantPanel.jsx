@@ -46,7 +46,7 @@ export default function AssistantPanel({ space, currentTab, authenticated, reque
     if (!authenticated || !space || !online) {
       setCapabilities({ mode: 'guide', menus: [] });
       setNotice(!online ? 'Hors ligne : guide intégré disponible, sans consultation des états actuels.'
-        : 'Guide intégré. Connectez-vous à votre espace pour accéder à l’IA et aux données autorisées.');
+        : '');
       setChecking(false);
       return;
     }
@@ -128,27 +128,30 @@ export default function AssistantPanel({ space, currentTab, authenticated, reque
       </button>
     </Dialog.Trigger>
     <Dialog.Portal>
-      <Dialog.Overlay className="fixed inset-0 z-50 bg-black/15" />
+      <Dialog.Overlay data-operational-assistant-overlay className="fixed inset-0 z-50 bg-black/10 backdrop-blur-none" />
       <Dialog.Content data-operational-assistant onOpenAutoFocus={(event) => { if (inputRef.current) { event.preventDefault(); inputRef.current.focus(); } }}
-        className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-3 z-50 flex h-[min(680px,85dvh)] w-[calc(100vw-1.5rem)] max-w-[440px] flex-col overflow-hidden rounded-lg border bg-background text-foreground shadow-2xl outline-none md:right-6">
-        <header className="flex shrink-0 items-center gap-3 border-b px-4 py-3">
-          <Bot className="h-6 w-6 shrink-0 text-primary" />
+        className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-3 z-50 flex h-[min(680px,85dvh)] w-[calc(100vw-1.5rem)] max-w-[440px] flex-col overflow-hidden rounded-2xl border text-foreground shadow-2xl outline-none md:right-6">
+        <span className="pointer-events-none absolute inset-x-0 top-0 z-10 h-1.5 bg-primary" />
+        <header className="flex shrink-0 items-center gap-3 px-4 pb-3 pt-5">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-primary/25 bg-white text-primary shadow-sm">
+            <Bot className="h-6 w-6" />
+          </span>
           <div className="min-w-0 flex-1">
-            <Dialog.Title className="text-base font-semibold">Assistant GestionPDV</Dialog.Title>
+            <Dialog.Title className="text-base font-semibold text-primary">Assistant GestionPDV</Dialog.Title>
             <Dialog.Description className="truncate text-xs text-muted-foreground">{checking ? 'Connexion…' : effectiveMode === 'ai' ? 'IA · Consultation en lecture seule' : 'Guide intégré · Sans données actuelles'}</Dialog.Description>
           </div>
-          <Button type="button" size="icon" variant="ghost" className="h-8 w-8 shrink-0" title="Nouvelle conversation" aria-label="Nouvelle conversation" onClick={reset}><Trash2 className="h-4 w-4" /></Button>
-          <Dialog.Close asChild><Button type="button" size="icon" variant="ghost" className="h-8 w-8 shrink-0" title="Fermer l’assistant" aria-label="Fermer l’assistant"><X className="h-4 w-4" /></Button></Dialog.Close>
+          <Button type="button" size="icon" variant="ghost" className="h-8 w-8 shrink-0 rounded-full bg-white shadow-sm" title="Nouvelle conversation" aria-label="Nouvelle conversation" onClick={reset}><Trash2 className="h-4 w-4" /></Button>
+          <Dialog.Close asChild><Button type="button" size="icon" variant="ghost" className="h-8 w-8 shrink-0 rounded-full bg-white shadow-sm" title="Fermer l’assistant" aria-label="Fermer l’assistant"><X className="h-4 w-4" /></Button></Dialog.Close>
         </header>
-        {currentMenu && <p className="shrink-0 truncate border-b px-4 py-2 text-xs text-muted-foreground" title={currentMenu.title}>Page : {currentMenu.title}</p>}
-        {notice && <div className="flex shrink-0 items-start gap-2 border-b bg-amber-50 px-4 py-2 text-xs text-amber-900" role="status">
+        {currentMenu && <p className="mx-4 mb-3 shrink-0 truncate rounded-lg border border-primary/15 bg-white px-3 py-2 text-xs text-muted-foreground" title={currentMenu.title}>Page : {currentMenu.title}</p>}
+        {notice && <div className="mx-4 mb-3 flex shrink-0 items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900" role="status">
           <p className="min-w-0 flex-1 break-words">{notice}</p>
           {authenticated && online && space && <Button type="button" size="icon" variant="ghost" className="h-7 w-7 shrink-0" title="Reconnecter l’IA" aria-label="Reconnecter l’IA" disabled={checking || busy} onClick={() => setRevision((value) => value + 1)}><RefreshCw className="h-3.5 w-3.5" /></Button>}
         </div>}
         <Tabs value={view} onValueChange={setView} className="flex min-h-0 flex-1 flex-col">
-          <TabsList aria-label="Rubriques de l’assistant" className="mx-4 my-2 grid shrink-0 grid-cols-2 rounded-lg p-1 shadow-none">
-            <TabsTrigger value="conversation" className="min-w-0 gap-2 rounded-md px-2 text-xs"><MessageCircle className="h-4 w-4 shrink-0" />Conversation</TabsTrigger>
-            <TabsTrigger value="guides" className="min-w-0 gap-2 rounded-md px-2 text-xs"><BookOpen className="h-4 w-4 shrink-0" />Fiches pratiques</TabsTrigger>
+          <TabsList aria-label="Rubriques de l’assistant" className="mx-4 mb-3 grid shrink-0 grid-cols-2 rounded-xl border-white bg-white p-1.5 shadow-sm">
+            <TabsTrigger value="conversation" className="min-w-0 gap-2 rounded-lg px-2 text-xs"><MessageCircle className="h-4 w-4 shrink-0" />Conversation</TabsTrigger>
+            <TabsTrigger value="guides" className="min-w-0 gap-2 rounded-lg px-2 text-xs"><BookOpen className="h-4 w-4 shrink-0" />Fiches pratiques</TabsTrigger>
           </TabsList>
           <TabsContent value="guides" className="mt-0 flex min-h-0 flex-1 flex-col data-[state=inactive]:hidden">
             <AssistantGuideBrowser currentTab={currentTab} menus={menus} busy={busy} onRead={readGuide} onNavigate={(path) => { setOpen(false); onNavigate(path); }} />
@@ -156,8 +159,8 @@ export default function AssistantPanel({ space, currentTab, authenticated, reque
           <TabsContent value="conversation" className="mt-0 flex min-h-0 flex-1 flex-col data-[state=inactive]:hidden">
         <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4" role="log" aria-label="Conversation avec l’assistant" aria-live="polite" aria-relevant="additions text">
           {!messages.length && <div className="space-y-4">
-            <p className="text-sm">Bonjour, quelle est votre question ?</p>
-            <div className="divide-y border-y">{suggestions.map((guide) => <button key={guide.id} type="button" disabled={busy} onClick={() => readGuide(guide)} className="flex w-full items-center justify-between gap-2 py-3 text-left text-sm hover:text-primary disabled:opacity-50"><span>{guide.title}</span><ArrowUpRight className="h-4 w-4 shrink-0" /></button>)}</div>
+            <p className="text-sm font-medium">Bonjour, quelle est votre question ?</p>
+            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white px-4 shadow-sm">{suggestions.map((guide) => <button key={guide.id} type="button" disabled={busy} onClick={() => readGuide(guide)} className="flex w-full items-center justify-between gap-2 border-b border-slate-200 py-3 text-left text-sm last:border-b-0 hover:text-primary disabled:opacity-50"><span>{guide.title}</span><ArrowUpRight className="h-4 w-4 shrink-0" /></button>)}</div>
             <button type="button" onClick={() => setView('guides')} className="flex items-center gap-2 text-sm text-primary hover:underline"><BookOpen className="h-4 w-4" />Toutes les fiches pratiques</button>
           </div>}
           <div className="space-y-5">{messages.map((message, index) => <article key={index} className={message.role === 'user' ? 'ml-8 rounded-lg bg-primary/10 px-3 py-2' : 'min-w-0'}>
@@ -175,10 +178,10 @@ export default function AssistantPanel({ space, currentTab, authenticated, reque
           </article>)}</div>
           {busy && <p className="mt-4 flex items-center gap-2 text-sm text-muted-foreground" role="status"><Loader2 className="h-4 w-4 animate-spin" />Recherche en cours…</p>}
         </div>
-        <form className="shrink-0 space-y-2 border-t bg-background px-4 py-3" onSubmit={(event) => { event.preventDefault(); send(); }}>
+        <form className="shrink-0 space-y-2 border-t border-primary/15 bg-transparent px-4 py-3" onSubmit={(event) => { event.preventDefault(); send(); }}>
           <label htmlFor="assistant-question" className="sr-only">Votre question</label>
           <div className="flex items-end gap-2">
-            <Textarea ref={inputRef} id="assistant-question" rows={2} maxLength={4000} value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="Votre question…" className="max-h-28 min-h-[64px] min-w-0 resize-none" onKeyDown={(event) => {
+            <Textarea ref={inputRef} id="assistant-question" rows={2} maxLength={4000} value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="Votre question…" className="max-h-28 min-h-[64px] min-w-0 resize-none bg-white shadow-sm" onKeyDown={(event) => {
               if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); send(); }
             }} />
             {busy ? <Button type="button" size="icon" variant="outline" className="h-10 w-10 shrink-0" title="Arrêter la réponse" aria-label="Arrêter la réponse" onClick={() => pending.current?.abort()}><Square className="h-4 w-4" /></Button>
