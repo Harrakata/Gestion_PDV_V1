@@ -13,6 +13,7 @@ import {
   CommandList,
 } from "@/components/ui/command"
 import AnchoredPopover from "@/components/ui/AnchoredPopover"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 
 const normalizeValue = (value) => String(value ?? "").trim().toLowerCase();
 const getSearchableValue = (option) => String(
@@ -22,7 +23,7 @@ const getSearchableValue = (option) => String(
 // Combobox single OU multi-select.
 // Mode multi : passer `multi={true}` + `value` = array de valeurs + `onSelect(newArray)`.
 // La valeur spéciale "__all__" (ALL) déselectionne tout (équivalent "tout afficher").
-const Combobox = ({ options, value, onSelect, placeholder, searchPlaceholder, emptyText, disabled, multi = false }) => {
+const Combobox = ({ options, value, onSelect, placeholder, searchPlaceholder, emptyText, disabled, multi = false, modal = false }) => {
   const [open, setOpen] = useState(false)
 
   // Détection du mode et de la valeur "ALL" (premier option si elle a l'apparence d'une option globale).
@@ -109,6 +110,62 @@ const Combobox = ({ options, value, onSelect, placeholder, searchPlaceholder, em
     (option) => normalizeValue(option.value) === normalizeValue(value)
   );
 
+  const trigger = (
+    <Button
+      variant="outline"
+      role="combobox"
+      aria-expanded={open}
+      className="w-full justify-between"
+      disabled={disabled}
+    >
+      <span className="truncate">{selectedOption ? selectedOption.label : placeholder}</span>
+      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+    </Button>
+  );
+
+  const content = (
+    <Command>
+      <CommandInput placeholder={searchPlaceholder} />
+      <CommandList className="max-h-56 overflow-y-auto">
+        <CommandEmpty>{emptyText}</CommandEmpty>
+        <CommandGroup>
+          {options.map((option) => (
+            <CommandItem
+              key={option.value}
+              value={getSearchableValue(option)}
+              onSelect={() => {
+                onSelect(normalizeValue(option.value) === normalizeValue(value) ? "" : option.value)
+                setOpen(false)
+              }}
+            >
+              <Check
+                className={cn(
+                  "mr-2 h-4 w-4 shrink-0",
+                  normalizeValue(value) === normalizeValue(option.value) ? "opacity-100" : "opacity-0"
+                )}
+              />
+              <span className="truncate">{option.label}</span>
+            </CommandItem>
+          ))}
+        </CommandGroup>
+      </CommandList>
+    </Command>
+  );
+
+  if (modal) {
+    return (
+      <Popover open={open} onOpenChange={setOpen} modal>
+        <PopoverTrigger asChild>{trigger}</PopoverTrigger>
+        <PopoverContent
+          align="start"
+          className="z-[60] w-[var(--radix-popover-trigger-width)] p-0"
+        >
+          {content}
+        </PopoverContent>
+      </Popover>
+    );
+  }
+
   return (
     <AnchoredPopover
       open={open}
@@ -118,45 +175,9 @@ const Combobox = ({ options, value, onSelect, placeholder, searchPlaceholder, em
       matchTriggerWidth
       triggerWrapClassName="block w-full"
       panelClassName="p-0"
-      trigger={
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-full justify-between"
-          disabled={disabled}
-        >
-          <span className="truncate">{selectedOption ? selectedOption.label : placeholder}</span>
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      }
+      trigger={trigger}
     >
-        <Command>
-          <CommandInput placeholder={searchPlaceholder} />
-          <CommandList className="max-h-56 overflow-y-auto">
-            <CommandEmpty>{emptyText}</CommandEmpty>
-            <CommandGroup>
-              {options.map((option) => (
-                <CommandItem
-                  key={option.value}
-                  value={getSearchableValue(option)}
-                  onSelect={() => {
-                    onSelect(normalizeValue(option.value) === normalizeValue(value) ? "" : option.value)
-                    setOpen(false)
-                  }}
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4 shrink-0",
-                      normalizeValue(value) === normalizeValue(option.value) ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  <span className="truncate">{option.label}</span>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
+      {content}
     </AnchoredPopover>
   )
 }

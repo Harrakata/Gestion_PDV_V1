@@ -198,6 +198,11 @@ aside,
   -webkit-backdrop-filter: none !important;
 }
 
+.mobi-point-dialog {
+  background-color: hsl(var(--background));
+  background-image: linear-gradient(hsl(var(--primary) / 0.1), hsl(var(--primary) / 0.1));
+}
+
 /* Repli : sans support du flou, on reste opaque pour préserver la lisibilité. */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .surface-glass { background-color: hsl(var(--primary) / 0.1); }

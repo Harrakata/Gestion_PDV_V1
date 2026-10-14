@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Combobox } from '@/components/ui/Combobox';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/components/ui/use-toast';
@@ -105,18 +104,45 @@ const StockDefectueuxTab = ({ canManage = true, technicienId = null }) => {
         .some(v => String(v || '').toLowerCase().includes(term)));
   }, [stock, filters, search]);
 
+  const technicienOptions = useMemo(() => techniciens.map((technicien) => {
+    const fullName = [technicien.prenom, technicien.nom].filter(Boolean).join(' ').trim();
+    const matricule = String(technicien.matricule || '').trim();
+
+    return {
+      value: String(technicien.id),
+      label: matricule ? `${fullName} · ${matricule}` : fullName,
+      searchValue: `${fullName} ${matricule}`.trim(),
+    };
+  }), [techniciens]);
+
   const showOk = (msg) => toast({ title: msg, className: 'bg-green-500 text-white' });
   const showErr = (msg) => toast({ title: 'Erreur', description: msg, variant: 'destructive' });
+
+  const openAssignDialog = useCallback((item) => {
+    const technicianId = item?.technicien_id ? String(item.technicien_id) : '';
+    const technician = techniciens.find(t => String(t.id) === technicianId);
+    const technicianName = [technician?.prenom, technician?.nom].filter(Boolean).join(' ').trim();
+
+    setSelectedItem(item);
+    setAssignForm({
+      technicien_id: technicianId,
+      technicien_nom: technicianName || item?.technicien_nom || '',
+    });
+    setIsAssignOpen(true);
+  }, [techniciens]);
+
+  const isReassignment = selectedItem?.statut === 'assigne';
 
   const assignTechnicien = async () => {
     if (!selectedItem || !assignForm.technicien_id) { showErr('Sélectionnez un technicien.'); return; }
     setIsLoading(true);
     const tech = techniciens.find(t => String(t.id) === String(assignForm.technicien_id));
+    const technicianName = [tech?.prenom, tech?.nom].filter(Boolean).join(' ').trim() || assignForm.technicien_nom;
     const itemIds = getStockDefectueuxRecordIds(selectedItem);
     const { error } = await supabase.from('stock_defectueux')
-      .update({ statut: 'assigne', technicien_id: String(assignForm.technicien_id), technicien_nom: tech?.nom || assignForm.technicien_nom })
+      .update({ statut: 'assigne', technicien_id: String(assignForm.technicien_id), technicien_nom: technicianName })
       .in('id', itemIds);
-    if (error) { showErr(error.message); } else { showOk('Sous-ensemble assigné.'); setIsAssignOpen(false); load(); }
+    if (error) { showErr(error.message); } else { showOk(isReassignment ? 'Assignation mise à jour.' : 'Sous-ensemble assigné.'); setIsAssignOpen(false); load(); }
     setIsLoading(false);
   };
 
@@ -262,14 +288,19 @@ const StockDefectueuxTab = ({ canManage = true, technicienId = null }) => {
                   <TableCell className="text-right" onClick={e => e.stopPropagation()}>
                     <div className="flex justify-end gap-1 flex-wrap">
                       {canManage && item.statut === 'defectueux' && (
-                        <Button size="sm" variant="outline" onClick={() => { setSelectedItem(item); setAssignForm({ technicien_id: '', technicien_nom: '' }); setIsAssignOpen(true); }}>
+                        <Button size="sm" variant="outline" onClick={() => openAssignDialog(item)}>
                           Assigner
                         </Button>
                       )}
                       {canManage && item.statut === 'assigne' && (
-                        <Button size="sm" variant="outline" onClick={() => updateStatut(item, 'a_tester')}>
-                          Marquer À tester
-                        </Button>
+                        <>
+                          <Button size="sm" variant="outline" onClick={() => openAssignDialog(item)}>
+                            Changer technicien
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => updateStatut(item, 'a_tester')}>
+                            Marquer À tester
+                          </Button>
+                        </>
                       )}
                       {canManage && item.statut === 'a_tester' && (
                         <Button size="sm" className="bg-green-600 text-white hover:bg-green-700" onClick={() => updateStatut(item, 'repare')}>
@@ -293,7 +324,7 @@ const StockDefectueuxTab = ({ canManage = true, technicienId = null }) => {
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-primary">
                 <UserCheck className="h-5 w-5" />
-                Assigner à un technicien
+                {isReassignment ? 'Changer de technicien' : 'Assigner à un technicien'}
               </DialogTitle>
             </DialogHeader>
 
@@ -312,24 +343,22 @@ const StockDefectueuxTab = ({ canManage = true, technicienId = null }) => {
             <div className="space-y-2">
               <Label className="text-sm font-medium">Technicien *</Label>
               {techniciens.length > 0 ? (
-                <Select value={assignForm.technicien_id} onValueChange={v => {
-                  const tech = techniciens.find(t => String(t.id) === v);
-                  setAssignForm({ technicien_id: v, technicien_nom: `${tech?.prenom || ''} ${tech?.nom || ''}`.trim() });
-                }}>
-                  <SelectTrigger className="bg-white">
-                    <SelectValue placeholder="Choisir un technicien..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {techniciens.map(t => (
-                      <SelectItem key={t.id} value={String(t.id)}>
-                        <div className="flex flex-col">
-                          <span className="font-medium">{t.prenom} {t.nom}</span>
-                          {t.matricule && <span className="text-xs text-muted-foreground">{t.matricule}</span>}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Combobox
+                  options={technicienOptions}
+                  value={assignForm.technicien_id}
+                  onSelect={(value) => {
+                    const tech = techniciens.find((technicien) => String(technicien.id) === String(value));
+                    setAssignForm({
+                      technicien_id: value,
+                      technicien_nom: [tech?.prenom, tech?.nom].filter(Boolean).join(' ').trim(),
+                    });
+                  }}
+                  placeholder="Choisir un technicien..."
+                  searchPlaceholder="Rechercher par nom ou matricule..."
+                  emptyText="Aucun technicien trouvé."
+                  disabled={isLoading}
+                  modal
+                />
               ) : (
                 <Input
                   placeholder="Nom du technicien..."
@@ -348,7 +377,9 @@ const StockDefectueuxTab = ({ canManage = true, technicienId = null }) => {
                 disabled={isLoading || !assignForm.technicien_id}
                 className="bg-primary hover:bg-primary/90"
               >
-                {isLoading ? 'Assignation...' : 'Assigner'}
+                {isLoading
+                  ? (isReassignment ? 'Mise à jour...' : 'Assignation...')
+                  : (isReassignment ? 'Mettre à jour' : 'Assigner')}
               </Button>
             </DialogFooter>
           </div>
@@ -367,7 +398,7 @@ const StockDefectueuxTab = ({ canManage = true, technicienId = null }) => {
             </DialogTitle>
           </DialogHeader>
           {detailItem && (
-            <div className="space-y-4 py-4 text-sm">
+            <div className="mt-4 space-y-4 rounded-lg border border-primary/15 bg-white p-4 text-sm shadow-sm dark:bg-card">
               <div className="grid grid-cols-2 gap-3">
                 {[
                   ['Type', SOUS_ENSEMBLE_LABELS[detailItem.type_sous_ensemble] || detailItem.type_sous_ensemble],
@@ -413,14 +444,19 @@ const StockDefectueuxTab = ({ canManage = true, technicienId = null }) => {
               {canManage && (
                 <div className="flex gap-2 pt-2">
                   {detailItem.statut === 'defectueux' && (
-                    <Button size="sm" variant="outline" onClick={() => { setSelectedItem(detailItem); setIsDetailOpen(false); setIsAssignOpen(true); }}>
+                    <Button size="sm" variant="outline" onClick={() => { setIsDetailOpen(false); openAssignDialog(detailItem); }}>
                       Assigner technicien
                     </Button>
                   )}
                   {detailItem.statut === 'assigne' && (
-                    <Button size="sm" variant="outline" onClick={() => { updateStatut(detailItem, 'a_tester'); setIsDetailOpen(false); }}>
-                      Marquer À tester
-                    </Button>
+                    <>
+                      <Button size="sm" variant="outline" onClick={() => { setIsDetailOpen(false); openAssignDialog(detailItem); }}>
+                        Changer de technicien
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => { updateStatut(detailItem, 'a_tester'); setIsDetailOpen(false); }}>
+                        Marquer À tester
+                      </Button>
+                    </>
                   )}
                   {detailItem.statut === 'a_tester' && (
                     <Button size="sm" className="bg-green-600 text-white hover:bg-green-700" onClick={() => { updateStatut(detailItem, 'repare'); setIsDetailOpen(false); }}>
