@@ -1,7 +1,34 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { allocateMobiConfig, buildMobiDaily, calculateMobiSummary, chargeForDay, enrichMobiDaily, groupMobiDaily, mobiAmortizationSeries, mobiChartSeries, mobiDeploymentRows, mobiEconomicSeries, mobiFullProfitability, mobiObservedProjection,
+import { allocateMobiConfig, buildMobiDaily, calculateMobiSummary, chargeForDay, chunkMobiValues, createMobiAttributionContext, enrichMobiDaily, groupMobiDaily, mobiAmortizationSeries, mobiChartSeries, mobiDayDetails, mobiDeploymentRows, mobiEconomicSeries, mobiFullProfitability, mobiObservedProjection,
   mobiAllocationShare, mobiDatesFromSuivi, mobiGapSeries, mobiInvestmentAmortizationForDay, mobiMaxVariableChargeRate, mobiParkRows, mobiRentabilityTargetForDay, mobiWeightsFromHistory, normalizeMobiConfig, normalizeMobiGlobalConfig } from '../src/lib/mobiRentabilite.js';
+
+test('découpe le suivi de 2 386 Mobi sans dépasser 80 références par requête', () => {
+  const references = Array.from({ length: 2386 }, (_, index) => `MOBI-${index}`);
+  const chunks = chunkMobiValues(references);
+  assert.equal(chunks.length, 30);
+  assert.ok(chunks.every((chunk) => chunk.length <= 80));
+  assert.deepEqual(chunks.flat(), references);
+});
+
+test('l’index partagé conserve les attributions lors d’un changement de Mobi', () => {
+  const points = [
+    { terminalReference: 'M1', guichetiereMatricule: '1', dateDebutValidite: '2026-01-01', dateFinValidite: '2026-01-02' },
+    { terminalReference: 'M2', guichetiereMatricule: '1', dateDebutValidite: '2026-01-03' },
+  ];
+  const guichetieres = [{ matricule: '1', codePrepose: 'P1' }];
+  const ccopeRows = [
+    { operateur: 'P1', date_op: '2026-01-02', mt_enr: 20 },
+    { operateur: 'P1', date_op: '2026-01-03', mt_enr: 30 },
+  ];
+  const versements = [{ guichetiere_code: 'P1', date_versement: '2026-01-03', montant: 25 }];
+  const context = createMobiAttributionContext(points, guichetieres);
+  for (const terminalReference of ['M1', 'M2']) {
+    const args = { points, guichetieres, terminalReference, serviceDate: '2026-01-01', endDate: '2026-01-03', ccopeRows, versements };
+    assert.deepEqual(buildMobiDaily({ ...args, context }), buildMobiDaily(args));
+  }
+  assert.equal(buildMobiDaily({ points, guichetieres, terminalReference: 'M2', serviceDate: '2026-01-01', endDate: '2026-01-03', ccopeRows, versements, context }).daily[2].mtVerse, 25);
+});
 
 test('filtre la plage du graphe avant de regrouper les montants et écarts', () => {
   const daily = [
@@ -131,6 +158,10 @@ test('attribue les opérations et versements à la guichetière affectée à leu
   });
   assert.equal(result.daily[1].caNet, 100);
   assert.equal(result.daily[1].mtVerse, 80);
+  assert.equal(result.daily[1].mtEnr, 120);
+  assert.equal(result.daily[1].annulations, 20);
+  assert.equal(result.daily[1].ccopeCount, 1);
+  assert.equal(result.daily[1].versementCount, 1);
   assert.equal(result.daily[2].codePrepose, null);
   assert.equal(result.daily[3].caNet, 200);
   assert.equal(result.daily[3].mtVerse, 180);
@@ -209,6 +240,55 @@ test('trace le capital initial, les investissements complémentaires et le premi
   assert.deepEqual(result.series.filter((row) => row.stage === 'Fin de journée').map((row) => row.balance),
     [-100, -50, 0, 20, -10, 0]);
   assert.equal(mobiEconomicSeries([entry], '2026-01-04', '2026-01-05', '2026-01-06').series[0].balance, 20);
+});
+
+test('interrompt la courbe quand la couverture CCOPE ne remonte pas à la mise en service', () => {
+  const entry = { serviceDate: '2026-01-01', config: { tauxContribution: 100,
+    investissements: [{ date: '2026-01-01', montant: 100 }] }, daily: [
+    { day: '2026-01-01', caNet: 0, charges: 0, caKnown: false },
+    { day: '2026-01-02', caNet: 0, charges: 0, caKnown: false },
+    { day: '2026-01-03', caNet: 120, charges: 0, caKnown: true },
+  ] };
+  const result = mobiEconomicSeries([entry], '', '', '2026-01-03');
+  assert.equal(result.series[0].balance, -100);
+  assert.deepEqual(result.series.slice(1).map((row) => row.balance), [null, null, 20]);
+  assert.equal(result.series[1].stage, 'Données indisponibles');
+  assert.equal(result.hasCoverageGap, true);
+  assert.equal(result.firstPaybackDate, '2026-01-03');
+  const report = mobiFullProfitability([{ ...entry, daily: entry.daily.map((row) => ({
+    ...row, verseKnown: row.day === '2026-01-03',
+  })) }], 'jour', '', '', '2026-01-03');
+  assert.equal(report.periods[0].caKnown, false);
+  assert.equal(report.periods[0].verseKnown, false);
+  assert.equal(report.periods[2].caKnown, true);
+  assert.equal(report.periods[2].verseKnown, true);
+});
+
+test('détaille une journée avec code préposé, sources et postes financiers', () => {
+  const attribution = buildMobiDaily({
+    points: [{ terminalReference: 'M1', guichetiereMatricule: 'B', guichetiereNom: 'BAH',
+      agenceNom: 'PCD Gare', dateDebutValidite: '2026-10-03' }],
+    guichetieres: people, terminalReference: 'M1', serviceDate: '2026-10-03', endDate: '2026-10-03',
+    ccopeRows: [{ date_op: '2026-10-03', operateur: '202', mt_enr: 120, mt_anc: 20 }],
+    versements: [{ date_versement: '2026-10-03', guichetiere_code: '202', montant: 80 }],
+  });
+  const config = { tauxContribution: 50,
+    investissements: [{ date: '2026-10-03', libelle: 'Achat', montant: 30 }],
+    charges: [{ libelle: 'Connexion', montant: 10, frequence: 'journaliere', dateDebut: '2026-10-03' }] };
+  const daily = enrichMobiDaily(attribution.daily, config, { ca: '2026-10-03', verse: '2026-10-03' });
+  const [detail] = mobiDayDetails([{ reference: 'M1', serviceDate: '2026-10-03', config, daily }], '2026-10-03');
+  assert.equal(detail.guichetiereNom, 'BAH');
+  assert.equal(detail.codePrepose, '202');
+  assert.equal(detail.mtEnr, 120);
+  assert.equal(detail.annulations, 20);
+  assert.equal(detail.caNet, 100);
+  assert.equal(detail.mtVerse, 80);
+  assert.equal(detail.chargesTotal, 10);
+  assert.equal(detail.investmentTotal, 30);
+  assert.equal(detail.revenue, 50);
+  assert.equal(detail.margin, 40);
+  assert.equal(detail.ccopeCount, 1);
+  assert.equal(detail.versementCount, 1);
 });
 
 test('conserve les taux de récupération à 100 %, au-dessus et en dessous de zéro', () => {

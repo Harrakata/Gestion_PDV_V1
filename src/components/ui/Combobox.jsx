@@ -25,6 +25,7 @@ const getSearchableValue = (option) => String(
 // La valeur spéciale "__all__" (ALL) déselectionne tout (équivalent "tout afficher").
 const Combobox = ({ options, value, onSelect, placeholder, searchPlaceholder, emptyText, disabled, multi = false, modal = false }) => {
   const [open, setOpen] = useState(false)
+  const searchInputRef = React.useRef(null)
 
   // Détection du mode et de la valeur "ALL" (premier option si elle a l'apparence d'une option globale).
   const allOption = options[0] && (options[0].value === "__all__" || options[0].value === "" || String(options[0].value).startsWith("__")) ? options[0] : null;
@@ -125,7 +126,7 @@ const Combobox = ({ options, value, onSelect, placeholder, searchPlaceholder, em
 
   const content = (
     <Command>
-      <CommandInput placeholder={searchPlaceholder} />
+      <CommandInput ref={searchInputRef} placeholder={searchPlaceholder} />
       <CommandList className="max-h-56 overflow-y-auto">
         <CommandEmpty>{emptyText}</CommandEmpty>
         <CommandGroup>
@@ -159,6 +160,10 @@ const Combobox = ({ options, value, onSelect, placeholder, searchPlaceholder, em
         <PopoverContent
           align="start"
           className="z-[60] w-[var(--radix-popover-trigger-width)] p-0"
+          onOpenAutoFocus={(event) => {
+            event.preventDefault()
+            searchInputRef.current?.focus()
+          }}
         >
           {content}
         </PopoverContent>

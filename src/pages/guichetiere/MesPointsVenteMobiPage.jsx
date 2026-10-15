@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
+import { isMobiPointCurrent, mobiPointDisplayStatus, mobiToday } from '@/lib/mobiPointValidity';
 import { motion } from 'framer-motion';
 import { Building2, History, MapPin, Send } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -31,6 +32,7 @@ import {
   normalizeText,
 } from '@/lib/guichetiereSpace';
 import { buildRegionOptions, fetchRegions } from '@/lib/regions';
+import { fetchAllMobiTerminals } from '@/lib/terminauxMobi';
 
 const defaultRequestForm = {
   requested_region: '',
@@ -72,7 +74,7 @@ const MesPointsVenteMobiPage = () => {
         .order('created_at', { ascending: false }),
       fetchRegions(),
       supabase.from('agences').select('id, nom, codePDV, region').eq('is_current', true).order('nom', { ascending: true }),
-      supabase.from('terminaux_mobi').select('id, reference, modele, statut').order('reference', { ascending: true }),
+      fetchAllMobiTerminals(supabase, 'id, reference, modele, statut'),
       supabase
         .from('points_vente_mobi_change_requests')
         .select('*')
@@ -138,7 +140,7 @@ const MesPointsVenteMobiPage = () => {
   }, [loadData]);
 
   const activePoints = useMemo(
-    () => pointsVente.filter((pointVente) => pointVente.statut === 'Actif'),
+    () => pointsVente.filter((pointVente) => isMobiPointCurrent(pointVente, mobiToday())),
     [pointsVente]
   );
 
@@ -442,8 +444,8 @@ const MesPointsVenteMobiPage = () => {
                         <TableCell>{formatDisplayDate(p.dateDebutValidite)}</TableCell>
                         <TableCell>{formatDisplayDate(p.dateFinValidite)}</TableCell>
                         <TableCell>
-                          <Badge className={p.statut === 'Actif' ? 'border-green-200 bg-green-50 text-green-700' : 'border-slate-200 bg-slate-100 text-slate-700'}>
-                            {p.statut}
+                          <Badge className={mobiPointDisplayStatus(p, mobiToday()) === 'Actif' ? 'border-green-200 bg-green-50 text-green-700' : 'border-slate-200 bg-slate-100 text-slate-700'}>
+                            {mobiPointDisplayStatus(p, mobiToday())}
                           </Badge>
                         </TableCell>
                       </TableRow>

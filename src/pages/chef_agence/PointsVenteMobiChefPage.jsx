@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { usePageState } from '@/hooks/usePageState';
+import { isMobiPointCurrent, mobiPointDisplayStatus, mobiToday } from '@/lib/mobiPointValidity';
 import { motion } from 'framer-motion';
 import {
   Building,
@@ -44,6 +45,7 @@ import {
   isSupabaseAuthError,
 } from '@/lib/guichetiereSpace';
 import { buildRegionOptions, fetchRegions } from '@/lib/regions';
+import { fetchAllMobiTerminals } from '@/lib/terminauxMobi';
 
 const defaultRequestForm = {
   requested_region: '',
@@ -125,7 +127,7 @@ const PointsVenteMobiChefPage = () => {
       supabase.from('points_vente_mobi').select('*').order('created_at', { ascending: false }),
       fetchRegions(),
       supabase.from('agences').select('id, nom, codePDV, region').eq('is_current', true).order('nom', { ascending: true }),
-      supabase.from('terminaux_mobi').select('id, reference, modele, statut').order('reference', { ascending: true }),
+      fetchAllMobiTerminals(supabase, 'id, reference, modele, statut'),
       supabase.from('points_vente_mobi_change_requests').select('*').order('created_at', { ascending: false }),
     ]);
 
@@ -218,7 +220,7 @@ const PointsVenteMobiChefPage = () => {
   const activePoints = useMemo(
     () =>
       agencePoints
-        .filter((pointVente) => pointVente.statut === 'Actif')
+        .filter((pointVente) => isMobiPointCurrent(pointVente, mobiToday()))
         .sort((firstPoint, secondPoint) =>
           String(firstPoint.codePointVente || '').localeCompare(String(secondPoint.codePointVente || ''))
         ),
@@ -1052,8 +1054,8 @@ const PointsVenteMobiChefPage = () => {
                         <TableCell>{formatDisplayDate(pointVente.dateDebutValidite)}</TableCell>
                         <TableCell>{formatDisplayDate(pointVente.dateFinValidite)}</TableCell>
                         <TableCell>
-                          <Badge variant="outline" className={getStatusBadgeClass(pointVente.statut)}>
-                            {pointVente.statut}
+                          <Badge variant="outline" className={getStatusBadgeClass(mobiPointDisplayStatus(pointVente, mobiToday()))}>
+                            {mobiPointDisplayStatus(pointVente, mobiToday())}
                           </Badge>
                         </TableCell>
                       </TableRow>

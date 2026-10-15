@@ -1,5 +1,11 @@
+import { isMobiPointCurrent, mobiToday } from './mobiPointValidity.js';
+
 const dayKey = (value) => String(value || '').slice(0, 10);
 const amount = (value) => Number(value) || 0;
+
+export const chunkMobiValues = (values, size = 80) => Array.from(
+  { length: Math.ceil(values.length / size) }, (_, index) => values.slice(index * size, (index + 1) * size),
+);
 
 export const addDays = (day, count) => {
   const date = new Date(`${day}T00:00:00Z`);
@@ -136,7 +142,31 @@ const pointActiveOn = (point, day) => dateInWindow(
   point.dateFinValidite ? addDays(dayKey(point.dateFinValidite), 1) : null,
 );
 
-export const buildMobiDaily = ({ points, guichetieres, terminalReference, serviceDate, endDate, ccopeRows, versements }) => {
+export const createMobiAttributionContext = (points, guichetieres) => {
+  const peopleByMatricule = new Map();
+  const pointsByTerminal = new Map();
+  const pointsByCode = new Map();
+  guichetieres.forEach((person) => {
+    const matricule = String(person.matricule || '').trim();
+    if (!matricule || !person.codePrepose) return;
+    if (!peopleByMatricule.has(matricule)) peopleByMatricule.set(matricule, []);
+    peopleByMatricule.get(matricule).push(person);
+  });
+  points.forEach((point) => {
+    const reference = point.terminalReference;
+    if (!pointsByTerminal.has(reference)) pointsByTerminal.set(reference, []);
+    pointsByTerminal.get(reference).push(point);
+    const codes = new Set((peopleByMatricule.get(String(point.guichetiereMatricule || '').trim()) || [])
+      .map((person) => String(person.codePrepose).trim()));
+    codes.forEach((code) => {
+      if (!pointsByCode.has(code)) pointsByCode.set(code, []);
+      pointsByCode.get(code).push(point);
+    });
+  });
+  return { peopleByMatricule, pointsByTerminal, pointsByCode };
+};
+
+export const buildMobiDaily = ({ points, guichetieres, terminalReference, serviceDate, endDate, ccopeRows, versements, context }) => {
   const daily = [];
   const byDay = new Map();
   const ownerCache = new Map();
@@ -145,20 +175,13 @@ export const buildMobiDaily = ({ points, guichetieres, terminalReference, servic
   let ambiguousOperations = 0;
   let ambiguousVersements = 0;
 
-  const peopleByMatricule = new Map();
-  guichetieres.forEach((person) => {
-    const matricule = String(person.matricule || '').trim();
-    if (!matricule || !person.codePrepose) return;
-    if (!peopleByMatricule.has(matricule)) peopleByMatricule.set(matricule, []);
-    peopleByMatricule.get(matricule).push(person);
-  });
-  const selectedPoints = points.filter((point) => point.terminalReference === terminalReference);
+  const indexed = context || createMobiAttributionContext(points, guichetieres);
+  const { peopleByMatricule, pointsByTerminal, pointsByCode } = indexed;
+  const selectedPoints = pointsByTerminal.get(terminalReference) || [];
   const candidateCodes = new Set(selectedPoints.flatMap((point) =>
     (peopleByMatricule.get(String(point.guichetiereMatricule || '').trim()) || [])
       .map((person) => String(person.codePrepose).trim())));
-  const relevantPoints = points.filter((point) =>
-    (peopleByMatricule.get(String(point.guichetiereMatricule || '').trim()) || [])
-      .some((person) => candidateCodes.has(String(person.codePrepose).trim())));
+  const relevantPoints = [...new Set([...candidateCodes].flatMap((code) => pointsByCode.get(code) || []))];
   const codeFor = (matricule, day) => {
     const key = `${matricule}|${day}`;
     if (codeCache.has(key)) return codeCache.get(key);
@@ -171,7 +194,11 @@ export const buildMobiDaily = ({ points, guichetieres, terminalReference, servic
     const assignments = selectedPoints.filter((point) => pointActiveOn(point, day));
     const codes = [...new Set(assignments.map((point) => codeFor(point.guichetiereMatricule, day)).filter(Boolean))];
     if (assignments.length > 0 && codes.length !== 1) unresolvedDays += 1;
-    const row = { day, caNet: 0, mtVerse: 0, codePrepose: codes.length === 1 ? codes[0] : null, assigned: assignments.length > 0 };
+    const assignment = assignments.length === 1 ? assignments[0] : null;
+    const row = { day, caNet: 0, mtVerse: 0, mtEnr: 0, annulations: 0, ccopeCount: 0, versementCount: 0,
+      codePrepose: codes.length === 1 ? codes[0] : null, assigned: assignments.length > 0,
+      guichetiereNom: assignment?.guichetiereNom || '', agenceNom: assignment?.agenceNom || '',
+      ambiguousOperations: 0, ambiguousVersements: 0 };
     daily.push(row);
     byDay.set(day, row);
   }
@@ -191,17 +218,30 @@ export const buildMobiDaily = ({ points, guichetieres, terminalReference, servic
     const day = dayKey(row.date_op);
     const code = String(row.operateur || '').trim();
     if (!byDay.has(day) || byDay.get(day).codePrepose !== code) return;
-    if (ownerFor(day, code) !== terminalReference) { ambiguousOperations += 1; return; }
-    byDay.get(day).caNet += amount(row.mt_enr)
-      - amount(row.mt_anc) - amount(row.mt_ane) - amount(row.mt_anm) - amount(row.mt_ans);
+    if (ownerFor(day, code) !== terminalReference) {
+      ambiguousOperations += 1;
+      byDay.get(day).ambiguousOperations += 1;
+      return;
+    }
+    const target = byDay.get(day);
+    const cancellations = amount(row.mt_anc) + amount(row.mt_ane) + amount(row.mt_anm) + amount(row.mt_ans);
+    target.mtEnr += amount(row.mt_enr);
+    target.annulations += cancellations;
+    target.caNet += amount(row.mt_enr) - cancellations;
+    target.ccopeCount += 1;
   });
 
   versements.forEach((row) => {
     const day = dayKey(row.date_versement);
     const code = String(row.guichetiere_code || '').trim();
     if (!byDay.has(day) || byDay.get(day).codePrepose !== code) return;
-    if (ownerFor(day, code) !== terminalReference) { ambiguousVersements += 1; return; }
+    if (ownerFor(day, code) !== terminalReference) {
+      ambiguousVersements += 1;
+      byDay.get(day).ambiguousVersements += 1;
+      return;
+    }
     byDay.get(day).mtVerse += amount(row.montant);
+    byDay.get(day).versementCount += 1;
   });
 
   return { daily, unresolvedDays, ambiguousOperations, ambiguousVersements };
@@ -381,7 +421,8 @@ export const mobiFullProfitability = (entries, granularity, from = '', to = '', 
   const byDay = new Map();
   const daily = (day) => {
     if (!byDay.has(day)) byDay.set(day, { day, investment: 0, caNet: 0, mtVerse: 0,
-      charges: 0, depreciation: 0, contribution: 0, operatingResult: 0 });
+      charges: 0, depreciation: 0, contribution: 0, operatingResult: 0,
+      hasDaily: false, caKnown: true, verseKnown: true });
     return byDay.get(day);
   };
   const investmentDates = [];
@@ -397,6 +438,9 @@ export const mobiFullProfitability = (entries, granularity, from = '', to = '', 
     for (const row of entry.daily || []) {
       if (today && row.day > today) continue;
       const target = daily(row.day);
+      target.hasDaily = true;
+      if (row.caKnown === false) target.caKnown = false;
+      if (row.verseKnown === false) target.verseKnown = false;
       const depreciation = investments.reduce((sum, item) => sum + mobiInvestmentAmortizationForDay(
         item, row.day, entry.config?.amortissementMois, entry.serviceDate,
       ), 0);
@@ -424,8 +468,11 @@ export const mobiFullProfitability = (entries, granularity, from = '', to = '', 
     const period = mobiPeriodKey(row.day, granularity);
     if (!grouped.has(period)) grouped.set(period, { period, investment: 0, caNet: 0, mtVerse: 0,
       charges: 0, depreciation: 0, contribution: 0, operatingResult: 0,
-      cumulativeInvestment: 0, cumulativeContribution: 0, remaining: 0 });
+      cumulativeInvestment: 0, cumulativeContribution: 0, remaining: 0, hasDaily: false, caKnown: true, verseKnown: true });
     const target = grouped.get(period);
+    target.hasDaily ||= row.hasDaily;
+    if (!row.caKnown) target.caKnown = false;
+    if (!row.verseKnown) target.verseKnown = false;
     for (const key of Object.keys(totals)) target[key] += row[key];
     target.cumulativeInvestment = totals.investment;
     target.cumulativeContribution = totals.contribution;
@@ -452,25 +499,59 @@ export const mobiEconomicSeries = (entries, from = '', to = '', today = '') => {
     balance: (previous?.cumulativeContribution || 0) - firstInvestment.cumulativeInvestment,
   } : null;
   let firstPaybackDate = null;
+  let hasCoverageGap = false;
   let previousBalance = initialPoint?.balance ?? null;
   const series = [];
   periods.forEach((row, index) => {
     if (index === firstInvestmentIndex && initialPoint && (!from || initialPoint.day >= from) && (!to || initialPoint.day <= to)) {
       series.push(initialPoint);
     }
-    const balance = row.cumulativeContribution - row.cumulativeInvestment;
-    if (row.cumulativeInvestment > 0 && previousBalance != null && previousBalance < 0 && balance >= 0 && !firstPaybackDate) {
+    const rawBalance = row.cumulativeContribution - row.cumulativeInvestment;
+    const covered = row.hasDaily && row.caKnown;
+    if (row.hasDaily && !row.caKnown) hasCoverageGap = true;
+    if (covered && row.cumulativeInvestment > 0 && previousBalance != null && previousBalance < 0
+      && rawBalance >= 0 && !firstPaybackDate) {
       firstPaybackDate = row.period;
     }
-    previousBalance = balance;
+    previousBalance = rawBalance;
     if ((!from || row.period >= from) && (!to || row.period <= to)) {
-      series.push({ period: row.period, day: row.period, stage: 'Fin de journée',
+      series.push({ period: row.period, day: row.period,
+        stage: covered ? 'Fin de journée' : 'Données indisponibles',
         investment: row.cumulativeInvestment, revenue: row.contribution + row.charges,
-        charges: row.charges, margin: row.contribution, balance });
+        charges: row.charges, margin: row.contribution, balance: covered ? rawBalance : null });
     }
   });
-  return { series, firstPaybackDate, totals: report.totals };
+  return { series, firstPaybackDate, hasCoverageGap, totals: report.totals };
 };
+
+export const mobiDayDetails = (entries, day) => entries.map((entry) => {
+  const row = (entry.daily || []).find((item) => item.day === day);
+  const investments = (entry.config?.investissements || []).filter((item) =>
+    (dayKey(item.date) || entry.serviceDate) === day);
+  if (!row && !investments.length) return null;
+  const charges = (entry.config?.charges || []).map((item) => ({
+    libelle: item.libelle || item.categorie || 'Charge', montant: chargeForDay(item, day, row?.caNet || 0),
+  })).filter((item) => item.montant !== 0);
+  const rate = Number(entry.config?.tauxContribution);
+  const caKnown = Boolean(row && row.caKnown !== false);
+  const verseKnown = Boolean(row && row.verseKnown !== false);
+  const revenue = caKnown && rate > 0 ? amount(row.caNet) * rate / 100 : null;
+  return {
+    reference: entry.reference || '', codePrepose: row?.codePrepose || '',
+    guichetiereNom: row?.guichetiereNom || '', agenceNom: row?.agenceNom || '',
+    assigned: Boolean(row?.assigned), caKnown, verseKnown,
+    mtEnr: caKnown ? amount(row.mtEnr) : null,
+    annulations: caKnown ? amount(row.annulations) : null,
+    ccopeCount: caKnown ? amount(row.ccopeCount) : null,
+    caNet: caKnown ? amount(row.caNet) : null,
+    mtVerse: verseKnown ? amount(row.mtVerse) : null,
+    versementCount: verseKnown ? amount(row.versementCount) : null,
+    charges, investments, chargesTotal: row ? amount(row.charges) : charges.reduce((sum, item) => sum + item.montant, 0),
+    investmentTotal: investments.reduce((sum, item) => sum + amount(item.montant), 0),
+    revenue, margin: revenue == null ? null : revenue - amount(row.charges),
+    ambiguousOperations: amount(row?.ambiguousOperations), ambiguousVersements: amount(row?.ambiguousVersements),
+  };
+}).filter(Boolean);
 
 export const mobiObservedProjection = (entries, today, windowDays = 30) => {
   const start = addDays(today, 1 - windowDays);
@@ -495,14 +576,14 @@ export const mobiObservedProjection = (entries, today, windowDays = 30) => {
     projectionDate: projectedDays != null && projectedDays <= 36500 ? addDays(today, projectedDays) : null };
 };
 
-export const mobiDeploymentRows = (terminaux, points, agences) => {
+export const mobiDeploymentRows = (terminaux, points, agences, today = mobiToday()) => {
   const agenciesByCode = new Map(agences.filter((agency) => String(agency.codePDV || '').trim())
     .map((agency) => [String(agency.codePDV).trim(), agency]));
   const agenciesByName = new Map(agences.filter((agency) => String(agency.nom || '').trim())
     .map((agency) => [String(agency.nom).trim().toLowerCase(), agency]));
   const activeByTerminal = new Map();
   for (const point of points) {
-    if (point.statut !== 'Actif' || !point.terminalReference) continue;
+    if (!isMobiPointCurrent(point, today) || !point.terminalReference) continue;
     const previous = activeByTerminal.get(point.terminalReference);
     if (!previous || String(point.dateDebutValidite || '') > String(previous.dateDebutValidite || '')) {
       activeByTerminal.set(point.terminalReference, point);
