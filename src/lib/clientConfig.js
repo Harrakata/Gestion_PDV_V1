@@ -1,5 +1,6 @@
 import { supabase } from './supabaseClient';
 import { APP_SPACE_FUNCTIONALITIES } from './exploitationProfiles';
+import { DEFAULT_CLIENT_CURRENCY, normalizeClientCurrency } from './currency';
 
 // ════════════════════════════════════════════════════════════════════════════
 //  Configuration client (multi-tenant)
@@ -7,7 +8,7 @@ import { APP_SPACE_FUNCTIONALITIES } from './exploitationProfiles';
 //  Chaque client dispose de son PROPRE projet Supabase + son PROPRE déploiement.
 //  Ce module ne gère QUE ce qui est spécifique au multi-tenant et qui n'existe
 //  pas déjà dans l'application :
-//   1. L'identité + le branding du client (nom, logo) — variables d'env du
+//   1. L'identité + le branding du client (nom, logo, devise) — variables d'env du
 //      déploiement, avec surcharge éditable en base (app_settings/client_branding).
 //   2. L'override des fonctionnalités au niveau DÉPLOIEMENT (kill-switch env).
 //
@@ -22,6 +23,7 @@ import { APP_SPACE_FUNCTIONALITIES } from './exploitationProfiles';
 export const CLIENT_ID = import.meta.env.VITE_CLIENT_ID || 'default';
 export const CLIENT_NAME = import.meta.env.VITE_CLIENT_NAME || 'PMU';
 const ENV_LOGO_URL = import.meta.env.VITE_CLIENT_LOGO_URL || '';
+const ENV_CURRENCY = normalizeClientCurrency(import.meta.env.VITE_CLIENT_CURRENCY || DEFAULT_CLIENT_CURRENCY);
 
 // Nom du bucket de stockage Supabase (photos de profils, pièces jointes, signatures…).
 // Configurable par déploiement ; défaut historique = 'pmu-mali-storage'.
@@ -69,6 +71,7 @@ const readBrandingCache = () => {
 let _branding = {
   displayName: CLIENT_NAME,
   logoUrl: ENV_LOGO_URL,
+  currency: ENV_CURRENCY,
   ...readBrandingCache(),
 };
 
@@ -78,6 +81,7 @@ export const getClientConfig = () => ({
   name: CLIENT_NAME,
   displayName: _branding.displayName || CLIENT_NAME,
   logoUrl: _branding.logoUrl || ENV_LOGO_URL || '',
+  currency: normalizeClientCurrency(_branding.currency || ENV_CURRENCY),
 });
 
 /** Identité/branding figés à l'import (pour usages hors React). */
@@ -96,6 +100,7 @@ export const loadClientBranding = async () => {
       _branding = {
         displayName: data.value.displayName || CLIENT_NAME,
         logoUrl: data.value.logoUrl || ENV_LOGO_URL,
+        currency: normalizeClientCurrency(data.value.currency || ENV_CURRENCY),
       };
       try {
         localStorage.setItem(BRANDING_CACHE_KEY, JSON.stringify(_branding));
@@ -108,10 +113,11 @@ export const loadClientBranding = async () => {
 };
 
 /** Persiste le branding du client (réservé à l'admin exploitation). */
-export const saveClientBranding = async ({ displayName, logoUrl }) => {
+export const saveClientBranding = async ({ displayName, logoUrl, currency }) => {
   const value = {
     displayName: (displayName ?? '').trim() || CLIENT_NAME,
     logoUrl: (logoUrl ?? '').trim(),
+    currency: normalizeClientCurrency(currency || _branding.currency || ENV_CURRENCY),
   };
   // Pattern select-then-update/insert (cohérent avec le reste de l'app : la
   // table app_settings n'a pas de contrainte unique garantie sur `key`).

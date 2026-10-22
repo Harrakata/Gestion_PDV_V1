@@ -54,7 +54,7 @@ const scoreTone = (score) => {
 const Detail = ({ label, value }) => (
   <div className="min-w-0 border-b border-slate-200/70 py-3 last:border-b-0">
     <p className="text-[11px] font-semibold uppercase text-muted-foreground">{label}</p>
-    <p className="mt-1 truncate text-sm font-medium text-slate-900" title={String(value || '')}>{value || 'N/A'}</p>
+    <p className="mt-1 break-words text-sm font-medium text-slate-900" title={String(value || '')}>{value || 'N/A'}</p>
   </div>
 );
 
@@ -263,12 +263,12 @@ const TerminalPassportDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[min(96vw,72rem)] gap-0 overflow-hidden p-0">
-        <DialogHeader className="border-b border-primary/15 bg-primary/5 px-5 py-4 pr-14">
+      <DialogContent className="terminal-passport-dialog w-[calc(100vw-1rem)] max-w-[72rem] min-w-0 gap-0 overflow-hidden p-0 sm:w-[min(96vw,72rem)]">
+        <DialogHeader className="min-w-0 border-b border-primary/15 bg-primary/5 px-4 py-4 pr-12 sm:px-5 sm:pr-14">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
-              <DialogTitle className="flex items-center gap-2 text-xl text-primary">
-                <ShieldCheck className="h-5 w-5" />
+              <DialogTitle className="flex items-center gap-2 break-words text-xl text-primary">
+                <ShieldCheck className="h-5 w-5 shrink-0" />
                 Passeport du terminal {group.terminalReference}
               </DialogTitle>
               <p className="mt-1 text-sm text-muted-foreground">
@@ -279,20 +279,20 @@ const TerminalPassportDialog = ({
           </div>
         </DialogHeader>
 
-        <Tabs value={tab} onValueChange={setTab} className="min-h-0">
-          <div className="overflow-x-auto border-b bg-white/60 px-4 py-3">
-            <TabsList className="grid min-w-[38rem] w-full grid-cols-4">
-              <TabsTrigger value="overview"><Activity className="mr-2 h-4 w-4" />Vue d’ensemble</TabsTrigger>
-              <TabsTrigger value="components"><Cpu className="mr-2 h-4 w-4" />Sous-ensembles</TabsTrigger>
-              <TabsTrigger value="history"><History className="mr-2 h-4 w-4" />Historique</TabsTrigger>
-              <TabsTrigger value="diagnostic"><Stethoscope className="mr-2 h-4 w-4" />Diagnostic</TabsTrigger>
+        <Tabs value={tab} onValueChange={setTab} className="min-h-0 min-w-0 w-full">
+          <div className="min-w-0 border-b bg-white/60 px-3 py-3 sm:px-4">
+            <TabsList className="grid h-auto w-full min-w-0 grid-cols-2 gap-1 sm:grid-cols-4">
+              <TabsTrigger className="min-w-0 whitespace-normal px-2 text-xs sm:text-sm" value="overview"><Activity className="mr-1.5 h-4 w-4 shrink-0" />Vue d’ensemble</TabsTrigger>
+              <TabsTrigger className="min-w-0 whitespace-normal px-2 text-xs sm:text-sm" value="components"><Cpu className="mr-1.5 h-4 w-4 shrink-0" />Sous-ensembles</TabsTrigger>
+              <TabsTrigger className="min-w-0 whitespace-normal px-2 text-xs sm:text-sm" value="history"><History className="mr-1.5 h-4 w-4 shrink-0" />Historique</TabsTrigger>
+              <TabsTrigger className="min-w-0 whitespace-normal px-2 text-xs sm:text-sm" value="diagnostic"><Stethoscope className="mr-1.5 h-4 w-4 shrink-0" />Diagnostic</TabsTrigger>
             </TabsList>
           </div>
 
-          <div className="max-h-[68vh] overflow-y-auto px-5 py-5">
+          <div className="min-w-0 max-h-[68vh] overflow-y-auto px-3 py-4 sm:px-5 sm:py-5">
             <TabsContent value="overview" className="mt-0 space-y-5">
-              <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_17rem]">
-                <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid min-w-0 gap-5 lg:grid-cols-[minmax(0,1fr)_17rem]">
+                <div className="terminal-passport-details grid min-w-0 gap-4 md:grid-cols-2">
                   <section className="rounded-lg border bg-white/75 px-4">
                     <h3 className="flex items-center gap-2 border-b py-3 font-semibold"><Clipboard className="h-4 w-4 text-primary" />Identité</h3>
                     <Detail label="Référence" value={group.terminalReference} />

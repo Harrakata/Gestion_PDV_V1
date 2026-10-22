@@ -2,6 +2,9 @@ import { isMobiPointCurrent, mobiToday } from './mobiPointValidity.js';
 
 const dayKey = (value) => String(value || '').slice(0, 10);
 const amount = (value) => Number(value) || 0;
+const monthlyChargeAmounts = (values) => (Array.isArray(values) ? values : [])
+  .filter((entry) => /^\d{4}-\d{2}$/.test(String(entry?.mois || '')))
+  .map((entry) => ({ mois: String(entry.mois).slice(0, 7), montant: entry.montant }));
 
 export const chunkMobiValues = (values, size = 80) => Array.from(
   { length: Math.ceil(values.length / size) }, (_, index) => values.slice(index * size, (index + 1) * size),
@@ -68,12 +71,14 @@ export const normalizeMobiGlobalConfig = (saved = {}, legacyByTerminal = {}, ter
         id: `legacy:${reference}:${key}:${item.id || index}`, terminalReference: reference })));
     }
   }
+  const charges = [...(Array.isArray(saved.charges) ? saved.charges : []), ...imported.charges]
+    .map((item) => ({ ...item, montantsMensuels: monthlyChargeAmounts(item.montantsMensuels) }));
   return {
     tauxContribution: saved.tauxContribution ?? '',
     amortissementMois: saved.amortissementMois ?? '',
     investissements: [...(Array.isArray(saved.investissements) ? saved.investissements : []), ...imported.investissements],
     objectifs: [...(Array.isArray(saved.objectifs) ? saved.objectifs : []), ...imported.objectifs],
-    charges: [...(Array.isArray(saved.charges) ? saved.charges : []), ...imported.charges],
+    charges,
     terminalRules: { ...terminalRules, ...(saved.terminalRules || {}) },
     legacyImported: true,
   };
@@ -108,9 +113,14 @@ export const allocateMobiConfig = (globalConfig, terminal, references) => {
       const share = key === 'charges' && item.typeMontant === 'pourcentage_ca'
         ? (!item.terminalReference || item.terminalReference === reference ? 1 : 0)
         : mobiAllocationShare(item, reference, references);
-      return { ...item, montant: amount(item.montant) * share, allocationShare: share };
+      return { ...item, montant: amount(item.montant) * share,
+        montantsMensuels: monthlyChargeAmounts(item.montantsMensuels)
+          .map((entry) => ({ ...entry, montant: amount(entry.montant) * share })),
+        allocationShare: share };
     })
-    .filter((item) => item.allocationShare > 0 && (item.montant > 0 || key === 'objectifs' && item.modeCalcul === 'rentabilite'));
+    .filter((item) => item.allocationShare > 0 && (item.montant > 0
+      || item.montantsMensuels?.some((entry) => amount(entry.montant) > 0)
+      || key === 'objectifs' && item.modeCalcul === 'rentabilite'));
   return {
     investissements: allocate('investissements'),
     objectifs: allocate('objectifs'),
@@ -252,10 +262,17 @@ const daysInYear = (day) => {
   return new Date(Date.UTC(year + 1, 0, 1)) - new Date(Date.UTC(year, 0, 1)) === 366 * 86400000 ? 366 : 365;
 };
 
-export const chargeForDay = (charge, day, caNet = 0) => {
+export const chargeForDay = (charge, day, caNet = 0, contributionRate = 100) => {
   if (!dateInWindow(day, charge.dateDebut || '0000-01-01', charge.dateFin ? addDays(charge.dateFin, 1) : null)) return 0;
-  const weighted = amount(charge.montant) * Math.max(0, Math.min(100, amount(charge.ponderation ?? 100))) / 100;
-  if (charge.typeMontant === 'pourcentage_ca') return Math.max(0, amount(caNet)) * weighted / 100;
+  const monthlyAmount = monthlyChargeAmounts(charge.montantsMensuels)
+    .find((entry) => entry.mois === day.slice(0, 7));
+  const effectiveAmount = monthlyAmount ? amount(monthlyAmount.montant) : amount(charge.montant);
+  const weighted = effectiveAmount * Math.max(0, Math.min(100, amount(charge.ponderation ?? 100))) / 100;
+  if (charge.typeMontant === 'pourcentage_ca') {
+    const grossContribution = Math.max(0, amount(caNet))
+      * Math.max(0, amount(contributionRate)) / 100;
+    return grossContribution * weighted / 100;
+  }
   switch (charge.frequence) {
     case 'ponctuelle': return day === charge.dateDebut ? weighted : 0;
     case 'hebdomadaire': return weighted / 7;
@@ -271,7 +288,9 @@ export const mobiVariableChargeRateForDay = (charges, day) => (charges || [])
 
 export const mobiMaxVariableChargeRate = (charges, start, end = '') => {
   const dates = [start, ...(charges || []).filter((charge) => charge.typeMontant === 'pourcentage_ca')
-    .map((charge) => charge.dateDebut)].filter((day) => day && day >= start && (!end || day <= end));
+    .flatMap((charge) => [charge.dateDebut, ...monthlyChargeAmounts(charge.montantsMensuels)
+      .map((entry) => `${entry.mois}-01`)])]
+    .filter((day) => day && day >= start && (!end || day <= end));
   return Math.max(0, ...dates.map((day) => mobiVariableChargeRateForDay(charges, day)));
 };
 
@@ -306,9 +325,9 @@ export const mobiRentabilityTargetForDay = (config, objective, day) => {
       .reduce((sum, item) => sum + chargeForDay(item, day), 0) * share : 0;
   const variableRate = objective.inclureCharges !== false
     ? mobiVariableChargeRateForDay(sources.charges, day) : 0;
-  const margin = rate - variableRate;
+  const margin = rate * (1 - variableRate);
   const requiredCaNet = margin > 0 ? (investment + fixedCharges) / margin : null;
-  const variableCharges = requiredCaNet == null ? 0 : requiredCaNet * variableRate;
+  const variableCharges = requiredCaNet == null ? 0 : requiredCaNet * rate * variableRate;
   return { investment, fixedCharges, variableCharges, variableRate,
     charges: fixedCharges + variableCharges, requiredCaNet };
 };
@@ -332,7 +351,8 @@ export const enrichMobiDaily = (daily, config, coverage = {}) => {
       verseKnown,
       objectifCaNet: caKnown ? objectiveForDay(config, 'ca_net', row.day) : 0,
       objectifVerse: verseKnown ? objectiveForDay(config, 'mt_verse', row.day) : 0,
-      charges: (config.charges || []).reduce((total, charge) => total + chargeForDay(charge, row.day, row.caNet), 0),
+      charges: (config.charges || []).reduce((total, charge) => total
+        + chargeForDay(charge, row.day, row.caNet, config.tauxContribution), 0),
     };
   });
 };
@@ -529,10 +549,11 @@ export const mobiDayDetails = (entries, day) => entries.map((entry) => {
   const investments = (entry.config?.investissements || []).filter((item) =>
     (dayKey(item.date) || entry.serviceDate) === day);
   if (!row && !investments.length) return null;
-  const charges = (entry.config?.charges || []).map((item) => ({
-    libelle: item.libelle || item.categorie || 'Charge', montant: chargeForDay(item, day, row?.caNet || 0),
-  })).filter((item) => item.montant !== 0);
   const rate = Number(entry.config?.tauxContribution);
+  const charges = (entry.config?.charges || []).map((item) => ({
+    libelle: item.libelle || item.categorie || 'Charge',
+    montant: chargeForDay(item, day, row?.caNet || 0, rate),
+  })).filter((item) => item.montant !== 0);
   const caKnown = Boolean(row && row.caKnown !== false);
   const verseKnown = Boolean(row && row.verseKnown !== false);
   const revenue = caKnown && rate > 0 ? amount(row.caNet) * rate / 100 : null;
@@ -597,6 +618,8 @@ export const mobiDeploymentRows = (terminaux, points, agences, today = mobiToday
       reference: terminal.reference,
       modele: terminal.modele || 'Mobi',
       statut: terminal.statut,
+      pointVenteUid: point?.pointVenteUid || '',
+      pointVente: point?.codePointVente || '',
       region: agency?.region || point?.region || '',
       secteur: agency?.secteur || '',
       agence: agency?.nom || point?.agenceNom || '',
@@ -677,7 +700,8 @@ export const calculateMobiSummary = (daily, config, today, inactiveDays = 0) => 
   const nextDay = addDays(today, 1);
   const futureDailyCharges = (config.charges || [])
     .filter((charge) => charge.frequence !== 'ponctuelle')
-    .reduce((total, charge) => total + chargeForDay(charge, nextDay, objectiveForDay(config, 'ca_net', nextDay)), 0);
+    .reduce((total, charge) => total + chargeForDay(charge, nextDay,
+      objectiveForDay(config, 'ca_net', nextDay), config.tauxContribution), 0);
   const dailyTargetContribution = objectiveForDay(config, 'ca_net', nextDay) * marginRate
     - futureDailyCharges;
   const projectedDays = investment > 0 && marginRate > 0 && dailyTargetContribution > 0 && remaining > 0

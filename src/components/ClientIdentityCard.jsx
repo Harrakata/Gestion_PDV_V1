@@ -4,11 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Building2, Save, Loader2, UploadCloud } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 import { CLIENT_ID, STORAGE_BUCKET } from '@/lib/clientConfig';
 import { supabase } from '@/lib/supabaseClient';
+import { CLIENT_CURRENCY_OPTIONS, DEFAULT_CLIENT_CURRENCY } from '@/lib/currency';
 
 // ════════════════════════════════════════════════════════════════════════════
 //  Carte « Identité client » (multi-tenant)
@@ -20,6 +22,7 @@ const ClientIdentityCard = ({ canWrite = true }) => {
   const { client, setBranding } = useFeatureFlags();
   const [displayName, setDisplayName] = useState('');
   const [logoUrl, setLogoUrl] = useState('');
+  const [currency, setCurrency] = useState(DEFAULT_CLIENT_CURRENCY);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -27,7 +30,8 @@ const ClientIdentityCard = ({ canWrite = true }) => {
   useEffect(() => {
     setDisplayName(client.displayName || '');
     setLogoUrl(client.logoUrl || '');
-  }, [client.displayName, client.logoUrl]);
+    setCurrency(client.currency || DEFAULT_CLIENT_CURRENCY);
+  }, [client.currency, client.displayName, client.logoUrl]);
 
   // Import d'un logo local : upload vers le stockage puis renseigne l'URL publique.
   const handleLogoUpload = async (event) => {
@@ -61,7 +65,7 @@ const ClientIdentityCard = ({ canWrite = true }) => {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      await setBranding({ displayName, logoUrl });
+      await setBranding({ displayName, logoUrl, currency });
       toast({ title: 'Identité client sauvegardée', className: 'bg-green-500 text-white' });
     } catch (error) {
       toast({ title: 'Erreur de sauvegarde', description: error.message, variant: 'destructive' });
@@ -86,7 +90,7 @@ const ClientIdentityCard = ({ canWrite = true }) => {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3 pb-4">
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-3">
           <div className="space-y-2">
             <Label htmlFor="client-display-name">Nom affiché</Label>
             <Input
@@ -96,6 +100,21 @@ const ClientIdentityCard = ({ canWrite = true }) => {
               placeholder="Ex. PMU Mali"
               disabled={!canWrite || isSaving}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="client-currency">Devise</Label>
+            <Select value={currency} onValueChange={setCurrency} disabled={!canWrite || isSaving}>
+              <SelectTrigger id="client-currency">
+                <SelectValue placeholder="Choisir une devise" />
+              </SelectTrigger>
+              <SelectContent>
+                {CLIENT_CURRENCY_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">Utilisée pour les montants Mobi et l’État comptable.</p>
           </div>
 
           <div className="space-y-2">

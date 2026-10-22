@@ -269,7 +269,7 @@ const Layout = () => {
                 </div>
               </DropdownMenuContent>
             </DropdownMenu>
-            <OfflineSyncIndicator />
+            <OfflineSyncIndicator enabled={spaceFunctionalities.offline_mode === true} />
             <button
               onClick={toggleTheme}
               aria-label="Toggle theme"
@@ -281,7 +281,7 @@ const Layout = () => {
           </nav>
           
           <div className="md:hidden flex items-center gap-2">
-            <OfflineSyncIndicator />
+            <OfflineSyncIndicator enabled={spaceFunctionalities.offline_mode === true} />
             <button
               onClick={toggleTheme}
               aria-label="Toggle theme"

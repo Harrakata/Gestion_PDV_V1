@@ -31,11 +31,11 @@ import {
 //   - Ce provider s'initialise depuis le même localStorage et écoute le même event.
 //  Il n'effectue donc PAS de second fetch des fonctionnalités (pas de doublon).
 //
-//  Le branding client (nom/logo) est chargé en plus depuis app_settings/client_branding.
+//  Le branding client (nom/logo/devise) est chargé en plus depuis app_settings/client_branding.
 //
 //  Usage :
 //    const visible = useFeature('ccope');           // bool (override env inclus)
-//    const { client } = useFeatureFlags();          // { id, name, displayName, logoUrl }
+//    const { client } = useFeatureFlags();          // { id, name, displayName, logoUrl, currency }
 // ════════════════════════════════════════════════════════════════════════════
 
 const readFunctionalitiesFromCache = () => {
@@ -118,7 +118,7 @@ export const useFeature = (key) => {
   return flags[key] !== false;
 };
 
-/** Identité/branding du client courant : { id, name, displayName, logoUrl }. */
+/** Identité/branding du client courant : { id, name, displayName, logoUrl, currency }. */
 export const useClient = () => useContext(FeatureFlagsContext).client;
 
 /** Structure organisationnelle courante : { secteur: {enabled}, guichetiere: {agenceRequired} }. */

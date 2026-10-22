@@ -293,6 +293,7 @@ const ConfigurationTab = ({
   canManage = true,
   lockedAgenceId = null,
   lockedAgenceName = '',
+  showTerminalConfiguration = true,
   showEquipmentManagement = true,
   readOnlyMessage = '',
 }) => {
@@ -2340,12 +2341,17 @@ const ConfigurationTab = ({
   );
 
   if (!showEquipmentManagement) {
+    if (!showTerminalConfiguration) return null;
     return (
       <>
         {configurationContent}
         {editDialog}
       </>
     );
+  }
+
+  if (!showTerminalConfiguration) {
+    return <EquipmentManager canManage={canManage} readOnlyMessage={readOnlyMessage} />;
   }
 
   return (

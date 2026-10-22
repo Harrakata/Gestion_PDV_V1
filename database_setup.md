@@ -717,6 +717,26 @@ COMMENT ON COLUMN public.terminaux_mobi.statut IS 'État du terminal mobi : Acti
 | created_at | TIMESTAMP | DEFAULT NOW() | Date de création |
 | updated_at | TIMESTAMP | DEFAULT NOW() | Date de dernière modification |
 
+## Table de suivi quotidien des terminaux Mobi
+
+La migration `202610190900_create_suivi_trm_mobi_quotidien_v2.sql` crée la table
+`public."SUIVI_TRM_MOBI_QUOTIDIEN_V2"`. Elle conserve un instantané par jour et
+par terminal grâce à la clé primaire `(date_suivi, id_trm_mobi)`.
+
+Les colonnes du modèle Power BI sont normalisées en snake_case dans PostgreSQL :
+`date_suivi`, `id_trm_mobi`, `age_d_utilisation`, `premiere_utilisation`,
+`derniere_utilisation`, `hors_service`, `enjeux_jour`, `cumul_enjeux`, `client`,
+`premier_prepose`, `dernier_prepose`, `nbre_mobi`, `enjeux`,
+`liste_prepose_du_jour`, `gain` et `annulation`.
+
+La fonction Edge `sync-suivi-trm-mobi` alimente cette table depuis Power BI.
+L'application sélectionne automatiquement le `date_suivi` le plus récent pour
+présenter une seule ligne par terminal dans l'onglet Point de Vente Mobi.
+La fonction requiert `POWERBI_GROUP_ID`, `POWERBI_DATASET_ID` et soit
+`POWERBI_ACCESS_TOKEN`, soit les trois secrets `POWERBI_TENANT_ID`,
+`POWERBI_CLIENT_ID` et `POWERBI_CLIENT_SECRET`. Le nom du modèle peut être
+surchargé avec `POWERBI_TABLE_NAME`.
+
 ## Table Points de Vente Mobi
 
 Pour ajouter l'onglet `Point de Vente Mobi` dans l'espace Exploitation, créez la table `points_vente_mobi` pour stocker la version active et l'historique des associations.

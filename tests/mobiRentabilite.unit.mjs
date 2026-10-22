@@ -68,11 +68,11 @@ test('relie chaque Mobi à son affectation active et au secteur de son agence', 
     [{ reference: 'MOB01', modele: 'P390', statut: 'Actif' }, { reference: 'MOB02', statut: 'Inactif' }],
     [
       { terminalReference: 'MOB01', statut: 'Inactif', dateDebutValidite: '2026-01-01', guichetiereNom: 'Ancienne' },
-      { terminalReference: 'MOB01', statut: 'Actif', dateDebutValidite: '2026-02-01', agenceCodePDV: '1102', guichetiereNom: 'Sarah', guichetiereMatricule: '1912' },
+      { terminalReference: 'MOB01', statut: 'Actif', dateDebutValidite: '2026-02-01', pointVenteUid: 'pdv-1', codePointVente: 'PDV-42', agenceCodePDV: '1102', guichetiereNom: 'Sarah', guichetiereMatricule: '1912' },
     ],
     [{ codePDV: '1102', nom: 'PCD du Fleuve', region: 'Kinshasa', secteur: 'Centre' }],
   );
-  assert.deepEqual(rows[0], { reference: 'MOB01', modele: 'P390', statut: 'Actif', region: 'Kinshasa', secteur: 'Centre', agence: 'PCD du Fleuve', guichetiere: 'Sarah', matricule: '1912' });
+  assert.deepEqual(rows[0], { reference: 'MOB01', modele: 'P390', statut: 'Actif', pointVenteUid: 'pdv-1', pointVente: 'PDV-42', region: 'Kinshasa', secteur: 'Centre', agence: 'PCD du Fleuve', guichetiere: 'Sarah', matricule: '1912' });
   assert.equal(rows[1].agence, '');
 });
 
@@ -489,26 +489,50 @@ test('retire le statut remboursé si des charges font repasser le cumul sous le 
   assert.equal(result.totals.remaining, 10);
 });
 
-test('applique une charge en pourcentage au CA net de chaque Mobi sans diviser son taux', () => {
+test('applique une redevance en pourcentage à la contribution brute de chaque Mobi', () => {
   const day = '2026-10-14';
   const variable = { id: 'v', typeMontant: 'pourcentage_ca', montant: 5, ponderation: 100, dateDebut: day };
-  assert.equal(chargeForDay(variable, day, 1000), 50);
-  assert.equal(chargeForDay(variable, day, -100), 0);
-  assert.equal(chargeForDay({ ...variable, ponderation: 50 }, day, 1000), 25);
+  assert.equal(chargeForDay(variable, day, 1000, 20), 10);
+  assert.equal(chargeForDay(variable, day, -100, 20), 0);
+  assert.equal(chargeForDay({ ...variable, ponderation: 50 }, day, 1000, 20), 5);
   const terminals = [{ reference: 'M1' }, { reference: 'M2' }];
-  const global = normalizeMobiGlobalConfig({ charges: [variable, {
+  const global = normalizeMobiGlobalConfig({ tauxContribution: 20, charges: [variable, {
     id: 'f', montant: 310, frequence: 'mensuelle', ponderation: 100, dateDebut: '2026-10-01',
   }] }, {}, terminals);
   const first = allocateMobiConfig(global, terminals[0], ['M1', 'M2']);
   const second = allocateMobiConfig(global, terminals[1], ['M1', 'M2']);
   const firstDay = enrichMobiDaily([{ day, caNet: 1000 }], first)[0];
   const secondDay = enrichMobiDaily([{ day, caNet: 500 }], second)[0];
-  assert.equal(firstDay.charges, 55);
-  assert.equal(secondDay.charges, 30);
-  assert.equal(firstDay.charges + secondDay.charges, 85);
+  assert.equal(firstDay.charges, 15);
+  assert.equal(secondDay.charges, 10);
+  assert.equal(firstDay.charges + secondDay.charges, 25);
 });
 
-test('déduit les charges variables de la marge disponible pour l’objectif de rentabilité', () => {
+test('remplace le montant de base par l’ajustement défini pour chaque mois', () => {
+  const charge = { id: 'm', typeMontant: 'fixe', montant: 310, frequence: 'mensuelle',
+    ponderation: 100, dateDebut: '2026-01-01', montantsMensuels: [
+      { mois: '2026-02', montant: 280 }, { mois: '2026-03', montant: 620 },
+    ] };
+  assert.equal(chargeForDay(charge, '2026-01-15'), 10);
+  assert.equal(chargeForDay(charge, '2026-02-15'), 10);
+  assert.equal(chargeForDay(charge, '2026-03-15'), 20);
+
+  const terminals = [{ reference: 'M1' }, { reference: 'M2' }];
+  const global = normalizeMobiGlobalConfig({ charges: [charge] }, {}, terminals);
+  const allocated = terminals.map((terminal) => allocateMobiConfig(global, terminal, ['M1', 'M2']));
+  assert.equal(allocated[0].charges[0].montant, 155);
+  assert.deepEqual(allocated[0].charges[0].montantsMensuels.map((entry) => Number(entry.montant)), [140, 310]);
+  assert.equal(allocated.reduce((sum, config) => sum
+    + chargeForDay(config.charges[0], '2026-03-15'), 0), 20);
+
+  const variable = { typeMontant: 'pourcentage_ca', montant: 5, ponderation: 100,
+    dateDebut: '2026-01-01', montantsMensuels: [{ mois: '2026-03', montant: 10 }] };
+  assert.equal(chargeForDay(variable, '2026-02-15', 1000, 20), 10);
+  assert.equal(chargeForDay(variable, '2026-03-15', 1000, 20), 20);
+  assert.equal(mobiMaxVariableChargeRate([variable], '2026-01-01', '2026-12-31'), 0.1);
+});
+
+test('déduit les redevances de la contribution disponible pour l’objectif de rentabilité', () => {
   const day = '2026-10-14';
   const charges = [
     { typeMontant: 'fixe', montant: 10, frequence: 'journaliere', ponderation: 100, dateDebut: day },
@@ -516,8 +540,9 @@ test('déduit les charges variables de la marge disponible pour l’objectif de 
   ];
   const objective = { dateDebut: day, ponderation: 100, inclureInvestissements: false, inclureCharges: true };
   const result = mobiRentabilityTargetForDay({ charges, investissements: [], tauxContribution: 20 }, objective, day);
-  assert.ok(Math.abs(result.requiredCaNet - 10 / 0.15) < 0.0001);
-  assert.ok(Math.abs(result.variableCharges - result.requiredCaNet * 0.05) < 0.0001);
+  assert.ok(Math.abs(result.requiredCaNet - 10 / 0.19) < 0.0001);
+  assert.ok(Math.abs(result.variableCharges - result.requiredCaNet * 0.2 * 0.05) < 0.0001);
   assert.equal(mobiMaxVariableChargeRate(charges, day), 0.05);
-  assert.equal(mobiRentabilityTargetForDay({ charges, investissements: [], tauxContribution: 5 }, objective, day).requiredCaNet, null);
+  assert.ok(Math.abs(mobiRentabilityTargetForDay({ charges, investissements: [], tauxContribution: 5 }, objective, day).requiredCaNet - 10 / 0.0475) < 0.0001);
+  assert.equal(mobiRentabilityTargetForDay({ charges: [{ ...charges[1], montant: 100 }], investissements: [], tauxContribution: 5 }, objective, day).requiredCaNet, null);
 });

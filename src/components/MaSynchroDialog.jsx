@@ -49,13 +49,13 @@ const MaSynchroDialog = ({ open, onOpenChange, online }) => {
             <Badge variant="outline" className={online ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-amber-100 text-amber-700 border-amber-200'}>
               {online ? 'En ligne' : 'Hors ligne'}
             </Badge>
-            <span className="text-muted-foreground">{items.length} en attente{failed > 0 ? ` · ${failed} en échec` : ''}</span>
+            <span className="text-muted-foreground">{items.length - failed} en attente{failed > 0 ? ` · ${failed} conflit(s) à résoudre` : ''}</span>
           </div>
           {loading ? (
             <div className="flex justify-center py-6"><Loader2 className="h-5 w-5 animate-spin text-primary" /></div>
           ) : items.length === 0 ? (
             <div className="py-6 text-center text-sm text-muted-foreground">
-              <CheckCircle2 className="mx-auto mb-1 h-7 w-7 text-emerald-500" /> Tout est synchronisé.
+              <CheckCircle2 className="mx-auto mb-1 h-7 w-7 text-emerald-500" /> Synchronisé.
             </div>
           ) : (
             <div className="max-h-72 divide-y overflow-y-auto rounded-md border">
@@ -64,7 +64,10 @@ const MaSynchroDialog = ({ open, onOpenChange, online }) => {
                   <div className="min-w-0">
                     <div className="font-medium">{itemLabel(i)} <span className="font-normal text-muted-foreground">· {i.op}</span></div>
                     <div className="text-muted-foreground">{rel(i.createdAt)}</div>
-                    {i.lastError && <div className="mt-0.5 truncate text-red-600" title={i.lastError}>⚠ {i.lastError}</div>}
+                    <div className={(i.retries || 0) > 0 ? 'text-red-600' : 'text-muted-foreground'}>
+                      {(i.retries || 0) > 0 ? 'Conflit à résoudre' : online ? 'En attente' : 'Enregistré localement'}
+                    </div>
+                    {i.lastError && <div className="mt-0.5 truncate text-red-600" title={i.lastError}>{i.lastError}</div>}
                   </div>
                   {(i.retries || 0) > 0 && (
                     <Badge variant="outline" className="shrink-0 border-red-200 bg-red-100 text-red-700">{i.retries} essai(s)</Badge>

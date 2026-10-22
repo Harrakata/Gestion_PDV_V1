@@ -179,6 +179,7 @@ si besoin). Voir `.env.example` pour la liste de référence.
 | `VITE_CLIENT_ID` | `pmu-niger` | ✅ (doit matcher le `.env` du registre) |
 | `VITE_CLIENT_NAME` | `PMU Niger` | ✅ — titre d'onglet + **nom de la PWA** (build-time → redeploy requis) |
 | `VITE_CLIENT_LOGO_URL` | URL du logo (sinon réglable en base) | optionnel |
+| `VITE_CLIENT_CURRENCY` | code ISO 4217, ex. `XOF`, `XAF`, `EUR` (sinon réglable dans l'app) | optionnel, défaut `XOF` |
 | `VITE_STORAGE_BUCKET` | nom du bucket si ≠ `pmu-mali-storage` | si nom custom |
 | `VITE_SUPABASE_URL` | Project URL (étape 1.2) | ✅ |
 | `VITE_SUPABASE_ANON_KEY` | clé anon (étape 1.2) | ✅ |
@@ -210,9 +211,10 @@ La base est vide de profils → l'app passe en **mode bootstrap** :
 ### Étape 3.2 — Définir l'identité du client
 
 Espace Exploitation → **Profil et Fonctionnalité** → carte **« Identité client »** :
-- Nom affiché (ex. `PMU Niger`) et URL du logo.
+- Nom affiché (ex. `PMU Niger`), devise et URL du logo.
 - (L'identifiant technique `pmu-niger` est figé par `VITE_CLIENT_ID`.)
-→ Le header, le pied de page et l'accueil reprennent automatiquement nom + logo.
+→ Le header, le pied de page et l'accueil reprennent automatiquement nom + logo ;
+les montants de **Point de vente Mobi** et **État comptable** utilisent la devise choisie.
 
 ### Étape 3.3 — Activer/désactiver les fonctionnalités
 

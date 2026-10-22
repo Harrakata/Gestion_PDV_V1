@@ -1181,6 +1181,15 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  [role="dialog"].terminal-passport-dialog {
+    width: calc(100vw - 1rem) !important;
+    max-width: calc(100vw - 1rem) !important;
+  }
+
+  [role="dialog"] .grid.terminal-passport-details {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   /* Pied de dialogue : boutons pleine largeur, plus faciles à toucher */
   [role="dialog"] [class*="flex-col-reverse"] > button {
     width: 100%;

@@ -46,6 +46,7 @@ import {
 } from '@/lib/guichetiereSpace';
 import { buildRegionOptions, fetchRegions } from '@/lib/regions';
 import { fetchAllMobiTerminals } from '@/lib/terminauxMobi';
+import { fetchLatestMobiSuiviRows } from '@/lib/suiviTrmMobi';
 
 const defaultRequestForm = {
   requested_region: '',
@@ -53,8 +54,6 @@ const defaultRequestForm = {
   requested_terminal_reference: '',
   commentaire: '',
 };
-
-const suiviTrmMobiTable = () => publicSupabase.schema('public').from('suivi_trm_mobi_v2_export');
 
 const normalizeText = (value) =>
   String(value ?? '')
@@ -195,15 +194,6 @@ const PointsVenteMobiChefPage = () => {
     loadData();
   }, [loadData]);
 
-  useEffect(() => {
-    supabase
-      .rpc('get_suivi_refresh_info')
-      .then(({ data }) => {
-        if (data?.last_refresh) setViewRefreshedAt(new Date(data.last_refresh));
-      })
-      .catch(() => {});
-  }, []);
-
   const agencePoints = useMemo(
     () =>
       pointsVente.filter((pointVente) => {
@@ -253,26 +243,32 @@ const PointsVenteMobiChefPage = () => {
     }
   }, [activePoints, selectedActivePointUid]);
 
-  useEffect(() => {
+  const loadSuiviData = useCallback(async () => {
     const terminalReferences = [...new Set(activePoints.map((pointVente) => pointVente.terminalReference).filter(Boolean))];
 
     if (terminalReferences.length === 0) {
       setTerminalSuiviMap({});
-      return;
+      return { error: null, rows: 0 };
     }
 
-    suiviTrmMobiTable()
-      .select('id_trm_mobi, derniere_utilisation, dernier_prepose, hors_service, age_d_utilisation')
-      .in('id_trm_mobi', terminalReferences)
-      .then(({ data }) => {
-        const suiviByTerminal = {};
-        (data || []).forEach((row) => {
-          suiviByTerminal[row.id_trm_mobi] = row;
-        });
-        setTerminalSuiviMap(suiviByTerminal);
-      })
-      .catch(() => setTerminalSuiviMap({}));
+    const { data, error, dateSuivi } = await fetchLatestMobiSuiviRows(publicSupabase, {
+      references: terminalReferences,
+      columns: 'id_trm_mobi, age_d_utilisation, premiere_utilisation, derniere_utilisation, dernier_prepose, hors_service',
+    });
+    if (error) {
+      setTerminalSuiviMap({});
+      return { error };
+    }
+
+    setTerminalSuiviMap(Object.fromEntries((data || []).map((row) => [row.id_trm_mobi, row])));
+    setLastLoadedAt(new Date());
+    if (dateSuivi) setViewRefreshedAt(new Date(`${dateSuivi}T00:00:00`));
+    return { error: null, rows: data?.length || 0 };
   }, [activePoints]);
+
+  useEffect(() => {
+    loadSuiviData();
+  }, [loadSuiviData]);
 
   const filteredActivePoints = useMemo(() => {
     const searchValue = normalizeText(activeSearchTerm);
@@ -309,13 +305,8 @@ const PointsVenteMobiChefPage = () => {
       return;
     }
 
-    suiviTrmMobiTable()
-      .select('id_trm_mobi, age_d_utilisation, premiere_utilisation, derniere_utilisation, dernier_prepose, hors_service')
-      .eq('id_trm_mobi', selectedActivePoint.terminalReference)
-      .maybeSingle()
-      .then(({ data }) => setTerminalSuivi(data || null))
-      .catch(() => setTerminalSuivi(null));
-  }, [selectedActivePoint?.terminalReference]);
+    setTerminalSuivi(terminalSuiviMap[selectedActivePoint.terminalReference] || null);
+  }, [selectedActivePoint?.terminalReference, terminalSuiviMap]);
 
   const regionOptions = buildRegionOptions(regions);
 
@@ -458,26 +449,27 @@ const PointsVenteMobiChefPage = () => {
 
   const handleSyncSuivi = async () => {
     setIsSyncing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('sync-suivi-trm-mobi');
+      if (error) throw error;
+      if (data?.ok === false) throw new Error(data.error || 'Synchronisation impossible.');
 
-    await loadData();
-    setIsSyncing(false);
-
-    toast({
-      title: 'Affichage rechargé',
-      description: 'Les points de vente mobi de votre agence ont été actualisés.',
-      className: 'bg-green-500 text-white',
-    });
-
-    supabase
-      .rpc('refresh_suivi_trm')
-      .then(({ data, error }) => {
-        if (!error && data?.ok) {
-          const refreshedAt = new Date(data.refreshed_at || Date.now());
-          setViewRefreshedAt(refreshedAt);
-          loadData();
-        }
-      })
-      .catch(() => {});
+      await Promise.all([loadData(), loadSuiviData()]);
+      toast({
+        title: 'Suivi Mobi actualisé',
+        description: `${data?.upserted ?? 0} ligne(s) quotidienne(s) synchronisée(s).`,
+        className: 'bg-green-500 text-white',
+      });
+    } catch (cause) {
+      await loadSuiviData();
+      toast({
+        title: 'Synchronisation impossible',
+        description: cause?.message || 'La dernière version enregistrée reste affichée.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   const pendingRequestsCount = agenceRequests.filter((request) => request.statut === REQUEST_STATUS.PENDING).length;
@@ -557,7 +549,7 @@ const PointsVenteMobiChefPage = () => {
 
                     return (
                       <span className={`text-[10px] ${isStale ? 'font-medium text-amber-600' : 'text-muted-foreground'}`}>
-                        Vue : {diffH === 0 ? '< 1h' : `${diffH}h`}
+                        Données : {diffH === 0 ? '< 1 h' : `${diffH} h`}
                       </span>
                     );
                   })()}
