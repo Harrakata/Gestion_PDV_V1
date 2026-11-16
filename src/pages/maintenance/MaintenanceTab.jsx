@@ -2326,7 +2326,7 @@ const MaintenanceTab = ({ technicien }) => {
       className="mt-4 space-y-6"
     >
       <Card className="relative overflow-hidden border border-primary/20 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
         <CardHeader className="relative">
           <CardTitle className="flex items-center text-3xl font-bold text-primary">
             <ClipboardList className="mr-3 h-8 w-8" />

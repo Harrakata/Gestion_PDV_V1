@@ -1409,7 +1409,7 @@ const ConfigurationTab = ({
   const configurationContent = (
     <div className={showEquipmentManagement ? 'space-y-6' : 'space-y-4'}>
       <Card className="relative overflow-hidden shadow-lg">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
         <CardHeader className="relative">
           <CardTitle>Configuration des terminaux</CardTitle>
           <CardDescription>

@@ -483,7 +483,7 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       {!hideTitle && (
         <Card className="relative overflow-hidden border border-primary/20 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
           <CardHeader>
             <CardTitle className="flex items-center text-3xl font-bold text-primary">
               {view === 'reparation' ? (
@@ -657,7 +657,7 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
       )}
 
       <Card className="relative overflow-hidden border border-primary/20 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
         <CardHeader className="relative px-3 pb-0 pt-3 sm:px-6 sm:pt-6">
           <CardTitle className="flex items-center gap-2 text-base font-semibold text-primary sm:text-xl">
             <CalendarDays className="h-4 w-4 sm:h-5 sm:w-5" />

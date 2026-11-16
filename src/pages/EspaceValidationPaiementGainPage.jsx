@@ -679,7 +679,7 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
   const renderPaymentSection = () => (
     <div className="space-y-6">
       <Card className="relative overflow-hidden border border-primary/20 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
         <CardHeader>
           <CardTitle className="flex items-center text-3xl font-bold text-primary">
             <ShieldCheck className="mr-3 h-8 w-8" />
@@ -1075,7 +1075,7 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
       {/* En-tête mobile : profil + cloche + bouton menu */}
       <div className="app-space-mobile-header md:hidden">
         <div className="relative flex items-center gap-3 overflow-hidden rounded-2xl border border-primary/25 bg-white px-4 py-4 shadow-[0_6px_28px_-8px_rgba(15,23,42,0.30)] backdrop-blur">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-primary" />
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/6 via-transparent to-transparent" />
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.75rem] bg-gradient-to-br from-primary/20 via-primary/10 to-white text-primary ring-1 ring-primary/20">
             <span className="text-sm font-black">
@@ -1116,7 +1116,7 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
         <div className="app-space-sidebar-scroll sticky top-20 space-y-3 max-h-[calc(100vh-5.5rem)] overflow-y-auto pb-4 pr-1 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
           <div className="hidden md:block">
           <Card className="relative overflow-hidden border border-primary/20 bg-white/92 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
             <CardContent className="relative p-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[1rem] bg-gradient-to-br from-primary/20 via-primary/10 to-white text-primary ring-1 ring-primary/20 shadow-[0_8px_20px_-10px_rgba(15,23,42,0.35)]">
@@ -1146,7 +1146,7 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
           </div>
 
           <Card className="relative overflow-hidden border border-primary/20 bg-white/92 shadow-[0_8px_30px_-12px_rgba(15,23,42,0.18)] backdrop-blur">
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-primary" />
             <CardContent className="relative p-3">
               <nav className="space-y-0.5">
                 {menuItems.map((item) => {

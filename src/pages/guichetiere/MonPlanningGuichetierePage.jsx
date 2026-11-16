@@ -303,7 +303,7 @@ const MonPlanningGuichetierePage = () => {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <Card className="relative overflow-hidden border border-primary/20 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
         <CardHeader className="relative">
           <CardTitle className="flex items-center text-3xl font-bold text-primary">
             <CalendarDays className="mr-3 h-8 w-8" />
@@ -341,7 +341,7 @@ const MonPlanningGuichetierePage = () => {
       </div>
 
       <Card className="relative overflow-hidden border border-primary/20 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
         <CardHeader className="relative pb-0">
           <CardTitle className="flex items-center gap-2 text-xl font-semibold text-primary">
             <CalendarDays className="h-5 w-5" />

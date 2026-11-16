@@ -549,7 +549,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
   return (
     <div className="space-y-6">
       <Card className="relative overflow-hidden shadow-xl glassmorphism">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
         <CardHeader className="relative">
           <CardTitle className="flex items-center gap-2 text-2xl font-bold text-primary">
             <Package className="h-6 w-6" /> Pièces de Sous-ensembles
@@ -569,7 +569,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
         {/* ===== CATALOGUE ===== */}
         <TabsContent value="catalogue">
           <Card className="relative overflow-hidden shadow-lg">
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
             <CardHeader className="relative">
               <div className="flex items-center justify-between flex-wrap gap-3">
                 <div>
@@ -715,7 +715,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
         {/* ===== AIDE REPARATION ===== */}
         <TabsContent value="aide">
           <Card className="relative overflow-hidden shadow-lg">
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
             <CardHeader className="relative">
               <CardTitle className="flex items-center gap-2 text-xl text-primary">
                 <Wrench className="h-5 w-5" /> Aide à la Réparation
@@ -757,7 +757,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                   ) : (
                     <>
                       <Card className="relative overflow-hidden">
-                        <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+                        <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-primary" />
                         <CardHeader className="relative pb-2"><CardTitle className="text-base">Description de la pièce</CardTitle></CardHeader>
                         <CardContent className="space-y-3">
                           <textarea className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[80px]" value={helpPiece.description_aide || ''} onChange={e => setHelpPiece(p => ({ ...p, description_aide: e.target.value }))} disabled={!canManage} placeholder="Description fonctionnelle de la pièce..." />
@@ -765,7 +765,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                         </CardContent>
                       </Card>
                       <Card className="relative overflow-hidden">
-                        <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+                        <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-primary" />
                         <CardHeader className="relative pb-2"><CardTitle className="text-base flex items-center gap-2"><AlertTriangle className="h-4 w-4 text-amber-500" /> Types de pannes</CardTitle></CardHeader>
                         <CardContent className="space-y-3">
                           {pannes.length === 0 && <p className="text-sm text-muted-foreground">Aucune panne renseignée.</p>}
@@ -902,7 +902,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                         </CardContent>
                       </Card>
                       <Card className="relative overflow-hidden">
-                        <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+                        <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-primary" />
                         <CardHeader className="relative pb-2"><CardTitle className="text-base">Procédure de réparation</CardTitle></CardHeader>
                         <CardContent className="space-y-3">
                           {procedures.length === 0 && <p className="text-sm text-muted-foreground">Aucune étape définie.</p>}
@@ -990,7 +990,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
         {/* ===== MODELES ===== */}
         <TabsContent value="modeles">
           <Card className="relative overflow-hidden shadow-lg">
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
             <CardHeader className="relative">
               <div className="flex items-center justify-between">
                 <div>
@@ -1043,7 +1043,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
         {/* ===== STOCK ===== */}
         <TabsContent value="stock">
           <Card className="relative overflow-hidden shadow-lg">
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
             <CardHeader className="relative">
               <div className="flex items-center justify-between">
                 <div>
@@ -1170,7 +1170,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
       {/* ===== DIALOG PIECE ===== */}
       <Dialog open={isPieceOpen} onOpenChange={(open) => { if (!open) resetPhotoState(); setIsPieceOpen(open); }}>
         <DialogContent className="sm:max-w-lg relative overflow-hidden">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
           <DialogHeader><DialogTitle className="text-primary">{editingPiece ? 'Modifier la pièce' : 'Ajouter une pièce'}</DialogTitle></DialogHeader>
           <div className="grid gap-3 py-4">
             {[
@@ -1287,7 +1287,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
       {/* ===== DIALOG AIDE REPARATION ===== */}
       <Dialog open={isHelpOpen} onOpenChange={setIsHelpOpen}>
         <DialogContent className="sm:max-w-2xl flex flex-col max-h-[88vh] relative overflow-hidden p-0">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/80 to-primary/35 z-10" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary z-10" />
           <DialogHeader className="relative shrink-0 px-6 pt-6 pb-3 border-b">
             <DialogTitle className="flex items-center gap-2 text-primary">
               <HelpCircle className="h-5 w-5 text-primary" />
@@ -1456,7 +1456,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
       {/* ===== DIALOG MODELE ===== */}
       <Dialog open={isModeleOpen} onOpenChange={setIsModeleOpen}>
         <DialogContent className="sm:max-w-md relative overflow-hidden">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
           <DialogHeader><DialogTitle className="text-primary">{editingModele ? 'Modifier le modèle' : 'Créer un modèle'}</DialogTitle></DialogHeader>
           <div className="grid gap-3 py-4">
             <div className="grid grid-cols-4 items-center gap-3">
@@ -1492,7 +1492,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
       {/* ===== DIALOG COMPOSITION ===== */}
       <Dialog open={isCompoOpen} onOpenChange={setIsCompoOpen}>
         <DialogContent className="sm:max-w-2xl relative overflow-hidden p-0">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
           <div className="relative px-6 pt-5 pb-3">
             <DialogHeader>
               <DialogTitle className="text-primary flex items-center gap-2">
@@ -1583,7 +1583,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
       {/* ===== DIALOG STOCK MOUVEMENT ===== */}
       <Dialog open={isStockOpen} onOpenChange={setIsStockOpen}>
         <DialogContent className="sm:max-w-md relative overflow-hidden">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
           <DialogHeader><DialogTitle className="text-primary">Mouvement de stock</DialogTitle></DialogHeader>
           <div className="grid gap-3 py-4">
             <div className="grid grid-cols-4 items-center gap-3">
@@ -1628,7 +1628,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
       {/* ===== DIALOG IMPORT ===== */}
       <Dialog open={isImportOpen} onOpenChange={setIsImportOpen}>
         <DialogContent className="sm:max-w-2xl max-h-[88vh] overflow-y-auto relative overflow-hidden">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-primary">
               <FileUp className="h-5 w-5 text-primary" /> Importer des pièces depuis CSV

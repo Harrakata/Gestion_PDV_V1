@@ -81,7 +81,7 @@ const AbsenceApprovalPanel = ({ filter = {}, approver = {}, title = "Demandes d'
     <div className="space-y-4">
       {/* Bandeau titre */}
       <Card className="relative overflow-hidden border border-primary/20 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)]">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
         <CardHeader>
           <CardTitle className="flex items-center text-2xl font-bold text-primary sm:text-3xl">
             <CalendarCheck className="mr-2.5 h-7 w-7 sm:h-8 sm:w-8" /> {title}

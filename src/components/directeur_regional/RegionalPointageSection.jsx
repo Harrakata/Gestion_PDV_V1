@@ -309,7 +309,7 @@ const RegionalPointageSection = ({ regionName = '', allowAllRegions = false, hid
   if (!effectiveRegionName && !allowAllRegions) {
     return (
       <Card className="relative overflow-hidden border border-primary/20 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
         <CardHeader>
           <CardTitle className="text-2xl text-primary">Suivi Pointage</CardTitle>
           <CardDescription>
@@ -328,7 +328,7 @@ const RegionalPointageSection = ({ regionName = '', allowAllRegions = false, hid
     <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
       {!hideHeader && (
         <Card className="relative overflow-hidden border border-primary/20 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
           <CardHeader>
             <CardTitle className="flex items-center text-3xl font-bold text-primary">
               <ClipboardCheck className="mr-3 h-8 w-8" />

@@ -186,7 +186,7 @@ const AgencesSecteurSection = ({ chef }) => {
   return (
     <div className="space-y-4">
       <Card className="relative overflow-hidden border border-primary/20 bg-white/92 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-2xl text-primary"><Building className="h-6 w-6" /> Agences du secteur</CardTitle>
           <CardDescription>Secteur : <span className="font-semibold">{chef.secteurEnCharge || '—'}</span></CardDescription>
@@ -316,7 +316,7 @@ const EspaceChefSecteurPage = () => {
       {/* En-tête mobile : profil + bouton menu */}
       <div className="app-space-mobile-header md:hidden">
         <div className="relative flex items-center gap-3 overflow-hidden rounded-2xl border border-primary/25 bg-white px-4 py-4 shadow-[0_6px_28px_-8px_rgba(15,23,42,0.30)] backdrop-blur">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-primary" />
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/6 via-transparent to-transparent" />
           {chef.photo_url ? (
             <img src={chef.photo_url} alt="Profil" className="h-10 w-10 shrink-0 rounded-[0.75rem] object-cover ring-1 ring-primary/20" />
@@ -352,7 +352,7 @@ const EspaceChefSecteurPage = () => {
         <div className="app-space-sidebar-scroll sticky top-20 space-y-3 max-h-[calc(100vh-5.5rem)] overflow-y-auto pb-4 pr-1">
           <div className="hidden md:block">
           <Card className="relative overflow-hidden border border-primary/20 bg-white/92 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
             <CardContent className="relative p-4">
               <div className="flex items-center gap-3">
                 {chef.photo_url ? (
@@ -373,7 +373,7 @@ const EspaceChefSecteurPage = () => {
           </div>
 
           <Card className="relative overflow-hidden border border-primary/20 bg-white/92 shadow-[0_8px_30px_-12px_rgba(15,23,42,0.18)] backdrop-blur">
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-primary" />
             <CardContent className="relative p-3">
               <nav className="space-y-0.5">
                 {visibleNavItems.map((item) => {

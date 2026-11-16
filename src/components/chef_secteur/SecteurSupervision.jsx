@@ -38,7 +38,7 @@ function useSecteurAgences(secteurName) {
 
 const SectionShell = ({ icon: Icon, title, secteurName, children }) => (
   <Card className="relative overflow-hidden border border-primary/20 bg-white/92 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-    <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+    <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
     <CardHeader>
       <CardTitle className="flex items-center gap-2 text-2xl text-primary"><Icon className="h-6 w-6" /> {title}</CardTitle>
       <CardDescription>Secteur : <span className="font-semibold">{secteurName || '—'}</span></CardDescription>

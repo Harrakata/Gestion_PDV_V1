@@ -361,7 +361,7 @@ const EspaceMaintenancePage = () => {
       {/* En-tête mobile : profil + cloche + bouton menu — remplace le bouton toggle flottant */}
       <div className="app-space-mobile-header md:hidden">
         <div className="relative flex items-center gap-3 overflow-hidden rounded-2xl border border-primary/25 bg-white px-4 py-4 shadow-[0_6px_28px_-8px_rgba(15,23,42,0.30)] backdrop-blur">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-primary" />
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/6 via-transparent to-transparent" />
           {userData?.photo_url ? (
             <img
@@ -413,7 +413,7 @@ const EspaceMaintenancePage = () => {
           {/* Carte de profil : masquée sur mobile (déplacée dans l'en-tête mobile), visible en desktop */}
           <div className="hidden md:block">
             <Card className="relative overflow-hidden border border-primary/20 bg-white/92 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-              <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
               <CardContent className="relative p-4">
                 <div className="flex items-center gap-3">
                   {userData?.photo_url ? (
@@ -448,7 +448,7 @@ const EspaceMaintenancePage = () => {
           </div>
 
           <Card className="relative overflow-hidden border border-primary/20 bg-white/92 shadow-[0_8px_30px_-12px_rgba(15,23,42,0.18)] backdrop-blur">
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-primary" />
             <CardContent className="relative p-3">
               <nav className="space-y-1">
                 {menuItems.map((item) => {
@@ -563,7 +563,7 @@ const EspaceMaintenancePage = () => {
           ) : (
             <div className="space-y-6">
               <Card className="relative overflow-hidden border border-primary/20 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-                <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
                 <CardHeader>
                   <CardTitle className="flex items-center text-3xl font-bold text-primary">
                     <CalendarDays className="mr-3 h-8 w-8" /> Maintenance

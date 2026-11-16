@@ -1216,7 +1216,7 @@ const PaiementGrosGainPage = () => {
         className="flex flex-col items-center justify-center min-h-[calc(100vh-12rem)] p-3 md:p-8 text-center"
       >
         <Card className="relative overflow-hidden w-full max-w-lg border border-primary/20 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur p-4 md:p-8">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
           <Wallet className="h-10 w-10 md:h-16 md:w-16 text-primary mx-auto mb-3 md:mb-6" />
           <CardTitle className="text-xl md:text-3xl font-bold text-primary mb-2 md:mb-4">Paiement Gros Gain</CardTitle>
           <p className="text-sm md:text-lg text-muted-foreground mb-4 md:mb-8">
@@ -1238,7 +1238,7 @@ const PaiementGrosGainPage = () => {
   return (
     <div className="space-y-6">
       <Card className="relative overflow-hidden border border-primary/20 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
         <CardHeader>
           <div>
             <CardTitle className="flex items-center text-3xl font-bold text-primary">

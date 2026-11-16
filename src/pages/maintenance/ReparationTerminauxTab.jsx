@@ -466,7 +466,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
   return (
     <div className="space-y-6">
       <Card className="relative overflow-hidden shadow-xl glassmorphism">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
         <CardHeader className="relative">
           <CardTitle className="flex items-center gap-2 text-2xl font-bold text-primary">
             <Wrench className="h-6 w-6" /> Réparation des Sous-ensembles
@@ -481,7 +481,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
         {/* Liste gauche */}
         <div className="lg:col-span-2">
           <Card className="relative overflow-hidden shadow-lg">
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
             <CardHeader className="relative pb-3">
               <CardTitle className="flex items-center gap-2 text-xl text-primary">
                 <Package2 className="h-5 w-5" /> Sous-ensembles à traiter
@@ -624,7 +624,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
         <div className="lg:col-span-3 space-y-4">
           {!selectedItem ? (
             <Card className="relative overflow-hidden flex items-center justify-center py-20">
-              <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
               <div className="text-center text-muted-foreground">
                 <Package2 className="mx-auto h-12 w-12 mb-3 opacity-30" />
                 <p>Sélectionnez un sous-ensemble pour commencer.</p>
@@ -633,7 +633,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
           ) : (
             <>
               <Card className="relative overflow-hidden shadow-lg">
-                <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
                 <CardHeader className="relative pb-3">
                   <div className="flex items-start justify-between flex-wrap gap-2">
                     <div>
@@ -1098,7 +1098,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
               {/* Pièces du modèle */}
               {(itemPieces.length > 0 || selectedItem.modele_id) && (
                 <Card className="relative overflow-hidden shadow-lg">
-                  <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+                  <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
                   <CardHeader className="relative py-2 px-4">
                     <CardTitle className="flex items-center gap-2 text-sm text-primary">
                       <Wrench className="h-3.5 w-3.5" /> Pièces du modèle
@@ -1152,7 +1152,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
         <DialogContent className="sm:max-w-lg w-full flex flex-col h-[62vh] p-0 gap-0 overflow-hidden !rounded-2xl">
 
           {/* Bande de couleur supérieure */}
-          <div className="h-1.5 w-full shrink-0 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+          <div className="h-1.5 w-full shrink-0 bg-primary" />
 
           {/* Header */}
           <div className="shrink-0 px-6 pt-5 pb-0 border-b bg-gradient-to-b from-primary/8 to-white">

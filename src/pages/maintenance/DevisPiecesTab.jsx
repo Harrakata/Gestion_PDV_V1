@@ -438,7 +438,7 @@ const DevisPiecesTab = () => {
   return (
     <div className="space-y-6">
       <Card className="relative overflow-hidden shadow-xl glassmorphism">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
         <CardHeader className="relative">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>

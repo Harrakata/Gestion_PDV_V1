@@ -69,7 +69,7 @@ const InstallAppButton = ({ className = '', full = false }) => {
 
       <Dialog open={showHelp} onOpenChange={setShowHelp}>
         <DialogContent className="sm:max-w-md">
-          <span className="pointer-events-none absolute inset-x-0 top-0 h-1.5 rounded-t-lg bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+          <span className="pointer-events-none absolute inset-x-0 top-0 h-1.5 rounded-t-lg bg-primary" />
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-primary">
               <Download className="h-5 w-5" /> Installer l'application

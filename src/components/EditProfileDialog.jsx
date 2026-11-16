@@ -320,7 +320,7 @@ const EditProfileDialog = ({
   return (
     <Dialog open={open} onOpenChange={(value) => { if (!busy) onOpenChange(value); }}>
       <DialogContent className="sm:max-w-lg">
-        <span className="pointer-events-none absolute inset-x-0 top-0 h-1.5 rounded-t-lg bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+        <span className="pointer-events-none absolute inset-x-0 top-0 h-1.5 rounded-t-lg bg-primary" />
 
         <DialogHeader>
           <div className="flex items-center gap-3">
