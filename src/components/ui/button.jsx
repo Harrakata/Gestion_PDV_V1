@@ -4,7 +4,7 @@ import { cva } from 'class-variance-authority';
 import React from 'react';
 
 const buttonVariants = cva(
-	'inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+	'inline-flex items-center justify-center gap-2 rounded-lg text-sm font-semibold ring-offset-background transition-[color,background-color,border-color,box-shadow,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 active:translate-y-px disabled:pointer-events-none disabled:translate-y-0 disabled:opacity-50',
 	{
 		variants: {
 			variant: {
@@ -15,6 +15,12 @@ const buttonVariants = cva(
           'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
 				secondary:
           'bg-secondary text-secondary-foreground hover:bg-secondary/80',
+				subtle:
+          'border border-border bg-surface-subtle text-foreground hover:border-primary/25 hover:bg-accent',
+				success:
+          'bg-success text-success-foreground hover:bg-success/90 focus-visible:ring-success',
+				warning:
+          'bg-warning text-warning-foreground hover:bg-warning/90 focus-visible:ring-warning',
 				ghost: 'hover:bg-accent hover:text-accent-foreground',
 				link: 'text-primary underline-offset-4 hover:underline',
 			},
@@ -23,6 +29,8 @@ const buttonVariants = cva(
 				sm: 'h-9 rounded-md px-3',
 				lg: 'h-11 rounded-md px-8',
 				icon: 'h-10 w-10',
+				touch: 'min-h-11 px-5 py-2.5',
+				iconTouch: 'h-11 w-11',
 			},
 		},
 		defaultVariants: {
@@ -36,6 +44,7 @@ const Button = React.forwardRef(({ className, variant, size, asChild = false, ..
 	const Comp = asChild ? Slot : 'button';
 	return (
 		<Comp
+			data-ui-button=""
 			className={cn(buttonVariants({ variant, size, className }))}
 			data-ui-button-size={size}
 			data-ui-button-variant={variant}

@@ -3,7 +3,7 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 
 const Table = React.forwardRef(({ className, containerClassName, ...props }, ref) => (
-  <div className={cn("relative w-full overflow-auto rounded-2xl border border-slate-200/80 bg-white shadow-[0_18px_45px_-32px_rgba(15,23,42,0.22)]", containerClassName)}>
+  <div tabIndex={0} role="region" aria-label={props['aria-label'] ? `Tableau : ${props['aria-label']}` : 'Tableau défilant'} className={cn("app-table-scroll relative min-w-0 w-full max-w-full overflow-auto rounded-2xl border border-border/80 bg-card shadow-elevated focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", containerClassName)}>
     <table
       ref={ref}
       className={cn('w-full caption-bottom text-sm', className)}
@@ -14,14 +14,14 @@ const Table = React.forwardRef(({ className, containerClassName, ...props }, ref
 Table.displayName = 'Table';
 
 const TableHeader = React.forwardRef(({ className, ...props }, ref) => (
-  <thead ref={ref} className={cn('bg-white [&_tr]:border-b', className)} {...props} />
+  <thead ref={ref} className={cn('bg-surface-subtle [&_tr]:border-b', className)} {...props} />
 ));
 TableHeader.displayName = 'TableHeader';
 
 const TableBody = React.forwardRef(({ className, ...props }, ref) => (
   <tbody
     ref={ref}
-    className={cn('bg-white [&_tr:last-child]:border-0', className)}
+    className={cn('bg-card [&_tr:last-child]:border-0', className)}
     {...props}
   />
 ));
@@ -57,8 +57,8 @@ const TableHead = React.forwardRef(({ className, children, ...props }, ref) => {
       ref={ref}
       data-table-actions={isActionsColumn ? '' : undefined}
       className={cn(
-        'h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0',
-        'text-[0.78rem] uppercase tracking-[0.08em]',
+        'h-12 px-4 text-left align-middle font-semibold text-muted-foreground [&:has([role=checkbox])]:pr-0',
+        'text-xs uppercase tracking-[0.06em]',
         className
       )}
       {...props}

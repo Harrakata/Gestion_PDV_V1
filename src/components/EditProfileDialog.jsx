@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState, useRef, useCallback } from 'react';
-import { UserCog, Loader2, Camera, UploadCloud, X, Mail, Phone, KeyRound, ShieldCheck, Eye, EyeOff, User, Bot } from 'lucide-react';
+import { UserCog, Loader2, Camera, UploadCloud, X, KeyRound, ShieldCheck, User, Bot } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -10,7 +10,9 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { FormField } from '@/components/ui/form-field';
+import { FormActions } from '@/components/ui/form-actions';
+import { PasswordInput } from '@/components/ui/password-input';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabaseClient';
 import { STORAGE_BUCKET } from '@/lib/clientConfig';
@@ -403,33 +405,29 @@ const EditProfileDialog = ({
                 )}
 
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-nom">Nom</Label>
+                  <FormField id="edit-nom" label="Nom">
                     <Input id="edit-nom" value={form.nom} onChange={(e) => setForm((f) => ({ ...f, nom: e.target.value }))} disabled={busy} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-prenom">Prénom</Label>
+                  </FormField>
+                  <FormField id="edit-prenom" label="Prénom">
                     <Input id="edit-prenom" value={form.prenom} onChange={(e) => setForm((f) => ({ ...f, prenom: e.target.value }))} disabled={busy} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-tel" className="flex items-center gap-2"><Phone className="h-4 w-4" /> Téléphone</Label>
-                    <Input id="edit-tel" value={form.telephone} onChange={(e) => setForm((f) => ({ ...f, telephone: e.target.value }))} disabled={busy} placeholder="Téléphone" />
-                  </div>
+                  </FormField>
+                  <FormField id="edit-tel" label="Téléphone">
+                    <Input id="edit-tel" type="tel" value={form.telephone} onChange={(e) => setForm((f) => ({ ...f, telephone: e.target.value }))} disabled={busy} placeholder="Téléphone" autoComplete="tel" />
+                  </FormField>
                   {initialData.email !== undefined && (
-                    <div className="space-y-2">
-                      <Label className="flex items-center gap-2"><Mail className="h-4 w-4" /> Email</Label>
-                      <Input value={initialData.email || ''} disabled readOnly className="bg-muted/50" />
-                    </div>
+                    <FormField label="Email" hint="L’adresse de connexion ne peut pas être modifiée ici.">
+                      <Input type="email" value={initialData.email || ''} disabled readOnly className="bg-muted/50" />
+                    </FormField>
                   )}
                 </div>
 
-                <div className="flex justify-end gap-2 pt-1">
+                <FormActions>
                   <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={busy}>Annuler</Button>
                   <Button type="submit" disabled={busy}>
                     {isSavingProfile ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UserCog className="mr-2 h-4 w-4" />}
                     Enregistrer
                   </Button>
-                </div>
+                </FormActions>
               </form>
             </TabsContent>
           )}
@@ -437,55 +435,41 @@ const EditProfileDialog = ({
           {/* ── Onglet Sécurité ── */}
           <TabsContent value="securite" className="mt-4">
             <form onSubmit={handlePasswordSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-new-password">Nouveau mot de passe</Label>
-                <div className="relative">
-                  <Input
-                    id="edit-new-password"
-                    type={showPassword ? 'text' : 'password'}
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="••••••••"
-                    disabled={busy}
-                    autoComplete="new-password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((v) => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    tabIndex={-1}
-                    aria-label={showPassword ? 'Masquer' : 'Afficher'}
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-confirm-password">Confirmer le mot de passe</Label>
-                <Input
-                  id="edit-confirm-password"
-                  type={showPassword ? 'text' : 'password'}
+              <FormField id="edit-new-password" label="Nouveau mot de passe" hint={`Au moins ${MIN_PASSWORD_LENGTH} caractères.`} required>
+                <PasswordInput
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="••••••••"
+                  disabled={busy}
+                  autoComplete="new-password"
+                  visible={showPassword}
+                  onVisibleChange={setShowPassword}
+                />
+              </FormField>
+              <FormField id="edit-confirm-password" label="Confirmer le mot de passe" required>
+                <PasswordInput
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
                   disabled={busy}
                   autoComplete="new-password"
+                  visible={showPassword}
+                  onVisibleChange={setShowPassword}
                 />
-              </div>
-              <p className="text-xs text-muted-foreground">Le mot de passe doit contenir au moins {MIN_PASSWORD_LENGTH} caractères.</p>
+              </FormField>
 
-              <div className="flex justify-end gap-2 pt-1">
+              <FormActions>
                 <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={busy}>Annuler</Button>
                 <Button type="submit" disabled={busy}>
                   {isSavingPassword ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <KeyRound className="mr-2 h-4 w-4" />}
                   Mettre à jour le mot de passe
                 </Button>
-              </div>
+              </FormActions>
             </form>
           </TabsContent>
 
           <TabsContent value="preferences" className="mt-4">
-            <div className="flex items-start justify-between gap-4 rounded-xl border border-border/60 bg-white p-4">
+            <div className="flex items-start justify-between gap-4 rounded-xl border border-border bg-card p-4">
               <div className="min-w-0">
                 <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
                   <Bot className="h-4 w-4 text-primary" />

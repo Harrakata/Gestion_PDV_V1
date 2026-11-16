@@ -21,7 +21,9 @@ const CHEF_AGENCE_TAB_LABELS = {
 };
 import { motion } from 'framer-motion';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { FormField } from '@/components/ui/form-field';
+import { FormActions } from '@/components/ui/form-actions';
+import { PasswordInput } from '@/components/ui/password-input';
 import { useToast } from '@/components/ui/use-toast';
 import { publicSupabase, supabase } from '@/lib/supabaseClient';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar.jsx';
@@ -370,18 +372,20 @@ const LoginPageChef = ({ onLogin }) => {
     setAuthStep('password');
   };
 
+  const authStepNumber = authStep === 'matricule' ? 1 : authStep === 'choixMethAuth' ? 2 : 3;
+
   return (
     <motion.div 
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       className="flex items-center justify-center min-h-[calc(100vh-200px)]"
     >
-      <Card className="w-full max-w-md shadow-2xl glassmorphism">
-        <CardHeader>
-          <CardTitle className="text-3xl font-bold text-center text-primary">
-            <ShieldCheck className="inline-block h-8 w-8 mr-2 text-primary" />
-            Accès Espace Chef d'Agence
-          </CardTitle>
+      <Card variant="elevated" className="w-full max-w-md border-border">
+        <CardHeader className="items-center text-center">
+          <div className="mb-1 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <ShieldCheck className="h-6 w-6" aria-hidden="true" />
+          </div>
+          <CardTitle className="text-2xl text-primary sm:text-3xl">Accès Espace Chef d'Agence</CardTitle>
           <CardDescription className="text-center">
             {authStep === 'matricule' 
               ? "Entrez votre matricule pour commencer" 
@@ -392,15 +396,18 @@ const LoginPageChef = ({ onLogin }) => {
                   : "Reconnaissance faciale en cours"
             }
           </CardDescription>
+          <div className="flex items-center gap-1.5 pt-1" role="progressbar" aria-label="Progression de la connexion" aria-valuemin={1} aria-valuemax={3} aria-valuenow={authStepNumber}>
+            {[1, 2, 3].map((step) => (
+              <span key={step} className={`h-1.5 w-10 rounded-full ${step <= authStepNumber ? 'bg-primary' : 'bg-muted'}`} />
+            ))}
+          </div>
         </CardHeader>
         <CardContent>
           {/* ÉTAPE 1: SAISIE DU MATRICULE */}
           {authStep === 'matricule' && (
             <form onSubmit={verifierMatricule} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="matricule-chef">Identifiant</Label>
+            <FormField id="matricule-chef" label="Identifiant" required>
               <Input
-                id="matricule-chef"
                 type="text"
                 placeholder="Matricule ou email"
                 value={matricule}
@@ -409,10 +416,11 @@ const LoginPageChef = ({ onLogin }) => {
                 disabled={isLoading}
                 autoComplete="username"
               />
-            </div>
-              <Button 
-                type="submit" 
-                className="w-full text-lg py-3 bg-primary hover:bg-primary/90 text-white" 
+            </FormField>
+              <Button
+                type="submit"
+                size="touch"
+                className="w-full"
                 disabled={isLoading}
               >
                 {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
@@ -477,37 +485,34 @@ const LoginPageChef = ({ onLogin }) => {
                   </AvatarFallback>
                 </Avatar>
               </div>
-            <div className="space-y-2">
-              <Label htmlFor="password-chef">Mot de passe</Label>
-              <Input 
-                id="password-chef" 
-                type="password" 
-                placeholder="Votre mot de passe" 
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)} 
-                required 
+            <FormField id="password-chef" label="Mot de passe" required>
+              <PasswordInput
+                placeholder="Votre mot de passe"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
                 disabled={isLoading}
-                  autoFocus
+                autoFocus
               />
-            </div>
-              <div className="grid grid-cols-1 gap-3">
-                <Button 
-                  type="submit" 
-                  className="py-6 bg-primary hover:bg-primary/90 text-white" 
+            </FormField>
+              <FormActions>
+                <Button
+                  type="button"
+                  onClick={retourMatricule}
+                  variant="outline"
+                  disabled={isLoading}
+                >
+                  Retour
+                </Button>
+                <Button
+                  type="submit"
+                  size="touch"
                   disabled={isLoading}
                 >
                   {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-5 w-5" />}
               {isLoading ? 'Connexion...' : 'Se connecter'}
             </Button>
-                <Button
-                  type="button"
-                  onClick={retourMatricule}
-                  variant="ghost"
-                  disabled={isLoading}
-                >
-                  Retour
-                </Button>
-              </div>
+              </FormActions>
               <div className="text-center">
                 <button type="button" onClick={() => setIsForgotOpen(true)} className="text-sm font-medium text-primary hover:underline">
                   Mot de passe oublié ?

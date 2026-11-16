@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Loader2, Building, Smartphone, Users, UserCog, CornerDownLeft } from 'lucide-react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { supabase } from '@/lib/supabaseClient';
 import { isGuichetiereAgenceVisible } from '@/lib/orgStructureConfig';
 
@@ -10,9 +10,9 @@ const sanitize = (q) => q.replace(/[,()*%]/g, ' ').trim();
 
 const TYPE_META = {
   agence:      { icon: Building,  label: 'Agences',      tone: 'text-primary' },
-  terminal:    { icon: Smartphone, label: 'Terminaux',   tone: 'text-violet-600' },
-  guichetiere: { icon: Users,     label: 'Guichetières', tone: 'text-emerald-600' },
-  chef:        { icon: UserCog,   label: "Chefs d'agence", tone: 'text-blue-600' },
+  terminal:    { icon: Smartphone, label: 'Terminaux',   tone: 'text-primary' },
+  guichetiere: { icon: Users,     label: 'Guichetières', tone: 'text-success' },
+  chef:        { icon: UserCog,   label: "Chefs d'agence", tone: 'text-info' },
 };
 
 async function runSearch(raw) {
@@ -89,7 +89,8 @@ const GlobalSearchDialog = ({ open, onOpenChange }) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="top-[12%] translate-y-0 gap-0 p-0 sm:max-w-xl">
-        <span className="pointer-events-none absolute inset-x-0 top-0 h-1 rounded-t-lg bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+        <DialogTitle className="sr-only">Recherche globale</DialogTitle>
+        <DialogDescription className="sr-only">Rechercher une agence, un terminal ou une personne.</DialogDescription>
         <div className="flex items-center gap-2 border-b px-4 py-3">
           <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
           <input
@@ -97,6 +98,7 @@ const GlobalSearchDialog = ({ open, onOpenChange }) => {
             value={term}
             onChange={(e) => setTerm(e.target.value)}
             placeholder="Rechercher agence, terminal, guichetière, chef…"
+            aria-label="Rechercher une agence, un terminal ou une personne"
             className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
           />
           {isLoading && <Loader2 className="h-4 w-4 shrink-0 animate-spin text-muted-foreground" />}
@@ -113,13 +115,13 @@ const GlobalSearchDialog = ({ open, onOpenChange }) => {
               const Icon = meta.icon;
               return (
                 <div key={group.type} className="mb-1">
-                  <p className="px-2 pb-1 pt-2 text-[0.65rem] font-bold uppercase tracking-wide text-muted-foreground/70">{meta.label}</p>
+                  <p className="px-2 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{meta.label}</p>
                   {group.items.map((item) => (
                     <button
                       key={`${item.type}-${item.id}`}
                       type="button"
                       onClick={() => go(item.to)}
-                      className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left transition-colors hover:bg-primary/5"
+                      className="flex min-h-11 w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <Icon className={`h-4 w-4 shrink-0 ${meta.tone}`} />
                       <span className="min-w-0 flex-1">

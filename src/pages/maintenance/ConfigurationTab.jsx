@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Combobox } from '@/components/ui/Combobox';
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import FormField from '@/components/ui/form-field';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -275,18 +276,18 @@ const getTerminalStatusBadgeClass = (status) => {
   const normalizedStatus = normalizeText(status);
 
   if (normalizedStatus === 'actif') {
-    return 'border-green-200 bg-green-50 text-green-700';
+    return 'border-success/25 bg-success-muted text-success-muted-foreground';
   }
 
   if (normalizedStatus === 'en maintenance') {
-    return 'border-amber-200 bg-amber-50 text-amber-700';
+    return 'border-warning/25 bg-warning-muted text-warning-muted-foreground';
   }
 
   if (normalizedStatus === 'hors service') {
-    return 'border-red-200 bg-red-50 text-red-700';
+    return 'border-destructive/25 bg-destructive/10 text-destructive';
   }
 
-  return 'border-slate-200 bg-slate-50 text-slate-700';
+  return 'border-border bg-muted text-foreground';
 };
 
 const ConfigurationTab = ({
@@ -323,6 +324,7 @@ const ConfigurationTab = ({
   const [assembledTerminals, setAssembledTerminals] = useState([]);
   const [expandedAssembledTerminalId, setExpandedAssembledTerminalId] = useState(null);
   const [formData, setFormData] = useState(DEFAULT_FORM_DATA);
+  const [showValidationErrors, setShowValidationErrors] = useState(false);
   const [configurationMode, setConfigurationMode] = useState('manual');
   const [selectedAssembledTerminalId, setSelectedAssembledTerminalId] = useState('');
   const [editingTerminalId, setEditingTerminalId] = useState(null);
@@ -463,7 +465,7 @@ const ConfigurationTab = ({
               toast({
                 title: 'Terminaux réattribués',
                 description: `${fixedCount} terminal(aux) ré-affecté(s) suite à un renommage d'agence.`,
-                className: 'bg-blue-500 text-white',
+                className: 'bg-info text-info-foreground',
               });
             }
           }
@@ -552,6 +554,7 @@ const ConfigurationTab = ({
   }, [agences, lockedAgenceId, lockedAgenceName]);
 
   const resetForm = useCallback(() => {
+    setShowValidationErrors(false);
     setFormData(DEFAULT_FORM_DATA);
     setConfigurationMode('manual');
     setSelectedAssembledTerminalId('');
@@ -682,6 +685,14 @@ const ConfigurationTab = ({
         : null,
     [assembledTerminals, selectedAssembledTerminalId]
   );
+  const formErrors = showValidationErrors ? {
+    assembled: configurationMode === 'assembled' && !selectedAssembledTerminal ? 'Choisissez un terminal assemblé disponible.' : undefined,
+    region: !formRegion ? 'Choisissez une région.' : undefined,
+    agence: !agenceId ? 'Choisissez une agence.' : undefined,
+    ref: !formData.ref?.trim() ? 'Saisissez une référence.' : undefined,
+    type: !formData.type?.trim() ? 'Choisissez un type de terminal.' : undefined,
+    position: !formData.position?.trim() ? 'Saisissez une position.' : undefined,
+  } : {};
   const availableAssembledTerminalOptions = useMemo(
     () =>
       assembledTerminals
@@ -857,7 +868,16 @@ const ConfigurationTab = ({
       return;
     }
 
+    setShowValidationErrors(true);
+    const focusFirstInvalid = () => requestAnimationFrame(() => {
+      const container = isEditDialogOpen
+        ? document.querySelector('[data-app-dialog]')
+        : document.querySelector('[data-terminal-config-fields]');
+      container?.querySelector('[aria-invalid="true"]')?.focus({ preventScroll: false });
+    });
+
     if (configurationMode === 'assembled' && !selectedAssembledTerminal) {
+      focusFirstInvalid();
       toast({
         title: 'Terminal assemblé requis',
         description: 'Sélectionnez un terminal assemblé disponible ou basculez sur le montage manuel.',
@@ -875,6 +895,7 @@ const ConfigurationTab = ({
     ].filter(Boolean);
 
     if (missingFields.length > 0) {
+      focusFirstInvalid();
       toast({
         title: 'Champs requis',
         description: `Veuillez renseigner : ${missingFields.join(', ')}.`,
@@ -1016,7 +1037,7 @@ const ConfigurationTab = ({
       description: editingTerminalId
         ? 'La configuration du terminal a été mise à jour.'
         : 'Le terminal a été configuré avec succès.',
-      className: 'bg-green-500 text-white',
+      className: 'bg-success text-success-foreground',
     });
 
     resetForm();
@@ -1029,6 +1050,8 @@ const ConfigurationTab = ({
       showReadOnlyToast();
       return;
     }
+
+    setShowValidationErrors(false);
 
     const agency = agenciesById[String(terminal.agence_id)];
 
@@ -1091,7 +1114,7 @@ const ConfigurationTab = ({
     toast({
       title: 'Terminal supprimé',
       description: `Le terminal ${terminal.reference} a été supprimé du parc.`,
-      className: 'bg-red-500 text-white',
+      className: 'bg-destructive text-destructive-foreground',
     });
 
     if (String(editingTerminalId) === String(terminal.id)) {
@@ -1218,7 +1241,7 @@ const ConfigurationTab = ({
       toast({
         title: 'Terminaux assemblés importés',
         description: `${payload.length} terminal(aux) ajouté(s) ou mis à jour avec les ${ASSEMBLED_TERMINAL_FIELD_CONFIG.length} champs du modèle.`,
-        className: 'bg-green-500 text-white',
+        className: 'bg-success text-success-foreground',
       });
 
       await loadData();
@@ -1395,21 +1418,21 @@ const ConfigurationTab = ({
               : 'Choisissez une région, puis une agence, afin de configurer ses terminaux.'}
           </CardDescription>
         </CardHeader>
-        <CardContent className={showEquipmentManagement ? 'space-y-5' : 'space-y-4'}>
+        <CardContent>
+          <form noValidate onSubmit={(event) => { event.preventDefault(); if (!isLoading) handleSaveTerminal(); }} className={showEquipmentManagement ? 'space-y-5' : 'space-y-4'}>
           {readOnlyMessage ? (
-            <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+            <div className="rounded-lg border border-warning/25 bg-warning-muted px-4 py-3 text-sm text-warning-muted-foreground">
               {readOnlyMessage}
             </div>
           ) : null}
 
-          <div className="rounded-lg border border-primary/15 bg-primary/5 px-4 py-3 text-sm text-slate-600">
+          <div className="rounded-lg border border-primary/15 bg-primary/5 px-4 py-3 text-sm text-muted-foreground">
             Un sous-ensemble déjà configuré sur un terminal ne peut pas être réaffecté à un autre tant qu’il n’a pas été libéré.
           </div>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+          <div data-terminal-config-fields className="grid grid-cols-1 gap-4 md:grid-cols-4">
             {!resolvedLockedAgence && (
-              <div className="space-y-2">
-                <Label>Région</Label>
+              <FormField label="Région" required error={formErrors.region}>
                 <Combobox
                   options={regionOptions}
                   value={formRegion}
@@ -1423,11 +1446,10 @@ const ConfigurationTab = ({
                   emptyText="Aucune région trouvée."
                   disabled={isLoading}
                 />
-              </div>
+              </FormField>
             )}
             {!resolvedLockedAgence && (
-              <div className="space-y-2">
-                <Label>Secteur</Label>
+              <FormField label="Secteur">
                 <Combobox
                   options={secteurOptionsForForm}
                   value={formSecteur}
@@ -1440,11 +1462,10 @@ const ConfigurationTab = ({
                   emptyText="Aucun secteur pour cette région."
                   disabled={isLoading || !formRegion}
                 />
-              </div>
+              </FormField>
             )}
             {!resolvedLockedAgence && (
-              <div className="space-y-2">
-                <Label>Agence</Label>
+              <FormField label="Agence" required error={formErrors.agence}>
                 <Combobox
                   options={agencesOptions}
                   value={agenceId}
@@ -1464,18 +1485,18 @@ const ConfigurationTab = ({
                   emptyText="Aucune agence trouvée."
                   disabled={isLoading || !formRegion}
                 />
-              </div>
+              </FormField>
             )}
 
-            <div className="space-y-3 rounded-xl border border-primary/15 bg-white/80 p-3 md:col-span-4">
+            <div className="space-y-3 rounded-xl border border-primary/15 bg-card p-3 md:col-span-4">
               <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                 <div className="space-y-1">
-                  <Label>Mode de configuration</Label>
-                  <p className="text-xs text-slate-500">
+                  <p id="terminal-mode-label" className="text-sm font-medium">Mode de configuration</p>
+                  <p className="text-xs text-muted-foreground">
                     Assignez un terminal déjà assemblé ou composez manuellement ses sous-ensembles.
                   </p>
                 </div>
-                <div className="grid gap-2 sm:grid-cols-2 lg:min-w-[520px]">
+                <div role="group" aria-labelledby="terminal-mode-label" className="grid gap-2 sm:grid-cols-2 lg:min-w-[520px]">
                   <Button
                     type="button"
                     variant={configurationMode === 'assembled' ? 'default' : 'outline'}
@@ -1503,8 +1524,7 @@ const ConfigurationTab = ({
 
               {configurationMode === 'assembled' ? (
                 <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-                  <div className="space-y-2">
-                    <Label>Terminal assemblé disponible</Label>
+                  <FormField label="Terminal assemblé disponible" required error={formErrors.assembled}>
                     <Combobox
                       options={availableAssembledTerminalOptions}
                       value={selectedAssembledTerminalId}
@@ -1514,7 +1534,7 @@ const ConfigurationTab = ({
                       emptyText="Aucun terminal assemblé disponible."
                       disabled={isLoading || Boolean(editingTerminalId)}
                     />
-                  </div>
+                  </FormField>
                   <Button
                     type="button"
                     variant="outline"
@@ -1528,15 +1548,14 @@ const ConfigurationTab = ({
               ) : null}
 
               {configurationMode === 'assembled' && selectedAssembledTerminal ? (
-                <div className="rounded-lg border border-blue-100 bg-blue-50/70 px-3 py-2 text-xs text-slate-600">
+                <div className="rounded-lg border border-info/20 bg-info-muted px-3 py-2 text-xs text-muted-foreground">
                   Le terminal {selectedAssembledTerminal.reference} préremplit l’ID_TRM et les sous-ensembles.
                   La prochaine position libre est proposée automatiquement. L’adresse IP peut être renseignée si elle est connue.
                 </div>
               ) : null}
             </div>
 
-            <div className="space-y-2">
-              <Label>Type de terminal</Label>
+            <FormField label="Type de terminal" required error={formErrors.type}>
               <Combobox
                 options={[
                   { value: '2020', label: '2020' },
@@ -1549,19 +1568,17 @@ const ConfigurationTab = ({
                 emptyText="Aucun type trouvé."
                 disabled={isLoading}
               />
-            </div>
+            </FormField>
 
-            <div className="space-y-2">
-              <Label>Référence</Label>
+            <FormField label="Référence" required error={formErrors.ref}>
               <Input
                 value={formData.ref}
                 onChange={(event) => setFormData((previousState) => ({ ...previousState, ref: event.target.value }))}
                 placeholder="Ex: TERM-001"
                 disabled={isLoading || configurationMode === 'assembled'}
               />
-            </div>
-            <div className="space-y-2">
-              <Label>Position</Label>
+            </FormField>
+            <FormField label="Position" required error={formErrors.position}>
               <Input
                 value={formData.position}
                 onChange={(event) =>
@@ -1570,19 +1587,17 @@ const ConfigurationTab = ({
                 placeholder="Ex: Guichet 1"
                 disabled={isLoading}
               />
-            </div>
-            <div className="space-y-2">
-              <Label>Adresse IP <span className="font-normal text-muted-foreground">(facultative)</span></Label>
+            </FormField>
+            <FormField label={<>Adresse IP <span className="font-normal text-muted-foreground">(facultative)</span></>}>
               <Input
                 value={formData.ip}
                 onChange={(event) => setFormData((previousState) => ({ ...previousState, ip: event.target.value }))}
                 placeholder="Ex : 192.168.1.10"
                 disabled={isLoading}
               />
-            </div>
+            </FormField>
 
-            <div className="space-y-2">
-              <Label>Imprimante</Label>
+            <FormField label="Imprimante">
               <Combobox
                 options={imprimantesOptions}
                 value={formData.imprimante}
@@ -1594,9 +1609,8 @@ const ConfigurationTab = ({
                 emptyText="Aucune imprimante disponible."
                 disabled={isLoading}
               />
-            </div>
-            <div className="space-y-2">
-              <Label>Lecteur</Label>
+            </FormField>
+            <FormField label="Lecteur">
               <Combobox
                 options={lecteursOptions}
                 value={formData.lecteur}
@@ -1606,9 +1620,8 @@ const ConfigurationTab = ({
                 emptyText="Aucun lecteur disponible."
                 disabled={isLoading}
               />
-            </div>
-            <div className="space-y-2">
-              <Label>Écran</Label>
+            </FormField>
+            <FormField label="Écran">
               <Combobox
                 options={ecransOptions}
                 value={formData.ecran}
@@ -1618,9 +1631,8 @@ const ConfigurationTab = ({
                 emptyText="Aucun écran disponible."
                 disabled={isLoading}
               />
-            </div>
-            <div className="space-y-2">
-              <Label>Afficheur client</Label>
+            </FormField>
+            <FormField label="Afficheur client">
               <Combobox
                 options={afficheurOptions}
                 value={formData.afficheur}
@@ -1630,9 +1642,8 @@ const ConfigurationTab = ({
                 emptyText="Aucun afficheur disponible."
                 disabled={isLoading}
               />
-            </div>
-            <div className="space-y-2">
-              <Label>BUC</Label>
+            </FormField>
+            <FormField label="BUC">
               <Combobox
                 options={bucsOptions}
                 value={formData.buc}
@@ -1642,9 +1653,8 @@ const ConfigurationTab = ({
                 emptyText="Aucun BUC disponible."
                 disabled={isLoading}
               />
-            </div>
-            <div className="space-y-2">
-              <Label>Alimentation</Label>
+            </FormField>
+            <FormField label="Alimentation">
               <Combobox
                 options={alimentationsOptions}
                 value={formData.alimentation}
@@ -1654,9 +1664,8 @@ const ConfigurationTab = ({
                 emptyText="Aucune alimentation disponible."
                 disabled={isLoading}
               />
-            </div>
-            <div className="space-y-2">
-              <Label>Bouton marche/arrêt</Label>
+            </FormField>
+            <FormField label="Bouton marche/arrêt">
               <Combobox
                 options={boutonsMarcheArretOptions}
                 value={formData.boutonMarcheArret}
@@ -1666,9 +1675,8 @@ const ConfigurationTab = ({
                 emptyText="Aucun bouton disponible."
                 disabled={isLoading}
               />
-            </div>
-            <div className="space-y-2">
-              <Label>Afficheur</Label>
+            </FormField>
+            <FormField label="Afficheur">
               <Combobox
                 options={afficheursTerminalOptions}
                 value={formData.afficheurTerminal}
@@ -1678,9 +1686,8 @@ const ConfigurationTab = ({
                 emptyText="Aucun afficheur disponible."
                 disabled={isLoading}
               />
-            </div>
-            <div className="space-y-2">
-              <Label>Circuit afficheur client</Label>
+            </FormField>
+            <FormField label="Circuit afficheur client">
               <Combobox
                 options={circuitsAfficheurClientOptions}
                 value={formData.circuitAfficheurClient}
@@ -1690,9 +1697,8 @@ const ConfigurationTab = ({
                 emptyText="Aucun circuit disponible."
                 disabled={isLoading}
               />
-            </div>
-            <div className="space-y-2">
-              <Label>Circuit BAC UC</Label>
+            </FormField>
+            <FormField label="Circuit BAC UC">
               <Combobox
                 options={circuitsBacUcOptions}
                 value={formData.circuitBacUc}
@@ -1702,9 +1708,8 @@ const ConfigurationTab = ({
                 emptyText="Aucun circuit disponible."
                 disabled={isLoading}
               />
-            </div>
-            <div className="space-y-2">
-              <Label>Carte mère BAC UC</Label>
+            </FormField>
+            <FormField label="Carte mère BAC UC">
               <Combobox
                 options={cartesMeresBacUcOptions}
                 value={formData.carteMereBacUc}
@@ -1714,9 +1719,8 @@ const ConfigurationTab = ({
                 emptyText="Aucune carte mère disponible."
                 disabled={isLoading}
               />
-            </div>
-            <div className="space-y-2">
-              <Label>SSD</Label>
+            </FormField>
+            <FormField label="SSD">
               <Combobox
                 options={ssdsOptions}
                 value={formData.ssd}
@@ -1726,13 +1730,13 @@ const ConfigurationTab = ({
                 emptyText="Aucun SSD disponible."
                 disabled={isLoading}
               />
-            </div>
+            </FormField>
           </div>
 
           {selectedAgency ? (
-            <div className="space-y-3 rounded-lg border bg-muted/30 px-4 py-3 text-sm text-slate-600">
+            <div className="space-y-3 rounded-lg border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
               <div className="flex flex-wrap items-center gap-3">
-                <span className="inline-flex items-center gap-2 font-medium text-slate-800">
+                <span className="inline-flex items-center gap-2 font-medium text-foreground">
                   <MapPinned className="h-4 w-4 text-primary" />
                   {selectedAgency.nom}
                 </span>
@@ -1748,8 +1752,8 @@ const ConfigurationTab = ({
                 <div
                   className={`rounded-md px-3 py-2 text-xs ${
                     selectedAgencyHasReachedCapacity
-                      ? 'border border-red-200 bg-red-50 text-red-700'
-                      : 'border border-emerald-200 bg-emerald-50 text-emerald-700'
+                      ? 'border border-destructive/25 bg-destructive/10 text-destructive'
+                      : 'border border-success/25 bg-success-muted text-success-muted-foreground'
                   }`}
                 >
                   {selectedAgencyHasReachedCapacity
@@ -1760,7 +1764,7 @@ const ConfigurationTab = ({
                       )} terminal(aux) restant(s).`}
                 </div>
               ) : (
-                <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700">
+                <div className="rounded-md border border-warning/25 bg-warning-muted px-3 py-2 text-xs text-warning-muted-foreground">
                   Le nombre de terminaux autorisé pour cette agence n’est pas encore défini dans l’espace Agence.
                 </div>
               )}
@@ -1771,7 +1775,7 @@ const ConfigurationTab = ({
 
           <div className="flex flex-wrap gap-3">
             <Button
-              onClick={handleSaveTerminal}
+              type="submit"
               disabled={
                 isLoading ||
                 !canManage ||
@@ -1785,11 +1789,11 @@ const ConfigurationTab = ({
               Réinitialiser
             </Button>
           </div>
+          </form>
         </CardContent>
       </Card>
 
       <Card className="relative overflow-hidden shadow-lg">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-emerald-500 via-primary/80 to-primary/35" />
         <CardHeader className="relative space-y-4">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
             <div>
@@ -1836,18 +1840,18 @@ const ConfigurationTab = ({
           </div>
 
           <div className="grid gap-3 md:grid-cols-3">
-            <div className="rounded-xl border border-blue-100 bg-white px-4 py-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Total</p>
-              <p className="text-2xl font-bold text-slate-900">{assembledTerminals.length}</p>
+            <div className="rounded-xl border border-info/20 bg-card px-4 py-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">Total</p>
+              <p className="text-2xl font-bold text-foreground">{assembledTerminals.length}</p>
             </div>
-            <div className="rounded-xl border border-emerald-100 bg-white px-4 py-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Disponibles</p>
-              <p className="text-2xl font-bold text-emerald-700">
+            <div className="rounded-xl border border-success/20 bg-card px-4 py-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">Disponibles</p>
+              <p className="text-2xl font-bold text-success-muted-foreground">
                 {assembledTerminals.filter((terminal) => normalizeText(terminal.statut) !== 'assigne').length}
               </p>
             </div>
-            <div className="rounded-xl border border-slate-200 bg-white px-4 py-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Assignés</p>
+            <div className="rounded-xl border border-border bg-card px-4 py-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">Assignés</p>
               <p className="text-2xl font-bold text-primary">
                 {assembledTerminals.filter((terminal) => normalizeText(terminal.statut) === 'assigne').length}
               </p>
@@ -1881,12 +1885,12 @@ const ConfigurationTab = ({
                       <TableCell>{terminal.identifiant || 'N/A'}</TableCell>
                       <TableCell>{terminal.numero_secu || 'N/A'}</TableCell>
                       <TableCell>
-                        <span className="text-sm text-slate-600">
+                        <span className="text-sm text-muted-foreground">
                           {filledPartsCount}/{ASSEMBLED_EQUIPMENT_FIELD_CONFIG.length} référencé(s)
                         </span>
                       </TableCell>
                       <TableCell>
-                        <Badge className={isAssigned ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-emerald-200 bg-emerald-50 text-emerald-700'}>
+                        <Badge className={isAssigned ? 'border-info/25 bg-info-muted text-info-muted-foreground' : 'border-success/25 bg-success-muted text-success-muted-foreground'}>
                           {isAssigned ? `Assigné${assignedAgency?.nom ? ` à ${assignedAgency.nom}` : ''}` : 'Disponible'}
                         </Badge>
                       </TableCell>
@@ -1920,21 +1924,21 @@ const ConfigurationTab = ({
                             disabled={!canManage || isAssigned}
                             title="Supprimer du stock"
                           >
-                            <Trash2 className="h-4 w-4 text-red-500" />
+                            <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
                         </div>
                       </TableCell>
                     </TableRow>
                     {isExpanded ? (
-                      <TableRow className="bg-slate-50/70 hover:bg-slate-50/70">
+                      <TableRow className="bg-muted/50 hover:bg-muted/50">
                         <TableCell colSpan={7} className="px-5 py-4">
                           <div className="grid gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                             {ASSEMBLED_EQUIPMENT_FIELD_CONFIG.map((field) => (
                               <div key={field.dbKey} className="min-w-0">
-                                <p className="text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-slate-500">
+                                <p className="text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
                                   {field.header}
                                 </p>
-                                <p className="truncate text-sm font-medium text-slate-900" title={terminal[field.dbKey] || 'Non renseigné'}>
+                                <p className="truncate text-sm font-medium text-foreground" title={terminal[field.dbKey] || 'Non renseigné'}>
                                   {terminal[field.dbKey] || 'Non renseigné'}
                                 </p>
                               </div>
@@ -1962,7 +1966,6 @@ const ConfigurationTab = ({
       </Card>
 
       <Card className="relative overflow-hidden shadow-lg">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
         <CardHeader className={showEquipmentManagement ? 'relative space-y-4' : 'relative space-y-3'}>
           <div className="flex flex-col gap-2">
             <CardTitle>Parc de Terminaux</CardTitle>
@@ -1973,8 +1976,7 @@ const ConfigurationTab = ({
 
           <div className={resolvedLockedAgence ? 'grid gap-4 md:grid-cols-3' : 'grid gap-4 md:grid-cols-2 xl:grid-cols-6'}>
             {!resolvedLockedAgence && (
-              <div className="space-y-2">
-                <Label>Région</Label>
+              <FormField label="Région">
                 <Combobox
                   multi
                   options={parkRegionOptions}
@@ -1991,11 +1993,10 @@ const ConfigurationTab = ({
                   emptyText="Aucune région trouvée."
                   disabled={isLoading}
                 />
-              </div>
+              </FormField>
             )}
             {!resolvedLockedAgence && (
-              <div className="space-y-2">
-                <Label>Secteur</Label>
+              <FormField label="Secteur">
                 <Combobox
                   multi
                   options={[{ value: ALL_FILTER_VALUE, label: 'Secteurs' }, ...parkSecteurOptions.map((s) => ({ value: s, label: s }))]}
@@ -2011,11 +2012,10 @@ const ConfigurationTab = ({
                   emptyText="Aucun secteur trouvé."
                   disabled={isLoading}
                 />
-              </div>
+              </FormField>
             )}
             {!resolvedLockedAgence && (
-              <div className="space-y-2">
-                <Label>Agence</Label>
+              <FormField label="Agence">
                 <Combobox
                   multi
                   options={parkAgencyOptions}
@@ -2030,10 +2030,9 @@ const ConfigurationTab = ({
                   emptyText="Aucune agence trouvée."
                   disabled={isLoading}
                 />
-              </div>
+              </FormField>
             )}
-            <div className="space-y-2">
-              <Label>Type</Label>
+            <FormField label="Type">
               <Combobox
                 multi
                 options={[
@@ -2052,9 +2051,8 @@ const ConfigurationTab = ({
                 emptyText="Aucun type trouvé."
                 disabled={isLoading}
               />
-            </div>
-            <div className="space-y-2">
-              <Label>Statut</Label>
+            </FormField>
+            <FormField label="Statut">
               <Combobox
                 multi
                 options={[
@@ -2075,12 +2073,13 @@ const ConfigurationTab = ({
                 emptyText="Aucun statut trouvé."
                 disabled={isLoading}
               />
-            </div>
+            </FormField>
             <div className="space-y-2">
-              <Label>Recherche</Label>
+              <Label htmlFor="park-terminal-search">Recherche</Label>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
+                  id="park-terminal-search"
                   value={parkFilters.search}
                   onChange={(event) =>
                     setParkFilters((previousState) => ({ ...previousState, search: event.target.value }))
@@ -2161,9 +2160,10 @@ const ConfigurationTab = ({
                         <Button
                           type="button"
                           variant="ghost"
-                          size="icon"
+                          size="iconTouch"
+                          aria-label={`Modifier le terminal ${terminal.reference}`}
                           onClick={() => handleEditTerminal(terminal)}
-                          className="h-7 w-7 text-blue-500 hover:text-blue-700"
+                          className="text-primary hover:text-primary/80 sm:h-9 sm:w-9"
                           disabled={isLoading || !canManage}
                         >
                           <Edit className="h-3.5 w-3.5" />
@@ -2171,9 +2171,10 @@ const ConfigurationTab = ({
                         <Button
                           type="button"
                           variant="ghost"
-                          size="icon"
+                          size="iconTouch"
+                          aria-label={`Supprimer le terminal ${terminal.reference}`}
                           onClick={() => handleDeleteTerminal(terminal)}
-                          className="h-7 w-7 text-red-500 hover:text-red-700"
+                          className="text-destructive hover:text-destructive/80 sm:h-9 sm:w-9"
                           disabled={isLoading || !canManage}
                         >
                           <Trash2 className="h-3.5 w-3.5" />
@@ -2192,7 +2193,6 @@ const ConfigurationTab = ({
   const editDialog = (
     <Dialog open={isEditDialogOpen} onOpenChange={(open) => { if (!open) resetForm(); }}>
       <DialogContent className="sm:max-w-3xl relative overflow-hidden p-0">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
         <div className="relative max-h-[90vh] overflow-y-auto px-6 pb-6 pt-6">
         <DialogHeader className="mb-4">
           <DialogTitle className="text-xl text-primary">
@@ -2200,14 +2200,13 @@ const ConfigurationTab = ({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-5">
-          <div className="rounded-lg border border-primary/15 bg-primary/5 px-4 py-3 text-sm text-slate-600">
+        <form noValidate onSubmit={(event) => { event.preventDefault(); if (!isLoading) handleSaveTerminal(); }} className="space-y-5">
+          <div className="rounded-lg border border-primary/15 bg-primary/5 px-4 py-3 text-sm text-muted-foreground">
             Un sous-ensemble déjà configuré sur un terminal ne peut pas être réaffecté à un autre tant qu'il n'a pas été libéré.
           </div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <div className="space-y-2">
-              <Label>Région</Label>
+            <FormField label="Région" required error={formErrors.region}>
               <Combobox
                 options={regionOptions}
                 value={formRegion}
@@ -2217,9 +2216,8 @@ const ConfigurationTab = ({
                 emptyText="Aucune région trouvée."
                 disabled={isLoading || Boolean(resolvedLockedAgence)}
               />
-            </div>
-            <div className="space-y-2">
-              <Label>Agence</Label>
+            </FormField>
+            <FormField label="Agence" required error={formErrors.agence}>
               <Combobox
                 options={agencesOptions}
                 value={agenceId}
@@ -2229,9 +2227,8 @@ const ConfigurationTab = ({
                 emptyText="Aucune agence trouvée."
                 disabled={isLoading || Boolean(resolvedLockedAgence)}
               />
-            </div>
-            <div className="space-y-2">
-              <Label>Type de terminal</Label>
+            </FormField>
+            <FormField label="Type de terminal" required error={formErrors.type}>
               <Combobox
                 options={[{ value: '2020', label: '2020' }, { value: '2031', label: '2031' }]}
                 value={formData.type}
@@ -2241,78 +2238,63 @@ const ConfigurationTab = ({
                 emptyText="Aucun type trouvé."
                 disabled={isLoading}
               />
-            </div>
-            <div className="space-y-2">
-              <Label>Référence</Label>
+            </FormField>
+            <FormField label="Référence" required error={formErrors.ref}>
               <Input value={formData.ref} onChange={(e) => setFormData((s) => ({ ...s, ref: e.target.value }))} placeholder="Ex: TERM-001" disabled={isLoading} />
-            </div>
-            <div className="space-y-2">
-              <Label>Position</Label>
+            </FormField>
+            <FormField label="Position" required error={formErrors.position}>
               <Input value={formData.position} onChange={(e) => setFormData((s) => ({ ...s, position: e.target.value }))} placeholder="Ex: Guichet 1" disabled={isLoading} />
-            </div>
-            <div className="space-y-2">
-              <Label>Adresse IP <span className="font-normal text-muted-foreground">(facultative)</span></Label>
+            </FormField>
+            <FormField label={<>Adresse IP <span className="font-normal text-muted-foreground">(facultative)</span></>}>
               <Input
                 value={formData.ip}
                 onChange={(event) => setFormData((s) => ({ ...s, ip: event.target.value }))}
                 placeholder="Ex : 192.168.1.10"
                 disabled={isLoading}
               />
-            </div>
-            <div className="space-y-2">
-              <Label>Imprimante</Label>
+            </FormField>
+            <FormField label="Imprimante">
               <Combobox options={imprimantesOptions} value={formData.imprimante} onSelect={(v) => setFormData((s) => ({ ...s, imprimante: v }))} placeholder="Imprimante" searchPlaceholder="Rechercher..." emptyText="Aucune disponible." disabled={isLoading} />
-            </div>
-            <div className="space-y-2">
-              <Label>Lecteur</Label>
+            </FormField>
+            <FormField label="Lecteur">
               <Combobox options={lecteursOptions} value={formData.lecteur} onSelect={(v) => setFormData((s) => ({ ...s, lecteur: v }))} placeholder="Lecteur" searchPlaceholder="Rechercher..." emptyText="Aucun disponible." disabled={isLoading} />
-            </div>
-            <div className="space-y-2">
-              <Label>Écran</Label>
+            </FormField>
+            <FormField label="Écran">
               <Combobox options={ecransOptions} value={formData.ecran} onSelect={(v) => setFormData((s) => ({ ...s, ecran: v }))} placeholder="Écran" searchPlaceholder="Rechercher..." emptyText="Aucun disponible." disabled={isLoading} />
-            </div>
-            <div className="space-y-2">
-              <Label>Afficheur client</Label>
+            </FormField>
+            <FormField label="Afficheur client">
               <Combobox options={afficheurOptions} value={formData.afficheur} onSelect={(v) => setFormData((s) => ({ ...s, afficheur: v }))} placeholder="Afficheur" searchPlaceholder="Rechercher..." emptyText="Aucun disponible." disabled={isLoading} />
-            </div>
-            <div className="space-y-2">
-              <Label>BUC</Label>
+            </FormField>
+            <FormField label="BUC">
               <Combobox options={bucsOptions} value={formData.buc} onSelect={(v) => setFormData((s) => ({ ...s, buc: v }))} placeholder="BUC" searchPlaceholder="Rechercher..." emptyText="Aucun disponible." disabled={isLoading} />
-            </div>
-            <div className="space-y-2">
-              <Label>Alimentation</Label>
+            </FormField>
+            <FormField label="Alimentation">
               <Combobox options={alimentationsOptions} value={formData.alimentation} onSelect={(v) => setFormData((s) => ({ ...s, alimentation: v }))} placeholder="Alimentation" searchPlaceholder="Rechercher..." emptyText="Aucune disponible." disabled={isLoading} />
-            </div>
-            <div className="space-y-2">
-              <Label>Bouton marche/arrêt</Label>
+            </FormField>
+            <FormField label="Bouton marche/arrêt">
               <Combobox options={boutonsMarcheArretOptions} value={formData.boutonMarcheArret} onSelect={(v) => setFormData((s) => ({ ...s, boutonMarcheArret: v }))} placeholder="Bouton marche/arrêt" searchPlaceholder="Rechercher..." emptyText="Aucun disponible." disabled={isLoading} />
-            </div>
-            <div className="space-y-2">
-              <Label>Afficheur</Label>
+            </FormField>
+            <FormField label="Afficheur">
               <Combobox options={afficheursTerminalOptions} value={formData.afficheurTerminal} onSelect={(v) => setFormData((s) => ({ ...s, afficheurTerminal: v }))} placeholder="Afficheur" searchPlaceholder="Rechercher..." emptyText="Aucun disponible." disabled={isLoading} />
-            </div>
-            <div className="space-y-2">
-              <Label>Circuit afficheur client</Label>
+            </FormField>
+            <FormField label="Circuit afficheur client">
               <Combobox options={circuitsAfficheurClientOptions} value={formData.circuitAfficheurClient} onSelect={(v) => setFormData((s) => ({ ...s, circuitAfficheurClient: v }))} placeholder="Circuit afficheur client" searchPlaceholder="Rechercher..." emptyText="Aucun disponible." disabled={isLoading} />
-            </div>
-            <div className="space-y-2">
-              <Label>Circuit BAC UC</Label>
+            </FormField>
+            <FormField label="Circuit BAC UC">
               <Combobox options={circuitsBacUcOptions} value={formData.circuitBacUc} onSelect={(v) => setFormData((s) => ({ ...s, circuitBacUc: v }))} placeholder="Circuit BAC UC" searchPlaceholder="Rechercher..." emptyText="Aucun disponible." disabled={isLoading} />
-            </div>
-            <div className="space-y-2">
-              <Label>Carte mère BAC UC</Label>
+            </FormField>
+            <FormField label="Carte mère BAC UC">
               <Combobox options={cartesMeresBacUcOptions} value={formData.carteMereBacUc} onSelect={(v) => setFormData((s) => ({ ...s, carteMereBacUc: v }))} placeholder="Carte mère BAC UC" searchPlaceholder="Rechercher..." emptyText="Aucune disponible." disabled={isLoading} />
-            </div>
-            <div className="space-y-2">
-              <Label>SSD</Label>
+            </FormField>
+            <FormField label="SSD">
               <Combobox options={ssdsOptions} value={formData.ssd} onSelect={(v) => setFormData((s) => ({ ...s, ssd: v }))} placeholder="SSD" searchPlaceholder="Rechercher..." emptyText="Aucun disponible." disabled={isLoading} />
-            </div>
+            </FormField>
           </div>
 
           {selectedAgency && (
-            <div className="rounded-lg border bg-muted/30 px-4 py-3 text-sm text-slate-600">
+            <div className="rounded-lg border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
               <div className="flex flex-wrap items-center gap-3">
-                <span className="inline-flex items-center gap-2 font-medium text-slate-800">
+                <span className="inline-flex items-center gap-2 font-medium text-foreground">
                   <MapPinned className="h-4 w-4 text-primary" />{selectedAgency.nom}
                 </span>
                 <span>Région : {selectedAgency.region || 'N/A'}</span>
@@ -2324,17 +2306,17 @@ const ConfigurationTab = ({
 
           <DialogFooter>
             <DialogClose asChild>
-              <Button variant="outline" onClick={resetForm} disabled={isLoading}>Annuler</Button>
+              <Button type="button" variant="outline" onClick={resetForm} disabled={isLoading}>Annuler</Button>
             </DialogClose>
             <Button
-              onClick={handleSaveTerminal}
-              disabled={!agenceId || !formData.ref || isLoading}
+              type="submit"
+              disabled={isLoading}
               className="bg-primary hover:bg-primary/90"
             >
               {isLoading ? 'Enregistrement...' : 'Mettre à jour le terminal'}
             </Button>
           </DialogFooter>
-        </div>
+        </form>
         </div>
       </DialogContent>
     </Dialog>

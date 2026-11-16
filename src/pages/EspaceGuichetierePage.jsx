@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { CalendarDays, LogOut, MapPin, FileText, ShieldCheck, Wallet, AtSign, Loader2, UserCog, Menu, X, Home, CalendarOff, Ticket } from 'lucide-react';
 import EditProfileDialog from '@/components/EditProfileDialog';
 import ForgotPasswordDialog from '@/components/ForgotPasswordDialog';
+import SpaceLoginCard from '@/components/SpaceLoginCard';
 import NotificationBell from '@/components/NotificationBell';
 import { useSpaceNotifications, clearNotifWatch } from '@/hooks/useSpaceNotifications';
 import MobileTabBar from '@/components/mobile/MobileTabBar';
@@ -183,58 +184,18 @@ const LoginPageGuichetiere = ({ onLogin }) => {
       animate={{ opacity: 1, scale: 1 }}
       className="flex min-h-[calc(100vh-200px)] items-center justify-center"
     >
-      <Card className="w-full max-w-md shadow-2xl glassmorphism">
-        <CardHeader>
-          <CardTitle className="flex items-center justify-center text-3xl font-bold text-primary">
-            <ShieldCheck className="mr-2 h-8 w-8" />
-            Accès Espace Guichetière
-          </CardTitle>
-          <CardDescription className="text-center">
-            Connectez-vous avec votre email ou votre matricule.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="space-y-2">
-              <Label htmlFor="guichetiere-identifier" className="flex items-center gap-2">
-                <AtSign className="h-4 w-4" /> Identifiant
-              </Label>
-              <Input
-                id="guichetiere-identifier"
-                value={identifier}
-                onChange={(event) => setIdentifier(event.target.value)}
-                placeholder="Email ou matricule"
-                disabled={isLoading}
-                autoComplete="username"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="guichetiere-password">Mot de passe</Label>
-              <Input
-                id="guichetiere-password"
-                type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                placeholder="••••••••"
-                disabled={isLoading}
-                autoComplete="current-password"
-              />
-            </div>
-            <Button
-              type="submit"
-              className="w-full bg-primary text-white hover:bg-primary/90"
-              disabled={isLoading}
-            >
-              {isLoading ? 'Connexion...' : 'Se connecter'}
-            </Button>
-            <div className="text-center">
-              <button type="button" onClick={() => setIsForgotOpen(true)} className="text-sm font-medium text-primary hover:underline">
-                Mot de passe oublié ?
-              </button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+      <SpaceLoginCard
+        title="Accès Espace Guichetière"
+        description="Connectez-vous avec votre email ou votre matricule."
+        icon={<ShieldCheck />}
+        identifier={identifier}
+        onIdentifierChange={setIdentifier}
+        password={password}
+        onPasswordChange={setPassword}
+        isLoading={isLoading}
+        onSubmit={handleSubmit}
+        onForgotPassword={() => setIsForgotOpen(true)}
+      />
       <ForgotPasswordDialog open={isForgotOpen} onOpenChange={setIsForgotOpen} defaultEmail={identifier.includes('@') ? identifier : ''} />
     </motion.div>
   );

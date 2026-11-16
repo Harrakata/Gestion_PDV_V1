@@ -4,23 +4,46 @@ import { cn } from '@/lib/utils';
 
 const Tabs = TabsPrimitive.Root;
 
-const TabsList = React.forwardRef(({ className, ...props }, ref) => (
+const TabsList = React.forwardRef(({ className, ...props }, ref) => {
+  const listRef = React.useRef(null);
+  React.useImperativeHandle(ref, () => listRef.current);
+  React.useEffect(() => {
+    const list = listRef.current;
+    if (!list) return undefined;
+    const revealActiveTab = () => {
+      if (list.scrollWidth <= list.clientWidth) return;
+      const active = list.querySelector('[role="tab"][data-state="active"]');
+      if (!active) return;
+      const bounds = list.getBoundingClientRect();
+      const tabBounds = active.getBoundingClientRect();
+      if (tabBounds.left < bounds.left) list.scrollLeft -= bounds.left - tabBounds.left + 6;
+      else if (tabBounds.right > bounds.right) list.scrollLeft += tabBounds.right - bounds.right + 6;
+    };
+    const observer = new MutationObserver(revealActiveTab);
+    observer.observe(list, { attributes: true, attributeFilter: ['data-state'], subtree: true, childList: true });
+    const resizeObserver = new ResizeObserver(revealActiveTab);
+    resizeObserver.observe(list);
+    revealActiveTab();
+    return () => { observer.disconnect(); resizeObserver.disconnect(); };
+  }, []);
+  return (
   <TabsPrimitive.List
-    ref={ref}
+    ref={listRef}
     className={cn(
-      "inline-flex min-h-[3.35rem] max-w-full items-center justify-center overflow-x-auto rounded-2xl border border-slate-200/80 bg-white p-1.5 text-muted-foreground shadow-[0_18px_45px_-28px_rgba(15,23,42,0.25)]",
+      "inline-flex min-h-12 max-w-full items-center justify-center overflow-x-auto rounded-xl border border-border bg-card p-1 text-muted-foreground",
       className
     )}
     {...props}
   />
-));
+  );
+});
 TabsList.displayName = TabsPrimitive.List.displayName;
 
 const TabsTrigger = React.forwardRef(({ className, ...props }, ref) => (
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      "inline-flex min-h-[2.5rem] shrink-0 items-center justify-center whitespace-nowrap rounded-2xl px-4 py-2 text-sm font-semibold ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-[0_14px_30px_-18px_rgba(13,148,136,0.5)]",
+      "inline-flex min-h-10 shrink-0 items-center justify-center whitespace-nowrap rounded-lg border border-transparent px-4 py-2 text-sm font-semibold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:border-border data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-soft",
       className
     )}
     {...props}

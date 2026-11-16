@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import FormField from '@/components/ui/form-field';
 import { Combobox } from '@/components/ui/Combobox';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/components/ui/use-toast';
@@ -286,25 +286,25 @@ const StockDefectueuxTab = ({ canManage = true, technicienId = null }) => {
                   <TableCell>{item.technicien_nom || <span className="text-muted-foreground text-xs">Non assigné</span>}</TableCell>
                   <TableCell>{formatDate(item.date_sortie)}</TableCell>
                   <TableCell className="text-right" onClick={e => e.stopPropagation()}>
-                    <div className="flex justify-end gap-1 flex-wrap">
+                    <div className="flex flex-nowrap justify-end gap-1">
                       {canManage && item.statut === 'defectueux' && (
-                        <Button size="sm" variant="outline" onClick={() => openAssignDialog(item)}>
-                          Assigner
+                        <Button size="icon" variant="outline" className="h-8 w-8" aria-label={`Assigner ${item.reference_sous_ensemble}`} title="Assigner" onClick={() => openAssignDialog(item)}>
+                          <UserCheck className="h-4 w-4" aria-hidden="true" />
                         </Button>
                       )}
                       {canManage && item.statut === 'assigne' && (
                         <>
-                          <Button size="sm" variant="outline" onClick={() => openAssignDialog(item)}>
-                            Changer technicien
+                          <Button size="icon" variant="outline" className="h-8 w-8" aria-label={`Changer le technicien de ${item.reference_sous_ensemble}`} title="Changer de technicien" onClick={() => openAssignDialog(item)}>
+                            <UserCheck className="h-4 w-4" aria-hidden="true" />
                           </Button>
-                          <Button size="sm" variant="outline" onClick={() => updateStatut(item, 'a_tester')}>
-                            Marquer À tester
+                          <Button size="icon" variant="outline" className="h-8 w-8" aria-label={`Marquer ${item.reference_sous_ensemble} à tester`} title="Marquer à tester" onClick={() => updateStatut(item, 'a_tester')}>
+                            <Wrench className="h-4 w-4" aria-hidden="true" />
                           </Button>
                         </>
                       )}
                       {canManage && item.statut === 'a_tester' && (
-                        <Button size="sm" className="bg-green-600 text-white hover:bg-green-700" onClick={() => updateStatut(item, 'repare')}>
-                          Marquer Réparé
+                        <Button size="icon" variant="outline" className="h-8 w-8 text-success" aria-label={`Marquer ${item.reference_sous_ensemble} réparé`} title="Marquer réparé" onClick={() => updateStatut(item, 'repare')}>
+                          <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
                         </Button>
                       )}
                     </div>
@@ -328,9 +328,9 @@ const StockDefectueuxTab = ({ canManage = true, technicienId = null }) => {
               </DialogTitle>
             </DialogHeader>
 
-            <div className="rounded-xl border border-primary/20 bg-white/60 px-4 py-3 text-sm">
+            <div className="rounded-xl border border-primary/20 bg-card px-4 py-3 text-sm">
               <p className="text-xs uppercase tracking-wide text-muted-foreground mb-1">Sous-ensemble concerné</p>
-              <p className="font-semibold text-slate-800">
+              <p className="font-semibold text-foreground">
                 {selectedItem?.reference_sous_ensemble}
                 {selectedItem?.type_sous_ensemble && (
                   <span className="ml-2 text-xs font-normal text-muted-foreground">
@@ -340,8 +340,7 @@ const StockDefectueuxTab = ({ canManage = true, technicienId = null }) => {
               </p>
             </div>
 
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Technicien *</Label>
+            <FormField label="Technicien" required>
               {techniciens.length > 0 ? (
                 <Combobox
                   options={technicienOptions}
@@ -361,12 +360,13 @@ const StockDefectueuxTab = ({ canManage = true, technicienId = null }) => {
                 />
               ) : (
                 <Input
+                  id="assign-technicien"
                   placeholder="Nom du technicien..."
                   value={assignForm.technicien_nom}
                   onChange={e => setAssignForm(f => ({ ...f, technicien_nom: e.target.value, technicien_id: e.target.value }))}
                 />
               )}
-            </div>
+            </FormField>
 
             <DialogFooter className="pt-2">
               <DialogClose asChild>
@@ -398,7 +398,7 @@ const StockDefectueuxTab = ({ canManage = true, technicienId = null }) => {
             </DialogTitle>
           </DialogHeader>
           {detailItem && (
-            <div className="mt-4 space-y-4 rounded-lg border border-primary/15 bg-white p-4 text-sm shadow-sm dark:bg-card">
+            <div className="mt-4 space-y-4 rounded-lg border border-primary/15 bg-card p-4 text-sm shadow-sm">
               <div className="grid grid-cols-2 gap-3">
                 {[
                   ['Type', SOUS_ENSEMBLE_LABELS[detailItem.type_sous_ensemble] || detailItem.type_sous_ensemble],

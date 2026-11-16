@@ -34,6 +34,29 @@ test.describe('Accueil & navigation publique', () => {
     await assertNoCrash(page);
   });
 
+  test('la navigation reste accessible sans fil d’Ariane ni menu de recherche', async ({ page }) => {
+    await page.goto('/espace-exploitation');
+    await settle(page);
+    await expect(page.getByRole('navigation', { name: /fil d’ariane/i })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /navigation rapide|rechercher dans la navigation|recherche globale/i })).toHaveCount(0);
+    await page.keyboard.press('Control+k');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(page.getByRole('button', { name: /navigation rapide|rechercher dans la navigation|recherche globale/i })).toHaveCount(0);
+    await page.getByRole('button', { name: 'Ouvrir le menu', exact: true }).click();
+    await expect(page.getByRole('menuitem', { name: 'Espace Exploitation', exact: true })).toBeVisible();
+    await assertNoCrash(page);
+  });
+
+  test('les formulaires d’accès partagent les mêmes repères accessibles', async ({ page }) => {
+    await page.goto('/espace-exploitation');
+    await settle(page);
+    await expect(page.getByLabel(/^Email/)).toBeVisible();
+    await expect(page.getByLabel(/^Mot de passe/)).toBeVisible();
+    await expect(page.getByRole('button', { name: /afficher le mot de passe/i })).toBeVisible();
+    await assertNoCrash(page);
+  });
+
   test('le basculement de thème ne casse pas la page', async ({ page }) => {
     await page.goto('/');
     await settle(page);

@@ -22,25 +22,25 @@ export const getMaintenancePlanningRequestTypeLabel = (value) => {
 
 export const getMaintenancePlanningRequestStatusBadgeClass = (status) => {
   if (status === MAINTENANCE_REQUEST_STATUSES.APPROVED) {
-    return 'border-green-200 bg-green-50 text-green-700';
+    return 'border-success/25 bg-success-muted text-success-muted-foreground';
   }
 
   if (
     status === MAINTENANCE_REQUEST_STATUSES.REFUSED_CHEF ||
     status === MAINTENANCE_REQUEST_STATUSES.REFUSED_EXPLOITATION
   ) {
-    return 'border-red-200 bg-red-50 text-red-700';
+    return 'border-destructive/25 bg-destructive/10 text-destructive';
   }
 
   if (status === MAINTENANCE_REQUEST_STATUSES.CANCELLED) {
-    return 'border-slate-200 bg-slate-100 text-slate-700';
+    return 'border-border bg-muted text-foreground';
   }
 
   if (status === MAINTENANCE_REQUEST_STATUSES.PENDING_EXPLOITATION) {
-    return 'border-blue-200 bg-blue-50 text-blue-700';
+    return 'border-info/25 bg-info-muted text-info-muted-foreground';
   }
 
-  return 'border-amber-200 bg-amber-50 text-amber-700';
+  return 'border-warning/25 bg-warning-muted text-warning-muted-foreground';
 };
 
 export const isMissingMaintenancePlanningRequestTableError = (error) =>

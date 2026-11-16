@@ -32,6 +32,7 @@ import KpiStatCard from '@/components/analytics/KpiStatCard';
 import { useActivityTracker } from '@/hooks/useActivityTracker';
 import EditProfileDialog from '@/components/EditProfileDialog';
 import ForgotPasswordDialog from '@/components/ForgotPasswordDialog';
+import SpaceLoginCard from '@/components/SpaceLoginCard';
 import MobileTabBar from '@/components/mobile/MobileTabBar';
 import SwipeTabs from '@/components/mobile/SwipeTabs';
 import NotificationBell from '@/components/NotificationBell';
@@ -174,62 +175,21 @@ const LoginPage = ({ onLogin, spaceConfig }) => {
       animate={{ opacity: 1, scale: 1 }}
       className="flex min-h-[calc(100vh-220px)] items-center justify-center"
     >
-      <Card className="w-full max-w-md shadow-2xl glassmorphism">
-        <CardHeader>
-          <CardTitle className="text-3xl font-bold text-center text-primary">
-            <ShieldCheck className="mr-2 inline-block h-8 w-8 text-primary" />
-            {spaceConfig.spaceTitle}
-          </CardTitle>
-          <CardDescription className="text-center">{spaceConfig.loginDescription}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="validation-email">Email</Label>
-              <Input
-                id="validation-email"
-                type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder="email@exemple.com"
-                disabled={isLoading}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="validation-password">Mot de passe</Label>
-              <Input
-                id="validation-password"
-                type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                placeholder="Mot de passe"
-                disabled={isLoading}
-                required
-              />
-            </div>
-            <Button
-              type="submit"
-              className="w-full bg-primary text-white hover:bg-primary/90"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Connexion...
-                </>
-              ) : (
-                'Se connecter'
-              )}
-            </Button>
-            <div className="text-center">
-              <button type="button" onClick={() => setIsForgotOpen(true)} className="text-sm font-medium text-primary hover:underline">
-                Mot de passe oublié ?
-              </button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+      <SpaceLoginCard
+        title={spaceConfig.spaceTitle}
+        description={spaceConfig.loginDescription}
+        icon={<ShieldCheck />}
+        identifier={email}
+        onIdentifierChange={setEmail}
+        identifierLabel="Email"
+        identifierPlaceholder="email@exemple.com"
+        identifierType="email"
+        password={password}
+        onPasswordChange={setPassword}
+        isLoading={isLoading}
+        onSubmit={handleSubmit}
+        onForgotPassword={() => setIsForgotOpen(true)}
+      />
       <ForgotPasswordDialog open={isForgotOpen} onOpenChange={setIsForgotOpen} defaultEmail={email} />
     </motion.div>
   );

@@ -6,6 +6,7 @@ import { Activity, CalendarClock, ChevronDown, ChevronUp, List, MapPinned, Searc
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -422,7 +423,7 @@ const MaintenanceTerminauxPage = () => {
         description: approve
           ? "La demande a été validée puis transmise à l'Exploitation."
           : "La demande a été refusée par le chef d'agence.",
-        className: approve ? 'bg-green-500 text-white' : 'bg-slate-700 text-white',
+        className: approve ? 'bg-success text-success-foreground' : 'bg-muted text-foreground',
       });
       loadData();
     }
@@ -535,7 +536,7 @@ const MaintenanceTerminauxPage = () => {
                   type="button"
                   variant={showMaintenanceMap ? 'default' : 'outline'}
                   onClick={() => setShowMaintenanceMap((previousValue) => !previousValue)}
-                  className={showMaintenanceMap ? 'bg-primary text-white' : ''}
+                  className={showMaintenanceMap ? 'bg-primary text-primary-foreground' : ''}
                 >
                   {showMaintenanceMap ? (
                     <List className="mr-2 h-4 w-4" />
@@ -547,13 +548,13 @@ const MaintenanceTerminauxPage = () => {
               </div>
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 <div className="space-y-2">
-                  <p className="text-sm font-medium">Terminal</p>
+                  <Label htmlFor="chef-maintenance-terminal">Terminal</Label>
                   <Select
                     value={filters.terminalId}
                     onValueChange={(value) => setFilters((previousState) => ({ ...previousState, terminalId: value }))}
                     disabled={isLoading}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger id="chef-maintenance-terminal">
                       <SelectValue placeholder="Tous les terminaux" />
                     </SelectTrigger>
                     <SelectContent>
@@ -567,9 +568,9 @@ const MaintenanceTerminauxPage = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <p className="text-sm font-medium">Suivi maintenance</p>
+                  <Label htmlFor="chef-maintenance-suivi">Suivi maintenance</Label>
                   <Select value={maintenanceFollowUpFilter} onValueChange={setMaintenanceFollowUpFilter} disabled={isLoading}>
-                    <SelectTrigger>
+                    <SelectTrigger id="chef-maintenance-suivi">
                       <SelectValue placeholder="Tous les suivis" />
                     </SelectTrigger>
                     <SelectContent>
@@ -581,10 +582,11 @@ const MaintenanceTerminauxPage = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <p className="text-sm font-medium">Recherche</p>
+                  <Label htmlFor="chef-maintenance-search">Recherche</Label>
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                     <Input
+                      id="chef-maintenance-search"
                       value={searchTerm}
                       onChange={(event) => setSearchTerm(event.target.value)}
                       placeholder="Terminal, sous-ensemble, reference..."
@@ -647,7 +649,9 @@ const MaintenanceTerminauxPage = () => {
                             <Button
                               type="button"
                               variant="outline"
-                              size="sm"
+                              size="touch"
+                              className="sm:h-9"
+                              aria-expanded={isExpanded}
                               onClick={() => toggleTerminalExpansion(group.terminalId)}
                             >
                               {isExpanded ? (
@@ -665,7 +669,7 @@ const MaintenanceTerminauxPage = () => {
                             <TableCell colSpan={4} className="p-0">
                               <div className="m-4 space-y-3">
                                 <div className="flex items-center justify-between">
-                                  <p className="font-semibold text-slate-900">
+                                  <p className="font-semibold text-foreground">
                                     Sous-ensembles du terminal {group.terminalReference}
                                   </p>
                                   <span className="text-xs text-muted-foreground">
@@ -698,20 +702,22 @@ const MaintenanceTerminauxPage = () => {
                                   return (
                                     <div
                                       key={seKey}
-                                      className={`overflow-hidden rounded-xl border bg-white shadow-sm ${isGood ? 'border-green-200' : 'border-red-200'}`}
+                                      className={`overflow-hidden rounded-xl border bg-card shadow-sm ${isGood ? 'border-success/25' : 'border-destructive/25'}`}
                                     >
                                       {/* En-tête cliquable */}
                                       <button
                                         type="button"
-                                        onClick={rowInterventions.length > 0 ? toggleHistory : undefined}
-                                        className={`flex w-full items-center gap-3 px-4 py-3 text-left ${isGood ? 'bg-green-50' : 'bg-red-50'} ${rowInterventions.length > 0 ? 'cursor-pointer' : 'cursor-default'}`}
+                                        onClick={toggleHistory}
+                                        disabled={rowInterventions.length === 0}
+                                        aria-expanded={rowInterventions.length > 0 ? historyOpen : undefined}
+                                        className={`flex w-full items-center gap-3 px-4 py-3 text-left ${isGood ? 'bg-success-muted' : 'bg-destructive/10'} ${rowInterventions.length > 0 ? 'cursor-pointer' : 'cursor-default'}`}
                                       >
                                         <div className="flex flex-1 flex-wrap items-center gap-2 min-w-0">
-                                          <span className="font-semibold text-slate-800">{row.sousEnsembleLabel}</span>
-                                          <span className={`rounded-full px-2 py-0.5 font-mono text-xs ${isGood ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                          <span className="font-semibold text-foreground">{row.sousEnsembleLabel}</span>
+                                          <span className={`rounded-full px-2 py-0.5 font-mono text-xs ${isGood ? 'bg-success/15 text-success-muted-foreground' : 'bg-destructive/15 text-destructive'}`}>
                                             {row.sousEnsembleReference}
                                           </span>
-                                          <span className={`text-xs ${isGood ? 'text-green-700' : 'text-red-700'}`}>
+                                          <span className={`text-xs ${isGood ? 'text-success-muted-foreground' : 'text-destructive'}`}>
                                             {row.followUp.detail}
                                           </span>
                                         </div>
@@ -720,7 +726,7 @@ const MaintenanceTerminauxPage = () => {
                                             {row.followUp.label}
                                           </Badge>
                                           {rowInterventions.length > 0 && (
-                                            <span className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium transition-colors ${historyOpen ? 'border-slate-300 bg-white text-slate-700' : 'border-slate-200 bg-white/70 text-muted-foreground'}`}>
+                                            <span className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium transition-colors ${historyOpen ? 'border-border bg-card text-foreground' : 'border-border bg-card/70 text-muted-foreground'}`}>
                                               {rowInterventions.length} interv.
                                               {historyOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
                                             </span>
@@ -735,14 +741,14 @@ const MaintenanceTerminauxPage = () => {
                                             <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                                               Historique ({rowInterventions.length})
                                             </p>
-                                            <div className="flex items-center gap-1">
+                                            <div className="flex flex-wrap items-center gap-1">
                                               <span className="mr-1 text-[10px] text-muted-foreground">Afficher :</span>
                                               {[3, 5, 10].map((n) => (
                                                 <button
                                                   key={n}
                                                   type="button"
                                                   onClick={() => setLimit(n)}
-                                                  className={`rounded px-2 py-0.5 text-[10px] font-medium transition-colors ${historyLimit === n ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
+                                                  className={`min-h-10 min-w-10 rounded px-2 py-1 text-xs font-medium transition-colors ${historyLimit === n ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
                                                 >
                                                   {n}
                                                 </button>
@@ -750,7 +756,7 @@ const MaintenanceTerminauxPage = () => {
                                               <button
                                                 type="button"
                                                 onClick={() => setLimit(0)}
-                                                className={`rounded px-2 py-0.5 text-[10px] font-medium transition-colors ${historyLimit === 0 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
+                                                className={`min-h-10 min-w-10 rounded px-2 py-1 text-xs font-medium transition-colors ${historyLimit === 0 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
                                               >
                                                 Tout
                                               </button>
@@ -763,12 +769,21 @@ const MaintenanceTerminauxPage = () => {
                                               return (
                                                 <div
                                                   key={i.id}
+                                                  role={i.fiche_url ? 'button' : undefined}
+                                                  tabIndex={i.fiche_url ? 0 : undefined}
                                                   onClick={i.fiche_url ? () => openFiche(i.fiche_url) : undefined}
-                                                  className={`space-y-1.5 rounded-lg border px-3 py-2 text-xs ${isCurative ? 'border-red-100 bg-red-50/40' : 'border-blue-100 bg-blue-50/40'} ${i.fiche_url ? 'cursor-pointer transition-colors hover:border-primary/50 hover:bg-primary/5' : ''}`}
+                                                  onKeyDown={i.fiche_url ? (event) => {
+                                                    if (event.key === 'Enter' || event.key === ' ') {
+                                                      event.preventDefault();
+                                                      openFiche(i.fiche_url);
+                                                    }
+                                                  } : undefined}
+                                                  aria-label={i.fiche_url ? `Voir la fiche de maintenance du ${formatMaintenanceDateTime(i.date_intervention)}` : undefined}
+                                                  className={`w-full space-y-1.5 rounded-lg border px-3 py-2 text-left text-xs ${isCurative ? 'border-destructive/20 bg-destructive/5' : 'border-info/20 bg-info/5'} ${i.fiche_url ? 'cursor-pointer transition-colors hover:border-primary/50 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring' : 'cursor-default'}`}
                                                 >
                                                   <div className="flex flex-wrap items-center gap-2">
-                                                    <span className="font-semibold text-slate-700">{formatMaintenanceDateTime(i.date_intervention)}</span>
-                                                    <Badge variant="outline" className={`text-[10px] ${isCurative ? 'border-red-200 bg-red-50 text-red-700' : 'border-blue-200 bg-blue-50 text-blue-700'}`}>
+                                                    <span className="font-semibold text-foreground">{formatMaintenanceDateTime(i.date_intervention)}</span>
+                                                    <Badge variant="outline" className={`text-[10px] ${isCurative ? 'border-destructive/25 bg-destructive/10 text-destructive' : 'border-info/25 bg-info-muted text-info-muted-foreground'}`}>
                                                       {getMaintenanceInterventionTypeLabel(i.type_intervention)}
                                                     </Badge>
                                                     <Badge variant="outline" className={`text-[10px] ${getMaintenanceInterventionStatusClass(i.statut)}`}>
@@ -785,17 +800,17 @@ const MaintenanceTerminauxPage = () => {
                                                     )}
                                                   </div>
                                                   {isCurative && (i.codeLabel !== 'N/A' || i.description_panne) && (
-                                                    <div className="flex flex-wrap items-start gap-3 rounded border border-red-100 bg-red-50 px-2 py-1.5">
+                                                    <div className="flex flex-wrap items-start gap-3 rounded border border-destructive/20 bg-destructive/10 px-2 py-1.5">
                                                       {i.codeLabel && i.codeLabel !== 'N/A' && (
                                                         <div className="shrink-0">
-                                                          <span className="text-[10px] font-semibold uppercase text-red-400">Code panne</span>
-                                                          <p className="font-mono font-bold text-red-800">{i.codeLabel}</p>
+                                                          <span className="text-[10px] font-semibold uppercase text-destructive">Code panne</span>
+                                                          <p className="font-mono font-bold text-destructive">{i.codeLabel}</p>
                                                         </div>
                                                       )}
                                                       {i.description_panne && (
                                                         <div className="min-w-0">
-                                                          <span className="text-[10px] font-semibold uppercase text-red-400">Descriptif</span>
-                                                          <p className="text-red-800">{i.description_panne}</p>
+                                                          <span className="text-[10px] font-semibold uppercase text-destructive">Descriptif</span>
+                                                          <p className="text-destructive">{i.description_panne}</p>
                                                         </div>
                                                       )}
                                                     </div>
@@ -846,6 +861,8 @@ const MaintenanceTerminauxPage = () => {
                 <div className="relative w-full lg:max-w-md">
                   <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                   <Input
+                    id="chef-maintenance-history-search"
+                    aria-label="Rechercher une intervention ou un terminal"
                     value={searchTerm}
                     onChange={(event) => setSearchTerm(event.target.value)}
                     placeholder="Rechercher une intervention ou un terminal..."
@@ -857,13 +874,13 @@ const MaintenanceTerminauxPage = () => {
 
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                 <div className="space-y-2">
-                  <p className="text-sm font-medium">Terminal</p>
+                  <Label htmlFor="chef-history-terminal">Terminal</Label>
                   <Select
                     value={filters.terminalId}
                     onValueChange={(value) => setFilters((previousState) => ({ ...previousState, terminalId: value }))}
                     disabled={isLoading}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger id="chef-history-terminal">
                       <SelectValue placeholder="Tous les terminaux" />
                     </SelectTrigger>
                     <SelectContent>
@@ -877,13 +894,13 @@ const MaintenanceTerminauxPage = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <p className="text-sm font-medium">Sous-ensemble</p>
+                  <Label htmlFor="chef-history-sous-ensemble">Sous-ensemble</Label>
                   <Select
                     value={filters.sousEnsemble}
                     onValueChange={(value) => setFilters((previousState) => ({ ...previousState, sousEnsemble: value }))}
                     disabled={isLoading}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger id="chef-history-sous-ensemble">
                       <SelectValue placeholder="Tous les sous-ensembles" />
                     </SelectTrigger>
                     <SelectContent>
@@ -897,13 +914,13 @@ const MaintenanceTerminauxPage = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <p className="text-sm font-medium">Type</p>
+                  <Label htmlFor="chef-history-type">Type</Label>
                   <Select
                     value={filters.type}
                     onValueChange={(value) => setFilters((previousState) => ({ ...previousState, type: value }))}
                     disabled={isLoading}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger id="chef-history-type">
                       <SelectValue placeholder="Tous les types" />
                     </SelectTrigger>
                     <SelectContent>
@@ -915,13 +932,13 @@ const MaintenanceTerminauxPage = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <p className="text-sm font-medium">Statut</p>
+                  <Label htmlFor="chef-history-statut">Statut</Label>
                   <Select
                     value={filters.statut}
                     onValueChange={(value) => setFilters((previousState) => ({ ...previousState, statut: value }))}
                     disabled={isLoading}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger id="chef-history-statut">
                       <SelectValue placeholder="Tous les statuts" />
                     </SelectTrigger>
                     <SelectContent>
@@ -1048,7 +1065,7 @@ const MaintenanceTerminauxPage = () => {
 
                 <div className="rounded-xl border bg-background/70 p-4">
                   <p className="text-xs uppercase tracking-wide text-muted-foreground">Commentaire technique</p>
-                  <p className="mt-2 whitespace-pre-wrap text-sm text-slate-700">
+                  <p className="mt-2 whitespace-pre-wrap text-sm text-foreground">
                     {selectedIntervention.commentaire || 'Aucun commentaire renseigné.'}
                   </p>
                 </div>
@@ -1074,8 +1091,8 @@ const MaintenanceTerminauxPage = () => {
             />
 
             {isPlanningRequestTableMissing ? (
-              <Card className="border-amber-200 bg-amber-50 shadow-sm">
-                <CardContent className="p-4 text-sm text-amber-800">
+              <Card className="border-warning/25 bg-warning-muted shadow-sm">
+                <CardContent className="p-4 text-sm text-warning-muted-foreground">
                   La table
                   {' '}
                   <code>planning_maintenance_modification_requests</code>
@@ -1093,7 +1110,7 @@ const MaintenanceTerminauxPage = () => {
                         Validez d’abord les demandes de vos techniciens avant leur transmission à l’Exploitation.
                       </CardDescription>
                     </div>
-                    <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">
+                    <Badge variant="outline" className="border-warning/25 bg-warning-muted text-warning-muted-foreground">
                       En attente chef : {pendingPlanningRequestsCount}
                     </Badge>
                   </div>
@@ -1139,10 +1156,10 @@ const MaintenanceTerminauxPage = () => {
                           <TableCell className="text-right">
                             {request.statut === MAINTENANCE_REQUEST_STATUSES.PENDING_CHEF ? (
                               <div className="flex justify-end gap-2">
-                                <Button size="sm" onClick={() => handleProcessPlanningRequest(request, true)} disabled={isLoading}>
+                                <Button size="touch" className="sm:h-9" onClick={() => handleProcessPlanningRequest(request, true)} disabled={isLoading}>
                                   Valider
                                 </Button>
-                                <Button size="sm" variant="destructive" onClick={() => handleProcessPlanningRequest(request, false)} disabled={isLoading}>
+                                <Button size="touch" className="sm:h-9" variant="destructive" onClick={() => handleProcessPlanningRequest(request, false)} disabled={isLoading}>
                                   Refuser
                                 </Button>
                               </div>

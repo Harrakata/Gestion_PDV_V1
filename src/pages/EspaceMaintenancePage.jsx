@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Wrench, Loader2, LogOut, CalendarDays, AtSign, UserCog, Menu, X, Home, CalendarOff, Ticket } from 'lucide-react';
 import EditProfileDialog from '@/components/EditProfileDialog';
 import ForgotPasswordDialog from '@/components/ForgotPasswordDialog';
+import SpaceLoginCard from '@/components/SpaceLoginCard';
 import NotificationBell from '@/components/NotificationBell';
 import { useSpaceNotifications, clearNotifWatch } from '@/hooks/useSpaceNotifications';
 import MobileTabBar from '@/components/mobile/MobileTabBar';
@@ -139,53 +140,18 @@ const LoginPage = ({ onLogin }) => {
 
   return (
     <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex items-center justify-center min-h-[calc(100vh-200px)]">
-      <Card className="w-full max-w-md shadow-2xl glassmorphism">
-        <CardHeader>
-          <CardTitle className="text-3xl font-bold text-center text-primary">
-            <Wrench className="inline-block h-8 w-8 mr-2 text-primary" />Espace Technicien
-          </CardTitle>
-          <CardDescription className="text-center">Connectez-vous avec votre email ou votre matricule.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="identifier" className="flex items-center gap-2">
-                <AtSign className="h-4 w-4" />Identifiant
-              </Label>
-              <Input
-                id="identifier"
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                placeholder="Email ou matricule"
-                disabled={isLoading}
-                required
-                autoComplete="username"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Mot de passe</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                disabled={isLoading}
-                required
-                autoComplete="current-password"
-              />
-            </div>
-            <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={isLoading}>
-              {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Connexion...</>) : 'Se connecter'}
-            </Button>
-            <div className="text-center">
-              <button type="button" onClick={() => setIsForgotOpen(true)} className="text-sm font-medium text-primary hover:underline">
-                Mot de passe oublié ?
-              </button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+      <SpaceLoginCard
+        title="Espace Technicien"
+        description="Connectez-vous avec votre email ou votre matricule."
+        icon={<Wrench />}
+        identifier={identifier}
+        onIdentifierChange={setIdentifier}
+        password={password}
+        onPasswordChange={setPassword}
+        isLoading={isLoading}
+        onSubmit={handleSubmit}
+        onForgotPassword={() => setIsForgotOpen(true)}
+      />
       <ForgotPasswordDialog open={isForgotOpen} onOpenChange={setIsForgotOpen} defaultEmail={identifier.includes('@') ? identifier : ''} />
     </motion.div>
   );

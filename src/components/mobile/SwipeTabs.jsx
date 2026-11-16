@@ -1,4 +1,5 @@
 import React, { useRef } from 'react';
+import { shouldIgnorePageGesture } from './touchGestures';
 
 const THRESHOLD = 60;        // distance horizontale minimale
 const RATIO = 1.7;           // dx doit dominer dy (mouvement franchement horizontal)
@@ -16,29 +17,17 @@ const SwipeTabs = ({ items = [], children }) => {
   const start = useRef(null);
   const skip = useRef(false);
 
-  const startsInHorizontalScroller = (target, root) => {
-    let node = target;
-    while (node && node !== root && node.nodeType === 1) {
-      const style = window.getComputedStyle(node);
-      if (/(auto|scroll)/.test(style.overflowX) && node.scrollWidth > node.clientWidth + 2) {
-        return true;
-      }
-      node = node.parentElement;
-    }
-    return false;
-  };
-
   const onTouchStart = (e) => {
-    if (e.touches.length !== 1) { start.current = null; return; }
+    if (e.touches.length !== 1 || !window.matchMedia('(max-width: 767px)').matches) { start.current = null; return; }
     const t = e.touches[0];
     start.current = { x: t.clientX, y: t.clientY };
-    skip.current = startsInHorizontalScroller(e.target, e.currentTarget);
+    skip.current = shouldIgnorePageGesture(e.target, e.currentTarget);
   };
 
   const onTouchEnd = (e) => {
     const s = start.current;
     start.current = null;
-    if (!s || skip.current) return;
+    if (!s || skip.current || !e.changedTouches.length) return;
     const t = e.changedTouches[0];
     const dx = t.clientX - s.x;
     const dy = t.clientY - s.y;
@@ -54,7 +43,7 @@ const SwipeTabs = ({ items = [], children }) => {
   };
 
   return (
-    <div onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+    <div className="min-w-0" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} onTouchCancel={() => { start.current = null; }}>
       {children}
     </div>
   );

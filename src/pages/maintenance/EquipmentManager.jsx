@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import FormField from '@/components/ui/form-field';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
@@ -141,7 +141,7 @@ const KPI_STATS = [
   { key: 'total',         label: 'Total',        helper: 'Équipements enregistrés.',             tone: 'primary', icon: Package },
   { key: 'disponible',    label: 'Disponibles',  helper: 'Prêts à être assignés.',               tone: 'emerald', icon: CheckCircle2 },
   { key: 'enService',     label: 'En service',   helper: 'Assignés à un terminal.',              tone: 'blue',    icon: CheckCircle2 },
-  { key: 'enMaintenance', label: 'Maintenance',  helper: 'En cours de maintenance.',             tone: 'amber',   icon: Wrench },
+  { key: 'enMaintenance', label: 'Maintenance',  helper: 'En cours de maintenance.',             tone: 'primary', icon: Wrench },
   { key: 'horsService',   label: 'Hors service', helper: 'Retirés du parc.',                     tone: 'violet',  icon: XCircle },
 ];
 
@@ -156,7 +156,7 @@ const EquipmentTable = ({ type, config, allEquipments, filteredEquipments, hasDa
   };
 
   return (
-  <Card glass={false} className="relative overflow-hidden border border-primary/20 bg-primary/10 shadow-lg">
+  <Card className="relative overflow-hidden border-border bg-card shadow-soft">
     <CardHeader className="space-y-4">
       <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
         <div className="flex items-center gap-2">
@@ -219,7 +219,7 @@ const EquipmentTable = ({ type, config, allEquipments, filteredEquipments, hasDa
           placeholder={`Rechercher dans les ${config.label.toLowerCase()}...`}
           value={searchTerm}
           onChange={(event) => onSearchChange(type, event.target.value)}
-          className="bg-white pl-10 shadow-sm"
+          className="bg-card pl-10 shadow-sm"
           disabled={isLoading}
         />
       </div>
@@ -235,7 +235,7 @@ const EquipmentTable = ({ type, config, allEquipments, filteredEquipments, hasDa
               ? `Aucun ${config.singular.toLowerCase()} trouvé.`
               : `Liste de ${filteredEquipments.length} ${config.label.toLowerCase()}.`}
           </TableCaption>
-          <TableHeader className="bg-slate-50/80">
+          <TableHeader className="bg-muted/60">
             <TableRow>
               <TableHead>Référence</TableHead>
               <TableHead>Modèle</TableHead>
@@ -337,6 +337,7 @@ const EquipmentManager = ({ canManage = true, readOnlyMessage = '' }) => {
     statut: 'Disponible',
     description: '',
   });
+  const [formErrors, setFormErrors] = useState({});
   const [searchTerms, setSearchTerms] = useState({
     imprimantes: '',
     ecrans: '',
@@ -441,22 +442,25 @@ const EquipmentManager = ({ canManage = true, readOnlyMessage = '' }) => {
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
+    setFormErrors(previous => ({ ...previous, [name]: undefined }));
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const resetFormData = () => {
+    setFormErrors({});
     setFormData({ reference: '', modele: '', marque: '', statut: 'Disponible', description: '' });
   };
 
   const handleSubmit = async () => {
     if (!canManage) { showReadOnlyToast(); return; }
 
-    if (!formData.reference || !formData.modele || !formData.marque) {
-      toast({
-        title: 'Erreur',
-        description: 'Veuillez remplir tous les champs obligatoires (Référence, Modèle, Marque).',
-        variant: 'destructive',
-      });
+    const errors = {};
+    for (const field of ['reference', 'modele', 'marque']) {
+      if (!String(formData[field] ?? '').trim()) errors[field] = 'Ce champ est obligatoire.';
+    }
+    setFormErrors(errors);
+    if (Object.keys(errors).length) {
+      document.getElementById(`equipment-${Object.keys(errors)[0]}`)?.focus();
       return;
     }
 
@@ -493,6 +497,7 @@ const EquipmentManager = ({ canManage = true, readOnlyMessage = '' }) => {
 
   const openDialog = (equipment = null, type = currentType) => {
     if (!canManage) { showReadOnlyToast(); return; }
+    setFormErrors({});
     setCurrentType(type);
     setCurrentEquipment(equipment);
     setFormData(equipment ? { ...equipment } : { reference: '', modele: '', marque: '', statut: 'Disponible', description: '' });
@@ -612,8 +617,8 @@ const EquipmentManager = ({ canManage = true, readOnlyMessage = '' }) => {
         </div>
       ) : null}
 
-      <Card className="relative overflow-hidden shadow-xl glassmorphism">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+      <Card className="relative overflow-hidden border-border bg-card shadow-soft">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-primary" />
         <CardHeader className="relative">
           <CardTitle className="text-2xl font-bold text-primary">Gestion de sous-ensembles</CardTitle>
           <CardDescription>Gérez les sous-ensembles disponibles pour les terminaux.</CardDescription>
@@ -621,7 +626,7 @@ const EquipmentManager = ({ canManage = true, readOnlyMessage = '' }) => {
       </Card>
 
       <Tabs defaultValue="imprimantes" className="space-y-4">
-        <TabsList className="flex w-full justify-start gap-1 overflow-x-auto">
+        <TabsList className="flex h-auto w-full flex-nowrap justify-center gap-1 md:flex-wrap [&>button]:min-w-max [&>button]:flex-1 [&>button]:justify-center">
           <TabsTrigger value="imprimantes" className="flex shrink-0 items-center gap-2">
             <Printer className="h-4 w-4" />
             Imprimantes
@@ -707,73 +712,45 @@ const EquipmentManager = ({ canManage = true, readOnlyMessage = '' }) => {
               {currentEquipment ? 'Modifier' : 'Ajouter'} {EQUIPMENT_TYPES[currentType].singular}
             </DialogTitle>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="reference" className="text-right">Référence</Label>
-              <Input id="reference" name="reference" value={formData.reference} onChange={handleInputChange} className="col-span-3" disabled={isLoading} placeholder="Ex: IMP-001" />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right">Modèle</Label>
-              <div className="col-span-3">
-                {modeleOptions.filter(m => m.sous_ensemble === EQUIPMENT_TYPES[currentType].sousEnsemble).length > 0 ? (
-                  <Select
-                    value={formData.modele}
-                    onValueChange={v => setFormData(prev => ({ ...prev, modele: v }))}
-                    disabled={isLoading}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choisir un modèle..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {modeleOptions
-                        .filter(m => m.sous_ensemble === EQUIPMENT_TYPES[currentType].sousEnsemble)
-                        .map(m => (
-                          <SelectItem key={m.id} value={m.nom}>{m.nom}</SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <Input
-                    name="modele"
-                    value={formData.modele}
-                    onChange={handleInputChange}
-                    disabled={isLoading}
-                    placeholder="Ex: LaserJet Pro (aucun modèle défini)"
-                  />
-                )}
-              </div>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="marque" className="text-right">Marque</Label>
-              <Input id="marque" name="marque" value={formData.marque} onChange={handleInputChange} className="col-span-3" disabled={isLoading} placeholder="Ex: HP" />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="statut" className="text-right">Statut</Label>
-              <select
-                id="statut"
-                name="statut"
-                value={formData.statut}
-                onChange={handleInputChange}
-                className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-                disabled={isLoading}
-              >
-                {STATUS_OPTIONS.map((status) => (
-                  <option key={status} value={status}>{status}</option>
-                ))}
+          <form id="equipment-form" noValidate onSubmit={(event) => { event.preventDefault(); if (!isLoading) handleSubmit(); }} className="grid gap-4 py-4">
+            <FormField label="Référence" required error={formErrors.reference}>
+              <Input id="equipment-reference" name="reference" value={formData.reference} onChange={handleInputChange} disabled={isLoading} placeholder="Ex : IMP-001" />
+            </FormField>
+            {modeleOptions.some(modele => modele.sous_ensemble === EQUIPMENT_TYPES[currentType].sousEnsemble) ? (
+              <Select value={formData.modele} onValueChange={(modele) => { setFormData(previous => ({ ...previous, modele })); setFormErrors(previous => ({ ...previous, modele: undefined })); }} disabled={isLoading}>
+                  <FormField label="Modèle" required error={formErrors.modele}>
+                    <SelectTrigger id="equipment-modele"><SelectValue placeholder="Choisir un modèle..." /></SelectTrigger>
+                  </FormField>
+                  <SelectContent>
+                    {modeleOptions.filter(modele => modele.sous_ensemble === EQUIPMENT_TYPES[currentType].sousEnsemble).map(modele => (
+                      <SelectItem key={modele.id} value={modele.nom}>{modele.nom}</SelectItem>
+                    ))}
+                  </SelectContent>
+              </Select>
+            ) : (
+              <FormField label="Modèle" required error={formErrors.modele}>
+                <Input id="equipment-modele" name="modele" value={formData.modele} onChange={handleInputChange} disabled={isLoading} placeholder="Ex : LaserJet Pro (aucun modèle défini)" />
+              </FormField>
+            )}
+            <FormField label="Marque" required error={formErrors.marque}>
+              <Input id="equipment-marque" name="marque" value={formData.marque} onChange={handleInputChange} disabled={isLoading} placeholder="Ex : HP" />
+            </FormField>
+            <FormField label="Statut">
+              <select id="equipment-statut" name="statut" value={formData.statut} onChange={handleInputChange} className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground shadow-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" disabled={isLoading}>
+                {STATUS_OPTIONS.map(status => <option key={status} value={status}>{status}</option>)}
               </select>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="description" className="text-right">Description</Label>
-              <Input id="description" name="description" value={formData.description} onChange={handleInputChange} className="col-span-3" disabled={isLoading} placeholder="Description optionnelle" />
-            </div>
-          </div>
+            </FormField>
+            <FormField label="Description">
+              <Input id="equipment-description" name="description" value={formData.description} onChange={handleInputChange} disabled={isLoading} placeholder="Description optionnelle" />
+            </FormField>
+          </form>
           <DialogFooter>
             <DialogClose asChild>
               <Button variant="outline" type="button" onClick={resetFormData} disabled={isLoading}>
                 Annuler
               </Button>
             </DialogClose>
-            <Button onClick={handleSubmit} className="bg-primary hover:bg-primary/90" disabled={isLoading || !canManage}>
+            <Button type="submit" form="equipment-form" disabled={isLoading || !canManage}>
               {isLoading ? 'Enregistrement...' : currentEquipment ? 'Sauvegarder' : 'Ajouter'}
             </Button>
           </DialogFooter>

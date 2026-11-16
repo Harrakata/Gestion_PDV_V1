@@ -1,5 +1,6 @@
 import React, { useRef, useState, useCallback } from 'react';
 import { RefreshCw, ArrowDown } from 'lucide-react';
+import { shouldIgnorePageGesture } from './touchGestures';
 
 const THRESHOLD = 70;   // distance de déclenchement
 const MAX_PULL = 96;    // amplitude visuelle max
@@ -14,22 +15,50 @@ const PullToRefresh = ({ onRefresh, children }) => {
   const [pull, setPull] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const startY = useRef(null);
+  const startX = useRef(null);
+  const pullDistance = useRef(0);
+
+  const cancelPull = () => {
+    startY.current = null;
+    pullDistance.current = 0;
+    if (!refreshing) setPull(0);
+  };
 
   const onTouchStart = useCallback((e) => {
-    if (refreshing) { startY.current = null; return; }
+    if (refreshing || e.touches.length !== 1 || !window.matchMedia('(max-width: 767px)').matches || shouldIgnorePageGesture(e.target, e.currentTarget, true)) {
+      startY.current = null;
+      return;
+    }
     // window scroll ou conteneur ? on se base sur le scroll du document.
     const atTop = (window.scrollY || document.documentElement.scrollTop || 0) <= 0;
     startY.current = atTop ? e.touches[0].clientY : null;
+    startX.current = e.touches[0].clientX;
+    pullDistance.current = 0;
   }, [refreshing]);
 
   const onTouchMove = useCallback((e) => {
+    if (e.touches.length !== 1) {
+      startY.current = null;
+      pullDistance.current = 0;
+      if (!refreshing) setPull(0);
+      return;
+    }
     if (startY.current == null || refreshing) return;
     const dy = e.touches[0].clientY - startY.current;
+    const dx = Math.abs(e.touches[0].clientX - startX.current);
+    if (dx > 10 && dx > Math.abs(dy)) {
+      startY.current = null;
+      pullDistance.current = 0;
+      setPull(0);
+      return;
+    }
     const atTop = (window.scrollY || document.documentElement.scrollTop || 0) <= 0;
     if (dy > 0 && atTop) {
       // résistance : on amortit le déplacement
-      setPull(Math.min(dy * 0.5, MAX_PULL));
-    } else if (dy <= 0) {
+      pullDistance.current = Math.min(dy * 0.5, MAX_PULL);
+      setPull(pullDistance.current);
+    } else {
+      pullDistance.current = 0;
       setPull(0);
     }
   }, [refreshing]);
@@ -37,15 +66,17 @@ const PullToRefresh = ({ onRefresh, children }) => {
   const onTouchEnd = useCallback(async () => {
     if (startY.current == null) return;
     startY.current = null;
-    if (pull >= THRESHOLD && onRefresh) {
+    if (pullDistance.current >= THRESHOLD && onRefresh) {
       setRefreshing(true);
       setPull(46);
       try { await onRefresh(); } catch { /* ignore */ }
-      setTimeout(() => { setRefreshing(false); setPull(0); }, 350);
+      setRefreshing(false);
+      setPull(0);
     } else {
       setPull(0);
     }
-  }, [pull, onRefresh]);
+    pullDistance.current = 0;
+  }, [onRefresh]);
 
   const ready = pull >= THRESHOLD;
 
@@ -54,7 +85,7 @@ const PullToRefresh = ({ onRefresh, children }) => {
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
-      style={{ touchAction: 'pan-y' }}
+      onTouchCancel={cancelPull}
     >
       {/* Indicateur */}
       <div

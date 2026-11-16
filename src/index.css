@@ -34,6 +34,34 @@
 
   --radius: 0.875rem; /* Generous rounding (14px) */
 
+  /* ── Design system : tokens sémantiques ────────────────────────────────
+     Les composants doivent consommer ces rôles plutôt que des couleurs
+     Tailwind directes. Ils restent cohérents avec le branding client et le
+     mode sombre sans dupliquer les palettes dans chaque écran. */
+  --surface: 0 0% 100%;
+  --surface-foreground: 222 47% 11%;
+  --surface-subtle: 210 40% 98%;
+  --surface-elevated: 0 0% 100%;
+
+  --success: 160 84% 32%;
+  --success-foreground: 0 0% 100%;
+  --success-muted: 152 76% 95%;
+  --success-muted-foreground: 161 94% 24%;
+
+  --warning: 38 92% 50%;
+  --warning-foreground: 26 83% 14%;
+  --warning-muted: 48 96% 89%;
+  --warning-muted-foreground: 32 95% 26%;
+
+  --info: 217 91% 60%;
+  --info-foreground: 0 0% 100%;
+  --info-muted: 214 95% 93%;
+  --info-muted-foreground: 221 83% 35%;
+
+  --shadow-soft: 0 1px 2px rgb(15 23 42 / 0.06), 0 1px 3px rgb(15 23 42 / 0.08);
+  --shadow-elevated: 0 18px 45px -28px rgb(15 23 42 / 0.28);
+  --shadow-floating: 0 24px 60px -20px rgb(15 23 42 / 0.34);
+
   /* ── Variables de personnalisation App Mobile ──────────────────────────────
      Modifiables via Paramètres > Personnalisation App Mobile.
      Elles n'ont d'effet qu'à travers les règles @media (max-width: 767px) ci-dessous. */
@@ -76,6 +104,30 @@
   --border: 217 33% 17%;
   --input: 217 33% 17%;
   --ring: 174 80% 42%; /* Ring matches primary (Teal) */
+
+  --surface: 222 47% 11%;
+  --surface-foreground: 210 40% 98%;
+  --surface-subtle: 217 33% 15%;
+  --surface-elevated: 217 33% 17%;
+
+  --success: 158 64% 52%;
+  --success-foreground: 164 86% 10%;
+  --success-muted: 161 48% 16%;
+  --success-muted-foreground: 152 69% 74%;
+
+  --warning: 43 96% 56%;
+  --warning-foreground: 26 83% 14%;
+  --warning-muted: 32 47% 16%;
+  --warning-muted-foreground: 48 96% 76%;
+
+  --info: 213 94% 68%;
+  --info-foreground: 222 47% 11%;
+  --info-muted: 221 48% 18%;
+  --info-muted-foreground: 214 95% 78%;
+
+  --shadow-soft: 0 1px 2px rgb(0 0 0 / 0.22), 0 1px 3px rgb(0 0 0 / 0.18);
+  --shadow-elevated: 0 18px 45px -28px rgb(0 0 0 / 0.72);
+  --shadow-floating: 0 24px 60px -20px rgb(0 0 0 / 0.82);
 }
 
 @layer base {
@@ -97,7 +149,13 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;
+    text-rendering: optimizeLegibility;
+  }
+
+  :focus-visible {
+    outline-color: hsl(var(--ring));
   }
 
   img,
@@ -105,6 +163,23 @@
   canvas,
   svg {
     max-width: 100%;
+  }
+}
+
+/* Réduction de mouvement au niveau du système, indépendamment des préférences
+   mobiles configurées dans l'application. */
+@media (prefers-reduced-motion: reduce) {
+  html:focus-within {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
   }
 }
 
@@ -119,22 +194,15 @@ aside,
 .glassmorphism {
   position: relative;
   overflow: hidden;
-  border: 1px solid hsl(var(--primary) / 0.2);
-  box-shadow: 0 22px 60px -30px rgba(15, 23, 42, 0.28);
-  background: hsl(var(--primary) / 0.1);
+  border: 1px solid hsl(var(--border));
+  box-shadow: var(--shadow-elevated);
+  background: hsl(var(--card));
 }
 
-/* Rail haut uniforme */
+/* Héritage visuel : le rail décoratif est neutralisé. La classe reste disponible
+   pendant la migration des anciens écrans vers les variantes de Card. */
 .glassmorphism::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: 3px;
-  background: hsl(var(--primary));
-  pointer-events: none;
-  z-index: 10;
+  content: none;
 }
 
 /* Pas de voile teinté sur le contenu */
@@ -143,9 +211,9 @@ aside,
 }
 
 .dark .glassmorphism {
-  background: hsl(var(--primary) / 0.16);
-  border-color: hsl(var(--primary) / 0.3);
-  box-shadow: 0 22px 60px -30px rgba(15, 23, 42, 0.5);
+  background: hsl(var(--card));
+  border-color: hsl(var(--border));
+  box-shadow: var(--shadow-elevated);
 }
 
 /* Le contenu des cards glassmorphism reste au-dessus des pseudo-éléments */
@@ -154,36 +222,30 @@ aside,
   z-index: 1;
 }
 
-/* ── Aspect « verre teal » de la navigation principale ───────────────────────
-   Reproduit l'aspect translucide du menu de navigation (fond teinté primaire +
-   flou + bordure primaire + liseré dégradé en haut) sur toutes les fenêtres
-   flottantes (dropdown, popover, select, dialog, tooltip, combobox,
-   notifications) ET sur les cartes. Règle non-layered → prioritaire sur les
-   utilitaires Tailwind bg-popover / bg-card / bg-background (pas de !important
-   nécessaire). */
+/* La fermeture reste dans le coin de la fenêtre, même sur les anciennes surfaces. */
+[data-app-dialog] > .app-dialog-close {
+  position: absolute;
+  z-index: 10;
+}
+
+/* ── Surface historique, désormais neutre ───────────────────────────────────
+   Le nom de classe est conservé pour éviter une migration brutale. Les menus,
+   fenêtres et anciennes cartes utilisent maintenant les mêmes surfaces sobres
+   que le design system. */
 .surface-glass {
   position: relative;
-  border-color: hsl(var(--primary) / 0.2);
-  background-color: hsl(var(--primary) / 0.1);
+  border-color: hsl(var(--border));
+  background-color: hsl(var(--card));
   background-image: none;
 }
-/* Liseré haut uniforme. */
+/* Les surfaces standard restent neutres. Les accents colorés sont réservés aux
+   statuts et aux actions, et doivent être ajoutés explicitement. */
 .surface-glass::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: 3px;
-  background: hsl(var(--primary));
-  border-top-left-radius: inherit;
-  border-top-right-radius: inherit;
-  pointer-events: none;
-  z-index: 1;
+  content: none;
 }
 .dark .surface-glass {
-  background-color: hsl(var(--primary) / 0.16);
-  border-color: hsl(var(--primary) / 0.32);
+  background-color: hsl(var(--card));
+  border-color: hsl(var(--border));
 }
 
 /* Le diagnostic reprend le fond bleu des cartes de maintenance sans laisser
@@ -205,7 +267,7 @@ aside,
 
 /* Repli : sans support du flou, on reste opaque pour préserver la lisibilité. */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .surface-glass { background-color: hsl(var(--primary) / 0.1); }
+  .surface-glass { background-color: hsl(var(--card)); }
 }
 
 /* Les sous-titres de carte ne portent aucune ombre propre (le préréglage
@@ -214,15 +276,8 @@ aside,
   box-shadow: none;
 }
 
-/* ── Fenêtres flottantes (filtres/combobox, popovers, menus, tooltips,
-   Notifications) : fond OPAQUE pour la lisibilité ───────────────────────────
-   Le rendu « verre » par défaut (surface-glass → primary/0.1) laisse passer le
-   contenu de la page derrière la fenêtre (tableaux, listes), ce qui nuit à la
-   lisibilité des filtres déroulants et du panneau de notifications.
-   On utilise un fond OPAQUE plein (pas de backdrop-filter) : le flou
-   d'arrière-plan provoque, en mode PWA / WebView (Android), un bug de rendu qui
-   masque le CONTENU de la fenêtre. Un fond solide est lisible ET fiable partout.
-   Ciblé via bg-popover (et la classe notification) → n'affecte pas les cartes. */
+/* Les fenêtres flottantes restent opaques : meilleure lisibilité et rendu plus
+   fiable dans les PWA / WebView Android. */
 .surface-glass.bg-popover,
 .notification-bell-popover.surface-glass,
 .notification-bell-popover {
@@ -238,7 +293,7 @@ aside,
 
 .surface-glass > .pointer-events-none.absolute.inset-x-0.top-0,
 .glassmorphism > .pointer-events-none.absolute.inset-x-0.top-0 {
-  background: hsl(var(--primary));
+  display: none;
 }
 
 /* ── Liseré/rail supérieur des cartes : épouse l'arrondi de la carte ─────────
@@ -252,7 +307,7 @@ aside,
 }
 
 .planning-calendar {
-  background: #fff;
+  background: hsl(var(--card));
 }
 
 .planning-calendar .bg-muted\/60,
@@ -265,12 +320,12 @@ aside,
 .planning-calendar .bg-card,
 .planning-calendar .bg-background,
 .planning-calendar .bg-primary\/5 {
-  background-color: #fff !important;
+  background-color: hsl(var(--card)) !important;
 }
 
 .planning-calendar [class*="bg-muted/"]:not([class*="text-"]),
 .planning-calendar [class*="bg-slate-50/"] {
-  background-color: #fff !important;
+  background-color: hsl(var(--card)) !important;
 }
 
 /* ── Maintenance Terminaux : tables et cartes des sous-onglets ──────────────
@@ -298,16 +353,16 @@ aside,
 }
 
 .maintenance-terminal-workspace table thead {
-  background: hsl(210 40% 98%);
+  background: hsl(var(--muted));
 }
 
 .maintenance-terminal-workspace table thead tr {
-  border-bottom: 1px solid rgb(226 232 240 / 0.8);
+  border-bottom: 1px solid hsl(var(--border));
 }
 
 .maintenance-terminal-workspace table th {
   height: 3rem;
-  background: hsl(210 40% 98%);
+  background: hsl(var(--muted));
   color: hsl(var(--muted-foreground));
   font-size: 0.78rem;
   font-weight: 650;
@@ -334,9 +389,9 @@ aside,
   margin: 0 auto 1.5rem;
   min-width: 0;
   overflow: auto;
-  border: 1px solid rgb(226 232 240 / 0.8);
+  border: 1px solid hsl(var(--border));
   border-radius: 0.75rem;
-  background: #fff;
+  background: hsl(var(--card));
   box-shadow: 0 18px 45px -32px rgba(15, 23, 42, 0.22);
 }
 
@@ -436,7 +491,7 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
 .glassmorphism .bg-muted\/30,
 .glassmorphism .bg-muted\/20,
 .glassmorphism .bg-primary\/5 {
-  background-color: #fff !important;
+  background-color: hsl(var(--surface-elevated)) !important;
 }
 /* Les DIALOGS gardent leur position fixed (centrage écran) même avec glassmorphism.
    IMPORTANT : on NE force PLUS la position des popovers/dropdowns/selects.
@@ -519,19 +574,15 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
   }
 }
 
-/* ── Libellés de filtres intégrés au champ (UI épurée) ──────────────────────
-   Dans les grilles de filtres/sélecteurs (contenant un Select ou un Combobox),
-   on masque visuellement le libellé séparé : le contrôle porte déjà le libellé
-   via sa valeur ou son placeholder (« Toutes les régions », « Choisir… »).
-   Hiding « visually-hidden » (et non display:none) → le lecteur d'écran continue
-   d'annoncer le libellé. Scopé à la zone espace ; les modales ne sont pas touchées. */
-.app-space-main .grid:has(> div [data-radix-select-trigger]) > div > p.font-medium,
-.app-space-main .grid:has(> div [data-radix-select-trigger]) > div > label.font-medium,
-.app-space-main .grid:has(> div button[role="combobox"]) > div > p.font-medium,
-.app-space-main .grid:has(> div button[role="combobox"]) > div > label.font-medium,
-/* Panneaux de formulaire en colonne : cellule « grid gap-2 » = libellé + contrôle */
-.app-space-main .grid.gap-2:has(> input, > textarea, > [data-radix-select-trigger], > button[role="combobox"], > .relative) > label.font-medium,
-.app-space-main .grid.gap-2:has(> input, > textarea, > [data-radix-select-trigger], > button[role="combobox"], > .relative) > p.font-medium {
+/* Variante compacte opt-in pour les seules barres de filtres qui peuvent se
+   passer de libellés visibles. Les formulaires standards conservent désormais
+   leurs libellés, conformément au design system et aux règles d'accessibilité. */
+.compact-filter-labels .grid:has(> div [data-radix-select-trigger]) > div > p.font-medium,
+.compact-filter-labels .grid:has(> div [data-radix-select-trigger]) > div > label.font-medium,
+.compact-filter-labels .grid:has(> div button[role="combobox"]) > div > p.font-medium,
+.compact-filter-labels .grid:has(> div button[role="combobox"]) > div > label.font-medium,
+.compact-filter-labels .grid.gap-2:has(> input, > textarea, > [data-radix-select-trigger], > button[role="combobox"], > .relative) > label.font-medium,
+.compact-filter-labels .grid.gap-2:has(> input, > textarea, > [data-radix-select-trigger], > button[role="combobox"], > .relative) > p.font-medium {
   position: absolute !important;
   width: 1px !important;
   height: 1px !important;
@@ -577,12 +628,13 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
     width: min(88vw, 19.5rem) !important;
     max-width: 88vw !important;
     margin: 0 !important;
-    background: rgba(241, 245, 249, 0.98);
+    background: hsl(var(--background));
     border: 1px solid hsl(var(--primary) / 0.18);
     border-radius: 1rem;
     box-shadow: 0 18px 44px -16px rgba(15, 23, 42, 0.30);
     overflow-y: auto;
     overflow-x: hidden;
+    overscroll-behavior: contain;
     padding: 0.6rem;
     animation: app-space-drawer-in 0.22s ease;
     backdrop-filter: blur(16px) saturate(1.4);
@@ -692,10 +744,11 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
     justify-content: center;
     gap: 0.15rem;
     min-width: 0;
+    min-height: 3rem;
     padding: 0.3rem 0.1rem;
     border-radius: 0.7rem;
     color: hsl(var(--muted-foreground));
-    font-size: 0.62rem;
+    font-size: 0.75rem;
     font-weight: 600;
     line-height: 1;
     transition: color 0.15s ease, background 0.15s ease;
@@ -734,10 +787,10 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
     display: none !important;
   }
 
-  /* Les descriptions d'en-tête de carte sont masquées sur mobile (densité « app »).
-     N'affecte pas les aides de champ (qui ne sont pas des CardDescription). */
+  /* Les indications de tâche restent lisibles sur téléphone. */
   .app-space-main .card-description {
-    display: none;
+    font-size: 0.875rem;
+    line-height: 1.4;
   }
 
   /* Grilles de cartes KPI : on en met le MAXIMUM par ligne selon la largeur.
@@ -753,13 +806,10 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
   }
 
-  /* ── Densification GLOBALE des grilles de filtres (tous espaces/onglets) ──
-     Toute grille de la zone espace contenant des listes déroulantes (Select ou
-     Combobox) passe à 2 colonnes minimum sur mobile au lieu d'être empilée en
-     pleine largeur → on fait tenir le maximum par ligne. Les fenêtres modales
-     (portalisées hors de .app-space-main) ne sont PAS affectées. */
-  .app-space-main .grid:has(> div [data-radix-select-trigger]):not(:has(> [class*="col-span"])),
-  .app-space-main .grid:has(> div button[role="combobox"]):not(:has(> [class*="col-span"])) {
+  /* Deux colonnes uniquement pour les barres de filtres explicitement compactes.
+     Les formulaires gardent leur grille responsive et leurs libellés visibles. */
+  .app-space-main .compact-filter-labels.grid:has(> div [data-radix-select-trigger]):not(:has(> [class*="col-span"])),
+  .app-space-main .compact-filter-labels.grid:has(> div button[role="combobox"]):not(:has(> [class*="col-span"])) {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     gap: 0.5rem !important;
   }
@@ -866,7 +916,7 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
 
   /* Tous les popovers/menus Radix passent AU-DESSUS de l'en-tête sticky (z-80). */
   [data-radix-popper-content-wrapper] {
-    z-index: 90 !important;
+    z-index: 120 !important;
   }
 
   /* ── Popover notification : panneau docké centré sous la barre ──────────────
@@ -944,7 +994,7 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
 
   [role="menuitem"],
   [role="option"] {
-    min-height: 2rem;
+    min-height: 2.75rem;
     padding-top: 0.4rem !important;
     padding-bottom: 0.4rem !important;
   }
@@ -958,9 +1008,9 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
   /* Déclencheurs de liste déroulante un peu plus bas */
   button[role="combobox"],
   [data-radix-select-trigger] {
-    min-height: 2.3rem;
-    height: 2.3rem;
-    font-size: 0.82rem;
+    min-height: 2.75rem;
+    height: auto;
+    font-size: 1rem;
   }
 
   .app-space-main .p-8,
@@ -1019,13 +1069,13 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
   }
 
   .app-space-main .text-sm {
-    font-size: 0.76rem !important;
-    line-height: 1.05rem !important;
+    font-size: 0.875rem !important;
+    line-height: 1.25rem !important;
   }
 
   .app-space-main .text-xs {
-    font-size: 0.68rem !important;
-    line-height: 0.95rem !important;
+    font-size: 0.75rem !important;
+    line-height: 1.1rem !important;
   }
 
   [role="tablist"] {
@@ -1048,7 +1098,7 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
     flex: 0 0 auto !important;
     min-width: max-content;
     max-width: 82vw;
-    min-height: 2.25rem;
+    min-height: 2.75rem;
     padding: 0.5rem 0.75rem !important;
     white-space: nowrap;
     scroll-snap-align: start;
@@ -1085,47 +1135,30 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
     overflow-wrap: anywhere;
   }
 
-  /* ── Boîtes de dialogue ──────────────────────────────────────────────
-     Rendues dans un portail (hors de .app-space-main), elles échappent
-     aux adaptations mobiles ci-dessus : on les recadre explicitement.
-     On ANCRE la fenêtre à 6rem du haut (au lieu de centrée) pour bien la
-     détacher de la barre de menu (~4.5rem) — même traitement que le panneau
-     de notifications. translateX(-50%) seul = centrage horizontal, top fixe.
-     LARGEUR PROGRESSIVE : on ne force PLUS de plafond fixe — chaque dialogue
-     garde sa largeur de conception (max-w-lg, max-w-4xl…) bornée par le viewport.
-     Effectif = min(100vw − 2rem, largeur-conçue) → s'élargit sur tablette.
-     Aucune dépendance à :has() (compat WebView/PWA). Fallback vh avant dvh. */
-  [role="dialog"] {
-    top: 6rem !important;
+  /* Les modales utilisent la hauteur réellement visible avec le clavier ouvert.
+     Le marqueur distingue les modales des popovers Radix, aussi role="dialog". */
+  [role="dialog"][data-app-dialog] {
+    top: calc(var(--dialog-viewport-top, 0px) + 0.75rem + env(safe-area-inset-top, 0px)) !important;
     bottom: auto !important;
     transform: translateX(-50%) !important;
-    width: calc(100vw - 2rem) !important;
-    max-height: calc(100vh - 7.5rem) !important;
-    max-height: calc(100dvh - 7.5rem - env(safe-area-inset-bottom, 0px)) !important;
+    width: calc(100vw - 1.5rem) !important;
+    max-width: calc(100vw - 1.5rem);
+    max-height: calc(var(--dialog-viewport-height, 100dvh) - 1.5rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
     overflow-y: auto !important;
+    overscroll-behavior: contain;
+    z-index: 100;
     gap: 0.55rem !important;
     padding: 0.8rem !important;
     border-radius: 1.25rem !important;
     box-shadow: 0 24px 60px -12px rgba(15, 23, 42, 0.5) !important;
   }
 
-  /* Centrage vertical à partir des grands écrans mobiles / tablettes (≥ 600px) :
-     plus besoin d'ancrer en haut, on recentre pour un meilleur équilibre. */
-  @media (min-width: 600px) {
-    [role="dialog"] {
-      top: 50% !important;
-      transform: translate(-50%, -50%) !important;
-      max-height: calc(100dvh - 4rem - env(safe-area-inset-bottom, 0px)) !important;
-    }
-  }
-
   /* Visionneuses plein cadre (iframe : fiche d'intervention, etc.) : pas de
      padding interne, hauteur généreuse pour occuper l'écran sur tablette. */
-  [role="dialog"]:has(iframe) {
+  [role="dialog"][data-app-dialog]:has(iframe) {
     padding: 0 !important;
     gap: 0 !important;
-    height: calc(100dvh - 8rem) !important;
-    max-height: calc(100dvh - 8rem) !important;
+    height: calc(var(--dialog-viewport-height, 100dvh) - 1.5rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
   }
 
   /* Fenêtres à mise en page « bord à bord » (en-tête/corps gérant leur propre
@@ -1178,7 +1211,7 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
   /* Grilles internes de dialogue : une colonne sur petit écran */
   [role="dialog"] .grid.md\:grid-cols-2,
   [role="dialog"] .grid.sm\:grid-cols-4 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
   }
 
   [role="dialog"].terminal-passport-dialog {
@@ -1299,4 +1332,60 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
   [role="tablist"] [role="tab"] {
     max-width: 78vw;
   }
+}
+
+/* Confort tactile commun à tous les espaces, sans réduire les champs de saisie. */
+@media (max-width: 767px) {
+  :is(input, textarea, select, button[role="combobox"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]) {
+    min-height: 2.75rem;
+    font-size: 1rem !important;
+    line-height: 1.4 !important;
+    scroll-margin-block: 5rem;
+  }
+
+  [data-ui-button],
+  button[data-ui-button-size],
+  button[data-ui-button-variant],
+  .app-top-header button,
+  .app-space-mobile-header button,
+  .app-space-sidebar.is-open .app-space-sidebar-scroll :is(a, button) {
+    min-height: 2.75rem;
+    touch-action: manipulation;
+  }
+
+  button[data-ui-button-size="icon"],
+  .app-top-header button,
+  .app-space-mobile-header button,
+  table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data-ui-button-size="icon"] {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    flex-shrink: 0;
+  }
+
+  .app-space-sidebar.is-open .app-space-sidebar-scroll nav button {
+    font-size: 0.875rem;
+  }
+
+  .app-space-main label {
+    font-size: 0.875rem !important;
+    line-height: 1.4 !important;
+  }
+
+  [data-app-dialog] .grid.grid-cols-4:has(> label) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.5rem;
+  }
+
+  [data-app-dialog] .grid.grid-cols-4:has(> label) > * {
+    grid-column: 1 / -1;
+    text-align: left;
+    justify-content: flex-start;
+  }
+
+  .app-dialog-overlay { z-index: 99; }
+  .anchored-popover { z-index: 120 !important; }
+  .app-table-scroll { overscroll-behavior-x: contain; }
+
+  [data-app-dialog] > form { min-width: 0; }
+  [data-app-dialog] > div:has(> h2) { padding-right: 2.75rem; }
 }

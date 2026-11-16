@@ -23,9 +23,24 @@ const getSearchableValue = (option) => String(
 // Combobox single OU multi-select.
 // Mode multi : passer `multi={true}` + `value` = array de valeurs + `onSelect(newArray)`.
 // La valeur spéciale "__all__" (ALL) déselectionne tout (équivalent "tout afficher").
-const Combobox = ({ options, value, onSelect, placeholder, searchPlaceholder, emptyText, disabled, multi = false, modal = false }) => {
+const Combobox = ({ options, value, onSelect, placeholder, searchPlaceholder, emptyText, disabled, multi = false, modal = false, required, ...triggerProps }) => {
   const [open, setOpen] = useState(false)
   const searchInputRef = React.useRef(null)
+  const triggerRef = React.useRef(null)
+  const keyboardOpening = React.useRef(false)
+  const handleTriggerKeyDown = (event) => {
+    triggerProps.onKeyDown?.(event)
+    if (event.defaultPrevented || disabled) return
+    if (['ArrowDown', 'Enter', ' '].includes(event.key)) {
+      event.preventDefault()
+      keyboardOpening.current = true
+      setOpen(true)
+    }
+  }
+  const focusSearchFromKeyboard = () => {
+    if (keyboardOpening.current) searchInputRef.current?.focus({ preventScroll: true })
+    keyboardOpening.current = false
+  }
 
   // Détection du mode et de la valeur "ALL" (premier option si elle a l'apparence d'une option globale).
   const allOption = options[0] && (options[0].value === "__all__" || options[0].value === "" || String(options[0].value).startsWith("__")) ? options[0] : null;
@@ -62,8 +77,14 @@ const Combobox = ({ options, value, onSelect, placeholder, searchPlaceholder, em
         matchTriggerWidth
         triggerWrapClassName="block w-full"
         panelClassName="p-0"
+        onOpenAutoFocus={focusSearchFromKeyboard}
         trigger={
           <Button
+            {...triggerProps}
+            ref={triggerRef}
+            onKeyDown={handleTriggerKeyDown}
+            type="button"
+            aria-required={required || undefined}
             variant="outline"
             role="combobox"
             aria-expanded={open}
@@ -76,7 +97,7 @@ const Combobox = ({ options, value, onSelect, placeholder, searchPlaceholder, em
         }
       >
           <Command>
-            <CommandInput placeholder={searchPlaceholder} />
+            <CommandInput ref={searchInputRef} placeholder={searchPlaceholder} aria-label={searchPlaceholder || 'Rechercher une option'} />
             <CommandList className="max-h-56 overflow-y-auto">
               <CommandEmpty>{emptyText}</CommandEmpty>
               <CommandGroup>
@@ -113,6 +134,11 @@ const Combobox = ({ options, value, onSelect, placeholder, searchPlaceholder, em
 
   const trigger = (
     <Button
+      {...triggerProps}
+      ref={triggerRef}
+      onKeyDown={handleTriggerKeyDown}
+      type="button"
+      aria-required={required || undefined}
       variant="outline"
       role="combobox"
       aria-expanded={open}
@@ -126,7 +152,7 @@ const Combobox = ({ options, value, onSelect, placeholder, searchPlaceholder, em
 
   const content = (
     <Command>
-      <CommandInput ref={searchInputRef} placeholder={searchPlaceholder} />
+      <CommandInput ref={searchInputRef} placeholder={searchPlaceholder} aria-label={searchPlaceholder || 'Rechercher une option'} />
       <CommandList className="max-h-56 overflow-y-auto">
         <CommandEmpty>{emptyText}</CommandEmpty>
         <CommandGroup>
@@ -137,6 +163,7 @@ const Combobox = ({ options, value, onSelect, placeholder, searchPlaceholder, em
               onSelect={() => {
                 onSelect(normalizeValue(option.value) === normalizeValue(value) ? "" : option.value)
                 setOpen(false)
+                triggerRef.current?.focus({ preventScroll: true })
               }}
             >
               <Check
@@ -180,6 +207,7 @@ const Combobox = ({ options, value, onSelect, placeholder, searchPlaceholder, em
       matchTriggerWidth
       triggerWrapClassName="block w-full"
       panelClassName="p-0"
+      onOpenAutoFocus={focusSearchFromKeyboard}
       trigger={trigger}
     >
       {content}

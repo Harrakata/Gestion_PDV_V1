@@ -559,11 +559,11 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
       </Card>
 
       <Tabs defaultValue="catalogue" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="catalogue" className="flex items-center gap-2"><Package className="h-4 w-4" /> Catalogue Pièces</TabsTrigger>
-          <TabsTrigger value="aide" className="flex items-center gap-2"><Wrench className="h-4 w-4" /> Aide Réparation</TabsTrigger>
-          <TabsTrigger value="modeles" className="flex items-center gap-2"><Layers className="h-4 w-4" /> Modèles</TabsTrigger>
-          <TabsTrigger value="stock" className="flex items-center gap-2"><BookOpen className="h-4 w-4" /> Stock Pièces</TabsTrigger>
+        <TabsList className="flex h-auto w-full flex-nowrap justify-center gap-2 md:flex-wrap [&>button]:min-w-max [&>button]:flex-1 [&>button]:justify-center">
+          <TabsTrigger value="catalogue" className="flex items-center justify-center gap-2"><Package className="h-4 w-4" /> Catalogue Pièces</TabsTrigger>
+          <TabsTrigger value="aide" className="flex items-center justify-center gap-2"><Wrench className="h-4 w-4" /> Aide Réparation</TabsTrigger>
+          <TabsTrigger value="modeles" className="flex items-center justify-center gap-2"><Layers className="h-4 w-4" /> Modèles</TabsTrigger>
+          <TabsTrigger value="stock" className="flex items-center justify-center gap-2"><BookOpen className="h-4 w-4" /> Stock Pièces</TabsTrigger>
         </TabsList>
 
         {/* ===== CATALOGUE ===== */}

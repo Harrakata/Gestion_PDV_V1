@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { KeyRound, Loader2, Eye, EyeOff, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { KeyRound, Loader2, ShieldCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import PasswordInput from '@/components/ui/password-input';
+import FormField from '@/components/ui/form-field';
+import FormActions from '@/components/ui/form-actions';
+import FeedbackPanel from '@/components/ui/feedback-panel';
 import { useToast } from '@/components/ui/use-toast';
 import { defaultSupabase } from '@/lib/supabaseClient';
 
@@ -23,6 +25,7 @@ const ResetPasswordPage = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
 
   useEffect(() => {
     let cancelled = false;
@@ -58,14 +61,15 @@ const ResetPasswordPage = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (newPassword.length < MIN_PASSWORD_LENGTH) {
-      toast({ title: 'Mot de passe trop court', description: `Au moins ${MIN_PASSWORD_LENGTH} caractères.`, variant: 'destructive' });
+      setFieldErrors({ newPassword: `Utilisez au moins ${MIN_PASSWORD_LENGTH} caractères.` });
       return;
     }
     if (newPassword !== confirmPassword) {
-      toast({ title: 'Confirmation incorrecte', description: 'Les deux mots de passe ne correspondent pas.', variant: 'destructive' });
+      setFieldErrors({ confirmPassword: 'Les deux mots de passe ne correspondent pas.' });
       return;
     }
 
+    setFieldErrors({});
     setIsLoading(true);
     try {
       const { error } = await defaultSupabase.auth.updateUser({ password: newPassword });
@@ -86,15 +90,14 @@ const ResetPasswordPage = () => {
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
       className="flex items-center justify-center min-h-[calc(100vh-12rem)] p-4"
     >
-      <Card className="relative w-full max-w-md overflow-hidden border border-primary/20 shadow-2xl">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/80 to-primary/35" />
+      <Card variant="elevated" className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-2xl text-primary">
-            <ShieldCheck className="h-6 w-6" />
+          <CardTitle className="flex items-center gap-2">
+            <ShieldCheck className="h-6 w-6 text-primary" aria-hidden="true" />
             Réinitialiser le mot de passe
           </CardTitle>
           <CardDescription>Choisissez un nouveau mot de passe pour votre compte.</CardDescription>
@@ -108,65 +111,67 @@ const ResetPasswordPage = () => {
 
           {status === 'invalid' && (
             <div className="space-y-4 py-2">
-              <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-                Lien invalide ou expiré. Relancez une demande de réinitialisation depuis la page de connexion.
-              </div>
+              <FeedbackPanel
+                tone="warning"
+                title="Lien invalide ou expiré"
+                description="Relancez une demande de réinitialisation depuis la page de connexion."
+              />
               <Button asChild className="w-full"><Link to="/">Retour à l'accueil</Link></Button>
             </div>
           )}
 
           {status === 'done' && (
             <div className="space-y-4 py-2">
-              <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-800">
-                Votre mot de passe a été réinitialisé. Reconnectez-vous avec votre nouveau mot de passe.
-              </div>
+              <FeedbackPanel
+                tone="success"
+                title="Mot de passe réinitialisé"
+                description="Reconnectez-vous avec votre nouveau mot de passe."
+              />
               <Button asChild className="w-full"><Link to="/">Aller à la connexion</Link></Button>
             </div>
           )}
 
           {status === 'ready' && (
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="reset-new">Nouveau mot de passe</Label>
-                <div className="relative">
-                  <Input
-                    id="reset-new"
-                    type={showPassword ? 'text' : 'password'}
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="••••••••"
-                    disabled={isLoading}
-                    autoComplete="new-password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((v) => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    tabIndex={-1}
-                    aria-label={showPassword ? 'Masquer' : 'Afficher'}
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="reset-confirm">Confirmer le mot de passe</Label>
-                <Input
-                  id="reset-confirm"
-                  type={showPassword ? 'text' : 'password'}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="••••••••"
+              <FormField
+                id="reset-new"
+                label="Nouveau mot de passe"
+                hint={`Utilisez au moins ${MIN_PASSWORD_LENGTH} caractères.`}
+                error={fieldErrors.newPassword}
+                required
+              >
+                <PasswordInput
+                  visible={showPassword}
+                  onVisibleChange={setShowPassword}
+                  value={newPassword}
+                  onChange={(e) => { setNewPassword(e.target.value); if (fieldErrors.newPassword) setFieldErrors({}); }}
+                  placeholder="Saisissez votre nouveau mot de passe"
                   disabled={isLoading}
                   autoComplete="new-password"
                 />
-              </div>
-              <p className="text-xs text-muted-foreground">Au moins {MIN_PASSWORD_LENGTH} caractères.</p>
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <KeyRound className="mr-2 h-4 w-4" />}
-                Réinitialiser
-              </Button>
+              </FormField>
+              <FormField
+                id="reset-confirm"
+                label="Confirmer le mot de passe"
+                error={fieldErrors.confirmPassword}
+                required
+              >
+                <PasswordInput
+                  visible={showPassword}
+                  onVisibleChange={setShowPassword}
+                  value={confirmPassword}
+                  onChange={(e) => { setConfirmPassword(e.target.value); if (fieldErrors.confirmPassword) setFieldErrors({}); }}
+                  placeholder="Saisissez-le à nouveau"
+                  disabled={isLoading}
+                  autoComplete="new-password"
+                />
+              </FormField>
+              <FormActions>
+                <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
+                  {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />}
+                  Réinitialiser
+                </Button>
+              </FormActions>
             </form>
           )}
         </CardContent>

@@ -23,6 +23,7 @@ const AnchoredPopover = ({
   trigger, children, align = 'end', width = 256, matchTriggerWidth = false,
   maxHeight = '28rem', panelClassName = '', disabled = false, open: openProp, onOpenChange,
   triggerWrapClassName = 'inline-flex',
+  onOpenAutoFocus,
 }) => {
   const isControlled = openProp !== undefined;
   const [openState, setOpenState] = useState(false);
@@ -41,16 +42,36 @@ const AnchoredPopover = ({
     const r = triggerRef.current?.getBoundingClientRect();
     if (!r) return;
     const margin = 8;
-    const w = Math.min(matchTriggerWidth ? r.width : width, window.innerWidth - margin * 2);
+    const viewport = window.visualViewport;
+    const viewportTop = viewport?.offsetTop || 0;
+    const viewportLeft = viewport?.offsetLeft || 0;
+    const viewportWidth = viewport?.width || window.innerWidth;
+    const viewportBottom = viewportTop + (viewport?.height || window.innerHeight);
+    const w = Math.min(matchTriggerWidth ? r.width : width, viewportWidth - margin * 2);
     let left = align === 'end' ? r.right - w : r.left;
-    left = Math.max(margin, Math.min(left, window.innerWidth - w - margin));
-    setPos({ top: Math.round(r.bottom + 4), left: Math.round(left), width: Math.round(w) });
+    left = Math.max(viewportLeft + margin, Math.min(left, viewportLeft + viewportWidth - w - margin));
+    const below = Math.max(0, viewportBottom - r.bottom - margin - 4);
+    const above = Math.max(0, r.top - viewportTop - margin - 4);
+    const openAbove = below < 240 && above > below;
+    setPos({
+      top: openAbove ? undefined : Math.max(viewportTop + margin, Math.round(r.bottom + 4)),
+      bottom: openAbove ? Math.max(margin, window.innerHeight - Math.round(r.top - 4)) : undefined,
+      left: Math.round(left),
+      width: Math.round(w),
+      availableHeight: openAbove ? above : below,
+    });
   };
 
   useLayoutEffect(() => {
     if (open) computePos();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
+
+  useEffect(() => {
+    if (open && pos) onOpenAutoFocus?.();
+    // Une seule fois par ouverture, après le montage du panneau dans le portail.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, Boolean(pos)]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -60,15 +81,25 @@ const AnchoredPopover = ({
       if (triggerRef.current?.contains(e.target)) return;
       setOpen(false);
     };
-    const onKey = (e) => { if (e.key === 'Escape') setOpen(false); };
+    const onKey = (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setOpen(false);
+        triggerRef.current?.querySelector('button, [tabindex]')?.focus({ preventScroll: true });
+      }
+    };
     window.addEventListener('resize', reposition);
     window.addEventListener('scroll', reposition, true);
-    document.addEventListener('mousedown', onPointerDown);
+    window.visualViewport?.addEventListener('resize', reposition);
+    window.visualViewport?.addEventListener('scroll', reposition);
+    document.addEventListener('pointerdown', onPointerDown);
     document.addEventListener('keydown', onKey);
     return () => {
       window.removeEventListener('resize', reposition);
       window.removeEventListener('scroll', reposition, true);
-      document.removeEventListener('mousedown', onPointerDown);
+      window.visualViewport?.removeEventListener('resize', reposition);
+      window.visualViewport?.removeEventListener('scroll', reposition);
+      document.removeEventListener('pointerdown', onPointerDown);
       document.removeEventListener('keydown', onKey);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -86,8 +117,8 @@ const AnchoredPopover = ({
       {open && pos && createPortal(
         <div
           ref={panelRef}
-          style={{ position: 'fixed', top: pos.top, left: pos.left, width: pos.width, maxHeight, zIndex: 60, pointerEvents: 'auto' }}
-          className={`surface-glass overflow-y-auto rounded-md border bg-popover text-popover-foreground shadow-md ${panelClassName}`}
+          style={{ position: 'fixed', top: pos.top, bottom: pos.bottom, left: pos.left, width: pos.width, maxHeight: `min(${maxHeight}, ${pos.availableHeight}px)`, zIndex: 90, pointerEvents: 'auto' }}
+          className={`anchored-popover surface-glass overflow-y-auto overscroll-contain rounded-md border bg-popover text-popover-foreground shadow-md ${panelClassName}`}
         >
           {children}
         </div>,

@@ -16,6 +16,17 @@ module.exports = {
 			},
 		},
 		extend: {
+			fontFamily: {
+				sans: [
+					'Inter',
+					'ui-sans-serif',
+					'system-ui',
+					'-apple-system',
+					'BlinkMacSystemFont',
+					'"Segoe UI"',
+					'sans-serif',
+				],
+			},
 			screens: {
 				xs: '420px',
 			},
@@ -53,6 +64,35 @@ module.exports = {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))',
 				},
+				surface: {
+					DEFAULT: 'hsl(var(--surface))',
+					foreground: 'hsl(var(--surface-foreground))',
+					subtle: 'hsl(var(--surface-subtle))',
+					elevated: 'hsl(var(--surface-elevated))',
+				},
+				success: {
+					DEFAULT: 'hsl(var(--success))',
+					foreground: 'hsl(var(--success-foreground))',
+					muted: 'hsl(var(--success-muted))',
+					'muted-foreground': 'hsl(var(--success-muted-foreground))',
+				},
+				warning: {
+					DEFAULT: 'hsl(var(--warning))',
+					foreground: 'hsl(var(--warning-foreground))',
+					muted: 'hsl(var(--warning-muted))',
+					'muted-foreground': 'hsl(var(--warning-muted-foreground))',
+				},
+				info: {
+					DEFAULT: 'hsl(var(--info))',
+					foreground: 'hsl(var(--info-foreground))',
+					muted: 'hsl(var(--info-muted))',
+					'muted-foreground': 'hsl(var(--info-muted-foreground))',
+				},
+			},
+			boxShadow: {
+				soft: 'var(--shadow-soft)',
+				elevated: 'var(--shadow-elevated)',
+				floating: 'var(--shadow-floating)',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

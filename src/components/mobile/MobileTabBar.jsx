@@ -37,6 +37,8 @@ const MobileTabBar = ({ items = [], onMore, moreActive = false, moreLabel = 'Plu
       <button
         type="button"
         onClick={onMore}
+        aria-expanded={moreActive}
+        aria-label="Ouvrir le menu de l’espace"
         className={`mobile-tabbar-item ${moreActive ? 'is-active' : ''}`}
       >
         <MoreHorizontal className="h-5 w-5" />
