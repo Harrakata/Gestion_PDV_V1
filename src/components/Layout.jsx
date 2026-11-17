@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -198,7 +197,13 @@ const Layout = () => {
   }, [hasLoadedSpaceFunctionalities, location.pathname, navigate, secteurEnabled, spaceFunctionalities, toast]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div
+      className={`flex min-h-screen flex-col transition-colors ${
+        location.pathname.startsWith('/espace-exploitation')
+          ? 'exploitation-theme-surface'
+          : 'bg-background'
+      }`}
+    >
       <a
         href="#main-content"
         className="fixed left-3 top-3 z-[100] -translate-y-20 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-floating transition-transform focus:translate-y-0"
@@ -217,79 +222,90 @@ const Layout = () => {
             </motion.div>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-2">
-            {availableNavLinks.map(link => {
-              const isActive = link.to === '/' ? location.pathname === '/' : location.pathname.startsWith(link.to);
-              return (
-                <button
-                  key={link.to}
-                  onClick={() => navigate(link.to)}
-                  aria-current={isActive ? 'page' : undefined}
-                  className={`inline-flex h-10 items-center gap-2 rounded-lg border px-3 text-sm font-semibold transition-colors ${
-                    isActive
-                      ? 'border-primary/20 bg-primary/10 text-primary'
-                      : 'border-transparent text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground'
-                  }`}
-                >
-                  <span className={isActive ? 'text-primary' : 'text-muted-foreground'}>
-                    {React.cloneElement(link.icon, { className: 'h-3.5 w-3.5' })}
-                  </span>
-                  {link.label}
-                </button>
-              );
-            })}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  aria-current={isSpaceRouteActive ? 'page' : undefined}
-                  className={`inline-flex h-10 items-center gap-2 rounded-lg border px-3 text-sm font-semibold transition-colors ${isSpaceRouteActive ? 'border-primary/20 bg-primary/10 text-primary' : 'border-transparent text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground'}`}
-                >
-                  <span className={isSpaceRouteActive ? 'text-primary' : 'text-muted-foreground'}>
-                    <Menu className="h-3.5 w-3.5" />
-                  </span>
-                  Espaces
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-64 overflow-hidden border-border bg-popover p-1 shadow-floating">
-                <div>
-                  <div className="flex items-center gap-2.5 px-3 py-2.5">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-                      <Menu className="h-4 w-4" />
+          <nav aria-label="Navigation principale" className="hidden items-center gap-1 md:flex">
+            <div className="flex items-center gap-1">
+              {availableNavLinks.map(link => {
+                const isActive = link.to === '/' ? location.pathname === '/' : location.pathname.startsWith(link.to);
+                return (
+                  <button
+                    type="button"
+                    key={link.to}
+                    onClick={() => navigate(link.to)}
+                    aria-current={isActive ? 'page' : undefined}
+                    className={`relative inline-flex h-10 items-center gap-2 rounded-lg px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                      isActive
+                        ? 'text-primary after:absolute after:inset-x-3 after:top-0 after:h-1.5 after:rounded-full after:bg-primary'
+                        : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+                    }`}
+                  >
+                    <span className={isActive ? 'text-primary' : 'text-muted-foreground'}>
+                      {React.cloneElement(link.icon, { className: 'h-3.5 w-3.5' })}
+                    </span>
+                    {link.label}
+                  </button>
+                );
+              })}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    aria-current={isSpaceRouteActive ? 'page' : undefined}
+                    className={`relative inline-flex h-10 items-center gap-2 rounded-lg px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                      isSpaceRouteActive
+                        ? 'text-primary after:absolute after:inset-x-3 after:top-0 after:h-1.5 after:rounded-full after:bg-primary'
+                        : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+                    }`}
+                  >
+                    <span className={isSpaceRouteActive ? 'text-primary' : 'text-muted-foreground'}>
+                      <Menu className="h-3.5 w-3.5" />
+                    </span>
+                    Espaces
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-64 overflow-hidden border-border bg-popover p-1 shadow-floating">
+                  <div>
+                    <div className="flex items-center gap-2.5 px-3 py-2.5">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                        <Menu className="h-4 w-4" />
+                      </div>
+                      <span className="text-sm font-semibold text-foreground">Navigation principale</span>
                     </div>
-                    <span className="text-sm font-semibold text-foreground">Navigation principale</span>
+                    <div className="mx-2 mb-1 h-px bg-border" />
+                    <div className="space-y-0.5 px-2 pb-2">
+                      {availableDropdownLinks.map(link => {
+                        const isActive = location.pathname.startsWith(link.to);
+                        return (
+                          <DropdownMenuItem
+                            key={link.to}
+                            onClick={() => navigate(link.to)}
+                            aria-current={isActive ? 'page' : undefined}
+                            className={`flex cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all ${
+                              isActive
+                                ? 'bg-primary/10 text-primary'
+                                : 'text-foreground/80 hover:bg-muted hover:text-foreground'
+                            }`}
+                          >
+                            {link.icon}
+                            {link.label}
+                          </DropdownMenuItem>
+                        );
+                      })}
+                    </div>
                   </div>
-                  <div className="mx-2 mb-1 h-px bg-border" />
-                  <div className="space-y-0.5 px-2 pb-2">
-                    {availableDropdownLinks.map(link => {
-                      const isActive = location.pathname.startsWith(link.to);
-                      return (
-                        <DropdownMenuItem
-                          key={link.to}
-                          onClick={() => navigate(link.to)}
-                          aria-current={isActive ? 'page' : undefined}
-                          className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all cursor-pointer ${
-                            isActive
-                              ? 'bg-primary/10 text-primary'
-                              : 'text-foreground/80 hover:bg-muted hover:text-foreground'
-                          }`}
-                        >
-                          {link.icon}
-                          {link.label}
-                        </DropdownMenuItem>
-                      );
-                    })}
-                  </div>
-                </div>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <OfflineSyncIndicator enabled={spaceFunctionalities.offline_mode === true} />
-            <button
-              onClick={toggleTheme}
-              aria-label="Changer de thème"
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            >
-              {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </button>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <OfflineSyncIndicator enabled={spaceFunctionalities.offline_mode === true} />
+              <span className="mx-2 h-5 w-px bg-border" aria-hidden="true" />
+              <button
+                type="button"
+                onClick={toggleTheme}
+                aria-label={isDarkMode ? 'Activer le thème clair' : 'Activer le thème sombre'}
+                title={isDarkMode ? 'Thème clair' : 'Thème sombre'}
+                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </button>
+            </div>
           </nav>
           
           <div className="md:hidden flex items-center gap-2">

@@ -1389,3 +1389,10 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
   [data-app-dialog] > form { min-width: 0; }
   [data-app-dialog] > div:has(> h2) { padding-right: 2.75rem; }
 }
+/* Fond uniforme de l'espace Exploitation : une seule teinte opaque du thème,
+   sans dégradé ni superposition translucide. */
+.exploitation-theme-surface {
+  background-color: hsl(var(--background));
+  background-color: color-mix(in srgb, hsl(var(--primary)) 6%, hsl(var(--background)));
+}
+
