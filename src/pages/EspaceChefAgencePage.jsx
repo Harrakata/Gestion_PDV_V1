@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import SpaceHeaderIdentity from '@/components/SpaceHeaderIdentity';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -382,8 +383,8 @@ const LoginPageChef = ({ onLogin }) => {
     >
       <Card variant="elevated" className="w-full max-w-md border-border">
         <CardHeader className="items-center text-center">
-          <div className="mb-1 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <ShieldCheck className="h-6 w-6" aria-hidden="true" />
+          <div className="mb-1 flex h-12 items-center justify-center text-primary">
+            <ShieldCheck className="h-7 w-7" aria-hidden="true" />
           </div>
           <CardTitle className="text-2xl text-primary sm:text-3xl">Accès Espace Chef d'Agence</CardTitle>
           <CardDescription className="text-center">
@@ -1061,7 +1062,7 @@ const EspaceChefAgencePage = () => {
         className={`app-space-sidebar md:w-72 md:shrink-0 ${isMobileMenuOpen ? 'is-open' : ''}`}
       >
         <div className="app-space-sidebar-scroll sticky top-20 space-y-3 max-h-[calc(100vh-5.5rem)] overflow-y-auto pb-4 pr-1 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
-          <div className="hidden md:block">
+          <SpaceHeaderIdentity>
           <Card className="relative overflow-hidden border border-primary/20 bg-white/92 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
             <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
             <CardContent className="relative p-4">
@@ -1080,7 +1081,7 @@ const EspaceChefAgencePage = () => {
                   </div>
                 )}
                 <div className="min-w-0 flex-1">
-                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-muted-foreground/80">Chef d'Agence</p>
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-muted-foreground/80">Menu Chef d'Agence</p>
                   <p className="mt-0.5 truncate text-sm font-bold text-foreground">{chefAgenceInfo?.nomChef}</p>
                   <p className="text-[0.68rem] text-muted-foreground">Agence : {chefAgenceInfo?.nomAgence}</p>
                 </div>
@@ -1094,7 +1095,7 @@ const EspaceChefAgencePage = () => {
               </div>
             </CardContent>
           </Card>
-          </div>
+          </SpaceHeaderIdentity>
 
           <Card className="relative overflow-hidden border border-primary/20 bg-white/92 shadow-[0_8px_30px_-12px_rgba(15,23,42,0.18)] backdrop-blur">
             <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-primary" />
@@ -1106,9 +1107,10 @@ const EspaceChefAgencePage = () => {
                     <Link
                       key={item.path}
                       to={item.path}
+                      aria-current={isActive ? 'page' : undefined}
                       className={`flex items-center gap-2.5 rounded-2xl border border-transparent px-3 py-2.5 text-sm font-semibold transition-all ${
                         isActive
-                          ? 'bg-primary text-primary-foreground shadow-sm'
+                          ? 'bg-primary/10 text-primary shadow-none'
                           : 'text-foreground/80 hover:bg-primary/10 hover:text-primary'
                       }`}
                     >
@@ -1184,7 +1186,7 @@ const EspaceChefAgencePage = () => {
         </div>
       </motion.aside>
       <main className="app-space-main has-tabbar flex-1 min-w-0 overflow-visible md:overflow-x-hidden">
-        <NotifEnableBanner reader={notifReader} className="mx-3 mt-3 sm:mx-4" />
+        <NotifEnableBanner reader={notifReader} className="mb-4" />
         <SwipeTabs items={menuItems.map((item) => ({ key: item.path, active: isMenuItemActive(item.path), onClick: () => navigate(`/espace-chef-agence/${item.path}`) }))}>
         <PullToRefresh onRefresh={handlePullRefresh}>
         <motion.div

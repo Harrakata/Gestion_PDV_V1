@@ -25,8 +25,8 @@ export default function SpaceLoginCard({
   return (
     <Card variant="elevated" className="w-full max-w-md border-border">
       <CardHeader className="items-center text-center">
-        <div className="mb-1 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
-          {React.isValidElement(icon) ? React.cloneElement(icon, { className: 'h-6 w-6', 'aria-hidden': true }) : <LogIn className="h-6 w-6" />}
+        <div className="mb-1 flex h-12 items-center justify-center text-primary">
+          {React.isValidElement(icon) ? React.cloneElement(icon, { className: 'h-7 w-7', 'aria-hidden': true }) : <LogIn className="h-7 w-7" />}
         </div>
         <CardTitle className="text-2xl text-primary sm:text-3xl">{title}</CardTitle>
         <CardDescription className="max-w-sm">{description}</CardDescription>

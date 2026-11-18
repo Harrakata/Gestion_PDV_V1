@@ -1396,3 +1396,283 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
   background-color: color-mix(in srgb, hsl(var(--primary)) 6%, hsl(var(--background)));
 }
 
+/* Les espaces terrain et direction partagent le même fond légèrement teinté
+   que l'espace Exploitation, sans dégradé ni transparence. */
+.other-spaces-theme-surface {
+  background-color: hsl(var(--background));
+  background-color: color-mix(in srgb, hsl(var(--primary)) 6%, hsl(var(--background)));
+}
+
+/* Menu latéral unifié des espaces hors Exploitation : le profil et la
+   navigation sont visuellement regroupés dans un panneau unique. */
+@media (min-width: 768px) {
+  .other-spaces-theme-surface .app-space-sidebar-scroll {
+    position: sticky;
+    isolation: isolate;
+    padding: 0.75rem;
+    overflow-x: hidden;
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    background-color: #fff;
+    box-shadow: 0 14px 34px -26px rgba(15, 23, 42, 0.35);
+  }
+
+  .other-spaces-theme-surface .app-space-sidebar-scroll::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    z-index: 2;
+    height: 0.375rem;
+    background-color: hsl(var(--primary));
+  }
+
+  .other-spaces-theme-surface .app-space-sidebar .text-card-foreground {
+    overflow: visible !important;
+    border-color: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+  }
+
+  .other-spaces-theme-surface .app-space-sidebar .text-card-foreground > .pointer-events-none.absolute.inset-x-0.top-0 {
+    display: none;
+  }
+
+  .other-spaces-theme-surface .app-space-sidebar nav > a,
+  .other-spaces-theme-surface .app-space-sidebar nav > button {
+    min-height: 3rem;
+    gap: 0.75rem !important;
+    padding: 0.375rem 0.25rem !important;
+    border-color: transparent !important;
+    border-radius: var(--radius) !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    color: hsl(var(--foreground) / 0.82);
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  .other-spaces-theme-surface .app-space-sidebar nav > a:hover,
+  .other-spaces-theme-surface .app-space-sidebar nav > button:hover {
+    background-color: hsl(var(--primary) / 0.08) !important;
+    color: hsl(var(--primary));
+  }
+
+  .other-spaces-theme-surface .app-space-sidebar nav > a > svg,
+  .other-spaces-theme-surface .app-space-sidebar nav > button > svg {
+    width: 1rem;
+    height: 1rem;
+    margin-left: 0.75rem;
+    flex: 0 0 auto;
+    color: hsl(var(--primary));
+  }
+
+  .other-spaces-theme-surface .app-space-sidebar nav > [aria-current='page'] {
+    background-color: transparent !important;
+    color: hsl(var(--primary)) !important;
+    font-weight: 700;
+  }
+
+  .other-spaces-theme-surface .app-space-sidebar nav + div {
+    margin-top: 0.5rem !important;
+    padding-top: 0 !important;
+    border-top: 0 !important;
+  }
+
+  .other-spaces-theme-surface .app-space-sidebar nav [aria-current='page'] {
+    position: relative;
+    overflow: visible;
+  }
+
+  .other-spaces-theme-surface .app-space-sidebar nav [aria-current='page']::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: calc(-1.5rem - 2px);
+    z-index: 3;
+    width: 2rem;
+    height: 2.75rem;
+    pointer-events: none;
+    transform: translateY(-50%);
+    border-radius: 999px 0 0 999px;
+    background:
+      radial-gradient(circle at 1.5rem 50%, hsl(var(--primary)) 0 0.25rem, transparent 0.3rem),
+      hsl(var(--primary) / 0.1);
+  }
+}
+
+/* Navigation connectée : barre supérieure arrondie sur le fond du thème. */
+@media (min-width: 768px) {
+  .connected-space-shell {
+    --space-shell-inset: 0.75rem;
+    --space-shell-gap: 0.75rem;
+    --space-shell-radius: max(var(--radius), 1.5rem);
+    --space-header-height: 4rem;
+    --space-sidebar-width: 17rem;
+    --space-content-background: color-mix(in srgb, hsl(var(--primary)) 6%, hsl(var(--background)));
+    min-height: calc(100dvh - 2 * var(--space-shell-inset));
+    margin: var(--space-shell-inset);
+    border: 0;
+    border-radius: 0;
+    background: var(--space-content-background);
+    box-shadow: none;
+  }
+
+  body:has(.connected-space-shell) {
+    background: color-mix(in srgb, hsl(var(--primary)) 6%, hsl(var(--background)));
+  }
+
+  .connected-space-shell .app-top-header {
+    top: var(--space-shell-inset);
+    width: calc(100% - var(--space-sidebar-width) - var(--space-shell-gap));
+    margin-bottom: var(--space-shell-gap);
+    margin-left: calc(var(--space-sidebar-width) + var(--space-shell-gap));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--space-shell-radius);
+    background: #fff;
+    box-shadow: 0 14px 34px -26px rgba(15, 23, 42, 0.35);
+    backdrop-filter: none;
+  }
+
+  .connected-space-shell .app-top-header > div {
+    height: var(--space-header-height);
+    padding: 0 1.5rem;
+    gap: 1rem;
+  }
+
+  .connected-space-shell .app-top-header .space-brand-anchor {
+    position: absolute;
+    top: 0;
+    right: calc(100% + var(--space-shell-gap));
+    width: var(--space-sidebar-width);
+    height: var(--space-header-height);
+    padding: 0 0.75rem;
+    border-radius: var(--space-shell-radius);
+    background: transparent;
+  }
+
+  .connected-space-shell .app-top-header .space-brand-anchor img {
+    width: 3rem;
+    height: 2.75rem;
+    object-fit: contain;
+    filter: none;
+  }
+
+  .connected-space-shell .app-top-header .space-brand-copy {
+    max-width: calc(var(--space-sidebar-width) - 5rem);
+  }
+
+  .connected-space-shell #main-content {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .connected-space-shell .app-space-layout {
+    gap: 0;
+    min-height: calc(100dvh - var(--space-header-height) - 2 * var(--space-shell-inset) - 2px);
+  }
+
+  .connected-space-shell .app-space-sidebar {
+    width: var(--space-sidebar-width);
+    border-radius: 0 0 0 var(--space-shell-radius);
+    background: transparent;
+  }
+
+  .connected-space-shell .app-space-sidebar-scroll {
+    position: sticky;
+    top: calc(var(--space-header-height) + 2 * var(--space-shell-inset) + 2px);
+    height: calc(100dvh - var(--space-header-height) - 2 * var(--space-shell-inset) - 2px);
+    max-height: calc(100dvh - var(--space-header-height) - 2 * var(--space-shell-inset) - 2px);
+    padding: 0.25rem 0.75rem 1rem;
+    overflow-x: hidden;
+    overflow-y: auto;
+    border: 0;
+    border-radius: 0 0 0 var(--space-shell-radius);
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .connected-space-shell .app-space-sidebar-scroll::before,
+  .connected-space-shell .app-space-sidebar .text-card-foreground > .pointer-events-none.absolute.inset-x-0.top-0 {
+    display: none;
+  }
+
+  .connected-space-shell .app-space-sidebar .text-card-foreground {
+    overflow: visible;
+    border-color: hsl(var(--border));
+    background: hsl(var(--card));
+    box-shadow: 0 14px 34px -26px rgba(15, 23, 42, 0.35);
+    backdrop-filter: none;
+  }
+
+  .connected-space-shell .app-space-main {
+    min-height: calc(100dvh - var(--space-header-height) - 3 * var(--space-shell-inset) - 2px);
+    margin: 0 var(--space-shell-inset) var(--space-shell-inset) 0;
+    padding: 1.5rem;
+    border-radius: var(--space-shell-radius);
+    background: var(--space-content-background);
+  }
+
+  .connected-space-shell > footer {
+    display: none;
+  }
+
+  .space-header-identity {
+    max-width: 26rem;
+  }
+
+  .space-header-identity .text-card-foreground {
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+  }
+
+  .space-header-identity .text-card-foreground > .pointer-events-none {
+    display: none;
+  }
+
+  .space-header-identity .p-4,
+  .space-header-identity > .pb-3 {
+    padding: 0;
+  }
+
+  .space-header-identity .h-12.w-12 {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background-image: none;
+    background-color: hsl(var(--primary) / 0.08);
+    box-shadow: none;
+  }
+
+  .space-header-identity .min-w-0.flex-1 {
+    max-width: 14rem;
+  }
+
+  .space-header-identity .min-w-0.flex-1 > p:first-child {
+    display: none;
+  }
+
+  .space-header-identity .min-w-0.flex-1 > p:nth-child(2) {
+    margin-top: 0;
+  }
+
+  .dark .connected-space-shell,
+  .dark .connected-space-shell .app-top-header {
+    background: hsl(var(--card));
+  }
+}
+
+/* Le Tableau de bord conserve ses rails et indicateurs colorés, mais toutes
+   ses cartes utilisent une surface blanche opaque et uniforme. */
+.dashboard-white-cards .text-card-foreground {
+  background-color: #fff !important;
+  background-image: none !important;
+}
+

@@ -73,15 +73,18 @@ const NotifEnableBanner = ({ reader = {}, className = '' }) => {
   };
 
   return (
-    <div className={`flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-amber-900 shadow-sm ${className}`}>
-      <BellRing className="h-5 w-5 shrink-0 text-amber-600" />
-      <p className="min-w-0 flex-1 text-sm leading-snug">
-        <span className="font-semibold">Activez vos notifications</span> pour être alerté même quand l'application est fermée.
-      </p>
+    <div className={`flex flex-wrap items-center gap-2.5 rounded-lg border border-primary/20 bg-white px-3 py-2 shadow-soft sm:flex-nowrap ${className}`}>
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+        <BellRing className="h-4 w-4" />
+      </span>
+      <div className="min-w-0 flex-1 leading-snug">
+        <p className="text-sm font-semibold text-foreground">Activer les notifications</p>
+        <p className="hidden text-xs text-muted-foreground sm:block">Recevez les alertes importantes, même lorsque l’application est fermée.</p>
+      </div>
       <Button size="sm" onClick={enable} disabled={busy} className="shrink-0 gap-1.5">
         {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <BellRing className="h-3.5 w-3.5" />} Activer
       </Button>
-      <button type="button" onClick={dismiss} title="Plus tard" className="shrink-0 rounded-lg p-1 text-amber-600 transition-colors hover:bg-amber-100">
+      <button type="button" onClick={dismiss} title="Plus tard" aria-label="Masquer la proposition d’activation" className="shrink-0 rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary">
         <X className="h-4 w-4" />
       </button>
     </div>

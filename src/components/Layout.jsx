@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import OfflineSyncIndicator from '@/components/OfflineSyncIndicator';
+import { SpaceHeaderContext } from '@/components/SpaceHeaderIdentity';
 const FloatingAssistant = React.lazy(() => import('@/components/assistant/FloatingAssistant'));
 import { Home, Briefcase, Users, Settings, BarChart3, LogIn, Sun, Moon, Menu, Wrench, ShieldCheck, Wallet, User } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -32,6 +33,11 @@ const Layout = () => {
   const { toast } = useToast();
   const client = useClient();
   const secteurEnabled = useSecteurEnabled();
+  const [profileTarget, setProfileTarget] = React.useState(null);
+  const [connectedSpaceCount, setConnectedSpaceCount] = React.useState(0);
+  const registerSpace = React.useCallback((delta) => setConnectedSpaceCount(count => count + delta), []);
+  const connectedSpace = connectedSpaceCount > 0 && location.pathname.startsWith('/espace-');
+  const headerContext = React.useMemo(() => ({ target: profileTarget, register: registerSpace }), [profileTarget, registerSpace]);
   // Surveillance globale des notifications : continue de déclencher les notifs OS même
   // hors de l'espace concerné (accueil, autre espace, onglet en arrière-plan) tant que
   // l'app tourne. App totalement fermée = Web Push requis (VITE_VAPID_PUBLIC_KEY).
@@ -165,6 +171,7 @@ const Layout = () => {
   );
 
   const isSpaceRouteActive = availableDropdownLinks.some((link) => location.pathname.startsWith(link.to));
+  const activeSpaceLabel = dropdownLinks.find((link) => location.pathname.startsWith(link.to))?.label || 'Mon espace';
 
   React.useEffect(() => {
     const crumbs = buildBreadcrumbs(location.pathname);
@@ -197,10 +204,13 @@ const Layout = () => {
   }, [hasLoadedSpaceFunctionalities, location.pathname, navigate, secteurEnabled, spaceFunctionalities, toast]);
 
   return (
+    <SpaceHeaderContext.Provider value={headerContext}>
     <div
-      className={`flex min-h-screen flex-col transition-colors ${
+      className={`flex min-h-screen flex-col transition-colors ${connectedSpace ? 'connected-space-shell' : ''} ${
         location.pathname.startsWith('/espace-exploitation')
           ? 'exploitation-theme-surface'
+          : location.pathname.startsWith('/espace-')
+            ? 'other-spaces-theme-surface'
           : 'bg-background'
       }`}
     >
@@ -212,7 +222,7 @@ const Layout = () => {
       </a>
       <header className="app-top-header sticky top-0 z-40 w-full border-b border-border bg-background/95 shadow-soft backdrop-blur supports-[backdrop-filter]:bg-background/90">
         <div className="flex h-14 w-full items-center justify-between px-4 sm:h-16 sm:px-6 lg:px-10">
-          <Link to="/" className="flex items-center group">
+          <Link to="/" className="space-brand-anchor flex min-w-0 items-center gap-3 group">
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
               <img
                 src={client.logoUrl || "/carrus-logo.png"}
@@ -220,9 +230,28 @@ const Layout = () => {
                 className="h-10 w-auto object-contain drop-shadow-sm sm:h-12"
               />
             </motion.div>
+            {connectedSpace && (
+              <span className="space-brand-copy hidden min-w-0 md:block">
+                <span className="block truncate text-sm font-bold leading-tight text-foreground">
+                  {client.displayName || 'GestionPDV'}
+                </span>
+                <span className="mt-1 block truncate text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+                  {activeSpaceLabel}
+                </span>
+              </span>
+            )}
           </Link>
 
-          <nav aria-label="Navigation principale" className="hidden items-center gap-1 md:flex">
+          <div className={connectedSpace ? 'ml-auto hidden items-center gap-4 md:flex' : 'hidden'}>
+            <div ref={setProfileTarget} className="min-w-0" />
+            <OfflineSyncIndicator enabled={spaceFunctionalities.offline_mode === true} />
+            <button type="button" onClick={toggleTheme}
+              aria-label={isDarkMode ? 'Activer le thème clair' : 'Activer le thème sombre'}
+              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+              {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </button>
+          </div>
+          {!connectedSpace && <nav aria-label="Navigation principale" className="hidden items-center gap-1 md:flex">
             <div className="flex items-center gap-1">
               {availableNavLinks.map(link => {
                 const isActive = link.to === '/' ? location.pathname === '/' : location.pathname.startsWith(link.to);
@@ -306,7 +335,7 @@ const Layout = () => {
                 {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </button>
             </div>
-          </nav>
+          </nav>}
           
           <div className="md:hidden flex items-center gap-2">
             <OfflineSyncIndicator enabled={spaceFunctionalities.offline_mode === true} />
@@ -380,6 +409,7 @@ const Layout = () => {
       </footer>
       <React.Suspense fallback={null}><FloatingAssistant /></React.Suspense>
     </div>
+    </SpaceHeaderContext.Provider>
   );
 };
 

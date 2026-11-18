@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import SpaceHeaderIdentity from '@/components/SpaceHeaderIdentity';
 import { useNavigate } from 'react-router-dom';
 import { usePageState } from '@/hooks/usePageState';
 import { motion } from 'framer-motion';
@@ -1114,7 +1115,7 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
         className={`app-space-sidebar md:w-72 md:shrink-0 ${isMobileMenuOpen ? 'is-open' : ''}`}
       >
         <div className="app-space-sidebar-scroll sticky top-20 space-y-3 max-h-[calc(100vh-5.5rem)] overflow-y-auto pb-4 pr-1 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
-          <div className="hidden md:block">
+          <SpaceHeaderIdentity>
           <Card className="relative overflow-hidden border border-primary/20 bg-white/92 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
             <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
             <CardContent className="relative p-4">
@@ -1125,7 +1126,7 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
                   </span>
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-muted-foreground/80">{spaceConfig.spaceTitle}</p>
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-muted-foreground/80">Menu {spaceConfig.spaceTitle.replace(/^Espace\s+/i, '')}</p>
                   <p className="mt-0.5 truncate text-sm font-bold text-foreground">{validator.prenom} {validator.nom}</p>
                   <p className="text-[0.68rem] text-muted-foreground">
                     {spaceConfig.expectedFunction === VALIDATOR_FUNCTIONS.GENERAL
@@ -1143,7 +1144,7 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
               </div>
             </CardContent>
           </Card>
-          </div>
+          </SpaceHeaderIdentity>
 
           <Card className="relative overflow-hidden border border-primary/20 bg-white/92 shadow-[0_8px_30px_-12px_rgba(15,23,42,0.18)] backdrop-blur">
             <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-primary" />
@@ -1157,9 +1158,10 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
                       type="button"
                       onClick={() => !item.disabled && setActiveSection(item.key)}
                       disabled={item.disabled}
+                      aria-current={isActive ? 'page' : undefined}
                       className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all ${
                         isActive
-                          ? 'bg-primary text-primary-foreground shadow-sm'
+                          ? 'bg-primary/10 text-primary shadow-none'
                           : item.disabled
                             ? 'cursor-not-allowed text-muted-foreground/40'
                             : 'text-muted-foreground hover:bg-black/5 hover:text-foreground'
@@ -1227,7 +1229,7 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
       />
 
       <main className="app-space-main has-tabbar flex-1 min-w-0 overflow-visible md:overflow-x-hidden">
-        <NotifEnableBanner reader={notifReader} className="mx-3 mt-3 sm:mx-4" />
+        <NotifEnableBanner reader={notifReader} className="mb-4" />
         <SwipeTabs items={menuItems.map((item) => ({ key: item.key, active: activeSection === item.key, onClick: () => !item.disabled && setActiveSection(item.key) }))}>
         <motion.div
           key={activeSection}
