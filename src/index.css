@@ -1403,8 +1403,8 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
   background-color: color-mix(in srgb, hsl(var(--primary)) 6%, hsl(var(--background)));
 }
 
-/* Menu latéral unifié des espaces hors Exploitation : le profil et la
-   navigation sont visuellement regroupés dans un panneau unique. */
+/* Menu latéral unifié des espaces hors Exploitation : la navigation reprend
+   la même carte blanche que le menu de l'espace Exploitation. */
 @media (min-width: 768px) {
   .other-spaces-theme-surface .app-space-sidebar-scroll {
     position: sticky;
@@ -1427,11 +1427,11 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
   }
 
   .other-spaces-theme-surface .app-space-sidebar .text-card-foreground {
-    overflow: visible !important;
-    border-color: transparent !important;
-    background-color: transparent !important;
+    overflow: hidden !important;
+    border-color: hsl(var(--border)) !important;
+    background-color: hsl(var(--card)) !important;
     background-image: none !important;
-    box-shadow: none !important;
+    box-shadow: 0 14px 34px -26px rgba(15, 23, 42, 0.35) !important;
     backdrop-filter: none !important;
   }
 
@@ -1547,7 +1547,8 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
     right: calc(100% + var(--space-shell-gap));
     width: var(--space-sidebar-width);
     height: var(--space-header-height);
-    padding: 0 0.75rem;
+    z-index: 2;
+    padding: 0 1.5rem;
     border-radius: var(--space-shell-radius);
     background: transparent;
   }
@@ -1577,16 +1578,17 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
 
   .connected-space-shell .app-space-sidebar {
     width: var(--space-sidebar-width);
+    margin-top: calc(-1 * (var(--space-header-height) + var(--space-shell-gap)));
     border-radius: 0 0 0 var(--space-shell-radius);
     background: transparent;
   }
 
   .connected-space-shell .app-space-sidebar-scroll {
     position: sticky;
-    top: calc(var(--space-header-height) + 2 * var(--space-shell-inset) + 2px);
-    height: calc(100dvh - var(--space-header-height) - 2 * var(--space-shell-inset) - 2px);
-    max-height: calc(100dvh - var(--space-header-height) - 2 * var(--space-shell-inset) - 2px);
-    padding: 0.25rem 0.75rem 1rem;
+    top: var(--space-shell-inset);
+    height: calc(100dvh - 2 * var(--space-shell-inset));
+    max-height: calc(100dvh - 2 * var(--space-shell-inset));
+    padding: 0 0.75rem 1rem;
     overflow-x: hidden;
     overflow-y: auto;
     border: 0;
@@ -1608,6 +1610,12 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
     backdrop-filter: none;
   }
 
+  /* La marque vit dans le haut de la carte latérale. La réserve supérieure
+     évite que les premiers liens passent sous le logo et le nom de l'espace. */
+  .connected-space-shell .app-space-sidebar-scroll > .text-card-foreground:first-of-type {
+    padding-top: calc(var(--space-header-height) + 0.5rem);
+  }
+
   .connected-space-shell .app-space-main {
     min-height: calc(100dvh - var(--space-header-height) - 3 * var(--space-shell-inset) - 2px);
     margin: 0 var(--space-shell-inset) var(--space-shell-inset) 0;
@@ -1622,14 +1630,16 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
 
   .space-header-identity {
     max-width: 26rem;
+    background: transparent !important;
   }
 
   .space-header-identity .text-card-foreground {
     overflow: visible;
-    border: 0;
+    border: 0 !important;
     border-radius: 0;
-    background: transparent;
-    box-shadow: none;
+    background-color: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
     backdrop-filter: none;
   }
 

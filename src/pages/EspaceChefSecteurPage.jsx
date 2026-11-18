@@ -396,12 +396,8 @@ const EspaceChefSecteurPage = () => {
                   );
                 })}
               </nav>
-            </CardContent>
-          </Card>
-
-          <Card className="relative overflow-hidden border border-border/40 bg-white/92 shadow-[0_8px_30px_-12px_rgba(15,23,42,0.12)] backdrop-blur">
-            <CardContent className="p-2">
-              <div className="flex items-center">
+              <div className="mt-1 border-t pt-1">
+                <div className="flex items-center">
                 <button
                   type="button"
                   onClick={() => { navigate('/'); setIsMobileMenuOpen(false); }}
@@ -427,6 +423,7 @@ const EspaceChefSecteurPage = () => {
                   <LogOut className="h-5 w-5" />
                   <span className="text-[0.6rem] font-semibold">Déconn.</span>
                 </button>
+                </div>
               </div>
             </CardContent>
           </Card>
