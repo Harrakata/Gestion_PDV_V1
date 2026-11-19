@@ -49,7 +49,7 @@ async function runSearch(raw) {
   return results;
 }
 
-const GlobalSearchDialog = ({ open, onOpenChange }) => {
+const GlobalSearchDialog = ({ open, onOpenChange, initialTerm = '' }) => {
   const navigate = useNavigate();
   const [term, setTerm] = useState('');
   const [results, setResults] = useState([]);
@@ -58,11 +58,11 @@ const GlobalSearchDialog = ({ open, onOpenChange }) => {
 
   useEffect(() => {
     if (open) {
-      setTerm('');
+      setTerm(initialTerm);
       setResults([]);
       setTimeout(() => inputRef.current?.focus(), 50);
     }
-  }, [open]);
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps -- terme initial lu à l'ouverture uniquement
 
   useEffect(() => {
     if (!open) return undefined;

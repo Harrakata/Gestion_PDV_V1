@@ -251,11 +251,8 @@ aside,
 /* Le diagnostic reprend le fond bleu des cartes de maintenance sans laisser
    transparaître le contenu de la page sous la fenêtre. */
 .diagnostic-guided-dialog {
-  background-color: hsl(var(--background)) !important;
-  background-image: linear-gradient(
-    hsl(var(--primary) / 0.1),
-    hsl(var(--primary) / 0.1)
-  ) !important;
+  background-color: hsl(var(--card)) !important;
+  background-image: none !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
@@ -1397,10 +1394,23 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
 }
 
 /* Les espaces terrain et direction partagent le même fond légèrement teinté
-   que l'espace Exploitation, sans dégradé ni transparence. */
+   que l'espace Exploitation, sans dégradé ni transparence. Les pages hors
+   espace (accueil, pointage, paiement…) reprennent ce même fond. */
+.app-page-theme-surface,
 .other-spaces-theme-surface {
   background-color: hsl(var(--background));
   background-color: color-mix(in srgb, hsl(var(--primary)) 6%, hsl(var(--background)));
+}
+
+/* Contenu des espaces hors Exploitation (Chef d'agence, Chef de secteur…) :
+   les cartes « blanc translucide + flou » laissaient transparaître le fond
+   teinté de la page. On les rend blanc opaque. Les cartes colorées
+   volontairement (alertes, statuts : bg-red-50, etc.) ne sont pas ciblées. */
+.other-spaces-theme-surface .app-space-main .text-card-foreground:is([class*="bg-white/"], [class*="bg-card/"], [class*="backdrop-blur"]) {
+  background-color: hsl(var(--card)) !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 /* Menu latéral unifié des espaces hors Exploitation : la navigation reprend
@@ -1508,8 +1518,8 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
     --space-shell-inset: 0.75rem;
     --space-shell-gap: 0.75rem;
     --space-shell-radius: max(var(--radius), 1.5rem);
-    --space-header-height: 4rem;
-    --space-sidebar-width: 17rem;
+    --space-header-height: 5rem;
+    --space-sidebar-width: 18rem;
     --space-content-background: color-mix(in srgb, hsl(var(--primary)) 6%, hsl(var(--background)));
     min-height: calc(100dvh - 2 * var(--space-shell-inset));
     margin: var(--space-shell-inset);
@@ -1528,17 +1538,56 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
     width: calc(100% - var(--space-sidebar-width) - var(--space-shell-gap));
     margin-bottom: var(--space-shell-gap);
     margin-left: calc(var(--space-sidebar-width) + var(--space-shell-gap));
-    border: 1px solid hsl(var(--border));
-    border-radius: var(--space-shell-radius);
-    background: #fff;
-    box-shadow: 0 14px 34px -26px rgba(15, 23, 42, 0.35);
+    /* Pas de fond blanc : la barre se fond dans le fond de la page. Le fond
+       reste opaque (même couleur que la page) pour masquer le contenu qui
+       défile dessous — pas de backdrop-filter (bug PWA/WebView). */
+    border: 0;
+    border-radius: 0;
+    background: var(--space-content-background);
+    box-shadow: none;
     backdrop-filter: none;
   }
 
   .connected-space-shell .app-top-header > div {
     height: var(--space-header-height);
-    padding: 0 1.5rem;
+    padding: 0 0.75rem 0 1.5rem;
     gap: 1rem;
+  }
+
+  /* La barre elle-même : carte blanche arrondie. */
+  .connected-space-shell .app-top-header > div {
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--space-shell-radius);
+    background: hsl(var(--card));
+    box-shadow: 0 14px 34px -26px rgba(15, 23, 42, 0.35);
+  }
+
+  /* Éléments posés sur la barre (recherche, profil, icônes rondes) :
+     couleur du fond de la page. */
+  .connected-space-shell .space-header-search,
+  .connected-space-shell .space-header-profile,
+  .connected-space-shell .space-header-actions button {
+    border: 1px solid transparent;
+    background: var(--space-content-background);
+    box-shadow: none;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+  }
+
+  .connected-space-shell .space-header-actions button {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 999px;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .connected-space-shell .space-header-actions button:hover {
+    border-color: hsl(var(--primary) / 0.35);
+    color: hsl(var(--primary));
+  }
+
+  .connected-space-shell .space-header-search:focus-within {
+    border-color: hsl(var(--primary) / 0.5);
+    box-shadow: 0 0 0 3px hsl(var(--primary) / 0.12);
   }
 
   .connected-space-shell .app-top-header .space-brand-anchor {
@@ -1554,14 +1603,35 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
   }
 
   .connected-space-shell .app-top-header .space-brand-anchor img {
-    width: 3rem;
-    height: 2.75rem;
+    width: 3.5rem;
+    height: 3.5rem;
+    flex: 0 0 auto;
     object-fit: contain;
     filter: none;
   }
 
+  /* Le bloc marque reste DANS la carte du menu (marge latérale de la carte :
+     0.75rem) : logo + écart + texte doivent tenir dans la largeur intérieure. */
+  .connected-space-shell .app-top-header .space-brand-anchor {
+    gap: 0.75rem;
+    padding: 0 1.5rem 0 1.5rem;
+  }
+
   .connected-space-shell .app-top-header .space-brand-copy {
-    max-width: calc(var(--space-sidebar-width) - 5rem);
+    min-width: 0;
+    max-width: calc(var(--space-sidebar-width) - 7.25rem);
+  }
+
+  .connected-space-shell .app-top-header .space-brand-copy > span:first-child {
+    font-size: 1.4rem;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+  }
+
+  .connected-space-shell .app-top-header .space-brand-copy > span:last-child {
+    margin-top: 0.25rem;
+    font-size: 0.95rem;
+    letter-spacing: 0.1em;
   }
 
   .connected-space-shell #main-content {
@@ -1633,46 +1703,6 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
     background: transparent !important;
   }
 
-  .space-header-identity .text-card-foreground {
-    overflow: visible;
-    border: 0 !important;
-    border-radius: 0;
-    background-color: transparent !important;
-    background-image: none !important;
-    box-shadow: none !important;
-    backdrop-filter: none;
-  }
-
-  .space-header-identity .text-card-foreground > .pointer-events-none {
-    display: none;
-  }
-
-  .space-header-identity .p-4,
-  .space-header-identity > .pb-3 {
-    padding: 0;
-  }
-
-  .space-header-identity .h-12.w-12 {
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: 50%;
-    background-image: none;
-    background-color: hsl(var(--primary) / 0.08);
-    box-shadow: none;
-  }
-
-  .space-header-identity .min-w-0.flex-1 {
-    max-width: 14rem;
-  }
-
-  .space-header-identity .min-w-0.flex-1 > p:first-child {
-    display: none;
-  }
-
-  .space-header-identity .min-w-0.flex-1 > p:nth-child(2) {
-    margin-top: 0;
-  }
-
   .dark .connected-space-shell,
   .dark .connected-space-shell .app-top-header {
     background: hsl(var(--card));
@@ -1686,3 +1716,204 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
   background-image: none !important;
 }
 
+
+/* ════════════════════════════════════════════════════════════════════════════
+   Mode mobile / PWA épuré — aligné sur la version PC.
+   Même grammaire visuelle : fond de page teinté, cartes blanches OPAQUES
+   (bordure fine + ombre douce), pastilles rondes dans la teinte du fond.
+   Aucun backdrop-filter : il masque le contenu des fenêtres flottantes en
+   PWA/WebView. Ce bloc est volontairement en fin de fichier pour primer sur
+   les anciens réglages « verre » des sections mobiles plus haut.
+   ════════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+  :root {
+    --mobile-page-bg: color-mix(in srgb, hsl(var(--primary)) 6%, hsl(var(--background)));
+    --mobile-surface-shadow: 0 14px 34px -24px rgba(15, 23, 42, 0.35);
+  }
+
+  body:has(.app-space-layout),
+  body:has(.app-page-theme-surface) {
+    background: var(--mobile-page-bg);
+  }
+
+  /* ── En-tête commun des espaces (SpaceMobileHeader) ── */
+  .app-space-mobile-header {
+    position: sticky;
+    top: 0;
+    z-index: 80;
+    margin: -0.5rem -0.75rem 0;
+    padding: calc(0.5rem + env(safe-area-inset-top, 0px)) 0.75rem 0.5rem;
+    background: var(--mobile-page-bg);
+  }
+
+  .app-space-mobile-header > .space-mobile-header-bar {
+    padding: 0.4rem 0.4rem 0.4rem 0.5rem;
+    border: 1px solid hsl(var(--border));
+    border-radius: 999px !important;
+    background: hsl(var(--card));
+    box-shadow: var(--mobile-surface-shadow);
+  }
+
+  .app-space-mobile-header > .space-mobile-header-search {
+    margin-top: 0.5rem;
+    border-radius: 0 !important;
+  }
+
+  .app-space-mobile-header .space-header-search {
+    border: 1px solid hsl(var(--border));
+    background: hsl(var(--card));
+    box-shadow: var(--mobile-surface-shadow);
+  }
+
+  .app-space-mobile-header .space-header-actions button {
+    width: 2.5rem;
+    min-width: 2.5rem;
+    height: 2.5rem;
+    min-height: 2.5rem;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background: var(--mobile-page-bg);
+    color: hsl(var(--muted-foreground));
+    box-shadow: none;
+  }
+
+  .app-space-mobile-header .space-header-actions button[aria-expanded='true'] {
+    background: hsl(var(--primary) / 0.12);
+    color: hsl(var(--primary));
+  }
+
+  /* ── Barre du haut (accueil, pages hors espace) : carte opaque ── */
+  .app-top-header {
+    background: hsl(var(--card)) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-bottom: 1px solid hsl(var(--border)) !important;
+    box-shadow: none !important;
+  }
+
+  .app-top-header .md\:hidden button {
+    border-color: transparent;
+    border-radius: 999px;
+    background: var(--mobile-page-bg);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  /* ── Barre d'onglets du bas : carte blanche opaque ── */
+  .mobile-tabbar {
+    padding: 0.35rem;
+    border: 1px solid hsl(var(--border));
+    border-radius: 1.5rem;
+    background: hsl(var(--card));
+    box-shadow: 0 14px 34px -18px rgba(15, 23, 42, 0.4);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .mobile-tabbar-item {
+    border-radius: 1.1rem;
+    font-size: 0.7rem;
+  }
+
+  .mobile-tabbar-item.is-active {
+    background: var(--mobile-page-bg);
+    color: hsl(var(--primary));
+  }
+
+  /* ── Tiroir de menu : une seule carte blanche, comme le menu PC ── */
+  .app-space-sidebar.is-open,
+  .has-mobile-header .app-space-sidebar.is-open {
+    top: calc(4.25rem + env(safe-area-inset-top, 0px));
+    left: 0.75rem;
+    max-height: calc(100dvh - 4.25rem - var(--mobile-tab-h, 4.5rem) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 0.75rem);
+    width: min(86vw, 19rem) !important;
+    padding: 0.5rem;
+    border: 1px solid hsl(var(--border));
+    border-radius: 1.25rem;
+    background: hsl(var(--card));
+    box-shadow: 0 24px 48px -20px rgba(15, 23, 42, 0.4);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .app-space-sidebar.is-open .text-card-foreground {
+    border: 0 !important;
+    background: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  .app-space-sidebar.is-open .text-card-foreground > .pointer-events-none.absolute {
+    display: none;
+  }
+
+  /* ── Contenu : cartes blanches opaques (plus de translucide / flou) ── */
+  .app-space-main .text-card-foreground:is([class*="bg-white/"], [class*="bg-card/"], [class*="backdrop-blur"], .glassmorphism, .surface-glass) {
+    background-color: hsl(var(--card)) !important;
+    background-image: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  .app-space-main .text-card-foreground {
+    border-color: hsl(var(--border));
+    box-shadow: var(--mobile-surface-shadow);
+  }
+}
+
+/* ── Mobile / PWA : écrans allégés ─────────────────────────────────────────
+   1. Cartes KPI masquées (et leur grille, pour ne pas laisser de vide), sauf
+      sur le Tableau de bord dont elles sont le contenu même.
+   2. Échelle typographique resserrée pour téléphone : titres de page et de
+      carte plus petits, marges internes des cartes réduites. */
+@media (max-width: 767px) {
+  .app-space-main :not(.dashboard-white-cards *).kpi-stat-card,
+  .app-space-main .grid:not(.dashboard-white-cards *):has(> .kpi-stat-card):not(:has(> :not(.kpi-stat-card))),
+  .app-space-main .grid:not(.dashboard-white-cards *):has(> * > .kpi-stat-card):not(:has(> :not(:has(> .kpi-stat-card)))) {
+    display: none !important;
+  }
+
+  .app-space-main .text-3xl {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+  }
+
+  .app-space-main .text-2xl {
+    font-size: 1.125rem;
+    line-height: 1.5rem;
+  }
+
+  .app-space-main .text-xl {
+    font-size: 1.0625rem;
+    line-height: 1.4rem;
+  }
+
+  .app-space-main .text-lg {
+    font-size: 1rem;
+    line-height: 1.35rem;
+  }
+
+  .app-space-main .card-description {
+    font-size: 0.8125rem;
+    line-height: 1.35;
+  }
+
+  /* Icônes des titres de carte proportionnées au texte réduit */
+  .app-space-main h3 > svg:is(.h-8, .h-7, .h-6) {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-right: 0.5rem;
+  }
+
+  /* Marges internes des cartes (CardHeader p-6 / CardContent p-6 pt-0) */
+  .app-space-main .text-card-foreground > .p-6:not(.pt-0) {
+    padding: 1rem;
+  }
+
+  .app-space-main .text-card-foreground > .p-6.pt-0 {
+    padding: 0 1rem 1rem;
+  }
+}

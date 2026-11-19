@@ -23,7 +23,12 @@ const getSearchableValue = (option) => String(
 // Combobox single OU multi-select.
 // Mode multi : passer `multi={true}` + `value` = array de valeurs + `onSelect(newArray)`.
 // La valeur spéciale "__all__" (ALL) déselectionne tout (équivalent "tout afficher").
-const Combobox = ({ options, value, onSelect, placeholder, searchPlaceholder, emptyText, disabled, multi = false, modal = false, required, ...triggerProps }) => {
+// `valueLabel` (optionnel) : rappel du titre du champ devant la valeur choisie
+// (« Type : 2020 ») quand le libellé est affiché dans le champ (FormField inline).
+const Combobox = ({ options, value, onSelect, placeholder, searchPlaceholder, emptyText, disabled, multi = false, modal = false, required, valueLabel, ...triggerProps }) => {
+  const valuePrefix = valueLabel
+    ? <span className="mr-1 font-normal text-muted-foreground">{valueLabel} :</span>
+    : null;
   const [open, setOpen] = useState(false)
   const searchInputRef = React.useRef(null)
   const triggerRef = React.useRef(null)
@@ -91,7 +96,7 @@ const Combobox = ({ options, value, onSelect, placeholder, searchPlaceholder, em
             className={cn("w-full justify-between", values.length > 0 && "border-primary/50 bg-primary/5 text-primary")}
             disabled={disabled}
           >
-            <span className="truncate">{triggerLabel}</span>
+            <span className="truncate">{!isAllMode && valuePrefix}{triggerLabel}</span>
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         }
@@ -145,7 +150,11 @@ const Combobox = ({ options, value, onSelect, placeholder, searchPlaceholder, em
       className="w-full justify-between"
       disabled={disabled}
     >
-      <span className="truncate">{selectedOption ? selectedOption.label : placeholder}</span>
+      <span className="truncate">
+        {selectedOption
+          ? <>{valuePrefix}{selectedOption.label}</>
+          : <span className={valueLabel ? 'text-muted-foreground' : undefined}>{placeholder}</span>}
+      </span>
       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
     </Button>
   );

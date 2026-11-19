@@ -1432,7 +1432,7 @@ const ConfigurationTab = ({
 
           <div data-terminal-config-fields className="grid grid-cols-1 gap-4 md:grid-cols-4">
             {!resolvedLockedAgence && (
-              <FormField label="Région" required error={formErrors.region}>
+              <FormField inline label="Région" required error={formErrors.region}>
                 <Combobox
                   options={regionOptions}
                   value={formRegion}
@@ -1449,7 +1449,7 @@ const ConfigurationTab = ({
               </FormField>
             )}
             {!resolvedLockedAgence && (
-              <FormField label="Secteur">
+              <FormField inline label="Secteur">
                 <Combobox
                   options={secteurOptionsForForm}
                   value={formSecteur}
@@ -1465,7 +1465,7 @@ const ConfigurationTab = ({
               </FormField>
             )}
             {!resolvedLockedAgence && (
-              <FormField label="Agence" required error={formErrors.agence}>
+              <FormField inline label="Agence" required error={formErrors.agence}>
                 <Combobox
                   options={agencesOptions}
                   value={agenceId}
@@ -1524,7 +1524,7 @@ const ConfigurationTab = ({
 
               {configurationMode === 'assembled' ? (
                 <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-                  <FormField label="Terminal assemblé disponible" required error={formErrors.assembled}>
+                  <FormField inline label="Terminal assemblé disponible" required error={formErrors.assembled}>
                     <Combobox
                       options={availableAssembledTerminalOptions}
                       value={selectedAssembledTerminalId}
@@ -1555,7 +1555,7 @@ const ConfigurationTab = ({
               ) : null}
             </div>
 
-            <FormField label="Type de terminal" required error={formErrors.type}>
+            <FormField inline label="Type de terminal" required error={formErrors.type}>
               <Combobox
                 options={[
                   { value: '2020', label: '2020' },
@@ -1570,7 +1570,7 @@ const ConfigurationTab = ({
               />
             </FormField>
 
-            <FormField label="Référence" required error={formErrors.ref}>
+            <FormField inline label="Référence" required error={formErrors.ref}>
               <Input
                 value={formData.ref}
                 onChange={(event) => setFormData((previousState) => ({ ...previousState, ref: event.target.value }))}
@@ -1578,7 +1578,7 @@ const ConfigurationTab = ({
                 disabled={isLoading || configurationMode === 'assembled'}
               />
             </FormField>
-            <FormField label="Position" required error={formErrors.position}>
+            <FormField inline label="Position" required error={formErrors.position}>
               <Input
                 value={formData.position}
                 onChange={(event) =>
@@ -1588,7 +1588,7 @@ const ConfigurationTab = ({
                 disabled={isLoading}
               />
             </FormField>
-            <FormField label={<>Adresse IP <span className="font-normal text-muted-foreground">(facultative)</span></>}>
+            <FormField inline label="Adresse IP (facultative)">
               <Input
                 value={formData.ip}
                 onChange={(event) => setFormData((previousState) => ({ ...previousState, ip: event.target.value }))}
@@ -1597,7 +1597,7 @@ const ConfigurationTab = ({
               />
             </FormField>
 
-            <FormField label="Imprimante">
+            <FormField inline label="Imprimante">
               <Combobox
                 options={imprimantesOptions}
                 value={formData.imprimante}
@@ -1610,7 +1610,7 @@ const ConfigurationTab = ({
                 disabled={isLoading}
               />
             </FormField>
-            <FormField label="Lecteur">
+            <FormField inline label="Lecteur">
               <Combobox
                 options={lecteursOptions}
                 value={formData.lecteur}
@@ -1621,7 +1621,7 @@ const ConfigurationTab = ({
                 disabled={isLoading}
               />
             </FormField>
-            <FormField label="Écran">
+            <FormField inline label="Écran">
               <Combobox
                 options={ecransOptions}
                 value={formData.ecran}
@@ -1632,7 +1632,7 @@ const ConfigurationTab = ({
                 disabled={isLoading}
               />
             </FormField>
-            <FormField label="Afficheur client">
+            <FormField inline label="Afficheur client">
               <Combobox
                 options={afficheurOptions}
                 value={formData.afficheur}
@@ -1643,7 +1643,7 @@ const ConfigurationTab = ({
                 disabled={isLoading}
               />
             </FormField>
-            <FormField label="BUC">
+            <FormField inline label="BUC">
               <Combobox
                 options={bucsOptions}
                 value={formData.buc}
@@ -1654,7 +1654,7 @@ const ConfigurationTab = ({
                 disabled={isLoading}
               />
             </FormField>
-            <FormField label="Alimentation">
+            <FormField inline label="Alimentation">
               <Combobox
                 options={alimentationsOptions}
                 value={formData.alimentation}
@@ -1665,7 +1665,7 @@ const ConfigurationTab = ({
                 disabled={isLoading}
               />
             </FormField>
-            <FormField label="Bouton marche/arrêt">
+            <FormField inline label="Bouton marche/arrêt">
               <Combobox
                 options={boutonsMarcheArretOptions}
                 value={formData.boutonMarcheArret}
@@ -1676,7 +1676,7 @@ const ConfigurationTab = ({
                 disabled={isLoading}
               />
             </FormField>
-            <FormField label="Afficheur">
+            <FormField inline label="Afficheur">
               <Combobox
                 options={afficheursTerminalOptions}
                 value={formData.afficheurTerminal}
@@ -1687,7 +1687,7 @@ const ConfigurationTab = ({
                 disabled={isLoading}
               />
             </FormField>
-            <FormField label="Circuit afficheur client">
+            <FormField inline label="Circuit afficheur client">
               <Combobox
                 options={circuitsAfficheurClientOptions}
                 value={formData.circuitAfficheurClient}
@@ -1698,7 +1698,7 @@ const ConfigurationTab = ({
                 disabled={isLoading}
               />
             </FormField>
-            <FormField label="Circuit BAC UC">
+            <FormField inline label="Circuit BAC UC">
               <Combobox
                 options={circuitsBacUcOptions}
                 value={formData.circuitBacUc}
@@ -1709,7 +1709,7 @@ const ConfigurationTab = ({
                 disabled={isLoading}
               />
             </FormField>
-            <FormField label="Carte mère BAC UC">
+            <FormField inline label="Carte mère BAC UC">
               <Combobox
                 options={cartesMeresBacUcOptions}
                 value={formData.carteMereBacUc}
@@ -1720,7 +1720,7 @@ const ConfigurationTab = ({
                 disabled={isLoading}
               />
             </FormField>
-            <FormField label="SSD">
+            <FormField inline label="SSD">
               <Combobox
                 options={ssdsOptions}
                 value={formData.ssd}
@@ -1976,7 +1976,7 @@ const ConfigurationTab = ({
 
           <div className={resolvedLockedAgence ? 'grid gap-4 md:grid-cols-3' : 'grid gap-4 md:grid-cols-2 xl:grid-cols-6'}>
             {!resolvedLockedAgence && (
-              <FormField label="Région">
+              <FormField inline label="Région">
                 <Combobox
                   multi
                   options={parkRegionOptions}
@@ -1996,7 +1996,7 @@ const ConfigurationTab = ({
               </FormField>
             )}
             {!resolvedLockedAgence && (
-              <FormField label="Secteur">
+              <FormField inline label="Secteur">
                 <Combobox
                   multi
                   options={[{ value: ALL_FILTER_VALUE, label: 'Secteurs' }, ...parkSecteurOptions.map((s) => ({ value: s, label: s }))]}
@@ -2015,7 +2015,7 @@ const ConfigurationTab = ({
               </FormField>
             )}
             {!resolvedLockedAgence && (
-              <FormField label="Agence">
+              <FormField inline label="Agence">
                 <Combobox
                   multi
                   options={parkAgencyOptions}
@@ -2032,7 +2032,7 @@ const ConfigurationTab = ({
                 />
               </FormField>
             )}
-            <FormField label="Type">
+            <FormField inline label="Type">
               <Combobox
                 multi
                 options={[
@@ -2052,7 +2052,7 @@ const ConfigurationTab = ({
                 disabled={isLoading}
               />
             </FormField>
-            <FormField label="Statut">
+            <FormField inline label="Statut">
               <Combobox
                 multi
                 options={[
@@ -2074,8 +2074,8 @@ const ConfigurationTab = ({
                 disabled={isLoading}
               />
             </FormField>
-            <div className="space-y-2">
-              <Label htmlFor="park-terminal-search">Recherche</Label>
+            <div>
+              <Label htmlFor="park-terminal-search" className="sr-only">Recherche</Label>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
@@ -2084,7 +2084,7 @@ const ConfigurationTab = ({
                   onChange={(event) =>
                     setParkFilters((previousState) => ({ ...previousState, search: event.target.value }))
                   }
-                  placeholder="Référence, agence, IP..."
+                  placeholder="Rechercher (référence, agence, IP…)"
                   className="pl-10"
                   disabled={isLoading}
                 />

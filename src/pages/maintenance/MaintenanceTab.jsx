@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Combobox } from '@/components/ui/Combobox';
+import FormField from '@/components/ui/form-field';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableCaption } from '@/components/ui/table';
@@ -2403,34 +2404,29 @@ const MaintenanceTab = ({ technicien }) => {
             <div className="space-y-4">
               <h3 className="text-lg font-medium text-primary">Sélection du Terminal</h3>
           <div className="mobile-inline-fields grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
-            <div className="space-y-2">
-                  <Label htmlFor="region">Région</Label>
+            <FormField inline label="Région" id="region">
                   <Combobox
                     options={regionsOptions}
                     value={form.region}
                     onSelect={(v) => setForm((f) => ({ ...f, region: v, secteur: '', agence: '', terminal: '' }))}
-                    placeholder="Région"
                     searchPlaceholder="Rechercher une région..."
                     emptyText="Aucune région trouvée."
                     disabled={isLoading}
                   />
-            </div>
+            </FormField>
 
-            <div className="space-y-2">
-                  <Label htmlFor="secteur">Secteur</Label>
+            <FormField inline label="Secteur" id="secteur">
                   <Combobox
                     options={secteurOptions}
                     value={form.secteur}
                     onSelect={(v) => setForm((f) => ({ ...f, secteur: v, agence: '', terminal: '' }))}
-                    placeholder={form.region ? 'Secteur' : 'Secteur (région d’abord)'}
                     searchPlaceholder="Rechercher un secteur..."
                     emptyText="Aucun secteur pour cette région."
                     disabled={isLoading || !form.region}
                   />
-            </div>
+            </FormField>
 
-            <div className="space-y-2">
-                  <Label htmlFor="agence">Agence *</Label>
+            <FormField inline required label="Agence" id="agence">
                   <Combobox
                     options={agencesOptions}
                     value={form.agence}
@@ -2438,25 +2434,22 @@ const MaintenanceTab = ({ technicien }) => {
                       const a = agences.find((x) => String(x.id) === String(v));
                       setForm((f) => ({ ...f, agence: v, region: a?.region || f.region, secteur: a?.secteur || f.secteur, terminal: '' }));
                     }}
-                    placeholder={form.region ? 'Agence' : 'Agence (région d’abord)'}
                     searchPlaceholder="Rechercher une agence..."
                     emptyText="Aucune agence trouvée."
                     disabled={isLoading || !form.region}
                   />
-            </div>
-                
-            <div className="space-y-2">
-                  <Label htmlFor="terminal">Terminal *</Label>
+            </FormField>
+
+            <FormField inline required label="Terminal" id="terminal">
                   <Combobox
                     options={terminauxOptions}
                     value={form.terminal}
                     onSelect={handleChange('terminal')}
-                    placeholder={form.agence ? 'Terminal' : 'Terminal (agence d’abord)'}
                     searchPlaceholder="Rechercher un terminal..."
                     emptyText="Aucun terminal trouvé pour cette agence."
                     disabled={!form.agence || isLoading}
                   />
-            </div>
+            </FormField>
                 
           </div>
 

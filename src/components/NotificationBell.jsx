@@ -5,7 +5,6 @@ import {
   Bell, ChevronRight, CheckCircle2, ChevronDown,
   AlertTriangle, AlertOctagon, Info,
 } from 'lucide-react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useFeature } from '@/hooks/useFeatureFlags';
 import { markMessagesRead } from '@/lib/messaging';
 import { isRoleNotifEnabled } from '@/lib/notificationSettings';
@@ -117,6 +116,35 @@ const NotificationBell = ({ notifications = [], totalCount = 0, onNavigate, stor
     };
   }, []);
 
+  // Desktop : position calculée à partir de la cloche (bord droit aligné, bornée
+  // à la zone visible) — le calcul de Radix faisait déborder le panneau hors
+  // écran dans la barre supérieure des espaces.
+  const bellRef = React.useRef(null);
+  const [desktopPos, setDesktopPos] = useState(null);
+  useEffect(() => {
+    if (!open || isMobile) return undefined;
+    const PANEL_WIDTH = 320;
+    const GUTTER = 8;
+    const place = () => {
+      const rect = bellRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const viewportWidth = document.documentElement.clientWidth || window.innerWidth;
+      const width = Math.min(PANEL_WIDTH, viewportWidth - 2 * GUTTER);
+      const left = Math.min(Math.max(GUTTER, rect.right - width), viewportWidth - width - GUTTER);
+      setDesktopPos({ top: rect.bottom + 8, left, width });
+    };
+    const onKey = (event) => { if (event.key === 'Escape') handleOpenChange(false); };
+    place();
+    window.addEventListener('resize', place);
+    window.addEventListener('scroll', place, true);
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('resize', place);
+      window.removeEventListener('scroll', place, true);
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [open, isMobile]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // ── Helpers ──────────────────────────────────────────────────────────────
   const isUnread = (msgId) => !readIds.has(msgId);
 
@@ -173,8 +201,10 @@ const NotificationBell = ({ notifications = [], totalCount = 0, onNavigate, stor
   // ── Rendu ─────────────────────────────────────────────────────────────────
   const bellButton = (
     <button
+      ref={bellRef}
       type="button"
-      onClick={isMobile ? () => handleOpenChange(!open) : undefined}
+      onClick={() => handleOpenChange(!open)}
+      aria-expanded={open}
       aria-label={`Notifications${effectiveBadge ? ` (${effectiveBadge})` : ''}`}
       className="relative inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-primary/5 text-primary transition-all hover:border-primary/35 hover:bg-primary/10"
     >
@@ -345,13 +375,14 @@ const NotificationBell = ({ notifications = [], totalCount = 0, onNavigate, stor
               style={{ position: 'absolute', inset: 0, pointerEvents: 'auto' }}
             />
             <div
-              className="surface-glass notification-bell-popover overflow-hidden rounded-xl border bg-popover text-popover-foreground shadow-[0_24px_60px_-12px_rgba(15,23,42,0.45)]"
+              className="notification-bell-popover overflow-hidden rounded-2xl border bg-popover text-popover-foreground shadow-[0_24px_60px_-12px_rgba(15,23,42,0.45)]"
               style={{
                 position: 'relative',
-                marginTop: '6.25rem',
-                width: 'calc(100vw - 1rem)',
-                maxWidth: '22rem',
-                maxHeight: 'calc(100dvh - 7.75rem)',
+                // Juste sous l'en-tête mobile commun (~4.25rem + encoche).
+                marginTop: 'calc(4.5rem + env(safe-area-inset-top, 0px))',
+                width: 'calc(100vw - 1.5rem)',
+                maxWidth: '24rem',
+                maxHeight: 'calc(100dvh - 6rem - env(safe-area-inset-top, 0px))',
                 display: 'flex',
                 flexDirection: 'column',
                 pointerEvents: 'auto',
@@ -368,20 +399,36 @@ const NotificationBell = ({ notifications = [], totalCount = 0, onNavigate, stor
     );
   }
 
-  // Desktop : positionnement natif de Radix (ancré à la cloche).
+  // Desktop : panneau ancré sous la cloche (position calculée plus haut).
   return (
-    <Popover open={open} onOpenChange={handleOpenChange}>
-      <PopoverTrigger asChild>{bellButton}</PopoverTrigger>
-      <PopoverContent
-        align="end"
-        sideOffset={6}
-        collisionPadding={{ top: 4, right: 8, bottom: 8, left: 8 }}
-        className="notification-bell-popover overflow-hidden p-0"
-        style={{ width: 'min(320px, calc(100vw - 1rem))', maxWidth: 'calc(100vw - 1rem)' }}
-      >
-        {panelBody}
-      </PopoverContent>
-    </Popover>
+    <>
+      {bellButton}
+      {open && desktopPos && createPortal(
+        <>
+          <div
+            onClick={() => handleOpenChange(false)}
+            aria-hidden="true"
+            style={{ position: 'fixed', inset: 0, zIndex: 2147482999 }}
+          />
+          <div
+            className="notification-bell-popover relative flex flex-col overflow-hidden rounded-xl border bg-popover text-popover-foreground shadow-[0_24px_60px_-12px_rgba(15,23,42,0.35)]"
+            style={{
+              position: 'fixed',
+              top: desktopPos.top,
+              left: desktopPos.left,
+              width: desktopPos.width,
+              maxHeight: `calc(100dvh - ${Math.round(desktopPos.top) + 12}px)`,
+              zIndex: 2147483000,
+            }}
+            role="region"
+            aria-label="Notifications"
+          >
+            {panelBody}
+          </div>
+        </>,
+        document.body
+      )}
+    </>
   );
 };
 

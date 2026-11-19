@@ -1,5 +1,7 @@
 import React, { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import SpaceHeaderIdentity from '@/components/SpaceHeaderIdentity';
+import SpaceHeaderProfile from '@/components/SpaceHeaderProfile';
+import SpaceMobileHeader from '@/components/SpaceMobileHeader';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -359,46 +361,26 @@ const EspaceMaintenancePage = () => {
   return (
     <div className="app-space-layout has-mobile-header flex flex-col gap-4 md:flex-row lg:gap-8">
 
-      {/* En-tête mobile : profil + cloche + bouton menu — remplace le bouton toggle flottant */}
-      <div className="app-space-mobile-header md:hidden">
-        <div className="relative flex items-center gap-3 overflow-hidden rounded-2xl border border-primary/25 bg-white px-4 py-4 shadow-[0_6px_28px_-8px_rgba(15,23,42,0.30)] backdrop-blur">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-primary" />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/6 via-transparent to-transparent" />
-          {userData?.photo_url ? (
-            <img
-              src={userData.photo_url}
-              alt="Photo de profil"
-              className="h-10 w-10 shrink-0 rounded-[0.75rem] object-cover ring-1 ring-primary/20"
+      {/* En-tête mobile/PWA commun : profil + recherche + actions + menu */}
+      <SpaceMobileHeader
+        photoUrl={userData?.photo_url}
+        initials={[userData?.prenom?.[0], userData?.nom?.[0]].filter(Boolean).join('') || 'TM'}
+        name={`${userData?.prenom || ''} ${userData?.nom || ''}`.trim()}
+        actions={(
+          <>
+            <NotificationBell
+              notifications={technicienNotifications}
+              totalCount={technicienNotifCount}
+              onNavigate={() => setIsMobileMenuOpen(false)}
+              reader={notifReader}
+              storageKey={userData?.id ? `t_${userData.id}` : null}
             />
-          ) : (
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.75rem] bg-gradient-to-br from-primary/20 via-primary/10 to-white text-primary ring-1 ring-primary/20">
-              <span className="text-sm font-black">
-                {[userData?.prenom?.[0], userData?.nom?.[0]].filter(Boolean).join('') || 'TM'}
-              </span>
-            </div>
-          )}
-          <div className="min-w-0 flex-1">
-            <p className="text-[0.6rem] font-semibold uppercase tracking-[0.08em] text-muted-foreground/70">Espace Technicien</p>
-            <p className="truncate text-sm font-bold text-foreground leading-tight">{userData?.prenom} {userData?.nom}</p>
-          </div>
-          <NotificationBell
-            notifications={technicienNotifications}
-            totalCount={technicienNotifCount}
-            onNavigate={() => setIsMobileMenuOpen(false)}
-            reader={notifReader}
-            storageKey={userData?.id ? `t_${userData.id}` : null}
-          />
-          <RemonteeDialog sender={notifReader} iconOnly className="ml-1" />
-          <button
-            type="button"
-            aria-label={isMobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
-            onClick={() => setIsMobileMenuOpen((open) => !open)}
-            className="app-space-header-toggle flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-primary/5 text-primary transition-colors hover:bg-primary/10"
-          >
-            {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-          </button>
-        </div>
-      </div>
+            <RemonteeDialog sender={notifReader} iconOnly />
+          </>
+        )}
+        menuOpen={isMobileMenuOpen}
+        onToggleMenu={() => setIsMobileMenuOpen((open) => !open)}
+      />
 
       {isMobileMenuOpen && (
         <div className="app-space-backdrop md:hidden" onClick={() => setIsMobileMenuOpen(false)} aria-hidden="true" />
@@ -413,28 +395,12 @@ const EspaceMaintenancePage = () => {
 
           {/* Carte de profil : masquée sur mobile (déplacée dans l'en-tête mobile), visible en desktop */}
           <SpaceHeaderIdentity>
-            <Card className="relative overflow-hidden border border-primary/20 bg-white/92 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-              <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
-              <CardContent className="relative p-4">
-                <div className="flex items-center gap-3">
-                  {userData?.photo_url ? (
-                    <img
-                      src={userData.photo_url}
-                      alt="Photo de profil"
-                      className="h-12 w-12 shrink-0 rounded-[1rem] object-cover ring-1 ring-primary/20 shadow-[0_8px_20px_-10px_rgba(15,23,42,0.35)]"
-                    />
-                  ) : (
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[1rem] bg-gradient-to-br from-primary/20 via-primary/10 to-white text-primary ring-1 ring-primary/20 shadow-[0_8px_20px_-10px_rgba(15,23,42,0.35)]">
-                      <span className="text-lg font-black">
-                        {[userData?.prenom?.[0], userData?.nom?.[0]].filter(Boolean).join('') || 'TM'}
-                      </span>
-                    </div>
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-muted-foreground/80">Menu Technicien</p>
-                    <p className="mt-0.5 truncate text-sm font-bold text-foreground">{userData?.prenom} {userData?.nom}</p>
-                    <p className="text-[0.68rem] text-muted-foreground">Technicien de maintenance</p>
-                  </div>
+            <SpaceHeaderProfile
+              photoUrl={userData?.photo_url}
+              initials={[userData?.prenom?.[0], userData?.nom?.[0]].filter(Boolean).join('') || 'TM'}
+              name={`${userData?.prenom || ''} ${userData?.nom || ''}`.trim()}
+              actions={(
+                <>
                   <NotificationBell
                     notifications={technicienNotifications}
                     totalCount={technicienNotifCount}
@@ -442,10 +408,10 @@ const EspaceMaintenancePage = () => {
                     reader={notifReader}
                     storageKey={userData?.id ? `t_${userData.id}` : null}
                   />
-                  <RemonteeDialog sender={notifReader} iconOnly className="ml-1" />
-                </div>
-              </CardContent>
-            </Card>
+                  <RemonteeDialog sender={notifReader} iconOnly />
+                </>
+              )}
+            />
           </SpaceHeaderIdentity>
 
           <Card className="relative overflow-hidden border border-primary/20 bg-white/92 shadow-[0_8px_30px_-12px_rgba(15,23,42,0.18)] backdrop-blur">

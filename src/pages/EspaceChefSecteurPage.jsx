@@ -1,10 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import SpaceHeaderIdentity from '@/components/SpaceHeaderIdentity';
+import SpaceHeaderProfile from '@/components/SpaceHeaderProfile';
+import SpaceMobileHeader from '@/components/SpaceMobileHeader';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   ListTree, Loader2, LogOut, AtSign, UserCog, Menu, X, Building, Smartphone,
-  MapPin, Globe, ClipboardCheck, Wrench, Wallet, Home, FileDown,
+  Globe, ClipboardCheck, Wrench, Wallet, Home, FileDown,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -314,34 +316,20 @@ const EspaceChefSecteurPage = () => {
   return (
     <div className="app-space-layout has-mobile-header flex flex-col gap-4 md:flex-row lg:gap-8">
 
-      {/* En-tête mobile : profil + bouton menu */}
-      <div className="app-space-mobile-header md:hidden">
-        <div className="relative flex items-center gap-3 overflow-hidden rounded-2xl border border-primary/25 bg-white px-4 py-4 shadow-[0_6px_28px_-8px_rgba(15,23,42,0.30)] backdrop-blur">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-primary" />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/6 via-transparent to-transparent" />
-          {chef.photo_url ? (
-            <img src={chef.photo_url} alt="Profil" className="h-10 w-10 shrink-0 rounded-[0.75rem] object-cover ring-1 ring-primary/20" />
-          ) : (
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.75rem] bg-gradient-to-br from-primary/20 via-primary/10 to-white text-primary ring-1 ring-primary/20">
-              <span className="text-sm font-black">{initials}</span>
-            </div>
-          )}
-          <div className="min-w-0 flex-1">
-            <p className="text-[0.6rem] font-semibold uppercase tracking-[0.08em] text-muted-foreground/70">Espace Chef de Secteur</p>
-            <p className="truncate text-sm font-bold text-foreground leading-tight">{chef.prenom} {chef.nom}</p>
-          </div>
-          <NotificationBell notifications={chefNotifications} totalCount={chefNotifCount} onRefresh={refreshChefNotifs} reader={{ id: chef?.id, role: 'chef_secteur', nom: [chef?.prenom, chef?.nom].filter(Boolean).join(' '), agence: null }} />
-          <RemonteeDialog sender={{ id: chef?.id, role: 'chef_secteur', nom: [chef?.prenom, chef?.nom].filter(Boolean).join(' ') }} iconOnly className="ml-1" />
-          <button
-            type="button"
-            aria-label={isMobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
-            onClick={() => setIsMobileMenuOpen((o) => !o)}
-            className="app-space-header-toggle flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-primary/5 text-primary transition-colors hover:bg-primary/10"
-          >
-            {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-          </button>
-        </div>
-      </div>
+      {/* En-tête mobile/PWA commun : profil + recherche + actions + menu */}
+      <SpaceMobileHeader
+        photoUrl={chef.photo_url}
+        initials={initials}
+        name={`${chef.prenom || ''} ${chef.nom || ''}`.trim()}
+        actions={(
+          <>
+            <NotificationBell notifications={chefNotifications} totalCount={chefNotifCount} onRefresh={refreshChefNotifs} reader={{ id: chef?.id, role: 'chef_secteur', nom: [chef?.prenom, chef?.nom].filter(Boolean).join(' '), agence: null }} />
+            <RemonteeDialog sender={{ id: chef?.id, role: 'chef_secteur', nom: [chef?.prenom, chef?.nom].filter(Boolean).join(' ') }} iconOnly />
+          </>
+        )}
+        menuOpen={isMobileMenuOpen}
+        onToggleMenu={() => setIsMobileMenuOpen((open) => !open)}
+      />
 
       {isMobileMenuOpen && <div className="app-space-backdrop md:hidden" onClick={() => setIsMobileMenuOpen(false)} aria-hidden="true" />}
 
@@ -352,25 +340,17 @@ const EspaceChefSecteurPage = () => {
       >
         <div className="app-space-sidebar-scroll sticky top-20 space-y-3 max-h-[calc(100vh-5.5rem)] overflow-y-auto pb-4 pr-1">
           <SpaceHeaderIdentity>
-          <Card className="relative overflow-hidden border border-primary/20 bg-white/92 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
-            <CardContent className="relative p-4">
-              <div className="flex items-center gap-3">
-                {chef.photo_url ? (
-                  <img src={chef.photo_url} alt="Profil" className="h-12 w-12 shrink-0 rounded-[1rem] object-cover ring-1 ring-primary/20" />
-                ) : (
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[1rem] bg-gradient-to-br from-primary/20 via-primary/10 to-white text-primary ring-1 ring-primary/20">
-                    <span className="text-lg font-black">{initials}</span>
-                  </div>
-                )}
-                <div className="min-w-0 flex-1">
-                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-muted-foreground/80">Menu Chef de Secteur</p>
-                  <p className="mt-0.5 truncate text-sm font-bold text-foreground">{chef.prenom} {chef.nom}</p>
-                  <p className="flex items-center gap-1 text-[0.68rem] text-muted-foreground"><MapPin className="h-3 w-3" /> {chef.secteurEnCharge || '—'}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+            <SpaceHeaderProfile
+              photoUrl={chef.photo_url}
+              initials={initials}
+              name={`${chef.prenom || ''} ${chef.nom || ''}`.trim()}
+              actions={(
+                <>
+                  <NotificationBell notifications={chefNotifications} totalCount={chefNotifCount} onRefresh={refreshChefNotifs} reader={{ id: chef?.id, role: 'chef_secteur', nom: [chef?.prenom, chef?.nom].filter(Boolean).join(' '), agence: null }} />
+                  <RemonteeDialog sender={{ id: chef?.id, role: 'chef_secteur', nom: [chef?.prenom, chef?.nom].filter(Boolean).join(' ') }} iconOnly />
+                </>
+              )}
+            />
           </SpaceHeaderIdentity>
 
           <Card className="relative overflow-hidden border border-primary/20 bg-white/92 shadow-[0_8px_30px_-12px_rgba(15,23,42,0.18)] backdrop-blur">

@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import OfflineSyncIndicator from '@/components/OfflineSyncIndicator';
 import { SpaceHeaderContext } from '@/components/SpaceHeaderIdentity';
+import SpaceHeaderSearch from '@/components/SpaceHeaderSearch';
 const FloatingAssistant = React.lazy(() => import('@/components/assistant/FloatingAssistant'));
 import { Home, Briefcase, Users, Settings, BarChart3, LogIn, Sun, Moon, Menu, Wrench, ShieldCheck, Wallet, User } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -37,7 +38,11 @@ const Layout = () => {
   const [connectedSpaceCount, setConnectedSpaceCount] = React.useState(0);
   const registerSpace = React.useCallback((delta) => setConnectedSpaceCount(count => count + delta), []);
   const connectedSpace = connectedSpaceCount > 0 && location.pathname.startsWith('/espace-');
-  const headerContext = React.useMemo(() => ({ target: profileTarget, register: registerSpace }), [profileTarget, registerSpace]);
+  const [spaceSearchItems, setSpaceSearchItems] = React.useState(null);
+  const headerContext = React.useMemo(
+    () => ({ target: profileTarget, register: registerSpace, searchItems: spaceSearchItems, setSearchItems: setSpaceSearchItems }),
+    [profileTarget, registerSpace, spaceSearchItems]
+  );
   // Surveillance globale des notifications : continue de déclencher les notifs OS même
   // hors de l'espace concerné (accueil, autre espace, onglet en arrière-plan) tant que
   // l'app tourne. App totalement fermée = Web Push requis (VITE_VAPID_PUBLIC_KEY).
@@ -211,7 +216,7 @@ const Layout = () => {
           ? 'exploitation-theme-surface'
           : location.pathname.startsWith('/espace-')
             ? 'other-spaces-theme-surface'
-          : 'bg-background'
+          : 'app-page-theme-surface'
       }`}
     >
       <a
@@ -231,25 +236,35 @@ const Layout = () => {
               />
             </motion.div>
             {connectedSpace && (
-              <span className="space-brand-copy hidden min-w-0 md:block">
-                <span className="block truncate text-sm font-bold leading-tight text-foreground">
-                  {client.displayName || 'GestionPDV'}
+              <span className="space-brand-copy hidden min-w-0 md:block" title={activeSpaceLabel}>
+                <span className="block truncate text-base font-extrabold leading-tight text-foreground">
+                  Gestion PDV
                 </span>
-                <span className="mt-1 block truncate text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-                  {activeSpaceLabel}
+                <span className="mt-0.5 block truncate text-[0.7rem] font-bold uppercase tracking-[0.12em] text-primary">
+                  {client.displayName || 'GestionPDV'}
                 </span>
               </span>
             )}
           </Link>
 
-          <div className={connectedSpace ? 'ml-auto hidden items-center gap-4 md:flex' : 'hidden'}>
-            <div ref={setProfileTarget} className="min-w-0" />
-            <OfflineSyncIndicator enabled={spaceFunctionalities.offline_mode === true} />
-            <button type="button" onClick={toggleTheme}
-              aria-label={isDarkMode ? 'Activer le thème clair' : 'Activer le thème sombre'}
-              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-              {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </button>
+          <div className={connectedSpace ? 'space-header-bar hidden min-w-0 flex-1 items-center gap-4 md:flex' : 'hidden'}>
+            {connectedSpace && (
+              <SpaceHeaderSearch
+                items={spaceSearchItems}
+                enableDataSearch={location.pathname.startsWith('/espace-exploitation')}
+              />
+            )}
+            <div className="ml-auto flex min-w-0 items-center gap-2">
+              <OfflineSyncIndicator enabled={spaceFunctionalities.offline_mode === true} />
+              <span className="space-header-actions flex shrink-0 items-center">
+                <button type="button" onClick={toggleTheme}
+                  aria-label={isDarkMode ? 'Activer le thème clair' : 'Activer le thème sombre'}
+                  className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                  {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                </button>
+              </span>
+              <div ref={setProfileTarget} className="min-w-0" />
+            </div>
           </div>
           {!connectedSpace && <nav aria-label="Navigation principale" className="hidden items-center gap-1 md:flex">
             <div className="flex items-center gap-1">

@@ -803,7 +803,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                 <Dialog open={isSEHelpOpen} onOpenChange={setIsSEHelpOpen}>
                 <DialogContent className="diagnostic-guided-dialog sm:max-w-3xl w-[min(94vw,52rem)] max-h-[84vh] flex flex-col gap-0 overflow-hidden border-primary/25 p-0">
                   <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
-                  <div className="relative shrink-0 border-b bg-transparent px-6 pb-3 pt-5 pr-14">
+                  <div className="relative shrink-0 border-b bg-transparent px-4 pb-3 pt-5 pr-14 sm:px-6 sm:pr-14">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <CardTitle className="flex items-center gap-2 text-lg text-primary">
@@ -825,9 +825,9 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                         const done = index < activeIndex;
                         const active = index === activeIndex;
                         return (
-                          <div key={label} className={`flex min-w-0 items-center justify-center gap-1.5 rounded px-2 py-1.5 text-[11px] font-medium ${active ? 'bg-primary text-primary-foreground' : done ? 'bg-emerald-50 text-emerald-700' : 'text-muted-foreground'}`}>
-                            {done ? <Check className="h-3 w-3" /> : <span>{index + 1}</span>}
-                            <span className="truncate">{label}</span>
+                          <div key={label} className={`flex min-w-0 items-center justify-center gap-1 rounded px-1 py-1.5 text-[11px] font-medium ${active ? 'bg-primary text-primary-foreground' : done ? 'bg-emerald-50 text-emerald-700' : 'text-muted-foreground'}`}>
+                            {done ? <Check className="h-3 w-3 shrink-0" /> : <span className="shrink-0">{index + 1}</span>}
+                            <span className="whitespace-nowrap">{label}</span>
                           </div>
                         );
                       })}
@@ -859,7 +859,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                     </div>
                   </div>
 
-                  <div className="flex-1 space-y-3 overflow-y-auto px-6 py-5">
+                  <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4 sm:px-6 sm:py-5">
                     {seDiagnosticView === 'documentation' ? (
                       <div className="space-y-5">
                         <div className="flex flex-wrap items-start justify-between gap-3 border-b pb-4">
@@ -977,7 +977,10 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                                     onClick={() => selectDiagnosticPanne(panne)}
                                     className={`flex w-full items-center gap-3 rounded-md border px-3 py-3 text-left transition-colors ${
                                       checks.length === 0
-                                        ? 'cursor-not-allowed bg-muted/20 opacity-55'
+                                        ? recommended
+                                          // La panne déclarée reste repérable même sans contrôle référencé.
+                                          ? 'cursor-not-allowed border-amber-300 bg-amber-50/70'
+                                          : 'cursor-not-allowed bg-muted/20 opacity-55'
                                         : recommended
                                           ? 'border-amber-300 bg-amber-50 hover:bg-amber-100/70'
                                           : 'bg-background hover:border-primary/30 hover:bg-primary/5'
@@ -994,7 +997,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                                       <span className="mt-0.5 block truncate text-xs text-muted-foreground">{panne.description}</span>
                                     </span>
                                     <span className="shrink-0 text-[11px] text-muted-foreground">{checks.length} contrôle{checks.length > 1 ? 's' : ''}</span>
-                                    <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                                    {checks.length > 0 && <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />}
                                   </button>
                                 );
                               })}
