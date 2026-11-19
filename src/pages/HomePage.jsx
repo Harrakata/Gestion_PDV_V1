@@ -38,7 +38,7 @@ const HomePage = () => {
   const isPaiementGrosGainEnabled = isAppSpaceFunctionalityEnabled(spaceFunctionalities, 'paiement-gros-gain');
 
   return (
-    <div className="flex min-h-[calc(100vh-10rem)] flex-col items-center justify-center bg-background p-4 md:p-8">
+    <div className="flex min-h-[calc(100vh-10rem)] flex-col items-center justify-center p-4 md:p-8">
 
       <motion.header
         initial={{ opacity: 0, y: 12 }}
@@ -53,35 +53,35 @@ const HomePage = () => {
               alt={client.displayName || "CARRUS Betting Solutions & Services"}
               className="mx-auto mb-4 h-16 w-auto object-contain sm:h-20 md:h-28"
             />
-            <h1 className="mb-2 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
+            <h1 className="home-brand-title mb-2 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
               <span className="text-primary">
                 GestionPDV
               </span>
             </h1>
             {client.displayName && client.displayName !== 'PMU' && (
-              <p className="mb-2 text-sm font-semibold text-primary sm:text-base">
+              <p className="home-brand-client mb-2 text-sm font-semibold text-primary sm:text-base">
                 {client.displayName}
               </p>
             )}
-            <p className="mb-2 text-lg font-semibold text-foreground sm:text-xl md:text-2xl">
+            <p className="home-brand-tagline mb-2 text-lg font-semibold text-foreground sm:text-xl md:text-2xl">
               Gestion de Planning & Pointage
             </p>
             <p className="max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
               Optimisez la gestion de vos agences avec une solution moderne, intuitive et performante.
             </p>
             {(isPointageEnabled || isPaiementGrosGainEnabled) && (
-              <div className="mt-6 flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row">
+              <div className="mt-5 flex w-full flex-col items-center justify-center gap-2 sm:w-auto sm:flex-row sm:gap-3">
                 {isPointageEnabled && (
-                  <Button asChild size="touch" className="w-full sm:w-auto">
+                  <Button asChild size="sm" className="home-cta w-full max-w-[12.5rem] gap-1.5 sm:w-auto sm:max-w-none">
                     <Link to="/pointage">
-                      <LogIn className="h-5 w-5" /> Commencer vos pointages
+                      <LogIn className="h-3.5 w-3.5" /> Commencer vos pointages
                     </Link>
                   </Button>
                 )}
                 {isPaiementGrosGainEnabled && (
-                  <Button asChild size="touch" variant="outline" className="w-full sm:w-auto">
+                  <Button asChild size="sm" variant="outline" className="home-cta w-full max-w-[12.5rem] gap-1.5 sm:w-auto sm:max-w-none">
                     <Link to="/paiement-gros-gain">
-                      <Wallet className="h-5 w-5" /> Demande de paiement
+                      <Wallet className="h-3.5 w-3.5" /> Demande de paiement
                     </Link>
                   </Button>
                 )}

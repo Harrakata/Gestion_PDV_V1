@@ -1824,9 +1824,11 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
   /* ── Tiroir de menu : une seule carte blanche, comme le menu PC ── */
   .app-space-sidebar.is-open,
   .has-mobile-header .app-space-sidebar.is-open {
-    top: calc(4.25rem + env(safe-area-inset-top, 0px));
+    /* Sous l'en-tête mobile (pastille ~3.4rem + marges 0.5rem + décalage du
+       contenu) avec un écart visible : la carte ne passe plus dessous. */
+    top: calc(5.5rem + env(safe-area-inset-top, 0px));
     left: 0.75rem;
-    max-height: calc(100dvh - 4.25rem - var(--mobile-tab-h, 4.5rem) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 0.75rem);
+    max-height: calc(100dvh - 5.5rem - var(--mobile-tab-h, 4.5rem) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 0.75rem);
     width: min(86vw, 19rem) !important;
     padding: 0.5rem;
     border: 1px solid hsl(var(--border));
@@ -1872,9 +1874,9 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
    :is(#main-content, [role="dialog"]) — :is() prend la spécificité de l'id.
    Remplace les tailles hétérogènes des sections mobiles plus haut (d'où les
    !important : plusieurs anciennes règles en posent déjà). Une seule échelle :
-     titre de page / carte ...... 1.125rem / 1rem
+     titres (page, carte, section) 1rem (text-lg : 0.9375rem)
      texte courant .............. 0.8125rem (13px)
-     onglets, boutons, filtres .. 0.8125rem, hauteur 2.5rem (onglets 2.25rem)
+     onglets, boutons, filtres .. 0.75rem, hauteur 2.25rem (onglets 2rem)
      descriptions, aides ........ 0.75–0.8125rem
    ════════════════════════════════════════════════════════════════════════════ */
 html {
@@ -1900,21 +1902,30 @@ html {
     display: grid !important;
   }
 
-  /* ── Titres ── */
-  :is(#main-content, [role="dialog"]) :is(.text-5xl, .text-4xl, .text-3xl, .text-2xl) {
-    font-size: 1.125rem !important;
-    line-height: 1.5rem !important;
+  /* ── Titres ──
+     Une seule taille pour tous les titres de page / carte / section (1rem),
+     variantes responsives comprises (sm:text-3xl… s'appliquent dès 640px,
+     d'où le sélecteur [class*=…]). Les chiffres des cartes KPI (Tableau de
+     bord) gardent un peu plus de présence. */
+  :is(#main-content, [role="dialog"]) :is([class*="text-5xl"], [class*="text-4xl"], [class*="text-3xl"], [class*="text-2xl"], [class*="text-xl"]) {
+    font-size: 1rem !important;
+    line-height: 1.35rem !important;
     letter-spacing: -0.01em;
   }
 
-  :is(#main-content, [role="dialog"]) :is(.text-xl, .text-lg) {
-    font-size: 1rem !important;
-    line-height: 1.35rem !important;
+  :is(#main-content, [role="dialog"]) :is([class*="text-lg"]) {
+    font-size: 0.9375rem !important;
+    line-height: 1.3rem !important;
+  }
+
+  :is(#main-content, [role="dialog"]) .kpi-stat-card :is([class*="text-xl"], [class*="text-2xl"]) {
+    font-size: 1.25rem !important;
+    line-height: 1.5rem !important;
   }
 
   :is(#main-content, [role="dialog"]) :is(h1, h2, h3, h4) > svg {
-    width: 1.125rem !important;
-    height: 1.125rem !important;
+    width: 1rem !important;
+    height: 1rem !important;
     margin-right: 0.375rem !important;
   }
 
@@ -1951,47 +1962,47 @@ html {
   }
 
   :is(#main-content, [role="dialog"]) [role="tablist"] [role="tab"] {
-    min-height: 2.25rem !important;
-    padding: 0.375rem 0.75rem !important;
-    font-size: 0.8125rem !important;
-    line-height: 1.1rem !important;
+    min-height: 2rem !important;
+    padding: 0.3rem 0.625rem !important;
+    font-size: 0.75rem !important;
+    line-height: 1rem !important;
   }
 
   :is(#main-content, [role="dialog"]) [role="tablist"] [role="tab"] svg {
-    width: 0.9rem;
-    height: 0.9rem;
+    width: 0.85rem;
+    height: 0.85rem;
   }
 
   /* ── Boutons ── */
   :is(#main-content, [role="dialog"]) [data-ui-button] {
-    min-height: 2.5rem !important;
+    min-height: 2.25rem !important;
     height: auto;
-    padding: 0.375rem 0.875rem;
-    font-size: 0.8125rem !important;
-    line-height: 1.1rem !important;
+    padding: 0.3rem 0.75rem;
+    font-size: 0.75rem !important;
+    line-height: 1rem !important;
   }
 
   :is(#main-content, [role="dialog"]) [data-ui-button] svg {
-    width: 1rem;
-    height: 1rem;
+    width: 0.9rem;
+    height: 0.9rem;
   }
 
   :is(#main-content, [role="dialog"]) [data-ui-button][data-ui-button-size="icon"] {
-    width: 2.5rem;
-    min-width: 2.5rem !important;
+    width: 2.25rem;
+    min-width: 2.25rem !important;
     padding: 0;
   }
 
   /* ── Filtres et champs ── */
   :is(#main-content, [role="dialog"]) :is(button[role="combobox"], [data-radix-select-trigger]) {
-    min-height: 2.5rem !important;
-    font-size: 0.8125rem !important;
+    min-height: 2.25rem !important;
+    font-size: 0.75rem !important;
     line-height: 1.2 !important;
   }
 
   :is(#main-content, [role="dialog"]) :is(input, textarea, select):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]) {
-    min-height: 2.5rem;
-    font-size: 0.875rem !important;
+    min-height: 2.25rem;
+    font-size: 0.8125rem !important;
   }
 
   /* iOS zoome sur un champ < 16px au focus : on y garde 16px. */
@@ -2008,5 +2019,279 @@ html {
 
   :is(#main-content, [role="dialog"]) .text-card-foreground > .p-6.pt-0 {
     padding: 0 0.875rem 0.875rem !important;
+  }
+}
+
+/* ── Mobile / PWA : cartes de contenu au format de référence ─────────────────
+   Référence : la carte « Répartition conformité / à traiter » (StatsChartCard).
+   Toutes les cartes prennent ce format (titre 0.8125rem semi-gras, description
+   0.6875rem, contenu 0.75rem, en-tête compact), SAUF la carte d'en-tête de la
+   page. Aucune page n'utilisant de composant d'en-tête dédié, celle-ci est
+   reconnue par sa position : première carte de la page, ni imbriquée dans une
+   autre carte, ni dans un panneau d'onglet. */
+@media (max-width: 767px) {
+  :is(#main-content, [role="dialog"]) .text-card-foreground :is(h2, h3) {
+    font-size: 0.8125rem !important;
+    line-height: 1.2rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0;
+  }
+
+  :is(#main-content, [role="dialog"]) .text-card-foreground :is(h2, h3) > svg {
+    width: 1rem !important;
+    height: 1rem !important;
+  }
+
+  :is(#main-content, [role="dialog"]) .text-card-foreground .card-description {
+    font-size: 0.6875rem !important;
+    line-height: 1rem !important;
+  }
+
+  :is(#main-content, [role="dialog"]) .text-card-foreground :is(.text-sm, .text-base, label) {
+    font-size: 0.75rem !important;
+    line-height: 1.1rem !important;
+  }
+
+  :is(#main-content, [role="dialog"]) .text-card-foreground > .p-6:not(.pt-0) {
+    padding: 0.75rem 1rem !important;
+  }
+
+  /* En-tête de page : garde une taille de titre supérieure. */
+  #main-content .text-card-foreground:first-child:not(.text-card-foreground *):not([role="tabpanel"] *) :is(h1, h2, h3) {
+    font-size: 1rem !important;
+    line-height: 1.35rem !important;
+    font-weight: 700 !important;
+  }
+
+  #main-content .text-card-foreground:first-child:not(.text-card-foreground *):not([role="tabpanel"] *) :is(h1, h2, h3) > svg {
+    width: 1.125rem !important;
+    height: 1.125rem !important;
+  }
+
+  #main-content .text-card-foreground:first-child:not(.text-card-foreground *):not([role="tabpanel"] *) .card-description {
+    font-size: 0.8125rem !important;
+    line-height: 1.2rem !important;
+  }
+}
+
+/* ── Mobile / PWA : filtres et tableaux au même format que les cartes ───────
+   Contenu des cartes = 0.75rem ; on y aligne les filtres (déclencheurs,
+   champs, listes d'options ouvertes) et les tableaux (cellules 0.75rem,
+   en-têtes 0.6875rem). Les champs restent à 16px sur iPhone (zoom au focus). */
+@media (max-width: 767px) {
+  /* Filtres : déclencheurs et champs */
+  :is(#main-content, [role="dialog"]) :is(button[role="combobox"], [data-radix-select-trigger]),
+  :is(#main-content, [role="dialog"]) :is(input, textarea, select):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]) {
+    font-size: 0.75rem !important;
+    line-height: 1.1rem !important;
+  }
+
+  @supports (-webkit-touch-callout: none) {
+    :is(#main-content, [role="dialog"]) :is(input, textarea, select):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]) {
+      font-size: 1rem !important;
+    }
+  }
+
+  /* Filtres : listes d'options ouvertes (Combobox / Select, portalisées) */
+  :is([cmdk-item], [role="option"], [role="menuitem"], [cmdk-input]) {
+    font-size: 0.75rem !important;
+    line-height: 1.1rem !important;
+  }
+
+  [cmdk-group-heading],
+  [cmdk-empty] {
+    font-size: 0.6875rem !important;
+  }
+
+  /* Tableaux */
+  :is(#main-content, [role="dialog"]) table,
+  :is(#main-content, [role="dialog"]) table :is(td, .text-sm, .text-base) {
+    font-size: 0.75rem !important;
+    line-height: 1.1rem !important;
+  }
+
+  :is(#main-content, [role="dialog"]) table th {
+    font-size: 0.6875rem !important;
+    line-height: 1rem !important;
+  }
+
+  :is(#main-content, [role="dialog"]) table caption {
+    font-size: 0.6875rem !important;
+  }
+
+  /* Tableaux en cartes empilées (.responsive-cards) : même échelle */
+  :is(#main-content, [role="dialog"]) table.responsive-cards tr {
+    font-size: 0.75rem !important;
+  }
+
+  :is(#main-content, [role="dialog"]) table.responsive-cards td::before {
+    font-size: 0.6875rem !important;
+  }
+}
+
+/* ── Mobile / PWA : fenêtres flottantes au format des cartes ────────────────
+   Titre 0.875rem, textes / libellés 0.75rem, aides 0.6875rem, espacements
+   resserrés. `:is([role="dialog"], #dialog-scope)` : l'id (inexistant) ne sert
+   qu'à donner à ces règles la spécificité d'un id, nécessaire pour primer sur
+   les règles communes `:is(#main-content, [role="dialog"]) …` plus haut. */
+@media (max-width: 767px) {
+  :is([role="dialog"], #dialog-scope) :is(h2, h3, [class*="text-lg"], [class*="text-xl"], [class*="text-2xl"], [class*="text-3xl"]) {
+    font-size: 0.875rem !important;
+    line-height: 1.25rem !important;
+  }
+
+  :is([role="dialog"], #dialog-scope) :is(p, label, .text-sm, .text-base) {
+    font-size: 0.75rem !important;
+    line-height: 1.1rem !important;
+  }
+
+  :is([role="dialog"], #dialog-scope) :is(.text-xs, .card-description) {
+    font-size: 0.6875rem !important;
+    line-height: 1rem !important;
+  }
+
+  :is([role="dialog"], #dialog-scope) label {
+    font-weight: 600;
+  }
+
+  /* Espacements verticaux resserrés entre champs */
+  :is([role="dialog"], #dialog-scope) :is(.space-y-4, .space-y-5, .space-y-6) > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 0.625rem !important;
+  }
+
+  :is([role="dialog"], #dialog-scope) :is(.space-y-2, .space-y-1\.5) > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 0.3rem !important;
+  }
+
+  :is([role="dialog"], #dialog-scope) :is(.grid.gap-2) {
+    gap: 0.3rem !important;
+  }
+
+  /* Avatars / grandes vignettes réduits */
+  :is([role="dialog"], #dialog-scope) :is(.h-24.w-24, .h-28.w-28, .h-32.w-32) {
+    width: 4.5rem !important;
+    height: 4.5rem !important;
+  }
+}
+
+/* ── Mobile / PWA : tiroir de menu ajusté à son contenu ─────────────────────
+   Largeur réduite, lignes compactes (2.25rem au lieu de 2.75rem minimum),
+   textes 0.8125rem, espacements resserrés. Le sélecteur répète la classe
+   pour primer sur la règle tactile générique (min-height 2.75rem). */
+@media (max-width: 767px) {
+  .app-space-sidebar.is-open.is-open,
+  .has-mobile-header .app-space-sidebar.is-open.is-open {
+    width: min(76vw, 16.5rem) !important;
+    padding: 0.375rem;
+  }
+
+  .app-space-sidebar.is-open.is-open .app-space-sidebar-scroll :is(a, button) {
+    min-height: 2.25rem;
+    padding-top: 0.25rem !important;
+    padding-bottom: 0.25rem !important;
+    font-size: 0.8125rem !important;
+    line-height: 1.1rem !important;
+  }
+
+  .app-space-sidebar.is-open.is-open :is(.p-3, .p-4) {
+    padding: 0.375rem !important;
+  }
+
+  .app-space-sidebar.is-open.is-open :is(.space-y-1, .space-y-0\.5, .space-y-3) > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 0.125rem !important;
+  }
+
+  .app-space-sidebar.is-open.is-open nav > div,
+  .app-space-sidebar.is-open.is-open :is(.pt-2, .mt-2) {
+    padding-top: 0.125rem !important;
+    margin-top: 0.125rem !important;
+  }
+
+  /* Pastilles d'icônes (h-9 w-9) et chevrons de groupe plus petits */
+  .app-space-sidebar.is-open.is-open :is(.h-9.w-9) {
+    width: 1.75rem !important;
+    height: 1.75rem !important;
+  }
+
+  .app-space-sidebar.is-open.is-open :is(.h-7.w-7) {
+    width: 1.5rem !important;
+    height: 1.5rem !important;
+  }
+
+  .app-space-sidebar.is-open.is-open svg {
+    width: 0.95rem;
+    height: 0.95rem;
+  }
+
+  /* Rangée Accueil / Profil / Déconnexion */
+  .app-space-sidebar.is-open.is-open .border-t :is(a, button) {
+    padding-top: 0.375rem !important;
+    padding-bottom: 0.375rem !important;
+  }
+
+  .app-space-sidebar.is-open.is-open .border-t :is(a, button) span {
+    font-size: 0.625rem !important;
+  }
+}
+
+/* Page d'accueil : boutons d'action compacts (passent sous la hauteur
+   minimale générique des boutons mobiles, 2.25rem). */
+@media (max-width: 767px) {
+  #main-content .home-cta[data-ui-button] {
+    min-height: 2rem !important;
+    height: 2rem;
+    padding: 0.25rem 0.875rem;
+    font-size: 0.75rem !important;
+  }
+
+  #main-content .home-cta[data-ui-button] svg {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+}
+
+/* Page d'accueil : la marque garde une vraie présence sur mobile (exemptée de
+   l'échelle de titres compacte à 1rem). */
+@media (max-width: 767px) {
+  /* Classe répétée : doit primer sur la règle « en-tête de page » (1,4,1). */
+  #main-content .home-brand-title.home-brand-title.home-brand-title.home-brand-title.home-brand-title {
+    font-size: 2rem !important;
+    line-height: 2.35rem !important;
+    letter-spacing: -0.02em;
+  }
+
+  #main-content .home-brand-client.home-brand-client {
+    font-size: 1rem !important;
+    line-height: 1.35rem !important;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  #main-content .home-brand-tagline.home-brand-tagline {
+    font-size: 1.0625rem !important;
+    line-height: 1.45rem !important;
+  }
+}
+
+/* Planning (chef d'agence) : barre d'outils compacte sur mobile — contrôles
+   à 2rem (sous la hauteur générique 2.25rem des boutons mobiles). */
+@media (max-width: 767px) {
+  #main-content .planning-toolbar.planning-toolbar :is([data-ui-button], input) {
+    min-height: 2rem !important;
+    height: 2rem;
+    padding-inline: 0.625rem;
+    font-size: 0.75rem !important;
+  }
+
+  #main-content .planning-toolbar.planning-toolbar [data-ui-button][data-ui-button-size="icon"] {
+    width: 2rem;
+    min-width: 2rem !important;
+    padding: 0;
+  }
+
+  @supports (-webkit-touch-callout: none) {
+    #main-content .planning-toolbar.planning-toolbar input {
+      font-size: 1rem !important;
+    }
   }
 }

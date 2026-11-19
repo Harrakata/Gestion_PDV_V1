@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { describeError } from '@/lib/errors';
 import { motion } from 'framer-motion';
 import { CalendarClock, ChevronDown, ChevronUp, List, MapPinned, Search, Wrench } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -74,27 +75,27 @@ const RegionalMaintenanceSection = ({ regionName = '', allowAllRegions = false, 
     ]);
 
     if (regionsError && !isSupabaseAuthError(regionsError)) {
-      toast({ title: 'Erreur chargement régions', description: regionsError.message, variant: 'destructive' });
+      toast({ title: 'Erreur chargement régions', description: describeError(regionsError, 'RegionalMaintenanceSection'), variant: 'destructive' });
     } else {
       setRegions(regionsData || []);
     }
 
     if (agencesError) {
       if (!isSupabaseAuthError(agencesError)) {
-        toast({ title: 'Erreur chargement agences', description: agencesError.message, variant: 'destructive' });
+        toast({ title: 'Erreur chargement agences', description: describeError(agencesError, 'RegionalMaintenanceSection'), variant: 'destructive' });
       }
     } else {
       setAgences(agencesData || []);
     }
 
     if (terminauxError && !isSupabaseAuthError(terminauxError)) {
-      toast({ title: 'Erreur chargement terminaux', description: terminauxError.message, variant: 'destructive' });
+      toast({ title: 'Erreur chargement terminaux', description: describeError(terminauxError, 'RegionalMaintenanceSection'), variant: 'destructive' });
     } else {
       setTerminaux(terminauxData || []);
     }
 
     if (interventionsError && !isSupabaseAuthError(interventionsError)) {
-      toast({ title: 'Erreur chargement interventions', description: interventionsError.message, variant: 'destructive' });
+      toast({ title: 'Erreur chargement interventions', description: describeError(interventionsError, 'RegionalMaintenanceSection'), variant: 'destructive' });
     } else {
       setInterventions(interventionsData || []);
     }

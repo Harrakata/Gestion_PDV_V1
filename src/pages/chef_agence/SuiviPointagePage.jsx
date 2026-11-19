@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { describeError } from '@/lib/errors';
 import { useOutletContext } from 'react-router-dom';
 import { usePageState } from '@/hooks/usePageState';
 import { motion } from 'framer-motion';
@@ -86,7 +87,7 @@ const SuiviPointagePage = () => {
     const { data: histRows, error: histError } = await historyQuery;
 
     if (histError && !isSupabaseAuthError(histError)) {
-      toast({ title: 'Erreur chargement guichetières', description: histError.message, variant: 'destructive' });
+      toast({ title: 'Erreur chargement guichetières', description: describeError(histError, 'SuiviPointagePage'), variant: 'destructive' });
     }
 
     const codesMap = {};
@@ -149,7 +150,7 @@ const SuiviPointagePage = () => {
 
     if (planningError) {
       if (!isSupabaseAuthError(planningError)) {
-        toast({ title: 'Erreur chargement planning', description: planningError.message, variant: 'destructive' });
+        toast({ title: 'Erreur chargement planning', description: describeError(planningError, 'SuiviPointagePage'), variant: 'destructive' });
       }
       setPlanningEntries([]);
     } else {
@@ -158,7 +159,7 @@ const SuiviPointagePage = () => {
 
     if (pointagesError) {
       if (!isSupabaseAuthError(pointagesError)) {
-        toast({ title: 'Erreur chargement pointages', description: pointagesError.message, variant: 'destructive' });
+        toast({ title: 'Erreur chargement pointages', description: describeError(pointagesError, 'SuiviPointagePage'), variant: 'destructive' });
       }
       setPointages([]);
     } else {
@@ -173,7 +174,7 @@ const SuiviPointagePage = () => {
 
     if (guichetieresError) {
       if (!isSupabaseAuthError(guichetieresError)) {
-        toast({ title: 'Erreur chargement guichetières', description: guichetieresError.message, variant: 'destructive' });
+        toast({ title: 'Erreur chargement guichetières', description: describeError(guichetieresError, 'SuiviPointagePage'), variant: 'destructive' });
       }
       setGuichetieresById({});
     } else {

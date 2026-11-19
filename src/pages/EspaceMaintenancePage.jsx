@@ -1,4 +1,5 @@
 import React, { Suspense, lazy, useEffect, useMemo, useState } from 'react';
+import { describeError } from '@/lib/errors';
 import SpaceHeaderIdentity from '@/components/SpaceHeaderIdentity';
 import SpaceHeaderProfile from '@/components/SpaceHeaderProfile';
 import SpaceMobileHeader from '@/components/SpaceMobileHeader';
@@ -39,6 +40,7 @@ import {
 } from '@/lib/exploitationProfiles';
 import { smartSignIn, fetchAuthLinkedProfile, fetchOrLinkAuthProfile } from '@/lib/smartAuth';
 import { useActivityTracker } from '@/hooks/useActivityTracker';
+import { useSessionTimeout } from '@/hooks/useSessionTimeout';
 
 // Code-split : ces composants lourds (formulaire de maintenance + signature,
 // onglets de réparation, date-fns…) ne sont téléchargés qu'une fois le
@@ -112,7 +114,7 @@ const LoginPage = ({ onLogin }) => {
       await supabase.auth.signOut();
       toast({
         title: 'Aucun profil technicien associé',
-        description: profileErr?.message || 'Votre compte n\'est lié à aucune fiche technicien. Contactez un administrateur.',
+        description: describeError(profileErr, 'EspaceMaintenancePage', 'Votre compte n\'est lié à aucune fiche technicien. Contactez un administrateur.'),
         variant: 'destructive',
       });
       setIsLoading(false);
@@ -194,6 +196,9 @@ const EspaceMaintenancePage = () => {
     isAuthenticated,
     identity: userData,
   });
+
+  // Déconnexion automatique après inactivité (durée : Paramètres > session).
+  useSessionTimeout(null, () => handleLogout(), 'pmuTechnicienAuth', { enabled: isAuthenticated });
 
   const { notifications: technicienNotifications, totalCount: technicienNotifCount } = useSpaceNotifications({
     spaceKey: 'espace-technicien',

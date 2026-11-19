@@ -1,114 +1,153 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabaseClient';
 
 /**
- * Hook pour gérer la durée de la session avec déconnexion automatique
- * 
- * @param {number} sessionDurationMinutes - Durée de la session en minutes
- * @param {function} onTimeout - Fonction à exécuter lors de l'expiration de session
- * @param {string} authStorageKey - Clé de stockage local pour l'authentification
- * @returns {object} - État de la session et fonctions utilitaires
+ * Déconnexion automatique après une période d'inactivité.
+ *
+ * Utilisé par TOUS les espaces connectés (terminaux partagés en agence : une
+ * session oubliée ne doit pas rester ouverte).
+ *
+ * Conception :
+ *  - L'activité (clic, touche, toucher, défilement) est mémorisée dans une ref :
+ *    elle ne provoque AUCUN re-rendu (l'ancien hook redessinait tout l'espace à
+ *    chaque événement de défilement).
+ *  - Contrôle toutes les 5 s, et immédiatement au retour au premier plan
+ *    (téléphone réveillé après une longue veille → expiration immédiate).
+ *  - L'expiration ne se déclenche qu'UNE fois par session (l'ancien hook
+ *    rappelait la déconnexion chaque seconde une fois expiré).
+ *  - `enabled: false` (utilisateur non connecté) neutralise tout.
+ *
+ * @param {number|null} sessionDurationMinutes  durée d'inactivité tolérée ;
+ *        null → durée configurée dans Paramètres (app_settings.general.sessionDureeMinutes).
+ * @param {function} onTimeout       déconnexion à exécuter à l'expiration.
+ * @param {string}   authStorageKey  clé localStorage de la session à purger.
+ * @param {{ enabled?: boolean }} options
+ * @returns {{ sessionExpiring, timeRemaining, formatTimeRemaining, resetTimer }}
  */
-export const useSessionTimeout = (sessionDurationMinutes = 30, onTimeout, authStorageKey) => {
-  const { toast } = useToast();
-  const [sessionExpiring, setSessionExpiring] = useState(false);
-  const [timeRemaining, setTimeRemaining] = useState(sessionDurationMinutes * 60);
-  const [lastActivity, setLastActivity] = useState(Date.now());
-  const [warningShown, setWarningShown] = useState(false);
 
-  // Réinitialiser le timer quand l'utilisateur est actif
+const DEFAULT_MINUTES = 30;
+const WARNING_MS = 2 * 60 * 1000;
+const CHECK_INTERVAL_MS = 5 * 1000;
+const ACTIVITY_EVENTS = ['mousedown', 'keydown', 'touchstart', 'scroll', 'wheel'];
+
+// Durée configurée, chargée une seule fois pour toute l'application.
+let configuredMinutesPromise = null;
+const loadConfiguredMinutes = () => {
+  if (!configuredMinutesPromise) {
+    configuredMinutesPromise = supabase
+      .from('app_settings')
+      .select('value')
+      .eq('key', 'general')
+      .maybeSingle()
+      .then(({ data }) => Number(data?.value?.sessionDureeMinutes) || DEFAULT_MINUTES)
+      .catch(() => DEFAULT_MINUTES);
+  }
+  return configuredMinutesPromise;
+};
+
+export const useSessionTimeout = (sessionDurationMinutes = DEFAULT_MINUTES, onTimeout, authStorageKey, options = {}) => {
+  const { enabled = true } = options;
+  const { toast } = useToast();
+  const [configuredMinutes, setConfiguredMinutes] = useState(DEFAULT_MINUTES);
+  const [sessionExpiring, setSessionExpiring] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState(DEFAULT_MINUTES * 60);
+
+  const lastActivityRef = useRef(Date.now());
+  const warnedRef = useRef(false);
+  const expiredRef = useRef(false);
+  // Toujours la dernière version des callbacks, sans relancer l'effet principal.
+  const onTimeoutRef = useRef(onTimeout);
+  const toastRef = useRef(toast);
+  useEffect(() => { onTimeoutRef.current = onTimeout; }, [onTimeout]);
+  useEffect(() => { toastRef.current = toast; }, [toast]);
+
+  useEffect(() => {
+    if (sessionDurationMinutes != null) return undefined;
+    let active = true;
+    loadConfiguredMinutes().then((m) => { if (active) setConfiguredMinutes(m); });
+    return () => { active = false; };
+  }, [sessionDurationMinutes]);
+
+  const minutes = sessionDurationMinutes ?? configuredMinutes;
+
   const resetTimer = useCallback(() => {
-    setLastActivity(Date.now());
-    setSessionExpiring(false);
-    setWarningShown(false);
+    lastActivityRef.current = Date.now();
+    warnedRef.current = false;
+    setSessionExpiring((prev) => (prev ? false : prev));
   }, []);
 
-  // Vérifier l'expiration de la session
   useEffect(() => {
-    // Convertir la durée en millisecondes
-    const sessionDurationMs = sessionDurationMinutes * 60 * 1000;
-    const warningTimeMs = 2 * 60 * 1000; // Avertissement 2 minutes avant expiration
-    
-    const checkSession = () => {
-      const now = Date.now();
-      const timeSinceLastActivity = now - lastActivity;
-      const timeLeft = sessionDurationMs - timeSinceLastActivity;
-      
-      // Mettre à jour le temps restant
-      setTimeRemaining(Math.max(0, Math.floor(timeLeft / 1000)));
-      
-      // Si le temps restant est inférieur au temps d'avertissement
-      if (timeLeft <= warningTimeMs && timeLeft > 0 && !warningShown) {
-        setSessionExpiring(true);
-        setWarningShown(true);
-        toast({
-          title: "Session expirante",
-          description: `Votre session expirera dans ${Math.ceil(timeLeft / 60000)} minutes par inactivité.`,
-          variant: "warning",
-          duration: 10000
-        });
-      }
-      
-      // Si la session a expiré
+    if (!enabled) {
+      // Nouvelle session à la prochaine connexion.
+      expiredRef.current = false;
+      warnedRef.current = false;
+      setSessionExpiring(false);
+      return undefined;
+    }
+
+    lastActivityRef.current = Date.now();
+    expiredRef.current = false;
+    warnedRef.current = false;
+    const durationMs = Math.max(1, minutes) * 60 * 1000;
+
+    const check = () => {
+      if (expiredRef.current) return;
+      const timeLeft = durationMs - (Date.now() - lastActivityRef.current);
+
       if (timeLeft <= 0) {
-        // Exécuter la fonction de déconnexion
-        if (onTimeout) {
-          onTimeout();
-        }
-        
-        // Supprimer la session du stockage local
-        if (authStorageKey) {
-          localStorage.removeItem(authStorageKey);
-        }
-        
-        // Notification d'expiration
-        toast({
-          title: "Session expirée",
-          description: "Votre session a expiré. Veuillez vous reconnecter.",
-          variant: "destructive",
-          duration: 5000
-        });
-        
-        // Réinitialiser l'état
+        expiredRef.current = true;
         setSessionExpiring(false);
-        setWarningShown(false);
+        setTimeRemaining(0);
+        try { if (authStorageKey) localStorage.removeItem(authStorageKey); } catch { /* stockage indisponible */ }
+        onTimeoutRef.current?.();
+        toastRef.current({
+          title: 'Session expirée',
+          description: 'Votre session a expiré par inactivité. Veuillez vous reconnecter.',
+          variant: 'destructive',
+          duration: 5000,
+        });
+        return;
+      }
+
+      if (timeLeft <= WARNING_MS) {
+        setSessionExpiring(true);
+        setTimeRemaining(Math.floor(timeLeft / 1000));
+        if (!warnedRef.current) {
+          warnedRef.current = true;
+          toastRef.current({
+            title: 'Session expirante',
+            description: `Votre session expirera dans ${Math.ceil(timeLeft / 60000)} minute(s) par inactivité.`,
+            variant: 'warning',
+            duration: 10000,
+          });
+        }
+      } else if (warnedRef.current) {
+        // Activité reprise pendant l'avertissement.
+        warnedRef.current = false;
+        setSessionExpiring(false);
       }
     };
-    
-    // Vérifier la session toutes les secondes
-    const interval = setInterval(checkSession, 1000);
-    
-    // Événements pour détecter l'activité de l'utilisateur
-    const activityEvents = ['mousedown', 'keydown', 'touchstart', 'scroll'];
-    const handleUserActivity = () => {
-      resetTimer();
-    };
-    
-    activityEvents.forEach(event => {
-      window.addEventListener(event, handleUserActivity);
-    });
-    
-    // Nettoyage
+
+    const onActivity = () => { lastActivityRef.current = Date.now(); };
+    const onVisible = () => { if (document.visibilityState === 'visible') check(); };
+
+    ACTIVITY_EVENTS.forEach((e) => window.addEventListener(e, onActivity, { passive: true }));
+    document.addEventListener('visibilitychange', onVisible);
+    const interval = setInterval(check, CHECK_INTERVAL_MS);
+
     return () => {
       clearInterval(interval);
-      activityEvents.forEach(event => {
-        window.removeEventListener(event, handleUserActivity);
-      });
+      ACTIVITY_EVENTS.forEach((e) => window.removeEventListener(e, onActivity));
+      document.removeEventListener('visibilitychange', onVisible);
     };
-  }, [lastActivity, sessionDurationMinutes, onTimeout, resetTimer, toast, warningShown, authStorageKey]);
-  
-  // Fonction pour formater le temps restant en MM:SS
+  }, [enabled, minutes, authStorageKey]);
+
   const formatTimeRemaining = useCallback(() => {
-    const minutes = Math.floor(timeRemaining / 60);
-    const seconds = timeRemaining % 60;
-    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    const m = Math.floor(timeRemaining / 60);
+    const s = timeRemaining % 60;
+    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   }, [timeRemaining]);
-  
-  return {
-    sessionExpiring,
-    timeRemaining,
-    formatTimeRemaining,
-    resetTimer
-  };
-}; 
+
+  return { sessionExpiring, timeRemaining, formatTimeRemaining, resetTimer };
+};

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { describeError } from '@/lib/errors';
 import SpaceHeaderIdentity from '@/components/SpaceHeaderIdentity';
 import SpaceHeaderProfile from '@/components/SpaceHeaderProfile';
 import SpaceMobileHeader from '@/components/SpaceMobileHeader';
@@ -153,8 +154,8 @@ const LoginPageChef = ({ onLogin }) => {
             description: "Veuillez autoriser l'accès à votre caméra ou utiliser la connexion par identifiants.", 
             variant: "destructive" 
           });
+          // Repli : le message invite à se connecter par identifiants (formulaire toujours affiché).
           setIsCameraActive(false);
-          setLoginTab('credentials');
         });
     }
     
@@ -223,7 +224,7 @@ const LoginPageChef = ({ onLogin }) => {
       const { data: chef, error } = await findChef();
 
       if (error && error.code !== 'PGRST116') {
-        toast({ title: "Erreur de connexion", description: error.message, variant: "destructive" });
+        toast({ title: "Erreur de connexion", description: describeError(error, 'EspaceChefAgencePage'), variant: "destructive" });
         setIsLoading(false);
         return;
       }
@@ -713,7 +714,8 @@ const EspaceChefAgencePage = () => {
   const { sessionExpiring, formatTimeRemaining } = useSessionTimeout(
     sessionDurationMinutes,
     () => handleLogout(),
-    'pmuChefAuth'
+    'pmuChefAuth',
+    { enabled: isAuthenticated }
   );
 
   useEffect(() => {

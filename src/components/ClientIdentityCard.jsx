@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { describeError } from '@/lib/errors';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -50,7 +51,7 @@ const ClientIdentityCard = ({ canWrite = true }) => {
         .from(STORAGE_BUCKET)
         .upload(fileName, file, { cacheControl: '3600', upsert: true });
       if (error) {
-        toast({ title: "Erreur d'import", description: error.message, variant: 'destructive' });
+        toast({ title: "Erreur d'import", description: describeError(error, 'ClientIdentityCard'), variant: 'destructive' });
       } else {
         const { data: pub } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(data.path);
         setLogoUrl(pub.publicUrl);
@@ -68,7 +69,7 @@ const ClientIdentityCard = ({ canWrite = true }) => {
       await setBranding({ displayName, logoUrl, currency });
       toast({ title: 'Identité client sauvegardée', className: 'bg-green-500 text-white' });
     } catch (error) {
-      toast({ title: 'Erreur de sauvegarde', description: error.message, variant: 'destructive' });
+      toast({ title: 'Erreur de sauvegarde', description: describeError(error, 'ClientIdentityCard'), variant: 'destructive' });
     }
     setIsSaving(false);
   };

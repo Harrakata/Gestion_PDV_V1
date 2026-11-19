@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { describeError } from '@/lib/errors';
 import { useOutletContext } from 'react-router-dom';
 import { isMobiPointCurrent, mobiPointDisplayStatus, mobiToday } from '@/lib/mobiPointValidity';
 import { motion } from 'framer-motion';
@@ -84,7 +85,7 @@ const MesPointsVenteMobiPage = () => {
 
     if (pointsError) {
       if (!isSupabaseAuthError(pointsError)) {
-        toast({ title: 'Erreur chargement points de vente', description: pointsError.message, variant: 'destructive' });
+        toast({ title: 'Erreur chargement points de vente', description: describeError(pointsError, 'MesPointsVenteMobiPage'), variant: 'destructive' });
       }
       setPointsVente([]);
     } else {
@@ -92,7 +93,7 @@ const MesPointsVenteMobiPage = () => {
     }
 
     if (regionsError && !isSupabaseAuthError(regionsError)) {
-      toast({ title: 'Erreur chargement régions', description: regionsError.message, variant: 'destructive' });
+      toast({ title: 'Erreur chargement régions', description: describeError(regionsError, 'MesPointsVenteMobiPage'), variant: 'destructive' });
       setRegions([]);
     } else {
       setRegions(regionsData || []);
@@ -100,7 +101,7 @@ const MesPointsVenteMobiPage = () => {
 
     if (agencesError) {
       if (!isSupabaseAuthError(agencesError)) {
-        toast({ title: 'Erreur chargement agences', description: agencesError.message, variant: 'destructive' });
+        toast({ title: 'Erreur chargement agences', description: describeError(agencesError, 'MesPointsVenteMobiPage'), variant: 'destructive' });
       }
       setAgences([]);
     } else {
@@ -109,7 +110,7 @@ const MesPointsVenteMobiPage = () => {
 
     if (terminauxError) {
       if (!isSupabaseAuthError(terminauxError)) {
-        toast({ title: 'Erreur chargement terminaux', description: terminauxError.message, variant: 'destructive' });
+        toast({ title: 'Erreur chargement terminaux', description: describeError(terminauxError, 'MesPointsVenteMobiPage'), variant: 'destructive' });
       }
       setTerminaux([]);
     } else {
@@ -123,7 +124,7 @@ const MesPointsVenteMobiPage = () => {
       ) {
         toast({
           title: 'Erreur chargement demandes',
-          description: requestsError.message,
+          description: describeError(requestsError, 'MesPointsVenteMobiPage'),
           variant: 'destructive',
         });
       }
@@ -245,7 +246,7 @@ const MesPointsVenteMobiPage = () => {
 
       toast({
         title: 'Erreur d’envoi',
-        description: error.message,
+        description: describeError(error, 'MesPointsVenteMobiPage'),
         variant: 'destructive',
       });
     } else {

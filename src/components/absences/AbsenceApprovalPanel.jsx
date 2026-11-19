@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { describeError } from '@/lib/errors';
 import { CalendarCheck, Check, X, Loader2, List, CalendarDays, CalendarRange, Clock, CheckCircle2, XCircle } from 'lucide-react';
 import AbsenceCalendar from '@/components/absences/AbsenceCalendar';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -43,7 +44,7 @@ const AbsenceApprovalPanel = ({ filter = {}, approver = {}, title = "Demandes d'
   const load = useCallback(async () => {
     setIsLoading(true);
     const { rows, error } = await fetchAbsences(filter);
-    if (error) toast({ title: 'Erreur de chargement', description: error.message, variant: 'destructive' });
+    if (error) toast({ title: 'Erreur de chargement', description: describeError(error, 'AbsenceApprovalPanel'), variant: 'destructive' });
     setAllRows(rows);
     setIsLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -72,7 +73,7 @@ const AbsenceApprovalPanel = ({ filter = {}, approver = {}, title = "Demandes d'
       traitee_par_role: approver.role || null,
     });
     setActingId(null);
-    if (error) { toast({ title: 'Erreur', description: error.message, variant: 'destructive' }); return; }
+    if (error) { toast({ title: 'Erreur', description: describeError(error, 'AbsenceApprovalPanel'), variant: 'destructive' }); return; }
     toast({ title: statut === ABSENCE_STATUSES.APPROVED ? 'Demande approuvée' : 'Demande refusée' });
     load();
   };

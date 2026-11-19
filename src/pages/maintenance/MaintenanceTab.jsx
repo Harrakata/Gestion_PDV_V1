@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { describeError } from '@/lib/errors';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -402,7 +403,7 @@ const MaintenanceTab = ({ technicien }) => {
       }
 
       if (interventionsError) {
-        toast({ title: 'Erreur', description: "Impossible de charger les codes d\'interventions", variant: 'destructive' });
+        toast({ title: 'Erreur', description: "Impossible de charger les codes d'interventions", variant: 'destructive' });
       } else {
         setCodesInterventions(interventionsData || []);
       }
@@ -1909,7 +1910,7 @@ const MaintenanceTab = ({ technicien }) => {
       }
 
       if (error) {
-        toast({ title: 'Erreur', description: error.message || "Impossible d\'enregistrer l\'intervention", variant: 'destructive' });
+        toast({ title: 'Erreur', description: describeError(error, 'MaintenanceTab', "Impossible d'enregistrer l'intervention"), variant: 'destructive' });
         console.error('Erreur sauvegarde:', error);
         return null;
       }
@@ -1927,7 +1928,7 @@ const MaintenanceTab = ({ technicien }) => {
 
       return insertedIntervention;
     } catch (error) {
-      toast({ title: 'Erreur', description: "Erreur lors de l\'enregistrement", variant: 'destructive' });
+      toast({ title: 'Erreur', description: "Erreur lors de l'enregistrement", variant: 'destructive' });
       console.error('Erreur:', error);
       return null;
     } finally {

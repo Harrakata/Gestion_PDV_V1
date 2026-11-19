@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { describeError } from '@/lib/errors';
 import { supabase } from '@/lib/supabaseClient';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -367,7 +368,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
   const markATester = async (item) => {
     const itemIds = getStockDefectueuxRecordIds(item);
     const { error } = await supabase.from('stock_defectueux').update({ statut: 'a_tester' }).in('id', itemIds);
-    if (error) { showErr(error.message); return; }
+    if (error) { showErr(describeError(error, 'ReparationTerminauxTab')); return; }
     showOk('Sous-ensemble passé à "À tester".');
     setSelectedItem(prev => prev && itemIds.includes(prev.id) ? { ...prev, statut: 'a_tester' } : prev);
     setStock(prev => prev.map(s => itemIds.includes(s.id) ? { ...s, statut: 'a_tester' } : s));
@@ -377,7 +378,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
   const markRepare = async (item) => {
     const itemIds = getStockDefectueuxRecordIds(item);
     const { error } = await supabase.from('stock_defectueux').update({ statut: 'repare', date_sortie: new Date().toISOString() }).in('id', itemIds);
-    if (error) { showErr(error.message); return; }
+    if (error) { showErr(describeError(error, 'ReparationTerminauxTab')); return; }
     const table = item?.type_sous_ensemble ? EQUIP_TABLE_MAP[item.type_sous_ensemble] : null;
     if (table && item?.reference_sous_ensemble) {
       await supabase.from(table).update({ statut: 'Disponible' }).eq('reference', item.reference_sous_ensemble);
@@ -417,7 +418,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
       motif: `Nettoyage sur ${item.reference_sous_ensemble}`,
       stock_defectueux_id: item.id,
     });
-    if (error) { showErr(error.message); return; }
+    if (error) { showErr(describeError(error, 'ReparationTerminauxTab')); return; }
     setTreatedPieces(prev => ({
       ...prev,
       [item.id]: { ...(prev[item.id] || {}), [piece.id]: 'nettoyage' },
@@ -439,7 +440,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
     setIsLoading(true);
     const newQty = existing.quantite - 1;
     const { error: stockError } = await supabase.from('stock_pieces').update({ quantite: newQty, updated_at: new Date().toISOString() }).eq('piece_id', replacePieceId);
-    if (stockError) { showErr(stockError.message); setIsLoading(false); return; }
+    if (stockError) { showErr(describeError(stockError, 'ReparationTerminauxTab')); setIsLoading(false); return; }
     await supabase.from('stock_pieces_mouvements').insert({
       piece_id: replacePieceId, type: 'sortie', quantite: 1,
       motif: `Remplacement sur ${selectedItem.reference_sous_ensemble}`,

@@ -26,6 +26,8 @@ npm run preview          # prévisualiser le build
 npm run test:e2e         # tests Playwright
 npm run test:e2e:ui      # Playwright en mode UI
 npm run test:e2e:report  # rapport du dernier run
+npm run lint             # ESLint (0 erreur attendue ; les warnings = dette à résorber)
+npm run lint:fix         # corrections automatiques
 ```
 
 ## Architecture
@@ -65,6 +67,10 @@ Pensé pour le terrain en connexion instable. Voir `src/lib/offlineCache.js`, `o
 - Le build terser **supprime `console.*` et `debugger`** en prod — ne pas compter sur les logs en production.
 - `app_settings` n'a pas de contrainte unique garantie sur `key` : utiliser le pattern *select-then-update/insert* (cf. `saveClientBranding`).
 - Audit & historique : `src/lib/auditLog.js` + historique SCD2 (`Scd2HistoryDialog`).
+- **Erreurs** : ne jamais afficher `error.message` brut. Dans un toast : `description: describeError(error, 'NomDuComposant')` (`src/lib/errors.js`) — signale à Sentry avec l'origine + traduit en message utilisateur. Erreur silencieuse à tracer : `reportError(error, { where })`. Sur appareil, `window.__gpdvErrors()` (console) liste les 30 dernières erreurs.
+- **Confirmations / saisies courtes** : `const { confirm, prompt } = useConfirm()` (`ConfirmDialogProvider`, monté dans `App.jsx`). `window.confirm/prompt/alert` sont interdits par ESLint.
+- **Session** : chaque espace connecté appelle `useSessionTimeout(null, () => handleLogout(), <cléAuth>, { enabled: isAuthenticated })` (durée : Paramètres → `sessionDureeMinutes`). Tout nouvel espace doit faire de même.
+- **Monitoring** : Sentry actif si `VITE_SENTRY_DSN` est défini ; le contexte (client, espace, id utilisateur) est posé par `useActivityTracker`.
 
 ## Git / artefacts
 

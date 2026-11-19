@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { useConfirm } from '@/components/ConfirmDialogProvider';
+import { describeError } from '@/lib/errors';
 import { supabase } from '@/lib/supabaseClient';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -72,6 +74,7 @@ const CodeTable = ({ title, description, icon, rows, canManage, onAdd, onEdit, o
 
 const CodesMaintenanceTab = ({ canManage = true }) => {
   const { toast } = useToast();
+  const { confirm } = useConfirm();
   const [codesPannes, setCodesPannes] = useState([]);
   const [codesInterventions, setCodesInterventions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -106,7 +109,7 @@ const CodesMaintenanceTab = ({ canManage = true }) => {
     const { error } = editing
       ? await supabase.from(table).update(payload).eq('id', editing.id)
       : await supabase.from(table).insert(payload);
-    if (error) { showErr(error.message); } else {
+    if (error) { showErr(describeError(error, 'CodesMaintenanceTab')); } else {
       showOk(editing ? 'Code modifié.' : 'Code ajouté.');
       closeDialog(); load();
     }
@@ -114,9 +117,9 @@ const CodesMaintenanceTab = ({ canManage = true }) => {
   };
 
   const deleteCode = async (table, row) => {
-    if (!window.confirm(`Supprimer le code "${row.code} - ${row.libelle}" ?`)) return;
+    if (!(await confirm({ title: 'Supprimer ce code ?', description: `« ${row.code} – ${row.libelle} » sera supprimé définitivement.`, destructive: true }))) return;
     const { error } = await supabase.from(table).delete().eq('id', row.id);
-    if (error) { showErr(error.message); } else { showOk('Code supprimé.'); load(); }
+    if (error) { showErr(describeError(error, 'CodesMaintenanceTab')); } else { showOk('Code supprimé.'); load(); }
   };
 
   const tableLabel = dialogState.table === 'codes_pannes' ? 'panne' : 'intervention';

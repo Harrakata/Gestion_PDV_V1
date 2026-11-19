@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { describeError } from '@/lib/errors';
 import { useToast } from '@/components/ui/use-toast';
 import { format, parseISO, isWithinInterval, isValid } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -527,7 +528,7 @@ export const usePointageLogic = () => {
     const { error } = await supabase.from('pointages').insert(newPointage);
 
     if (error) {
-      toast({ title: 'Erreur de validation', description: error.message, variant: 'destructive' });
+      toast({ title: 'Erreur de validation', description: describeError(error, 'usePointageLogic'), variant: 'destructive' });
     } else {
       toast({ title: 'Pointage validé !', description: `Merci ${identifiedGuichetiere.prenom}, votre pointage pour le créneau ${currentCreneauIndex + 1} à ${nomAgenceAffichee} a été enregistré.`, className: "bg-green-600 text-white" });
       resetProcess();

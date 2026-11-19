@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { describeError } from '@/lib/errors';
 import { Mail, Loader2, Send } from 'lucide-react';
 import {
   Dialog,
@@ -57,7 +58,7 @@ const ForgotPasswordDialog = ({ open, onOpenChange, defaultEmail = '' }) => {
       // On affiche un message neutre dans tous les cas (ne pas révéler si l'e-mail existe).
       if (error && !/rate limit|too many/i.test(error.message || '')) {
         // Erreur technique réelle (config, réseau) — on informe.
-        toast({ title: 'Erreur', description: error.message, variant: 'destructive' });
+        toast({ title: 'Erreur', description: describeError(error, 'ForgotPasswordDialog'), variant: 'destructive' });
         setIsLoading(false);
         return;
       }

@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { describeError } from '@/lib/errors';
 import { Send, Loader2, MessageSquarePlus, Clock, CheckCircle2, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -64,7 +65,7 @@ const RemonteeDialog = ({ sender = {}, iconOnly = false, className = '' }) => {
     setSaving(true);
     const { error } = await sendRemontee({ titre: form.titre, corps: form.corps, categorie: form.categorie, sender });
     setSaving(false);
-    if (error) { toast({ title: "Échec de l'envoi", description: error.message, variant: 'destructive' }); return; }
+    if (error) { toast({ title: "Échec de l'envoi", description: describeError(error, 'RemonteeDialog'), variant: 'destructive' }); return; }
     // Push à l'exploitation (best-effort).
     triggerPush(
       { role: 'exploitation' },

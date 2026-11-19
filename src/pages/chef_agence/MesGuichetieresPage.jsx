@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { describeError } from '@/lib/errors';
 import { useOutletContext } from 'react-router-dom';
 import { usePageState } from '@/hooks/usePageState';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -76,7 +77,7 @@ const MesGuichetieresPage = () => {
 
       if (histErr) {
         if (!isSupabaseAuthError(histErr)) {
-          toast({ title: 'Erreur chargement guichetières', description: histErr.message, variant: 'destructive' });
+          toast({ title: 'Erreur chargement guichetières', description: describeError(histErr, 'MesGuichetieresPage'), variant: 'destructive' });
         }
       }
 
@@ -119,7 +120,7 @@ const MesGuichetieresPage = () => {
 
       if (historyGuichResponse.error && directGuichResponse.error) {
         if (!isSupabaseAuthError(guichErr)) {
-          toast({ title: 'Erreur chargement guichetières', description: guichErr.message, variant: 'destructive' });
+          toast({ title: 'Erreur chargement guichetières', description: describeError(guichErr, 'MesGuichetieresPage'), variant: 'destructive' });
         }
         setGuichetieres([]);
       } else {

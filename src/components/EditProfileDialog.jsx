@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState, useRef, useCallback } from 'react';
+import { describeError } from '@/lib/errors';
 import { UserCog, Loader2, Camera, UploadCloud, X, KeyRound, ShieldCheck, User, Bot } from 'lucide-react';
 import {
   Dialog,
@@ -141,7 +142,7 @@ const EditProfileDialog = ({
         },
       });
       if (error) {
-        toast({ title: 'Préférence non enregistrée', description: error.message, variant: 'destructive' });
+        toast({ title: 'Préférence non enregistrée', description: describeError(error, 'EditProfileDialog'), variant: 'destructive' });
         return;
       }
 
@@ -232,7 +233,7 @@ const EditProfileDialog = ({
       .from(STORAGE_BUCKET)
       .upload(fileName, file, { cacheControl: '3600', upsert: true });
     if (error) {
-      toast({ title: "Erreur d'upload photo", description: error.message, variant: 'destructive' });
+      toast({ title: "Erreur d'upload photo", description: describeError(error, 'EditProfileDialog'), variant: 'destructive' });
       return undefined;
     }
     const { data: publicUrlData } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(data.path);
@@ -268,7 +269,7 @@ const EditProfileDialog = ({
 
       const { error } = await supabase.from(table).update(payload).eq('id', recordId);
       if (error) {
-        toast({ title: 'Échec de la mise à jour', description: error.message, variant: 'destructive' });
+        toast({ title: 'Échec de la mise à jour', description: describeError(error, 'EditProfileDialog'), variant: 'destructive' });
         setIsSavingProfile(false);
         return;
       }
@@ -303,7 +304,7 @@ const EditProfileDialog = ({
       }
       const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) {
-        toast({ title: 'Échec du changement', description: error.message, variant: 'destructive' });
+        toast({ title: 'Échec du changement', description: describeError(error, 'EditProfileDialog'), variant: 'destructive' });
         setIsSavingPassword(false);
         return;
       }

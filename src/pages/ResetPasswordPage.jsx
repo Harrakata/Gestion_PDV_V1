@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { describeError } from '@/lib/errors';
 import { Link, useNavigate } from 'react-router-dom';
 import { KeyRound, Loader2, ShieldCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -74,7 +75,7 @@ const ResetPasswordPage = () => {
     try {
       const { error } = await defaultSupabase.auth.updateUser({ password: newPassword });
       if (error) {
-        toast({ title: 'Échec', description: error.message, variant: 'destructive' });
+        toast({ title: 'Échec', description: describeError(error, 'ResetPasswordPage'), variant: 'destructive' });
         setIsLoading(false);
         return;
       }

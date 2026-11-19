@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { describeError } from '@/lib/errors';
 import SpaceHeaderIdentity from '@/components/SpaceHeaderIdentity';
 import SpaceHeaderProfile from '@/components/SpaceHeaderProfile';
 import SpaceMobileHeader from '@/components/SpaceMobileHeader';
@@ -16,6 +17,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabaseClient';
 import { smartSignIn, fetchOrLinkAuthProfile } from '@/lib/smartAuth';
 import { useActivityTracker } from '@/hooks/useActivityTracker';
+import { useSessionTimeout } from '@/hooks/useSessionTimeout';
 import {
   APP_SPACE_TAB_SETTINGS_KEY,
   APP_SPACE_USER_PROFILES_SETTINGS_KEY,
@@ -177,7 +179,7 @@ const AgencesSecteurSection = ({ chef }) => {
       const { data, error } = await supabase
         .from('agences').select('*').eq('is_current', true).eq('secteur', chef.secteurEnCharge).order('nom', { ascending: true });
       if (cancelled) return;
-      if (error) toast({ title: 'Erreur de chargement', description: error.message, variant: 'destructive' });
+      if (error) toast({ title: 'Erreur de chargement', description: describeError(error, 'EspaceChefSecteurPage'), variant: 'destructive' });
       else setAgences(data || []);
       setIsLoading(false);
     })();
@@ -283,6 +285,9 @@ const EspaceChefSecteurPage = () => {
   useEffect(() => { setIsMobileMenuOpen(false); }, [activeSection]);
 
   useActivityTracker({ spaceKey: 'espace-chef-secteur', isAuthenticated, identity: chef });
+
+  // Déconnexion automatique après inactivité (durée : Paramètres > session).
+  useSessionTimeout(null, () => handleLogout(), AUTH_KEY, { enabled: isAuthenticated });
 
   const handleLogin = useCallback((profile) => {
     setChef(profile);

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { describeError } from '@/lib/errors';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabaseClient';
@@ -127,7 +128,7 @@ const Scd2HistoryDialog = ({
     const { error } = await supabase.from(tableName).update(payload).eq('id', editingId);
     setIsSaving(false);
     if (error) {
-      toast({ title: 'Erreur sauvegarde', description: error.message, variant: 'destructive' });
+      toast({ title: 'Erreur sauvegarde', description: describeError(error, 'Scd2HistoryDialog'), variant: 'destructive' });
     } else {
       toast({ title: 'Dates mises à jour', className: 'bg-green-500 text-white' });
       cancelEdit();
@@ -145,7 +146,7 @@ const Scd2HistoryDialog = ({
       setNewAffectation('');
       await load(tableName, keyField, keyValue);
     } catch (e) {
-      toast({ title: 'Erreur', description: e.message, variant: 'destructive' });
+      toast({ title: 'Erreur', description: describeError(e, 'Scd2HistoryDialog'), variant: 'destructive' });
     }
     setIsSavingAffectation(false);
   };

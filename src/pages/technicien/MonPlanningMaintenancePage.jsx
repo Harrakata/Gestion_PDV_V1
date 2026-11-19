@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { describeError } from '@/lib/errors';
 import { AnimatePresence, motion } from 'framer-motion';
 import { usePageState } from '@/hooks/usePageState';
 import {
@@ -183,7 +184,7 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
     if (planningError) {
       toast({
         title: 'Erreur de chargement',
-        description: planningError.message,
+        description: describeError(planningError, 'MonPlanningMaintenancePage'),
         variant: 'destructive',
       });
       setPlanningEntries([]);
@@ -195,7 +196,7 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
       if (!isMissingMaintenancePlanningRequestTableError(requestsError)) {
         toast({
           title: 'Erreur de chargement des demandes',
-          description: requestsError.message,
+          description: describeError(requestsError, 'MonPlanningMaintenancePage'),
           variant: 'destructive',
         });
       }
@@ -423,7 +424,7 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
 
       toast({
         title: "Erreur d’envoi",
-        description: error.message,
+        description: describeError(error, 'MonPlanningMaintenancePage'),
         variant: 'destructive',
       });
     } else {

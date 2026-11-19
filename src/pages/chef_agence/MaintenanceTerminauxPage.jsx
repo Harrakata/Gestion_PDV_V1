@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { describeError } from '@/lib/errors';
 import { useOutletContext } from 'react-router-dom';
 import { usePageState } from '@/hooks/usePageState';
 import { motion } from 'framer-motion';
@@ -38,7 +39,7 @@ import { APP_SPACE_TAB_SETTINGS_KEY, isAppSpaceUserTabAllowed, normalizeAppSpace
 const ALL_FILTER_VALUE = '__all__';
 
 const MaintenanceTerminauxPage = () => {
-  const { nomAgence, chefDetails } = useOutletContext();
+  const { nomAgence, chefDetails, chefInfo } = useOutletContext();
   const { toast } = useToast();
   const [agenceRecord, setAgenceRecord] = useState(null);
   const [terminaux, setTerminaux] = useState([]);
@@ -414,7 +415,7 @@ const MaintenanceTerminauxPage = () => {
     if (error) {
       toast({
         title: 'Traitement impossible',
-        description: error.message,
+        description: describeError(error, 'MaintenanceTerminauxPage'),
         variant: 'destructive',
       });
     } else {

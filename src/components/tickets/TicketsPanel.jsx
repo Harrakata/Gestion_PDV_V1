@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { describeError } from '@/lib/errors';
 import { Ticket, Plus, Loader2, Settings2, X, List, LayoutGrid, AlertTriangle, Inbox, CircleDot, Clock, CheckCircle2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -55,7 +56,7 @@ const TicketsPanel = ({ mode = 'declarant', identity = {}, filter = {}, spaceKey
   const load = useCallback(async () => {
     setIsLoading(true);
     const { rows, error } = await fetchTickets(filter);
-    if (error) toast({ title: 'Erreur de chargement', description: error.message, variant: 'destructive' });
+    if (error) toast({ title: 'Erreur de chargement', description: describeError(error, 'TicketsPanel'), variant: 'destructive' });
     setAllRows(rows);
     setIsLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -92,7 +93,7 @@ const TicketsPanel = ({ mode = 'declarant', identity = {}, filter = {}, spaceKey
     const patch = { statut };
     if (statut === TICKET_STATUSES.RESOLVED) patch.resolu_par = identity.nom || null;
     const { error } = await updateTicket(id, patch);
-    if (error) { toast({ title: 'Erreur', description: error.message, variant: 'destructive' }); return; }
+    if (error) { toast({ title: 'Erreur', description: describeError(error, 'TicketsPanel'), variant: 'destructive' }); return; }
     toast({ title: 'Statut mis à jour', description: ticketLabel(statut) });
     load();
   };
@@ -101,7 +102,7 @@ const TicketsPanel = ({ mode = 'declarant', identity = {}, filter = {}, spaceKey
     setActingId(row.id);
     const { error } = await updateTicket(row.id, { statut: TICKET_STATUSES.CANCELLED });
     setActingId(null);
-    if (error) { toast({ title: 'Erreur', description: error.message, variant: 'destructive' }); return; }
+    if (error) { toast({ title: 'Erreur', description: describeError(error, 'TicketsPanel'), variant: 'destructive' }); return; }
     toast({ title: 'Ticket annulé' });
     load();
   };

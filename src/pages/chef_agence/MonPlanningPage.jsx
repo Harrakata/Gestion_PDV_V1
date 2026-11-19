@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { describeError } from '@/lib/errors';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Calendar, CalendarDays, ChevronLeft, ChevronRight, PlusCircle, Copy, Trash2, UserPlus, Repeat } from 'lucide-react';
@@ -61,7 +62,7 @@ const MonPlanningPage = () => {
 
     if (error) {
       if (!isSupabaseAuthError(error)) {
-        toast({ title: 'Erreur de chargement du planning', description: error.message, variant: 'destructive' });
+        toast({ title: 'Erreur de chargement du planning', description: describeError(error, 'MonPlanningPage'), variant: 'destructive' });
       }
       setPlanning({});
     } else {
@@ -145,7 +146,7 @@ const MonPlanningPage = () => {
       const isSilent = msg.includes('no suitable key') || msg.includes('wrong key type')
         || msg.includes('jwt') || error.status === 401;
       if (!isSilent) {
-        toast({ title: 'Erreur de chargement des guichetières', description: error.message, variant: 'destructive' });
+        toast({ title: 'Erreur de chargement des guichetières', description: describeError(error, 'MonPlanningPage'), variant: 'destructive' });
       }
     } else {
       setGuichetieresAgence(data || []);
@@ -170,7 +171,7 @@ const MonPlanningPage = () => {
       ) {
         toast({
           title: 'Erreur chargement demandes planning',
-          description: error.message,
+          description: describeError(error, 'MonPlanningPage'),
           variant: 'destructive',
         });
       }
@@ -320,7 +321,7 @@ const MonPlanningPage = () => {
     setIsLoading(true);
     const { error } = await supabase.from('planning').delete().eq('id', planningId);
     if (error) {
-      toast({ title: 'Erreur de suppression', description: error.message, variant: 'destructive' });
+      toast({ title: 'Erreur de suppression', description: describeError(error, 'MonPlanningPage'), variant: 'destructive' });
     } else {
       toast({ title: 'Succès', description: 'Guichetière retirée du planning.', className: "bg-red-500 text-white" });
       fetchPlanning(); 
@@ -362,7 +363,7 @@ const MonPlanningPage = () => {
         .eq('id', editingEvent.planningId);
 
     if (error) {
-        toast({ title: 'Erreur de remplacement', description: error.message, variant: 'destructive' });
+        toast({ title: 'Erreur de remplacement', description: describeError(error, 'MonPlanningPage'), variant: 'destructive' });
     } else {
         toast({ title: 'Succès', description: 'Guichetière remplacée avec succès.', className: "bg-green-500 text-white" });
         fetchPlanning();
@@ -552,7 +553,7 @@ const MonPlanningPage = () => {
     } catch (error) {
       toast({
         title: 'Traitement impossible',
-        description: error.message,
+        description: describeError(error, 'MonPlanningPage'),
         variant: 'destructive',
       });
     } finally {
@@ -610,31 +611,33 @@ const MonPlanningPage = () => {
               </CardTitle>
               <CardDescription className="text-xs sm:text-sm md:text-base">Gérez le planning des guichetières pour votre agence.</CardDescription>
             </div>
-            <div className="flex gap-2 self-start sm:self-center">
-              <Button size="sm" variant={viewMode === 'month' ? 'default' : 'outline'} onClick={() => setViewMode('month')} disabled={isLoading}>Mois</Button>
-              <Button size="sm" variant={viewMode === 'week' ? 'default' : 'outline'} onClick={() => setViewMode('week')} disabled={isLoading}>Semaine</Button>
+            <div className="planning-toolbar flex shrink-0 gap-0.5 self-start rounded-lg border border-border bg-muted/40 p-0.5 sm:self-center">
+              <Button size="sm" variant={viewMode === 'month' ? 'default' : 'ghost'} onClick={() => setViewMode('month')} disabled={isLoading}>Mois</Button>
+              <Button size="sm" variant={viewMode === 'week' ? 'default' : 'ghost'} onClick={() => setViewMode('week')} disabled={isLoading}>Semaine</Button>
             </div>
           </div>
-          <div className="mt-3 md:mt-6 flex flex-col sm:flex-row justify-between items-center gap-3 md:gap-4">
-            <div className="flex items-center gap-1 md:gap-2">
-              <Button variant="outline" size="icon" onClick={handlePrev} disabled={isLoading} className="h-8 w-8 md:h-9 md:w-9"><ChevronLeft className="h-4 w-4" /></Button>
-              <h2 className="text-base sm:text-lg md:text-xl font-semibold text-foreground whitespace-nowrap">
+          {/* Barre d'outils compacte : navigation (gauche) + actions (droite), repli sur 2 lignes max en mobile */}
+          <div className="planning-toolbar mt-2 flex flex-wrap items-center justify-between gap-1.5 md:mt-6 md:gap-4">
+            <div className="flex min-w-0 items-center gap-1 md:gap-2">
+              <Button variant="outline" size="icon" onClick={handlePrev} disabled={isLoading} className="h-8 w-8 md:h-9 md:w-9" aria-label="Période précédente"><ChevronLeft className="h-4 w-4" /></Button>
+              <h2 className="min-w-0 truncate text-sm font-semibold capitalize text-foreground sm:text-lg md:text-xl">
                 {format(currentMonth, viewMode === 'month' ? 'MMMM yyyy' : "'Semaine du' dd MMMM", { locale: fr })}
               </h2>
-              <Button variant="outline" size="icon" onClick={handleNext} disabled={isLoading} className="h-8 w-8 md:h-9 md:w-9"><ChevronRight className="h-4 w-4" /></Button>
+              <Button variant="outline" size="icon" onClick={handleNext} disabled={isLoading} className="h-8 w-8 md:h-9 md:w-9" aria-label="Période suivante"><ChevronRight className="h-4 w-4" /></Button>
+            </div>
+            <div className="flex flex-wrap items-center gap-1 md:gap-2">
               <Button size="sm" variant="outline" onClick={handleToday} disabled={isLoading} className="text-xs md:text-sm">Aujourd'hui</Button>
               <input
                 type="date"
                 disabled={isLoading}
                 value={format(currentMonth, 'yyyy-MM-dd')}
                 onChange={(e) => { if (e.target.value) setCurrentMonth(parseISO(e.target.value)); }}
-                className="h-8 rounded-md border border-input bg-white px-2 text-xs text-slate-900 shadow-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                className="h-8 w-[7.5rem] rounded-md border border-input bg-white px-2 text-xs text-slate-900 shadow-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:w-auto md:text-sm"
                 title="Aller à une date"
+                aria-label="Aller à une date"
               />
-            </div>
-            <div className="flex gap-2">
-              <Button size="sm" variant="outline" onClick={() => handleCopyPrevious('week')} disabled={isLoading} className="text-xs md:text-sm"><Copy className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" /> Copier Sem.</Button>
-              <Button size="sm" variant="outline" onClick={() => handleCopyPrevious('month')} disabled={isLoading} className="text-xs md:text-sm"><Copy className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" /> Copier Mois</Button>
+              <Button size="sm" variant="outline" onClick={() => handleCopyPrevious('week')} disabled={isLoading} className="text-xs md:text-sm" title="Copier la semaine précédente"><Copy className="mr-1 h-3 w-3 md:mr-2 md:h-4 md:w-4" /><span className="hidden sm:inline">Copier&nbsp;</span>Sem.</Button>
+              <Button size="sm" variant="outline" onClick={() => handleCopyPrevious('month')} disabled={isLoading} className="text-xs md:text-sm" title="Copier le mois précédent"><Copy className="mr-1 h-3 w-3 md:mr-2 md:h-4 md:w-4" /><span className="hidden sm:inline">Copier&nbsp;</span>Mois</Button>
             </div>
           </div>
         </CardHeader>

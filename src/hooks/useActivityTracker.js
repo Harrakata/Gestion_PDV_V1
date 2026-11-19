@@ -9,6 +9,7 @@ import {
   startActivitySession,
   touchActivitySession,
 } from '@/lib/userActivity';
+import { setMonitoringContext } from '@/lib/monitoring';
 
 const HEARTBEAT_INTERVAL_MS = 60 * 1000;
 const SESSION_STORAGE_PREFIX = 'ps:activity:session:';
@@ -62,6 +63,14 @@ export function useActivityTracker({ spaceKey, isAuthenticated, identity }) {
   identityRef.current = normalizedIdentity;
 
   const userKey = normalizedIdentity?.userKey || null;
+
+  // Contexte de monitoring : chaque erreur remontée indique l'espace et
+  // l'identifiant technique de l'utilisateur (ni nom ni e-mail).
+  useEffect(() => {
+    if (!isAuthenticated || !userKey) return undefined;
+    setMonitoringContext({ space: spaceKey, userKey });
+    return () => setMonitoringContext(null);
+  }, [isAuthenticated, userKey, spaceKey]);
   const active = Boolean(isAuthenticated && spaceKey && userKey);
 
   // ── Démarrage / clôture de session ────────────────────────

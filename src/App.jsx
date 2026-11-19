@@ -4,6 +4,7 @@ import Layout from '@/components/Layout';
 import HomePage from '@/pages/HomePage';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { Toaster } from '@/components/ui/toaster';
+import { ConfirmDialogProvider } from '@/components/ConfirmDialogProvider';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { FeatureFlagsProvider, useClient } from '@/hooks/useFeatureFlags';
 import { loadAndApplyTheme, applyThemeFromCache } from '@/lib/theme';
@@ -114,6 +115,7 @@ const App = () => (
   <FeatureFlagsProvider>
     <TooltipProvider>
     <BrowserRouter>
+    <ConfirmDialogProvider>
       <ThemeLoader />
       <ClientTitle />
       <Routes>
@@ -198,6 +200,7 @@ const App = () => (
         </Route>
       </Routes>
       <Toaster />
+    </ConfirmDialogProvider>
     </BrowserRouter>
     </TooltipProvider>
   </FeatureFlagsProvider>

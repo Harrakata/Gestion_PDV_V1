@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { describeError } from '@/lib/errors';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -223,7 +224,7 @@ const OrgStructureCard = ({
       await setOrgStructure(partial);
       toast({ title: 'Structure mise à jour', className: 'bg-green-500 text-white' });
     } catch (error) {
-      toast({ title: 'Erreur de sauvegarde', description: error.message, variant: 'destructive' });
+      toast({ title: 'Erreur de sauvegarde', description: describeError(error, 'OrgStructureCard'), variant: 'destructive' });
     }
     setPending(null);
   };

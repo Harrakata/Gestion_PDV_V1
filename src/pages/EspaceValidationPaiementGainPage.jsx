@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { describeError } from '@/lib/errors';
 import SpaceHeaderIdentity from '@/components/SpaceHeaderIdentity';
 import SpaceHeaderProfile from '@/components/SpaceHeaderProfile';
 import SpaceMobileHeader from '@/components/SpaceMobileHeader';
@@ -33,6 +34,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
 import KpiStatCard from '@/components/analytics/KpiStatCard';
 import { useActivityTracker } from '@/hooks/useActivityTracker';
+import { useSessionTimeout } from '@/hooks/useSessionTimeout';
 import EditProfileDialog from '@/components/EditProfileDialog';
 import ForgotPasswordDialog from '@/components/ForgotPasswordDialog';
 import SpaceLoginCard from '@/components/SpaceLoginCard';
@@ -237,6 +239,9 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
     identity: validator,
   });
 
+  // Déconnexion automatique après inactivité (durée : Paramètres > session).
+  useSessionTimeout(null, () => handleLogout(), spaceConfig.storageKey, { enabled: Boolean(validator) });
+
   useEffect(() => {
     const storedValidator = getStoredValidatorForSpace(
       spaceConfig.storageKey,
@@ -265,7 +270,7 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
       if (!isSupabaseAuthError(demandesError)) {
         toast({
           title: 'Erreur chargement demandes',
-          description: demandesError.message,
+          description: describeError(demandesError, 'EspaceValidationPaiementGainPage'),
           variant: 'destructive',
         });
       }
@@ -281,7 +286,7 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
       }
       toast({
         title: 'Erreur chargement historique',
-        description: eventsError.message,
+        description: describeError(eventsError, 'EspaceValidationPaiementGainPage'),
         variant: 'destructive',
       });
     } else {
@@ -489,7 +494,7 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
     if (updateError) {
       toast({
         title: 'Action impossible',
-        description: updateError.message,
+        description: describeError(updateError, 'EspaceValidationPaiementGainPage'),
         variant: 'destructive',
       });
       setIsActionLoading(false);

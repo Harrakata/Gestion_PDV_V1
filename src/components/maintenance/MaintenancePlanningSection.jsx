@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { describeError } from '@/lib/errors';
 import { motion } from 'framer-motion';
 import { addMonths, addWeeks, endOfMonth, endOfWeek, eachDayOfInterval, format, getDay, isSameDay, isSameMonth, parseISO, startOfMonth, startOfWeek, subMonths, subWeeks } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -179,33 +180,33 @@ const MaintenancePlanningSection = ({
     ]);
 
     if (regionsError && !isSupabaseAuthError(regionsError)) {
-      toast({ title: 'Erreur chargement régions', description: regionsError.message, variant: 'destructive' });
+      toast({ title: 'Erreur chargement régions', description: describeError(regionsError, 'MaintenancePlanningSection'), variant: 'destructive' });
     } else {
       setRegions(regionsData || []);
     }
 
     if (agencesError) {
       if (!isSupabaseAuthError(agencesError)) {
-        toast({ title: 'Erreur chargement agences', description: agencesError.message, variant: 'destructive' });
+        toast({ title: 'Erreur chargement agences', description: describeError(agencesError, 'MaintenancePlanningSection'), variant: 'destructive' });
       }
     } else {
       setAgences(agencesData || []);
     }
 
     if (techniciensError && !isSupabaseAuthError(techniciensError)) {
-      toast({ title: 'Erreur chargement techniciens', description: techniciensError.message, variant: 'destructive' });
+      toast({ title: 'Erreur chargement techniciens', description: describeError(techniciensError, 'MaintenancePlanningSection'), variant: 'destructive' });
     } else {
       setTechniciens(techniciensData || []);
     }
 
     if (terminauxError && !isSupabaseAuthError(terminauxError)) {
-      toast({ title: 'Erreur chargement terminaux', description: terminauxError.message, variant: 'destructive' });
+      toast({ title: 'Erreur chargement terminaux', description: describeError(terminauxError, 'MaintenancePlanningSection'), variant: 'destructive' });
     } else {
       setTerminaux(terminauxData || []);
     }
 
     if (interventionsError && !isSupabaseAuthError(interventionsError)) {
-      toast({ title: 'Erreur chargement interventions', description: interventionsError.message, variant: 'destructive' });
+      toast({ title: 'Erreur chargement interventions', description: describeError(interventionsError, 'MaintenancePlanningSection'), variant: 'destructive' });
     } else {
       setInterventions(interventionsData || []);
     }
@@ -644,7 +645,7 @@ const MaintenancePlanningSection = ({
     const { error } = await query;
 
     if (error) {
-      toast({ title: "Erreur d'enregistrement", description: error.message, variant: 'destructive' });
+      toast({ title: "Erreur d'enregistrement", description: describeError(error, 'MaintenancePlanningSection'), variant: 'destructive' });
     } else {
       toast({
         title: currentPlanning ? 'Planning mis à jour' : 'Planning créé',
@@ -685,7 +686,7 @@ const MaintenancePlanningSection = ({
       .eq('id', planningId);
 
     if (error) {
-      toast({ title: 'Erreur annulation', description: error.message, variant: 'destructive' });
+      toast({ title: 'Erreur annulation', description: describeError(error, 'MaintenancePlanningSection'), variant: 'destructive' });
     } else {
       toast({
         title: 'Planification annulée',
@@ -799,7 +800,7 @@ const MaintenancePlanningSection = ({
     const { error } = await supabase.from('planning_maintenance').insert(pendingEntries);
 
     if (error) {
-      toast({ title: 'Erreur de copie', description: error.message, variant: 'destructive' });
+      toast({ title: 'Erreur de copie', description: describeError(error, 'MaintenancePlanningSection'), variant: 'destructive' });
     } else {
       toast({
         title: 'Planning copié',

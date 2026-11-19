@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { describeError } from '@/lib/errors';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -61,7 +62,7 @@ const TicketCreateDialog = ({ open, onOpenChange, declarant, spaceKey, onCreated
     });
     setSaving(false);
     if (error) {
-      toast({ title: 'Échec de la création', description: error.message, variant: 'destructive' });
+      toast({ title: 'Échec de la création', description: describeError(error, 'TicketCreateDialog'), variant: 'destructive' });
       return;
     }
     toast({ title: 'Ticket créé', description: data?.code ? `Référence ${data.code}.` : 'Incident signalé.' });

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { describeError } from '@/lib/errors';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -74,7 +75,7 @@ const TicketProcessDialog = ({ open, onOpenChange, ticket, mode, actor, spaceKey
         commentaire: commentaire?.trim(),
       });
       if (intervErr) {
-        toast({ title: "Intervention non créée", description: intervErr.message, variant: 'destructive' });
+        toast({ title: "Intervention non créée", description: describeError(intervErr, 'TicketProcessDialog'), variant: 'destructive' });
       } else if (interv?.id != null) {
         fields.intervention_id = String(interv.id);
         interventionMsg = ` · Intervention #${interv.id} créée`;
@@ -83,7 +84,7 @@ const TicketProcessDialog = ({ open, onOpenChange, ticket, mode, actor, spaceKey
 
     const { error } = await updateTicket(ticket.id, fields);
     setSaving(false);
-    if (error) { toast({ title: 'Erreur', description: error.message, variant: 'destructive' }); return; }
+    if (error) { toast({ title: 'Erreur', description: describeError(error, 'TicketProcessDialog'), variant: 'destructive' }); return; }
     toast({ title: 'Ticket mis à jour', description: interventionMsg ? interventionMsg.replace(/^ · /, '') : undefined });
 
     // Push au technicien nouvellement (ré)assigné — avec le « sous-ensemble » à réparer

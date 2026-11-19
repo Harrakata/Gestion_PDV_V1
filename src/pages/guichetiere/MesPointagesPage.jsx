@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { describeError } from '@/lib/errors';
 import { useOutletContext } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { BarChart3, CalendarCheck2, Clock3, FileText } from 'lucide-react';
@@ -56,7 +57,7 @@ const MesPointagesPage = () => {
       if (!isSupabaseAuthError(planningError)) {
         toast({
           title: 'Erreur chargement planning',
-          description: planningError.message,
+          description: describeError(planningError, 'MesPointagesPage'),
           variant: 'destructive',
         });
       }
@@ -69,7 +70,7 @@ const MesPointagesPage = () => {
       if (!isSupabaseAuthError(pointagesError)) {
         toast({
           title: 'Erreur chargement pointages',
-          description: pointagesError.message,
+          description: describeError(pointagesError, 'MesPointagesPage'),
           variant: 'destructive',
         });
       }

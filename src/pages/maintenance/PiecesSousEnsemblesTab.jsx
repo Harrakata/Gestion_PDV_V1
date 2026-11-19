@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useConfirm } from '@/components/ConfirmDialogProvider';
+import { describeError } from '@/lib/errors';
 import { supabase } from '@/lib/supabaseClient';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -52,6 +54,7 @@ const formatPrice = (value) => Number(value || 0).toLocaleString('fr-FR', {
 
 const PiecesSousEnsemblesTab = ({ canManage = true }) => {
   const { toast } = useToast();
+  const { confirm } = useConfirm();
   const [pieces, setPieces] = useState([]);
   const [modeles, setModeles] = useState([]);
   const [stockPieces, setStockPieces] = useState([]);
@@ -283,21 +286,22 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
       const { error } = editingPiece
         ? await supabase.from('pieces_sous_ensembles').update(dataToSave).eq('id', editingPiece.id)
         : await supabase.from('pieces_sous_ensembles').insert(dataToSave);
-      if (error) { showErr(error.message); } else {
+      if (error) { showErr(describeError(error, 'PiecesSousEnsemblesTab')); } else {
         showOk(`Pièce ${editingPiece ? 'modifiée' : 'ajoutée'}.`);
         setIsPieceOpen(false);
         resetPhotoState();
         load();
       }
     } catch (err) {
-      showErr(err.message);
+      showErr(describeError(err, 'PiecesSousEnsemblesTab'));
     }
     setIsLoading(false);
   };
 
   const deletePiece = async (id) => {
-    if (!window.confirm('Supprimer cette pièce ?')) return;
-    await supabase.from('pieces_sous_ensembles').delete().eq('id', id);
+    if (!(await confirm({ title: 'Supprimer cette pièce ?', description: 'Elle sera retirée du catalogue.', destructive: true }))) return;
+    const { error } = await supabase.from('pieces_sous_ensembles').delete().eq('id', id);
+    if (error) { showErr(describeError(error, 'PiecesSousEnsemblesTab')); return; }
     showOk('Pièce supprimée.'); load();
   };
 
@@ -341,7 +345,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
       description_verification: form.description_verification.trim(),
       ordre: checks.length,
     });
-    if (error) { showErr(error.message); return; }
+    if (error) { showErr(describeError(error, 'PiecesSousEnsemblesTab')); return; }
     setNewCheckForms(prev => ({ ...prev, [panneId]: { description_verification: '', piece_id: '' } }));
     loadHelp(helpPiece.id);
   };
@@ -388,12 +392,14 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
     const { error } = editingModele
       ? await supabase.from('modeles_sous_ensembles').update(modeleForm).eq('id', editingModele.id)
       : await supabase.from('modeles_sous_ensembles').insert(modeleForm);
-    if (error) { showErr(error.message); } else { showOk('Modèle sauvegardé.'); setIsModeleOpen(false); load(); }
+    if (error) { showErr(describeError(error, 'PiecesSousEnsemblesTab')); } else { showOk('Modèle sauvegardé.'); setIsModeleOpen(false); load(); }
   };
 
   const deleteModele = async (id) => {
-    if (!window.confirm('Supprimer ce modèle ?')) return;
-    await supabase.from('modeles_sous_ensembles').delete().eq('id', id); load();
+    if (!(await confirm({ title: 'Supprimer ce modèle ?', description: 'Le modèle de composition sera supprimé définitivement.', destructive: true }))) return;
+    const { error } = await supabase.from('modeles_sous_ensembles').delete().eq('id', id);
+    if (error) { showErr(describeError(error, 'PiecesSousEnsemblesTab')); return; }
+    showOk('Modèle supprimé.'); load();
   };
 
   const openCompo = async (modele) => { setSelectedModele(modele); setSelectedCompoPiece(null); setIsCompoOpen(true); await loadCompo(modele.id); };
@@ -404,7 +410,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
       { modele_id: selectedModele.id, piece_id: addToModele.piece_id, quantite: Number(addToModele.quantite) || 1 },
       { onConflict: 'modele_id,piece_id' }
     );
-    if (error) { showErr(error.message); return; }
+    if (error) { showErr(describeError(error, 'PiecesSousEnsemblesTab')); return; }
     setAddToModele({ piece_id: '', quantite: 1 }); loadCompo(selectedModele.id);
   };
 
@@ -428,7 +434,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
       setIsStockOpen(false);
       setStockForm({ piece_id: '', type: 'entree', quantite: 1, motif: '' });
       load();
-    } else { showErr(error.message); }
+    } else { showErr(describeError(error, 'PiecesSousEnsemblesTab')); }
     setIsLoading(false);
   };
 
@@ -470,7 +476,9 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
   const parseImportFile = (file) => {
     const reader = new FileReader();
     reader.onload = (e) => {
-      const text = e.target.result.replace(/^﻿/, '');
+      // Retire l'éventuel BOM UTF-8 (U+FEFF) en tête de fichier CSV.
+      const raw = e.target.result;
+      const text = raw.charCodeAt(0) === 0xfeff ? raw.slice(1) : raw;
       const lines = text.split(/\r?\n/).filter(l => l.trim());
       if (lines.length < 2) { showErr('Fichier vide ou sans données.'); return; }
       const delimiter = lines[0].includes(';') ? ';' : ',';

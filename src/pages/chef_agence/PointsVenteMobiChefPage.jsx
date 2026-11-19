@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { describeError } from '@/lib/errors';
 import { useOutletContext } from 'react-router-dom';
 import { usePageState } from '@/hooks/usePageState';
 import { isMobiPointCurrent, mobiPointDisplayStatus, mobiToday } from '@/lib/mobiPointValidity';
@@ -428,7 +429,7 @@ const PointsVenteMobiChefPage = () => {
       } else {
         toast({
           title: 'Erreur d’envoi',
-          description: error.message,
+          description: describeError(error, 'PointsVenteMobiChefPage'),
           variant: 'destructive',
         });
       }
@@ -464,7 +465,7 @@ const PointsVenteMobiChefPage = () => {
       await loadSuiviData();
       toast({
         title: 'Synchronisation impossible',
-        description: cause?.message || 'La dernière version enregistrée reste affichée.',
+        description: describeError(cause, 'PointsVenteMobiChefPage', 'La dernière version enregistrée reste affichée.'),
         variant: 'destructive',
       });
     } finally {

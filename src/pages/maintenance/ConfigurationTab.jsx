@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useConfirm } from '@/components/ConfirmDialogProvider';
+import { describeError } from '@/lib/errors';
 import { ChevronDown, ChevronUp, Download, Edit, FileUp, MapPinned, PackageCheck, Search, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -299,6 +301,7 @@ const ConfigurationTab = ({
   readOnlyMessage = '',
 }) => {
   const { toast } = useToast();
+  const { confirm } = useConfirm();
   const assembledImportInputRef = useRef(null);
   const [regions, setRegions] = useState([]);
   const [agences, setAgences] = useState([]);
@@ -973,7 +976,7 @@ const ConfigurationTab = ({
     if (error) {
       toast({
         title: "Erreur d'enregistrement",
-        description: error.message,
+        description: describeError(error, 'ConfigurationTab'),
         variant: 'destructive',
       });
       setIsLoading(false);
@@ -999,7 +1002,7 @@ const ConfigurationTab = ({
         }
         toast({
           title: "Erreur d'assignation",
-          description: assignmentError?.message || 'Le terminal assemblé n’a pas pu être marqué comme assigné.',
+          description: describeError(assignmentError, 'ConfigurationTab', 'Le terminal assemblé n’a pas pu être marqué comme assigné.'),
           variant: 'destructive',
         });
         setIsLoading(false);
@@ -1089,7 +1092,7 @@ const ConfigurationTab = ({
       return;
     }
 
-    if (!window.confirm(`Supprimer le terminal ${terminal.reference} ? Cette action retirera aussi sa configuration actuelle.`)) {
+    if (!(await confirm({ title: `Supprimer le terminal ${terminal.reference} ?`, description: 'Sa configuration actuelle sera également retirée.', destructive: true }))) {
       return;
     }
 
@@ -1099,7 +1102,7 @@ const ConfigurationTab = ({
     if (error) {
       toast({
         title: 'Erreur de suppression',
-        description: error.message,
+        description: describeError(error, 'ConfigurationTab'),
         variant: 'destructive',
       });
       setIsLoading(false);
@@ -1248,7 +1251,7 @@ const ConfigurationTab = ({
     } catch (error) {
       toast({
         title: 'Erreur import terminaux assemblés',
-        description: error.message || 'Impossible de lire le fichier CSV.',
+        description: describeError(error, 'ConfigurationTab', 'Impossible de lire le fichier CSV.'),
         variant: 'destructive',
       });
     } finally {
@@ -1271,7 +1274,7 @@ const ConfigurationTab = ({
     if (error) {
       toast({
         title: 'Erreur de libération',
-        description: error.message,
+        description: describeError(error, 'ConfigurationTab'),
         variant: 'destructive',
       });
       return;
@@ -1295,7 +1298,7 @@ const ConfigurationTab = ({
       return;
     }
 
-    if (!window.confirm(`Supprimer le terminal assemblé ${terminal.reference} du stock ?`)) {
+    if (!(await confirm({ title: `Retirer ${terminal.reference} du stock ?`, description: 'Le terminal assemblé sera supprimé du stock.', destructive: true }))) {
       return;
     }
 
@@ -1303,7 +1306,7 @@ const ConfigurationTab = ({
     if (error) {
       toast({
         title: 'Erreur de suppression',
-        description: error.message,
+        description: describeError(error, 'ConfigurationTab'),
         variant: 'destructive',
       });
       return;

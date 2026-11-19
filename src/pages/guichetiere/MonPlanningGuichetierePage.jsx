@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { describeError } from '@/lib/errors';
 import { useOutletContext } from 'react-router-dom';
 import { usePageState } from '@/hooks/usePageState';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -124,7 +125,7 @@ const MonPlanningGuichetierePage = () => {
     if (planningError) {
       toast({
         title: 'Erreur de chargement',
-        description: planningError.message,
+        description: describeError(planningError, 'MonPlanningGuichetierePage'),
         variant: 'destructive',
       });
       setPlanningEntries([]);
@@ -139,7 +140,7 @@ const MonPlanningGuichetierePage = () => {
       ) {
         toast({
           title: 'Erreur de chargement des demandes',
-          description: requestsError.message,
+          description: describeError(requestsError, 'MonPlanningGuichetierePage'),
           variant: 'destructive',
         });
       }
@@ -272,7 +273,7 @@ const MonPlanningGuichetierePage = () => {
 
       toast({
         title: 'Erreur d’envoi',
-        description: error.message,
+        description: describeError(error, 'MonPlanningGuichetierePage'),
         variant: 'destructive',
       });
     } else {

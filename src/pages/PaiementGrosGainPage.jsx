@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { describeError } from '@/lib/errors';
 import { Link, useLocation } from 'react-router-dom';
 import { usePageState } from '@/hooks/usePageState';
 import { motion } from 'framer-motion';
@@ -702,7 +703,7 @@ const PaiementGrosGainPage = () => {
       if (uploadError) {
         toast({
           title: 'Erreur pièce d’identité',
-          description: uploadError.message,
+          description: describeError(uploadError, 'PaiementGrosGainPage'),
           variant: 'destructive',
         });
         setIsSubmitting(false);
@@ -858,7 +859,7 @@ const PaiementGrosGainPage = () => {
     if (insertError || !insertedDemande) {
       toast({
         title: "Erreur d'enregistrement",
-        description: insertError?.message || 'Impossible de créer la demande.',
+        description: describeError(insertError, 'PaiementGrosGainPage', 'Impossible de créer la demande.'),
         variant: 'destructive',
       });
       setIsSubmitting(false);
@@ -963,7 +964,7 @@ const PaiementGrosGainPage = () => {
     if (updateError) {
       toast({
         title: 'Action impossible',
-        description: updateError.message,
+        description: describeError(updateError, 'PaiementGrosGainPage'),
         variant: 'destructive',
       });
       setIsChefDecisionLoading(false);
@@ -1043,7 +1044,7 @@ const PaiementGrosGainPage = () => {
     if (updateError) {
       toast({
         title: 'Paiement non confirmé',
-        description: updateError.message,
+        description: describeError(updateError, 'PaiementGrosGainPage'),
         variant: 'destructive',
       });
       setIsPaymentSubmitting(false);

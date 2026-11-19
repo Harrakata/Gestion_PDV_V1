@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { describeError } from '@/lib/errors';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -415,7 +416,7 @@ const EquipmentManager = ({ canManage = true, readOnlyMessage = '' }) => {
             console.warn(`[EquipmentManager] Table ${EQUIPMENT_TYPES[type].table} indisponible :`, error.message);
             setEquipments((prev) => ({ ...prev, [type]: [] }));
           } else {
-            toast({ title: `Erreur chargement ${EQUIPMENT_TYPES[type].label.toLowerCase()}`, description: error.message, variant: 'destructive' });
+            toast({ title: `Erreur chargement ${EQUIPMENT_TYPES[type].label.toLowerCase()}`, description: describeError(error, 'EquipmentManager'), variant: 'destructive' });
           }
         } else {
           setEquipments((prev) => ({ ...prev, [type]: data || [] }));
@@ -476,7 +477,7 @@ const EquipmentManager = ({ canManage = true, readOnlyMessage = '' }) => {
       }
 
       if (error) {
-        toast({ title: "Erreur d'enregistrement", description: error.message, variant: 'destructive' });
+        toast({ title: "Erreur d'enregistrement", description: describeError(error, 'EquipmentManager'), variant: 'destructive' });
       } else {
         toast({
           title: 'Succès',
@@ -513,7 +514,7 @@ const EquipmentManager = ({ canManage = true, readOnlyMessage = '' }) => {
     try {
       const { error } = await supabase.from(table).delete().eq('id', id);
       if (error) {
-        toast({ title: 'Erreur de suppression', description: error.message, variant: 'destructive' });
+        toast({ title: 'Erreur de suppression', description: describeError(error, 'EquipmentManager'), variant: 'destructive' });
       } else {
         toast({ title: 'Succès', description: `${EQUIPMENT_TYPES[type].singular} supprimé.`, className: 'bg-red-500 text-white' });
         loadEquipments();
@@ -601,7 +602,7 @@ const EquipmentManager = ({ canManage = true, readOnlyMessage = '' }) => {
         toast({ title: 'Import réussi', description: `${dataToUpsert.length} ${config.label.toLowerCase()} importé(s)/mis à jour.`, className: 'bg-green-500 text-white' });
         loadEquipments();
       } catch (err) {
-        toast({ title: "Erreur d'import", description: err.message, variant: 'destructive' });
+        toast({ title: "Erreur d'import", description: describeError(err, 'EquipmentManager'), variant: 'destructive' });
       } finally {
         setIsLoading(false);
       }

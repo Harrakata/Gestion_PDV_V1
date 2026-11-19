@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { describeError } from '@/lib/errors';
 import SpaceHeaderIdentity from '@/components/SpaceHeaderIdentity';
 import SpaceHeaderProfile from '@/components/SpaceHeaderProfile';
 import SpaceMobileHeader from '@/components/SpaceMobileHeader';
@@ -36,6 +37,7 @@ import NotifEnableBanner from '@/components/NotifEnableBanner';
 import { isGuichetiereAgenceVisible } from '@/lib/orgStructureConfig';
 import { smartSignIn, fetchAuthLinkedProfile, fetchOrLinkAuthProfile } from '@/lib/smartAuth';
 import { useActivityTracker } from '@/hooks/useActivityTracker';
+import { useSessionTimeout } from '@/hooks/useSessionTimeout';
 import {
   APP_SPACE_TAB_SETTINGS_KEY,
   APP_SPACE_USER_PROFILES_SETTINGS_KEY,
@@ -152,7 +154,7 @@ const LoginPageGuichetiere = ({ onLogin }) => {
       await supabase.auth.signOut();
       toast({
         title: 'Aucune fiche guichetière associée',
-        description: profileErr?.message || 'Votre compte n\'est lié à aucune fiche guichetière active. Contactez un administrateur.',
+        description: describeError(profileErr, 'EspaceGuichetierePage', 'Votre compte n\'est lié à aucune fiche guichetière active. Contactez un administrateur.'),
         variant: 'destructive',
       });
       setIsLoading(false);
@@ -267,6 +269,9 @@ const EspaceGuichetierePage = () => {
     isAuthenticated,
     identity: guichetiereInfo,
   });
+
+  // Déconnexion automatique après inactivité (durée : Paramètres > session).
+  useSessionTimeout(null, () => handleLogout(), GUICHETIERE_AUTH_KEY, { enabled: isAuthenticated });
 
   const { notifications: guichetiereNotifications, totalCount: guichetiereNotifCount } = useSpaceNotifications({
     spaceKey: 'espace-guichetiere',

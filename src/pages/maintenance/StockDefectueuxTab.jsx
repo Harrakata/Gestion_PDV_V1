@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { describeError } from '@/lib/errors';
 import { supabase } from '@/lib/supabaseClient';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -142,7 +143,7 @@ const StockDefectueuxTab = ({ canManage = true, technicienId = null }) => {
     const { error } = await supabase.from('stock_defectueux')
       .update({ statut: 'assigne', technicien_id: String(assignForm.technicien_id), technicien_nom: technicianName })
       .in('id', itemIds);
-    if (error) { showErr(error.message); } else { showOk(isReassignment ? 'Assignation mise à jour.' : 'Sous-ensemble assigné.'); setIsAssignOpen(false); load(); }
+    if (error) { showErr(describeError(error, 'StockDefectueuxTab')); } else { showOk(isReassignment ? 'Assignation mise à jour.' : 'Sous-ensemble assigné.'); setIsAssignOpen(false); load(); }
     setIsLoading(false);
   };
 
@@ -167,7 +168,7 @@ const StockDefectueuxTab = ({ canManage = true, technicienId = null }) => {
     if (statut === 'repare') updates.date_sortie = new Date().toISOString();
     const itemIds = getStockDefectueuxRecordIds(item);
     const { error } = await supabase.from('stock_defectueux').update(updates).in('id', itemIds);
-    if (error) { showErr(error.message); return; }
+    if (error) { showErr(describeError(error, 'StockDefectueuxTab')); return; }
 
     // Quand réparé → remettre le sous-ensemble à Disponible dans sa table équipement
     if (statut === 'repare') {

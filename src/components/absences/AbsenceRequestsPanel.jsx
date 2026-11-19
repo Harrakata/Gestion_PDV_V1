@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { describeError } from '@/lib/errors';
 import { format } from 'date-fns';
 import { CalendarOff, Plus, Loader2, X, List, CalendarDays, Clock, CheckCircle2, XCircle, CalendarRange } from 'lucide-react';
 import AbsenceCalendar from '@/components/absences/AbsenceCalendar';
@@ -42,7 +43,7 @@ const AbsenceRequestsPanel = ({ demandeur }) => {
     if (!demandeur?.id) { setRows([]); setIsLoading(false); return; }
     setIsLoading(true);
     const { rows, error } = await fetchAbsences({ demandeur_id: demandeur.id });
-    if (error) toast({ title: 'Erreur de chargement', description: error.message, variant: 'destructive' });
+    if (error) toast({ title: 'Erreur de chargement', description: describeError(error, 'AbsenceRequestsPanel'), variant: 'destructive' });
     setRows(rows);
     setIsLoading(false);
   }, [demandeur?.id, toast]);
@@ -88,7 +89,7 @@ const AbsenceRequestsPanel = ({ demandeur }) => {
       motif: form.motif?.trim() || null,
     });
     setSaving(false);
-    if (error) { toast({ title: "Échec de l'envoi", description: error.message, variant: 'destructive' }); return; }
+    if (error) { toast({ title: "Échec de l'envoi", description: describeError(error, 'AbsenceRequestsPanel'), variant: 'destructive' }); return; }
     toast({ title: 'Demande envoyée', description: 'Votre demande a été transmise pour validation.' });
     setDialogOpen(false);
     setForm(emptyForm);
@@ -97,7 +98,7 @@ const AbsenceRequestsPanel = ({ demandeur }) => {
 
   const handleCancel = async (id) => {
     const { error } = await cancelAbsence(id);
-    if (error) { toast({ title: 'Erreur', description: error.message, variant: 'destructive' }); return; }
+    if (error) { toast({ title: 'Erreur', description: describeError(error, 'AbsenceRequestsPanel'), variant: 'destructive' }); return; }
     toast({ title: 'Demande annulée' });
     load();
   };

@@ -378,11 +378,11 @@ const NotificationBell = ({ notifications = [], totalCount = 0, onNavigate, stor
               className="notification-bell-popover overflow-hidden rounded-2xl border bg-popover text-popover-foreground shadow-[0_24px_60px_-12px_rgba(15,23,42,0.45)]"
               style={{
                 position: 'relative',
-                // Juste sous l'en-tête mobile commun (~4.25rem + encoche).
-                marginTop: 'calc(4.5rem + env(safe-area-inset-top, 0px))',
+                // Sous l'en-tête mobile commun, même hauteur que le tiroir de menu (5.5rem).
+                marginTop: 'calc(5.5rem + env(safe-area-inset-top, 0px))',
                 width: 'calc(100vw - 1.5rem)',
                 maxWidth: '24rem',
-                maxHeight: 'calc(100dvh - 6rem - env(safe-area-inset-top, 0px))',
+                maxHeight: 'calc(100dvh - 7rem - env(safe-area-inset-top, 0px))',
                 display: 'flex',
                 flexDirection: 'column',
                 pointerEvents: 'auto',

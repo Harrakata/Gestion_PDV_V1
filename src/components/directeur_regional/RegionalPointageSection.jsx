@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { describeError } from '@/lib/errors';
 import { motion } from 'framer-motion';
 import { BarChart3, ClipboardCheck, Clock3, PieChart, Search, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -58,12 +59,12 @@ const RegionalPointageSection = ({ regionName = '', allowAllRegions = false, hid
     ]);
 
     if (regionsError && !isSupabaseAuthError(regionsError)) {
-      toast({ title: 'Erreur chargement régions', description: regionsError.message, variant: 'destructive' });
+      toast({ title: 'Erreur chargement régions', description: describeError(regionsError, 'RegionalPointageSection'), variant: 'destructive' });
     }
 
     if (agencesError) {
       if (!isSupabaseAuthError(agencesError)) {
-        toast({ title: 'Erreur chargement agences', description: agencesError.message, variant: 'destructive' });
+        toast({ title: 'Erreur chargement agences', description: describeError(agencesError, 'RegionalPointageSection'), variant: 'destructive' });
       }
       setIsLoading(false);
       return;
@@ -119,7 +120,7 @@ const RegionalPointageSection = ({ regionName = '', allowAllRegions = false, hid
 
     if (planningError) {
       if (!isSupabaseAuthError(planningError)) {
-        toast({ title: 'Erreur chargement planning pointage', description: planningError.message, variant: 'destructive' });
+        toast({ title: 'Erreur chargement planning pointage', description: describeError(planningError, 'RegionalPointageSection'), variant: 'destructive' });
       }
       setPlanningEntries([]);
     } else {
@@ -128,7 +129,7 @@ const RegionalPointageSection = ({ regionName = '', allowAllRegions = false, hid
 
     if (pointagesError) {
       if (!isSupabaseAuthError(pointagesError)) {
-        toast({ title: 'Erreur chargement pointages', description: pointagesError.message, variant: 'destructive' });
+        toast({ title: 'Erreur chargement pointages', description: describeError(pointagesError, 'RegionalPointageSection'), variant: 'destructive' });
       }
       setPointages([]);
     } else {
@@ -158,7 +159,7 @@ const RegionalPointageSection = ({ regionName = '', allowAllRegions = false, hid
 
     if (guichetieresError) {
       if (!isSupabaseAuthError(guichetieresError)) {
-        toast({ title: 'Erreur chargement guichetières', description: guichetieresError.message, variant: 'destructive' });
+        toast({ title: 'Erreur chargement guichetières', description: describeError(guichetieresError, 'RegionalPointageSection'), variant: 'destructive' });
       }
       setGuichetieresById({});
     } else {
