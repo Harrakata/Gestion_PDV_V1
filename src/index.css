@@ -1864,56 +1864,149 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
   }
 }
 
-/* ── Mobile / PWA : écrans allégés ─────────────────────────────────────────
-   1. Cartes KPI masquées (et leur grille, pour ne pas laisser de vide), sauf
-      sur le Tableau de bord dont elles sont le contenu même.
-   2. Échelle typographique resserrée pour téléphone : titres de page et de
-      carte plus petits, marges internes des cartes réduites. */
+/* ════════════════════════════════════════════════════════════════════════════
+   Mobile / PWA : échelle typographique UNIQUE et écrans allégés (toutes pages :
+   portée #main-content = contenu de l'app, espaces ET pages hors espace ;
+   l'id donne aussi la priorité sur les anciennes règles mobiles). Les fenêtres
+   (dialogues, portalisées hors #main-content) suivent la même échelle via
+   :is(#main-content, [role="dialog"]) — :is() prend la spécificité de l'id.
+   Remplace les tailles hétérogènes des sections mobiles plus haut (d'où les
+   !important : plusieurs anciennes règles en posent déjà). Une seule échelle :
+     titre de page / carte ...... 1.125rem / 1rem
+     texte courant .............. 0.8125rem (13px)
+     onglets, boutons, filtres .. 0.8125rem, hauteur 2.5rem (onglets 2.25rem)
+     descriptions, aides ........ 0.75–0.8125rem
+   ════════════════════════════════════════════════════════════════════════════ */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 @media (max-width: 767px) {
-  .app-space-main :not(.dashboard-white-cards *).kpi-stat-card,
-  .app-space-main .grid:not(.dashboard-white-cards *):has(> .kpi-stat-card):not(:has(> :not(.kpi-stat-card))),
-  .app-space-main .grid:not(.dashboard-white-cards *):has(> * > .kpi-stat-card):not(:has(> :not(:has(> .kpi-stat-card)))) {
+  /* ── Cartes KPI masquées (sauf Tableau de bord, dont c'est le contenu) ── */
+  :is(#main-content, [role="dialog"]) .kpi-stat-card {
     display: none !important;
   }
 
-  .app-space-main .text-3xl {
-    font-size: 1.25rem;
-    line-height: 1.75rem;
+  :is(#main-content, [role="dialog"]) .grid:has(> .kpi-stat-card):not(:has(> :not(.kpi-stat-card))) {
+    display: none !important;
   }
 
-  .app-space-main .text-2xl {
-    font-size: 1.125rem;
-    line-height: 1.5rem;
+  :is(#main-content, [role="dialog"]) .dashboard-white-cards .kpi-stat-card {
+    display: block !important;
   }
 
-  .app-space-main .text-xl {
-    font-size: 1.0625rem;
-    line-height: 1.4rem;
+  :is(#main-content, [role="dialog"]) .dashboard-white-cards .grid:has(> .kpi-stat-card) {
+    display: grid !important;
   }
 
-  .app-space-main .text-lg {
-    font-size: 1rem;
-    line-height: 1.35rem;
+  /* ── Titres ── */
+  :is(#main-content, [role="dialog"]) :is(.text-5xl, .text-4xl, .text-3xl, .text-2xl) {
+    font-size: 1.125rem !important;
+    line-height: 1.5rem !important;
+    letter-spacing: -0.01em;
   }
 
-  .app-space-main .card-description {
-    font-size: 0.8125rem;
-    line-height: 1.35;
+  :is(#main-content, [role="dialog"]) :is(.text-xl, .text-lg) {
+    font-size: 1rem !important;
+    line-height: 1.35rem !important;
   }
 
-  /* Icônes des titres de carte proportionnées au texte réduit */
-  .app-space-main h3 > svg:is(.h-8, .h-7, .h-6) {
-    width: 1.25rem;
-    height: 1.25rem;
-    margin-right: 0.5rem;
+  :is(#main-content, [role="dialog"]) :is(h1, h2, h3, h4) > svg {
+    width: 1.125rem !important;
+    height: 1.125rem !important;
+    margin-right: 0.375rem !important;
   }
 
-  /* Marges internes des cartes (CardHeader p-6 / CardContent p-6 pt-0) */
-  .app-space-main .text-card-foreground > .p-6:not(.pt-0) {
-    padding: 1rem;
+  /* ── Texte courant et descriptions ── */
+  :is(#main-content, [role="dialog"]) {
+    font-size: calc(0.8125rem * var(--mobile-font-scale, 1));
   }
 
-  .app-space-main .text-card-foreground > .p-6.pt-0 {
-    padding: 0 1rem 1rem;
+  :is(#main-content, [role="dialog"]) .text-base {
+    font-size: 0.875rem !important;
+    line-height: 1.3rem !important;
+  }
+
+  :is(#main-content, [role="dialog"]) .text-sm,
+  :is(#main-content, [role="dialog"]) .card-description {
+    font-size: 0.8125rem !important;
+    line-height: 1.2rem !important;
+  }
+
+  :is(#main-content, [role="dialog"]) .text-xs {
+    font-size: 0.6875rem !important;
+    line-height: 1rem !important;
+  }
+
+  :is(#main-content, [role="dialog"]) label {
+    font-size: 0.8125rem !important;
+    line-height: 1.25 !important;
+  }
+
+  /* ── Onglets ── */
+  :is(#main-content, [role="dialog"]) [role="tablist"] {
+    gap: 0.25rem;
+    padding: 0.25rem !important;
+  }
+
+  :is(#main-content, [role="dialog"]) [role="tablist"] [role="tab"] {
+    min-height: 2.25rem !important;
+    padding: 0.375rem 0.75rem !important;
+    font-size: 0.8125rem !important;
+    line-height: 1.1rem !important;
+  }
+
+  :is(#main-content, [role="dialog"]) [role="tablist"] [role="tab"] svg {
+    width: 0.9rem;
+    height: 0.9rem;
+  }
+
+  /* ── Boutons ── */
+  :is(#main-content, [role="dialog"]) [data-ui-button] {
+    min-height: 2.5rem !important;
+    height: auto;
+    padding: 0.375rem 0.875rem;
+    font-size: 0.8125rem !important;
+    line-height: 1.1rem !important;
+  }
+
+  :is(#main-content, [role="dialog"]) [data-ui-button] svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  :is(#main-content, [role="dialog"]) [data-ui-button][data-ui-button-size="icon"] {
+    width: 2.5rem;
+    min-width: 2.5rem !important;
+    padding: 0;
+  }
+
+  /* ── Filtres et champs ── */
+  :is(#main-content, [role="dialog"]) :is(button[role="combobox"], [data-radix-select-trigger]) {
+    min-height: 2.5rem !important;
+    font-size: 0.8125rem !important;
+    line-height: 1.2 !important;
+  }
+
+  :is(#main-content, [role="dialog"]) :is(input, textarea, select):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]) {
+    min-height: 2.5rem;
+    font-size: 0.875rem !important;
+  }
+
+  /* iOS zoome sur un champ < 16px au focus : on y garde 16px. */
+  @supports (-webkit-touch-callout: none) {
+    :is(#main-content, [role="dialog"]) :is(input, textarea, select):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]) {
+      font-size: 1rem !important;
+    }
+  }
+
+  /* ── Marges internes des cartes ── */
+  :is(#main-content, [role="dialog"]) .text-card-foreground > .p-6:not(.pt-0) {
+    padding: 0.875rem !important;
+  }
+
+  :is(#main-content, [role="dialog"]) .text-card-foreground > .p-6.pt-0 {
+    padding: 0 0.875rem 0.875rem !important;
   }
 }
