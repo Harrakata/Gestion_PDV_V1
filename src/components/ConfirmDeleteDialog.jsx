@@ -44,12 +44,12 @@ const ConfirmDeleteDialog = ({
       {/* Bandeau d'alerte */}
       <div className="bg-gradient-to-br from-red-500 to-red-600 px-6 py-5 text-white">
         <div className="flex items-center gap-4">
-          <div className="rounded-2xl bg-white/20 p-3 backdrop-blur-sm">
+          <div className="rounded-2xl bg-card/20 p-3 backdrop-blur-sm">
             <AlertTriangle className="h-7 w-7 text-white" />
           </div>
           <div>
             <DialogTitle className="text-xl font-bold text-white">{title}</DialogTitle>
-            <DialogDescription className="text-red-50/90 text-sm mt-0.5">
+            <DialogDescription className="text-destructive-foreground/90 text-sm mt-0.5">
               {subtitle}
             </DialogDescription>
           </div>
@@ -75,9 +75,9 @@ const ConfirmDeleteDialog = ({
           </div>
         )}
 
-        <div className="space-y-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3">
-          <p className="text-xs font-semibold text-red-800 uppercase tracking-wide">Conséquences</p>
-          <ul className="space-y-1.5 text-xs text-red-700">
+        <div className="space-y-2 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3">
+          <p className="text-xs font-semibold text-destructive uppercase tracking-wide">Conséquences</p>
+          <ul className="space-y-1.5 text-xs text-destructive">
             <li className="flex items-start gap-2">
               <span className="mt-0.5">•</span>
               <span>L'élément sera <strong>supprimé définitivement</strong> de la base.</span>
@@ -117,7 +117,7 @@ const ConfirmDeleteDialog = ({
           variant="destructive"
           onClick={onConfirm}
           disabled={isLoading}
-          className="gap-2 bg-red-600 hover:bg-red-700 text-white"
+          className="gap-2 bg-destructive hover:bg-destructive/90 text-white"
         >
           <Trash2 className="h-4 w-4" />
           {isLoading ? 'Suppression…' : 'Supprimer définitivement'}

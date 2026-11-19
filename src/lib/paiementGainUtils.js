@@ -103,15 +103,15 @@ export const getWorkflowStageLabel = (stage) => {
 
 export const getStatusBadgeClass = (status) => {
   if (status === DEMANDE_STATUSES.AUTHORIZED_FOR_PAYMENT) {
-    return 'border-emerald-200 bg-emerald-50 text-emerald-700';
+    return 'border-success/30 bg-success-muted text-success-muted-foreground';
   }
 
   if (status === DEMANDE_STATUSES.PAID) {
-    return 'border-green-200 bg-green-50 text-green-700';
+    return 'border-success/30 bg-success-muted text-success-muted-foreground';
   }
 
   if (status === DEMANDE_STATUSES.REJECTED) {
-    return 'border-red-200 bg-red-50 text-red-700';
+    return 'border-destructive/30 bg-destructive/10 text-destructive';
   }
 
   if (
@@ -120,10 +120,10 @@ export const getStatusBadgeClass = (status) => {
     status === DEMANDE_STATUSES.PENDING_GENERAL ||
     status === DEMANDE_STATUSES.PENDING_EXPLOITATION
   ) {
-    return 'border-amber-200 bg-amber-50 text-amber-700';
+    return 'border-warning/30 bg-warning-muted text-warning-muted-foreground';
   }
 
-  return 'border-slate-200 bg-slate-100 text-slate-600';
+  return 'border-border bg-muted text-foreground/80';
 };
 
 export const getProcedureForAmount = (amount) => {

@@ -26,7 +26,7 @@ const GuichetierePointageItem = ({ guichetiere, pointages, creneauxPointageSetti
         <Label className="text-xs">Progression ({pointagesEffectues}/{maxPointages})</Label>
         <div className="w-full bg-background dark:bg-gray-700 rounded-full h-2.5 mt-0.5 overflow-hidden">
           <motion.div 
-            className={`h-2.5 rounded-full ${completionPercentage >= 100 ? 'bg-green-500' : 'bg-gradient-to-r from-yellow-400 to-orange-500'}`}
+            className={`h-2.5 rounded-full ${completionPercentage >= 100 ? 'bg-success' : 'bg-gradient-to-r from-yellow-400 to-orange-500'}`}
             initial={{ width: 0 }}
             animate={{ width: `${Math.min(100, completionPercentage)}%`}}
             transition={{ duration: 0.5, ease: "circOut" }}
@@ -44,7 +44,7 @@ const GuichetierePointageItem = ({ guichetiere, pointages, creneauxPointageSetti
          <p className="text-xs text-muted-foreground italic mt-1">Aucun pointage.</p>
       )}
        {pointagesEffectues >= maxPointages && maxPointages > 0 && (
-        <div className="mt-1 text-xs text-green-600 dark:text-green-400 flex items-center">
+        <div className="mt-1 text-xs text-success-muted-foreground dark:text-success flex items-center">
             <CheckCircle className="h-3 w-3 mr-1"/> Pointages complets.
         </div>
       )}
@@ -75,7 +75,7 @@ const AgencyDailySummary = ({ guichetieresPlanifiees, pointagesData, creneauxPoi
       <h4 className="font-semibold text-primary flex items-center"><Activity className="h-5 w-5 mr-2"/>Résumé Agence du Jour</h4>
       <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
         <div className="flex items-center"><Users className="h-4 w-4 mr-1 text-primary/80"/>Planifiées: <span className="font-semibold ml-auto">{totalPlanifiees}</span></div>
-        <div className="flex items-center"><CheckCircle className="h-4 w-4 mr-1 text-green-500"/>Complétés: <span className="font-semibold ml-auto">{guichetieresCompletes}</span></div>
+        <div className="flex items-center"><CheckCircle className="h-4 w-4 mr-1 text-success"/>Complétés: <span className="font-semibold ml-auto">{guichetieresCompletes}</span></div>
         <div className="flex items-center"><Target className="h-4 w-4 mr-1 text-primary/80"/>Pointages Effectués: <span className="font-semibold ml-auto">{totalPointagesEffectues}</span></div>
         <div className="flex items-center"><Target className="h-4 w-4 mr-1 text-primary/80"/>Pointages Attendus: <span className="font-semibold ml-auto">{totalPointagesAttendus}</span></div>
       </div>
@@ -84,7 +84,7 @@ const AgencyDailySummary = ({ guichetieresPlanifiees, pointagesData, creneauxPoi
           <Label className="text-xs text-primary">Taux de complétion global</Label>
           <div className="w-full bg-background dark:bg-gray-700 rounded-full h-3 mt-0.5 overflow-hidden">
             <motion.div 
-              className={`h-3 rounded-full ${completionGlobaleAgence >= 100 ? 'bg-green-500' : 'bg-gradient-to-r from-primary to-cyan-500'}`}
+              className={`h-3 rounded-full ${completionGlobaleAgence >= 100 ? 'bg-success' : 'bg-gradient-to-r from-primary to-cyan-500'}`}
               initial={{ width: 0 }}
               animate={{ width: `${Math.min(100, completionGlobaleAgence)}%`}}
               transition={{ duration: 0.5, ease: "circOut", delay: 0.3 }}
@@ -101,7 +101,7 @@ const AgencyDailySummary = ({ guichetieresPlanifiees, pointagesData, creneauxPoi
 const PointageStatus = ({ guichetieresPlanifiees, pointagesData, creneauxPointageSettings, identifiedGuichetiereMatricule, nomAgence }) => {
   if (!guichetieresPlanifiees || guichetieresPlanifiees.length === 0) {
     return (
-      <div className="p-4 bg-amber-50 dark:bg-amber-900/30 border border-amber-300 dark:border-amber-700 rounded-md text-amber-700 dark:text-amber-300 flex flex-col items-center text-center">
+      <div className="p-4 bg-warning-muted dark:bg-warning/30 border border-warning/30 dark:border-warning rounded-md text-warning-muted-foreground dark:text-warning flex flex-col items-center text-center">
         <AlertTriangle className="h-8 w-8 mb-2"/> 
         <p className="font-semibold">Aucune guichetière planifiée</p>
         <p className="text-xs">Aucune guichetière n'est actuellement planifiée pour l'agence "{nomAgence}" aujourd'hui.</p>
@@ -132,7 +132,7 @@ const PointageStatus = ({ guichetieresPlanifiees, pointagesData, creneauxPointag
         pointagesData={pointagesData}
         creneauxPointageSettings={creneauxPointageSettings}
       />
-       <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/50 border border-blue-300 dark:border-blue-700 rounded-md text-blue-700 dark:text-blue-300">
+       <div className="mt-4 p-3 bg-info-muted dark:bg-primary/50 border border-info/30 dark:border-info rounded-md text-info-muted-foreground dark:text-info">
          <h4 className="font-semibold flex items-center"><Info className="h-4 w-4 mr-1"/> Rappel Général</h4>
          <p className="text-xs">Nombre de pointages requis par jour : {creneauxPointageSettings.length}.</p>
          <p className="text-xs font-medium mt-1">Créneaux de pointage :</p>

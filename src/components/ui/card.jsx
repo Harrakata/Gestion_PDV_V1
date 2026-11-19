@@ -13,6 +13,9 @@ const cardVariants = cva(
         elevated: 'border-border/80 bg-surface-elevated shadow-elevated',
         interactive: 'border-border bg-card shadow-soft transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-elevated',
         glass: 'surface-glass bg-card shadow-soft',
+        // Carte « à liseré » : en-têtes d'écran et blocs principaux. Le liseré
+        // est dessiné par le composant — ne plus l'ajouter à la main.
+        accent: 'relative border-primary/20 bg-card shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)]',
       },
     },
     defaultVariants: {
@@ -21,14 +24,19 @@ const cardVariants = cva(
   },
 );
 
-const Card = React.forwardRef(({ className, glass = false, variant, ...props }, ref) => {
+const Card = React.forwardRef(({ className, glass = false, variant, children, ...props }, ref) => {
   const resolvedVariant = variant || (glass ? 'glass' : 'default');
   return (
     <div
       ref={ref}
       className={cn(cardVariants({ variant: resolvedVariant }), className)}
       {...props}
-    />
+    >
+      {resolvedVariant === 'accent' && (
+        <span aria-hidden="true" data-card-rail className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+      )}
+      {children}
+    </div>
   );
 });
 Card.displayName = 'Card';

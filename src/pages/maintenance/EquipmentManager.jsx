@@ -35,14 +35,14 @@ import KpiStatCard from '@/components/analytics/KpiStatCard';
 import { supabase } from '@/lib/supabaseClient';
 
 const STATUS_BADGE_COLORS = {
-  Disponible: 'bg-green-100 text-green-800',
-  'En service': 'bg-blue-100 text-blue-800',
-  'En panne': 'bg-red-100 text-red-800',
-  'En maintenance': 'bg-yellow-100 text-yellow-800',
-  'Hors service': 'bg-gray-100 text-gray-800',
+  Disponible: 'bg-success-muted text-success-muted-foreground',
+  'En service': 'bg-info-muted text-info-muted-foreground',
+  'En panne': 'bg-destructive/10 text-destructive',
+  'En maintenance': 'bg-warning-muted text-warning-muted-foreground',
+  'Hors service': 'bg-muted text-foreground',
 };
 
-const getStatusBadgeColor = (status) => STATUS_BADGE_COLORS[status] ?? 'bg-gray-100 text-gray-800';
+const getStatusBadgeColor = (status) => STATUS_BADGE_COLORS[status] ?? 'bg-muted text-foreground';
 
 const STATUS_OPTIONS = ['Disponible', 'En service', 'En panne', 'En maintenance', 'Hors service'];
 
@@ -263,7 +263,7 @@ const EquipmentTable = ({ type, config, allEquipments, filteredEquipments, hasDa
                     variant="ghost"
                     size="icon"
                     onClick={() => onOpenDialog(equipment, type)}
-                    className="text-blue-500 hover:text-blue-700"
+                    className="text-info hover:text-info-muted-foreground"
                     disabled={isLoading || !canManage}
                   >
                     <Edit className="h-4 w-4" />
@@ -273,7 +273,7 @@ const EquipmentTable = ({ type, config, allEquipments, filteredEquipments, hasDa
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="text-red-500 hover:text-red-700"
+                        className="text-destructive hover:text-destructive"
                         disabled={isLoading || !canManage}
                       >
                         <Trash2 className="h-4 w-4" />
@@ -482,7 +482,7 @@ const EquipmentManager = ({ canManage = true, readOnlyMessage = '' }) => {
         toast({
           title: 'Succès',
           description: `${EQUIPMENT_TYPES[currentType].singular} ${currentEquipment ? 'modifié' : 'ajouté'} avec succès.`,
-          className: 'bg-green-500 text-white',
+          className: 'bg-success text-white',
         });
         setIsDialogOpen(false);
         setCurrentEquipment(null);
@@ -516,7 +516,7 @@ const EquipmentManager = ({ canManage = true, readOnlyMessage = '' }) => {
       if (error) {
         toast({ title: 'Erreur de suppression', description: describeError(error, 'EquipmentManager'), variant: 'destructive' });
       } else {
-        toast({ title: 'Succès', description: `${EQUIPMENT_TYPES[type].singular} supprimé.`, className: 'bg-red-500 text-white' });
+        toast({ title: 'Succès', description: `${EQUIPMENT_TYPES[type].singular} supprimé.`, className: 'bg-destructive text-white' });
         loadEquipments();
       }
     } catch {
@@ -559,7 +559,7 @@ const EquipmentManager = ({ canManage = true, readOnlyMessage = '' }) => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    toast({ title: 'Export réussi', description: `${rows.length} ${config.label.toLowerCase()} exporté(s) au format CSV.`, className: 'bg-green-500 text-white' });
+    toast({ title: 'Export réussi', description: `${rows.length} ${config.label.toLowerCase()} exporté(s) au format CSV.`, className: 'bg-success text-white' });
   };
 
   const handleImportType = (type, file) => {
@@ -599,7 +599,7 @@ const EquipmentManager = ({ canManage = true, readOnlyMessage = '' }) => {
 
         const { error } = await supabase.from(config.table).upsert(dataToUpsert, { onConflict: 'reference' });
         if (error) throw error;
-        toast({ title: 'Import réussi', description: `${dataToUpsert.length} ${config.label.toLowerCase()} importé(s)/mis à jour.`, className: 'bg-green-500 text-white' });
+        toast({ title: 'Import réussi', description: `${dataToUpsert.length} ${config.label.toLowerCase()} importé(s)/mis à jour.`, className: 'bg-success text-white' });
         loadEquipments();
       } catch (err) {
         toast({ title: "Erreur d'import", description: describeError(err, 'EquipmentManager'), variant: 'destructive' });
@@ -613,13 +613,12 @@ const EquipmentManager = ({ canManage = true, readOnlyMessage = '' }) => {
   return (
     <div className="space-y-6">
       {readOnlyMessage ? (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+        <div className="rounded-lg border border-warning/30 bg-warning-muted px-4 py-3 text-sm text-warning-muted-foreground">
           {readOnlyMessage}
         </div>
       ) : null}
 
       <Card className="relative overflow-hidden border-border bg-card shadow-soft">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-primary" />
         <CardHeader className="relative">
           <CardTitle className="text-2xl font-bold text-primary">Gestion de sous-ensembles</CardTitle>
           <CardDescription>Gérez les sous-ensembles disponibles pour les terminaux.</CardDescription>
@@ -706,7 +705,7 @@ const EquipmentManager = ({ canManage = true, readOnlyMessage = '' }) => {
           if (!isOpen) resetFormData();
         }}
       >
-        <DialogContent className="sm:max-w-md glassmorphism">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-xl text-primary">
               {EQUIPMENT_TYPES[currentType].icon}

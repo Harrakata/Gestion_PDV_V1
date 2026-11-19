@@ -46,15 +46,15 @@ const EQUIPMENT_TABLES = {
 };
 
 const scoreTone = (score) => {
-  if (score >= 80) return { label: 'Fiable', className: 'text-emerald-700 bg-emerald-50 border-emerald-200' };
-  if (score >= 55) return { label: 'À surveiller', className: 'text-amber-700 bg-amber-50 border-amber-200' };
-  return { label: 'Prioritaire', className: 'text-red-700 bg-red-50 border-red-200' };
+  if (score >= 80) return { label: 'Fiable', className: 'text-success-muted-foreground bg-success-muted border-success/30' };
+  if (score >= 55) return { label: 'À surveiller', className: 'text-warning-muted-foreground bg-warning-muted border-warning/30' };
+  return { label: 'Prioritaire', className: 'text-destructive bg-destructive/10 border-destructive/30' };
 };
 
 const Detail = ({ label, value }) => (
-  <div className="min-w-0 border-b border-slate-200/70 py-3 last:border-b-0">
+  <div className="min-w-0 border-b border-border/70 py-3 last:border-b-0">
     <p className="text-[11px] font-semibold uppercase text-muted-foreground">{label}</p>
-    <p className="mt-1 break-words text-sm font-medium text-slate-900" title={String(value || '')}>{value || 'N/A'}</p>
+    <p className="mt-1 break-words text-sm font-medium text-foreground" title={String(value || '')}>{value || 'N/A'}</p>
   </div>
 );
 
@@ -280,7 +280,7 @@ const TerminalPassportDialog = ({
         </DialogHeader>
 
         <Tabs value={tab} onValueChange={setTab} className="min-h-0 min-w-0 w-full">
-          <div className="min-w-0 border-b bg-white/60 px-3 py-3 sm:px-4">
+          <div className="min-w-0 border-b bg-card/60 px-3 py-3 sm:px-4">
             <TabsList className="grid h-auto w-full min-w-0 grid-cols-2 gap-1 sm:grid-cols-4">
               <TabsTrigger className="min-w-0 whitespace-normal px-2 text-xs sm:text-sm" value="overview"><Activity className="mr-1.5 h-4 w-4 shrink-0" />Vue d’ensemble</TabsTrigger>
               <TabsTrigger className="min-w-0 whitespace-normal px-2 text-xs sm:text-sm" value="components"><Cpu className="mr-1.5 h-4 w-4 shrink-0" />Sous-ensembles</TabsTrigger>
@@ -293,7 +293,7 @@ const TerminalPassportDialog = ({
             <TabsContent value="overview" className="mt-0 space-y-5">
               <div className="grid min-w-0 gap-5 lg:grid-cols-[minmax(0,1fr)_17rem]">
                 <div className="terminal-passport-details grid min-w-0 gap-4 md:grid-cols-2">
-                  <section className="rounded-lg border bg-white/75 px-4">
+                  <section className="rounded-lg border bg-card/75 px-4">
                     <h3 className="flex items-center gap-2 border-b py-3 font-semibold"><Clipboard className="h-4 w-4 text-primary" />Identité</h3>
                     <Detail label="Référence" value={group.terminalReference} />
                     <Detail label="Type / position" value={`${group.terminalType} · ${group.terminalPosition}`} />
@@ -301,7 +301,7 @@ const TerminalPassportDialog = ({
                     <Detail label="MAC address" value={assembledTerminal?.mac_address} />
                     <Detail label="Identifiant / N° sécurité" value={[assembledTerminal?.identifiant, assembledTerminal?.numero_secu].filter(Boolean).join(' · ')} />
                   </section>
-                  <section className="rounded-lg border bg-white/75 px-4">
+                  <section className="rounded-lg border bg-card/75 px-4">
                     <h3 className="flex items-center gap-2 border-b py-3 font-semibold"><MapPin className="h-4 w-4 text-primary" />Affectation</h3>
                     <Detail label="Région" value={group.regionNom} />
                     <Detail label="Agence" value={group.agenceNom} />
@@ -311,11 +311,11 @@ const TerminalPassportDialog = ({
                   </section>
                 </div>
 
-                <aside className="flex flex-col items-center justify-center rounded-lg border border-primary/15 bg-white/75 p-4 text-center">
+                <aside className="flex flex-col items-center justify-center rounded-lg border border-primary/15 bg-card/75 p-4 text-center">
                   <QrCode className="mb-2 h-5 w-5 text-primary" />
                   <p className="font-semibold">Accès rapide sécurisé</p>
                   <p className="mb-3 text-xs text-muted-foreground">Le QR contient uniquement le lien et l’identifiant du terminal.</p>
-                  <div className="rounded-lg border bg-white p-2">
+                  <div className="rounded-lg border bg-card p-2">
                     <QRCodeSVG id={`terminal-passport-qr-${group.terminalId}`} value={passportUrl} size={154} level="M" marginSize={2} />
                   </div>
                   <div className="mt-3 flex gap-2">
@@ -326,17 +326,17 @@ const TerminalPassportDialog = ({
               </div>
 
               <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                <div className="rounded-lg border bg-white/70 p-4"><p className="text-xs text-muted-foreground">Indice de fiabilité</p><p className="mt-1 text-2xl font-bold text-primary">{health.score}/100</p></div>
-                <div className="rounded-lg border bg-white/70 p-4"><p className="text-xs text-muted-foreground">Sous-ensembles à traiter</p><p className="mt-1 text-2xl font-bold text-red-600">{health.overdueComponents}</p></div>
-                <div className="rounded-lg border bg-white/70 p-4"><p className="text-xs text-muted-foreground">Curatives sur 6 mois</p><p className="mt-1 text-2xl font-bold text-amber-600">{health.curativeRecent}</p></div>
-                <div className="rounded-lg border bg-white/70 p-4"><p className="text-xs text-muted-foreground">Interventions en cours</p><p className="mt-1 text-2xl font-bold">{health.inProgress}</p></div>
+                <div className="rounded-lg border bg-card/70 p-4"><p className="text-xs text-muted-foreground">Indice de fiabilité</p><p className="mt-1 text-2xl font-bold text-primary">{health.score}/100</p></div>
+                <div className="rounded-lg border bg-card/70 p-4"><p className="text-xs text-muted-foreground">Sous-ensembles à traiter</p><p className="mt-1 text-2xl font-bold text-destructive">{health.overdueComponents}</p></div>
+                <div className="rounded-lg border bg-card/70 p-4"><p className="text-xs text-muted-foreground">Curatives sur 6 mois</p><p className="mt-1 text-2xl font-bold text-warning-muted-foreground">{health.curativeRecent}</p></div>
+                <div className="rounded-lg border bg-card/70 p-4"><p className="text-xs text-muted-foreground">Interventions en cours</p><p className="mt-1 text-2xl font-bold">{health.inProgress}</p></div>
               </section>
             </TabsContent>
 
             <TabsContent value="components" className="mt-0">
-              <div className="overflow-x-auto rounded-lg border bg-white/75">
+              <div className="overflow-x-auto rounded-lg border bg-card/75">
                 <div className="min-w-[42rem]">
-                <div className="grid grid-cols-[minmax(0,1fr)_minmax(8rem,0.7fr)_minmax(10rem,1fr)] gap-3 border-b bg-slate-50 px-4 py-3 text-xs font-semibold uppercase text-muted-foreground">
+                <div className="grid grid-cols-[minmax(0,1fr)_minmax(8rem,0.7fr)_minmax(10rem,1fr)] gap-3 border-b bg-muted/50 px-4 py-3 text-xs font-semibold uppercase text-muted-foreground">
                   <span>Sous-ensemble</span><span>Référence</span><span>État maintenance</span>
                 </div>
                 {group.sousEnsembles.map((row) => (
@@ -352,9 +352,9 @@ const TerminalPassportDialog = ({
 
             <TabsContent value="history" className="mt-0 space-y-3">
               {terminalInterventions.length === 0 ? (
-                <div className="rounded-lg border border-dashed bg-white/60 py-12 text-center text-sm text-muted-foreground">Aucune intervention enregistrée.</div>
+                <div className="rounded-lg border border-dashed bg-card/60 py-12 text-center text-sm text-muted-foreground">Aucune intervention enregistrée.</div>
               ) : terminalInterventions.map((item) => (
-                <div key={item.id} className="flex flex-col gap-3 rounded-lg border bg-white/75 p-4 sm:flex-row sm:items-center sm:justify-between">
+                <div key={item.id} className="flex flex-col gap-3 rounded-lg border bg-card/75 p-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-semibold">{getMaintenanceInterventionTypeLabel(item.type_intervention)}</span>
@@ -368,7 +368,7 @@ const TerminalPassportDialog = ({
             </TabsContent>
 
             <TabsContent value="diagnostic" className="mt-0 space-y-5">
-              <div className="flex flex-col gap-3 rounded-lg border bg-white/75 p-4 md:flex-row md:items-end">
+              <div className="flex flex-col gap-3 rounded-lg border bg-card/75 p-4 md:flex-row md:items-end">
                 <div className="flex-1 space-y-2">
                   <label className="text-sm font-semibold">Sous-ensemble à diagnostiquer</label>
                   <Select value={selectedComponent} onValueChange={setSelectedComponent}>
@@ -390,7 +390,7 @@ const TerminalPassportDialog = ({
               {diagnostic.loading ? (
                 <div className="rounded-lg border border-dashed py-12 text-center text-sm text-muted-foreground">Chargement du guide de diagnostic…</div>
               ) : diagnostic.error ? (
-                <div className="rounded-lg border border-amber-200 bg-amber-50 p-5 text-sm text-amber-800">
+                <div className="rounded-lg border border-warning/30 bg-warning-muted p-5 text-sm text-warning-muted-foreground">
                   <div className="flex items-center gap-2 font-semibold"><AlertTriangle className="h-4 w-4" />Guide incomplet</div>
                   <p className="mt-2">{diagnostic.error}</p>
                   <Button variant="outline" size="sm" className="mt-4" onClick={onOpenWorkshop}><Wrench className="mr-2 h-4 w-4" />Configurer dans l’atelier</Button>
@@ -400,7 +400,7 @@ const TerminalPassportDialog = ({
                   <h3 className="mb-3 font-semibold">1. Sélectionnez le symptôme observé</h3>
                   <div className="grid gap-3 md:grid-cols-2">
                     {diagnostic.pannes.map((panne) => (
-                      <button key={panne.id} type="button" onClick={() => { setSelectedPanneId(String(panne.id)); setCheckedIds(new Set()); }} className="rounded-lg border bg-white/75 p-4 text-left transition hover:border-primary hover:bg-primary/5">
+                      <button key={panne.id} type="button" onClick={() => { setSelectedPanneId(String(panne.id)); setCheckedIds(new Set()); }} className="rounded-lg border bg-card/75 p-4 text-left transition hover:border-primary hover:bg-primary/5">
                         <div className="flex items-start justify-between gap-3"><span className="font-medium">{panne.description}</span><Activity className="h-4 w-4 shrink-0 text-primary" /></div>
                         <p className="mt-2 text-xs text-muted-foreground">Pièce liée : {panne.piece?.nom || 'non précisée'} · Priorité {panne.poids || 3}/5</p>
                       </button>
@@ -423,17 +423,17 @@ const TerminalPassportDialog = ({
                         const next = new Set(previous);
                         if (next.has(check.id)) next.delete(check.id); else next.add(check.id);
                         return next;
-                      })} className={`flex w-full items-start gap-3 rounded-lg border p-4 text-left transition ${checked ? 'border-emerald-200 bg-emerald-50' : 'bg-white/75 hover:border-primary/40'}`}>
-                        <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${checked ? 'border-emerald-500 bg-emerald-500 text-white' : 'border-slate-300'}`}>{checked && <Check className="h-3 w-3" />}</span>
+                      })} className={`flex w-full items-start gap-3 rounded-lg border p-4 text-left transition ${checked ? 'border-success/30 bg-success-muted' : 'bg-card/75 hover:border-primary/40'}`}>
+                        <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${checked ? 'border-success bg-success text-white' : 'border-border'}`}>{checked && <Check className="h-3 w-3" />}</span>
                         <span className="flex-1"><span className="text-sm font-medium">{index + 1}. {check.description_verification}</span>{check.piece && <span className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><Package2 className="h-3 w-3" />{check.piece.nom}</span>}</span>
                       </button>
                     );
                   })}
                   {checkedIds.size > 0 && (
-                    <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4">
-                      <p className="flex items-center gap-2 font-semibold text-emerald-800"><CheckCircle2 className="h-4 w-4" />Résultat progressif</p>
-                      <p className="mt-1 text-sm text-emerald-700">{checkedIds.size}/{selectedChecks.length} vérification(s) effectuée(s).</p>
-                      {suggestedParts.length > 0 && <p className="mt-2 text-sm text-emerald-800">Pièce(s) à contrôler : {suggestedParts.map((piece) => piece.nom).join(', ')}.</p>}
+                    <div className="rounded-lg border border-success/30 bg-success-muted p-4">
+                      <p className="flex items-center gap-2 font-semibold text-success-muted-foreground"><CheckCircle2 className="h-4 w-4" />Résultat progressif</p>
+                      <p className="mt-1 text-sm text-success-muted-foreground">{checkedIds.size}/{selectedChecks.length} vérification(s) effectuée(s).</p>
+                      {suggestedParts.length > 0 && <p className="mt-2 text-sm text-success-muted-foreground">Pièce(s) à contrôler : {suggestedParts.map((piece) => piece.nom).join(', ')}.</p>}
                       <Button size="sm" className="mt-4" onClick={onOpenWorkshop}><Wrench className="mr-2 h-4 w-4" />Poursuivre dans l’atelier</Button>
                     </div>
                   )}

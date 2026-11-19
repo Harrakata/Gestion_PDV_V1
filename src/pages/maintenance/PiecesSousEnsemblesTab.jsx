@@ -40,9 +40,9 @@ const DEFAULT_PIECE = { nom: '', reference: '', prix_unitaire_ht: 0, sous_ensemb
 const DEFAULT_MODELE = { nom: '', sous_ensemble: 'imprimante', type_terminal: 'tous' };
 
 const statusBadge = (qty, seuil) => {
-  if (qty === 0) return <Badge className="bg-red-100 text-red-800">Rupture</Badge>;
-  if (qty <= seuil) return <Badge className="bg-yellow-100 text-yellow-800">Stock faible</Badge>;
-  return <Badge className="bg-green-100 text-green-800">Disponible</Badge>;
+  if (qty === 0) return <Badge className="bg-destructive/10 text-destructive">Rupture</Badge>;
+  if (qty <= seuil) return <Badge className="bg-warning-muted text-warning-muted-foreground">Stock faible</Badge>;
+  return <Badge className="bg-success-muted text-success-muted-foreground">Disponible</Badge>;
 };
 
 const formatPrice = (value) => Number(value || 0).toLocaleString('fr-FR', {
@@ -253,7 +253,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
     await loadHelp(found.id);
   }, [pieces, loadHelp]);
 
-  const showOk = (msg) => toast({ title: msg, className: 'bg-green-500 text-white' });
+  const showOk = (msg) => toast({ title: msg, className: 'bg-success text-white' });
   const showErr = (msg) => toast({ title: 'Erreur', description: msg, variant: 'destructive' });
 
   const resetPhotoState = () => {
@@ -556,8 +556,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
 
   return (
     <div className="space-y-6">
-      <Card className="relative overflow-hidden shadow-xl glassmorphism">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+      <Card variant="accent">
         <CardHeader className="relative">
           <CardTitle className="flex items-center gap-2 text-2xl font-bold text-primary">
             <Package className="h-6 w-6" /> Pièces de Sous-ensembles
@@ -576,8 +575,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
 
         {/* ===== CATALOGUE ===== */}
         <TabsContent value="catalogue">
-          <Card className="relative overflow-hidden shadow-lg">
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+          <Card variant="accent">
             <CardHeader className="relative">
               <div className="flex items-center justify-between flex-wrap gap-3">
                 <div>
@@ -649,7 +647,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                         <TableCell>
                           {s ? (
                             <div className="flex items-center gap-2">
-                              <span className={s.quantite <= s.seuil_alerte ? 'font-bold text-red-600' : ''}>{s.quantite}</span>
+                              <span className={s.quantite <= s.seuil_alerte ? 'font-bold text-destructive' : ''}>{s.quantite}</span>
                               {statusBadge(s.quantite, s.seuil_alerte)}
                             </div>
                           ) : <span className="text-muted-foreground text-xs">Non géré</span>}
@@ -722,8 +720,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
 
         {/* ===== AIDE REPARATION ===== */}
         <TabsContent value="aide">
-          <Card className="relative overflow-hidden shadow-lg">
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+          <Card variant="accent">
             <CardHeader className="relative">
               <CardTitle className="flex items-center gap-2 text-xl text-primary">
                 <Wrench className="h-5 w-5" /> Aide à la Réparation
@@ -765,7 +762,6 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                   ) : (
                     <>
                       <Card className="relative overflow-hidden">
-                        <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-primary" />
                         <CardHeader className="relative pb-2"><CardTitle className="text-base">Description de la pièce</CardTitle></CardHeader>
                         <CardContent className="space-y-3">
                           <textarea className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[80px]" value={helpPiece.description_aide || ''} onChange={e => setHelpPiece(p => ({ ...p, description_aide: e.target.value }))} disabled={!canManage} placeholder="Description fonctionnelle de la pièce..." />
@@ -773,24 +769,23 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                         </CardContent>
                       </Card>
                       <Card className="relative overflow-hidden">
-                        <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-primary" />
-                        <CardHeader className="relative pb-2"><CardTitle className="text-base flex items-center gap-2"><AlertTriangle className="h-4 w-4 text-amber-500" /> Types de pannes</CardTitle></CardHeader>
+                        <CardHeader className="relative pb-2"><CardTitle className="text-base flex items-center gap-2"><AlertTriangle className="h-4 w-4 text-warning" /> Types de pannes</CardTitle></CardHeader>
                         <CardContent className="space-y-3">
                           {pannes.length === 0 && <p className="text-sm text-muted-foreground">Aucune panne renseignée.</p>}
                           <div className="space-y-2">
                             {pannes.map(p => (
-                              <div key={p.id} className="rounded-md border border-amber-200 bg-amber-50 text-sm">
+                              <div key={p.id} className="rounded-md border border-warning/30 bg-warning-muted text-sm">
                                 <div className="flex items-start justify-between px-3 py-2">
                                   {editingPanneId === p.id ? (
                                     <div className="flex flex-1 flex-wrap items-center gap-2">
                                       <Select value={editingPanneText} onValueChange={setEditingPanneText}>
-                                        <SelectTrigger className="flex-1 h-7 text-xs min-w-0 border-amber-300 bg-white">
+                                        <SelectTrigger className="flex-1 h-7 text-xs min-w-0 border-warning/30 bg-card">
                                           <SelectValue placeholder="Choisir un code panne…" />
                                         </SelectTrigger>
                                         <SelectContent>
                                           {codesPannes.map(c => (
                                             <SelectItem key={c.id} value={c.libelle}>
-                                              <span className="font-mono font-semibold text-amber-700">{c.code}</span>&nbsp;—&nbsp;{c.libelle}
+                                              <span className="font-mono font-semibold text-warning-muted-foreground">{c.code}</span>&nbsp;—&nbsp;{c.libelle}
                                             </SelectItem>
                                           ))}
                                         </SelectContent>
@@ -798,23 +793,23 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                                       <div className="flex items-center gap-1 shrink-0">
                                         <span className="text-xs text-muted-foreground">Poids</span>
                                         {[1,2,3,4,5].map(n => (
-                                          <button key={n} onClick={() => setEditingPannePoids(n)} className={`h-5 w-5 rounded text-[10px] font-bold border transition-colors ${editingPannePoids === n ? 'bg-amber-500 border-amber-500 text-white' : 'border-amber-300 text-amber-700 hover:bg-amber-100'}`}>{n}</button>
+                                          <button key={n} onClick={() => setEditingPannePoids(n)} className={`h-5 w-5 rounded text-[10px] font-bold border transition-colors ${editingPannePoids === n ? 'bg-warning border-warning text-white' : 'border-warning/30 text-warning-muted-foreground hover:bg-warning-muted'}`}>{n}</button>
                                         ))}
                                       </div>
-                                      <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0 text-green-600" onClick={savePanneEdit} disabled={!editingPanneText.trim()}><Check className="h-3 w-3" /></Button>
+                                      <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0 text-success-muted-foreground" onClick={savePanneEdit} disabled={!editingPanneText.trim()}><Check className="h-3 w-3" /></Button>
                                       <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0 text-muted-foreground" onClick={() => { setEditingPanneId(null); setEditingPanneText(''); }}><X className="h-3 w-3" /></Button>
                                     </div>
                                   ) : (
                                     <>
                                       <div className="flex items-center gap-2 flex-1 min-w-0">
                                         <span className="flex-1 truncate">{p.description}</span>
-                                        <span title={`Poids : ${p.poids || 3}/5`} className={`shrink-0 h-5 w-5 rounded text-[10px] font-bold flex items-center justify-center ${(p.poids || 3) >= 4 ? 'bg-red-100 text-red-700' : (p.poids || 3) === 3 ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-500'}`}>{p.poids || 3}</span>
+                                        <span title={`Poids : ${p.poids || 3}/5`} className={`shrink-0 h-5 w-5 rounded text-[10px] font-bold flex items-center justify-center ${(p.poids || 3) >= 4 ? 'bg-destructive/10 text-destructive' : (p.poids || 3) === 3 ? 'bg-warning-muted text-warning-muted-foreground' : 'bg-muted text-muted-foreground'}`}>{p.poids || 3}</span>
                                       </div>
                                       <div className="flex items-center gap-0.5 ml-2 shrink-0">
                                         <button
                                           title="Étapes de vérification"
                                           onClick={() => setExpandedPanneCheckId(prev => prev === p.id ? null : p.id)}
-                                          className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-amber-700 hover:bg-amber-200 transition-colors"
+                                          className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-warning-muted-foreground hover:bg-warning-muted transition-colors"
                                         >
                                           <ListChecks className="h-3 w-3" />
                                           {(panneChecksMap[p.id] || []).length}
@@ -822,8 +817,8 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                                         </button>
                                         {canManage && (
                                           <>
-                                            <Button variant="ghost" size="icon" className="h-5 w-5 text-blue-400 hover:text-blue-600" onClick={() => { setEditingPanneId(p.id); setEditingPanneText(p.description); setEditingPannePoids(p.poids || 3); }}><Edit className="h-3 w-3" /></Button>
-                                            <Button variant="ghost" size="icon" className="h-5 w-5 text-red-400 hover:text-red-600" onClick={() => delPanne(p.id)}><Trash2 className="h-3 w-3" /></Button>
+                                            <Button variant="ghost" size="icon" className="h-5 w-5 text-info hover:text-info-muted-foreground" onClick={() => { setEditingPanneId(p.id); setEditingPanneText(p.description); setEditingPannePoids(p.poids || 3); }}><Edit className="h-3 w-3" /></Button>
+                                            <Button variant="ghost" size="icon" className="h-5 w-5 text-destructive hover:text-destructive" onClick={() => delPanne(p.id)}><Trash2 className="h-3 w-3" /></Button>
                                           </>
                                         )}
                                       </div>
@@ -831,8 +826,8 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                                   )}
                                 </div>
                                 {expandedPanneCheckId === p.id && (
-                                  <div className="border-t border-amber-200 bg-amber-50/80 px-3 pb-3 pt-2 space-y-2">
-                                    <p className="text-xs font-semibold text-amber-800 flex items-center gap-1">
+                                  <div className="border-t border-warning/30 bg-warning-muted/80 px-3 pb-3 pt-2 space-y-2">
+                                    <p className="text-xs font-semibold text-warning-muted-foreground flex items-center gap-1">
                                       <ListChecks className="h-3 w-3" /> Étapes de vérification
                                     </p>
                                     {(panneChecksMap[p.id] || []).length === 0 && (
@@ -840,11 +835,11 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                                     )}
                                     <div className="space-y-1">
                                       {(panneChecksMap[p.id] || []).map(c => (
-                                        <div key={c.id} className="flex items-center gap-2 rounded bg-white/80 border border-amber-100 px-2.5 py-1.5 text-xs">
+                                        <div key={c.id} className="flex items-center gap-2 rounded bg-card/80 border border-warning/30 px-2.5 py-1.5 text-xs">
                                           <span className="flex-1">{c.description_verification}</span>
-                                          {c.piece && <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] text-amber-800">{c.piece.nom}</span>}
+                                          {c.piece && <span className="shrink-0 rounded-full bg-warning-muted px-2 py-0.5 text-[10px] text-warning-muted-foreground">{c.piece.nom}</span>}
                                           {canManage && (
-                                            <Button variant="ghost" size="icon" className="h-4 w-4 shrink-0 text-red-400 hover:text-red-600" onClick={() => delPanneCheck(c.id)}>
+                                            <Button variant="ghost" size="icon" className="h-4 w-4 shrink-0 text-destructive hover:text-destructive" onClick={() => delPanneCheck(c.id)}>
                                               <Trash2 className="h-2.5 w-2.5" />
                                             </Button>
                                           )}
@@ -881,28 +876,28 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                             ))}
                           </div>
                           {canManage && codesPannes.length > 0 && (
-                            <div className="rounded-lg border border-amber-200 bg-amber-50/50 px-3 py-2.5 space-y-1.5">
-                              <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-500">Ajouter un type de panne</p>
+                            <div className="rounded-lg border border-warning/30 bg-warning-muted/50 px-3 py-2.5 space-y-1.5">
+                              <p className="text-[10px] font-semibold uppercase tracking-wide text-warning">Ajouter un type de panne</p>
                               <div className="flex items-center gap-2">
                                 <Select key={panneSelectKey} onValueChange={addPanneFromCode}>
-                                  <SelectTrigger className="flex-1 h-8 text-xs bg-white border-amber-200 hover:border-amber-400 transition-colors">
+                                  <SelectTrigger className="flex-1 h-8 text-xs bg-card border-warning/30 hover:border-warning transition-colors">
                                     <SelectValue placeholder="Sélectionner un code panne…" />
                                   </SelectTrigger>
                                   <SelectContent>
                                     {codesPannes.map(c => (
                                       <SelectItem key={c.id} value={c.libelle}>
-                                        <span className="font-mono font-semibold text-amber-700">{c.code}</span>&nbsp;—&nbsp;{c.libelle}
+                                        <span className="font-mono font-semibold text-warning-muted-foreground">{c.code}</span>&nbsp;—&nbsp;{c.libelle}
                                       </SelectItem>
                                     ))}
                                   </SelectContent>
                                 </Select>
                                 <div className="flex shrink-0 items-center gap-1">
                                   {[1,2,3,4,5].map(n => (
-                                    <button key={n} onClick={() => setNewPannePoids(n)} className={`h-6 w-6 rounded text-xs font-bold border transition-colors ${newPannePoids === n ? 'bg-amber-500 border-amber-500 text-white' : 'border-amber-200 text-amber-600 hover:bg-amber-100'}`}>{n}</button>
+                                    <button key={n} onClick={() => setNewPannePoids(n)} className={`h-6 w-6 rounded text-xs font-bold border transition-colors ${newPannePoids === n ? 'bg-warning border-warning text-white' : 'border-warning/30 text-warning-muted-foreground hover:bg-warning-muted'}`}>{n}</button>
                                   ))}
                                 </div>
                               </div>
-                              <p className="text-right text-[10px] text-amber-500 font-medium">
+                              <p className="text-right text-[10px] text-warning font-medium">
                                 Priorité&nbsp;: {newPannePoids <= 2 ? 'Faible' : newPannePoids === 3 ? 'Moyenne' : newPannePoids === 4 ? 'Élevée' : 'Critique'}
                               </p>
                             </div>
@@ -910,7 +905,6 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                         </CardContent>
                       </Card>
                       <Card className="relative overflow-hidden">
-                        <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-primary" />
                         <CardHeader className="relative pb-2"><CardTitle className="text-base">Procédure de réparation</CardTitle></CardHeader>
                         <CardContent className="space-y-3">
                           {procedures.length === 0 && <p className="text-sm text-muted-foreground">Aucune étape définie.</p>}
@@ -923,13 +917,13 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                                     <div className="flex items-center gap-0.5">
                                       {editingProcId === p.id ? (
                                         <>
-                                          <Button variant="ghost" size="icon" className="h-6 w-6 text-green-600" onClick={saveProcEdit}><Check className="h-3 w-3" /></Button>
+                                          <Button variant="ghost" size="icon" className="h-6 w-6 text-success-muted-foreground" onClick={saveProcEdit}><Check className="h-3 w-3" /></Button>
                                           <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground" onClick={() => { setEditingProcId(null); setEditingProcData({ description: '', image_url: '' }); }}><X className="h-3 w-3" /></Button>
                                         </>
                                       ) : (
                                         <>
-                                          <Button variant="ghost" size="icon" className="h-6 w-6 text-blue-400 hover:text-blue-600" onClick={() => { setEditingProcId(p.id); setEditingProcData({ description: p.description, image_url: p.image_url || '' }); }}><Edit className="h-3 w-3" /></Button>
-                                          <Button variant="ghost" size="icon" className="h-6 w-6 text-red-400 hover:text-red-600" onClick={() => delProc(p.id)}><Trash2 className="h-3 w-3" /></Button>
+                                          <Button variant="ghost" size="icon" className="h-6 w-6 text-info hover:text-info-muted-foreground" onClick={() => { setEditingProcId(p.id); setEditingProcData({ description: p.description, image_url: p.image_url || '' }); }}><Edit className="h-3 w-3" /></Button>
+                                          <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:text-destructive" onClick={() => delProc(p.id)}><Trash2 className="h-3 w-3" /></Button>
                                         </>
                                       )}
                                     </div>
@@ -941,7 +935,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                                     {(editingProcPreview || editingProcData.image_url) && (
                                       <div className="relative">
                                         <img src={editingProcPreview || editingProcData.image_url} alt="aperçu" className="max-h-36 w-full rounded border object-contain bg-muted/30" onError={e => { e.currentTarget.style.display = 'none'; }} />
-                                        <button type="button" onClick={() => { setEditingProcData(d => ({ ...d, image_url: '' })); if (editingProcPreview) URL.revokeObjectURL(editingProcPreview); setEditingProcFile(null); setEditingProcPreview(null); }} className="absolute right-1 top-1 rounded-full bg-background/90 p-0.5 text-red-500 hover:bg-red-50 border border-red-200 shadow-sm"><X className="h-3 w-3" /></button>
+                                        <button type="button" onClick={() => { setEditingProcData(d => ({ ...d, image_url: '' })); if (editingProcPreview) URL.revokeObjectURL(editingProcPreview); setEditingProcFile(null); setEditingProcPreview(null); }} className="absolute right-1 top-1 rounded-full bg-background/90 p-0.5 text-destructive hover:bg-destructive/10 border border-destructive/30 shadow-sm"><X className="h-3 w-3" /></button>
                                       </div>
                                     )}
                                     <Label htmlFor={`proc-edit-photo-${editingProcId}`} className="flex cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed border-primary/50 bg-primary/5 px-3 py-2 text-xs font-medium text-primary hover:bg-primary/10 transition-colors">
@@ -970,7 +964,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                               {(newProcPreview || newProc.image_url) && (
                                 <div className="relative">
                                   <img src={newProcPreview || newProc.image_url} alt="aperçu" className="max-h-36 w-full rounded border object-contain bg-muted/30" onError={e => { e.currentTarget.style.display = 'none'; }} />
-                                  <button type="button" onClick={() => { setNewProc(p => ({ ...p, image_url: '' })); if (newProcPreview) URL.revokeObjectURL(newProcPreview); setNewProcFile(null); setNewProcPreview(null); }} className="absolute right-1 top-1 rounded-full bg-background/90 p-0.5 text-red-500 hover:bg-red-50 border border-red-200 shadow-sm"><X className="h-3 w-3" /></button>
+                                  <button type="button" onClick={() => { setNewProc(p => ({ ...p, image_url: '' })); if (newProcPreview) URL.revokeObjectURL(newProcPreview); setNewProcFile(null); setNewProcPreview(null); }} className="absolute right-1 top-1 rounded-full bg-background/90 p-0.5 text-destructive hover:bg-destructive/10 border border-destructive/30 shadow-sm"><X className="h-3 w-3" /></button>
                                 </div>
                               )}
                               <Label htmlFor="proc-new-photo-tab" className="flex cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed border-primary/50 bg-primary/5 px-3 py-2 text-xs font-medium text-primary hover:bg-primary/10 transition-colors">
@@ -997,8 +991,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
 
         {/* ===== MODELES ===== */}
         <TabsContent value="modeles">
-          <Card className="relative overflow-hidden shadow-lg">
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+          <Card variant="accent">
             <CardHeader className="relative">
               <div className="flex items-center justify-between">
                 <div>
@@ -1035,8 +1028,8 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                         <Button variant="outline" size="sm" onClick={() => openCompo(m)}>Composition</Button>
                         {canManage && (
                           <>
-                            <Button variant="ghost" size="icon" className="text-blue-500" onClick={() => { setModeleForm({ nom: m.nom, sous_ensemble: m.sous_ensemble, type_terminal: m.type_terminal }); setEditingModele(m); setIsModeleOpen(true); }}><Edit className="h-4 w-4" /></Button>
-                            <Button variant="ghost" size="icon" className="text-red-500" onClick={() => deleteModele(m.id)}><Trash2 className="h-4 w-4" /></Button>
+                            <Button variant="ghost" size="icon" className="text-info" onClick={() => { setModeleForm({ nom: m.nom, sous_ensemble: m.sous_ensemble, type_terminal: m.type_terminal }); setEditingModele(m); setIsModeleOpen(true); }}><Edit className="h-4 w-4" /></Button>
+                            <Button variant="ghost" size="icon" className="text-destructive" onClick={() => deleteModele(m.id)}><Trash2 className="h-4 w-4" /></Button>
                           </>
                         )}
                       </TableCell>
@@ -1050,8 +1043,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
 
         {/* ===== STOCK ===== */}
         <TabsContent value="stock">
-          <Card className="relative overflow-hidden shadow-lg">
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+          <Card variant="accent">
             <CardHeader className="relative">
               <div className="flex items-center justify-between">
                 <div>
@@ -1070,21 +1062,21 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                 <button
                   type="button"
                   onClick={() => setStockFilters(f => ({ ...f, etat: f.etat.includes('rupture') ? f.etat.filter(x => x !== 'rupture') : [...f.etat, 'rupture'] }))}
-                  className={`rounded-2xl text-left transition-all hover:shadow-md ${stockFilters.etat.includes('rupture') ? 'ring-2 ring-red-500' : ''}`}
+                  className={`rounded-2xl text-left transition-all hover:shadow-md ${stockFilters.etat.includes('rupture') ? 'ring-2 ring-destructive' : ''}`}
                 >
                   <KpiStatCard icon={<AlertOctagon />} label="Ruptures de stock" value={stockRows.filter(s => s.quantite === 0).length} tone="red" helper="Quantité à zéro." />
                 </button>
                 <button
                   type="button"
                   onClick={() => setStockFilters(f => ({ ...f, etat: f.etat.includes('faible') ? f.etat.filter(x => x !== 'faible') : [...f.etat, 'faible'] }))}
-                  className={`rounded-2xl text-left transition-all hover:shadow-md ${stockFilters.etat.includes('faible') ? 'ring-2 ring-amber-500' : ''}`}
+                  className={`rounded-2xl text-left transition-all hover:shadow-md ${stockFilters.etat.includes('faible') ? 'ring-2 ring-warning' : ''}`}
                 >
                   <KpiStatCard icon={<AlertTriangle />} label="Stock faible" value={stockRows.filter(s => s.quantite > 0 && s.quantite <= s.seuil_alerte).length} tone="amber" helper="Sous le seuil d'alerte." />
                 </button>
                 <button
                   type="button"
                   onClick={() => setStockFilters(f => ({ ...f, etat: f.etat.includes('dispo') ? f.etat.filter(x => x !== 'dispo') : [...f.etat, 'dispo'] }))}
-                  className={`rounded-2xl text-left transition-all hover:shadow-md ${stockFilters.etat.includes('dispo') ? 'ring-2 ring-emerald-500' : ''}`}
+                  className={`rounded-2xl text-left transition-all hover:shadow-md ${stockFilters.etat.includes('dispo') ? 'ring-2 ring-success' : ''}`}
                 >
                   <KpiStatCard icon={<CheckCircle2 />} label="Disponibles" value={stockRows.filter(s => s.quantite > s.seuil_alerte).length} tone="emerald" helper="Au-dessus du seuil." />
                 </button>
@@ -1163,7 +1155,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                     <TableRow key={s.id}>
                       <TableCell className="font-medium">{s.piece?.nom || '—'}</TableCell>
                       <TableCell className="font-mono text-sm">{s.piece?.reference || '—'}</TableCell>
-                      <TableCell className={s.quantite <= s.seuil_alerte ? 'font-bold text-red-600' : ''}>{s.quantite}</TableCell>
+                      <TableCell className={s.quantite <= s.seuil_alerte ? 'font-bold text-destructive' : ''}>{s.quantite}</TableCell>
                       <TableCell>{s.seuil_alerte}</TableCell>
                       <TableCell>{statusBadge(s.quantite, s.seuil_alerte)}</TableCell>
                     </TableRow>
@@ -1221,7 +1213,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                     <button
                       type="button"
                       onClick={() => { setPieceForm(f => ({ ...f, photo_url: '' })); resetPhotoState(); }}
-                      className="absolute right-1 top-1 rounded-full bg-background/90 p-0.5 text-red-500 hover:bg-red-50 border border-red-200 shadow-sm"
+                      className="absolute right-1 top-1 rounded-full bg-background/90 p-0.5 text-destructive hover:bg-destructive/10 border border-destructive/30 shadow-sm"
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -1321,22 +1313,22 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
               {/* Pannes */}
               <div className="space-y-2">
                 <Label className="flex items-center gap-2 text-base font-semibold">
-                  <AlertTriangle className="h-4 w-4 text-amber-500" /> Types de pannes
+                  <AlertTriangle className="h-4 w-4 text-warning" /> Types de pannes
                 </Label>
                 <div className="space-y-2">
                   {pannes.length === 0 && <p className="text-sm text-muted-foreground">Aucune panne renseignée.</p>}
                   {pannes.map(p => (
-                    <div key={p.id} className="flex items-start justify-between rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm">
+                    <div key={p.id} className="flex items-start justify-between rounded-md border border-warning/30 bg-warning-muted px-3 py-2 text-sm">
                       {editingPanneId === p.id ? (
                         <div className="flex flex-1 flex-wrap items-center gap-2">
                           <Select value={editingPanneText} onValueChange={setEditingPanneText}>
-                            <SelectTrigger className="flex-1 h-7 text-xs min-w-0 border-amber-300 bg-white">
+                            <SelectTrigger className="flex-1 h-7 text-xs min-w-0 border-warning/30 bg-card">
                               <SelectValue placeholder="Choisir un code panne…" />
                             </SelectTrigger>
                             <SelectContent>
                               {codesPannes.map(c => (
                                 <SelectItem key={c.id} value={c.libelle}>
-                                  <span className="font-mono font-semibold text-amber-700">{c.code}</span>&nbsp;—&nbsp;{c.libelle}
+                                  <span className="font-mono font-semibold text-warning-muted-foreground">{c.code}</span>&nbsp;—&nbsp;{c.libelle}
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -1344,10 +1336,10 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                           <div className="flex items-center gap-1 shrink-0">
                             <span className="text-xs text-muted-foreground">Poids</span>
                             {[1,2,3,4,5].map(n => (
-                              <button key={n} onClick={() => setEditingPannePoids(n)} className={`h-5 w-5 rounded text-[10px] font-bold border transition-colors ${editingPannePoids === n ? 'bg-amber-500 border-amber-500 text-white' : 'border-amber-300 text-amber-700 hover:bg-amber-100'}`}>{n}</button>
+                              <button key={n} onClick={() => setEditingPannePoids(n)} className={`h-5 w-5 rounded text-[10px] font-bold border transition-colors ${editingPannePoids === n ? 'bg-warning border-warning text-white' : 'border-warning/30 text-warning-muted-foreground hover:bg-warning-muted'}`}>{n}</button>
                             ))}
                           </div>
-                          <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0 text-green-600" onClick={savePanneEdit} disabled={!editingPanneText.trim()}><Check className="h-3 w-3" /></Button>
+                          <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0 text-success-muted-foreground" onClick={savePanneEdit} disabled={!editingPanneText.trim()}><Check className="h-3 w-3" /></Button>
                           <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0 text-muted-foreground" onClick={() => { setEditingPanneId(null); setEditingPanneText(''); }}><X className="h-3 w-3" /></Button>
                         </div>
                       ) : (
@@ -1355,8 +1347,8 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                           <span className="flex-1">{p.description}</span>
                           {canManage && (
                             <div className="flex items-center gap-0.5 ml-2 shrink-0">
-                              <Button variant="ghost" size="icon" className="h-5 w-5 text-blue-400 hover:text-blue-600" onClick={() => { setEditingPanneId(p.id); setEditingPanneText(p.description); }}><Edit className="h-3 w-3" /></Button>
-                              <Button variant="ghost" size="icon" className="h-5 w-5 text-red-400 hover:text-red-600" onClick={() => delPanne(p.id)}><Trash2 className="h-3 w-3" /></Button>
+                              <Button variant="ghost" size="icon" className="h-5 w-5 text-info hover:text-info-muted-foreground" onClick={() => { setEditingPanneId(p.id); setEditingPanneText(p.description); }}><Edit className="h-3 w-3" /></Button>
+                              <Button variant="ghost" size="icon" className="h-5 w-5 text-destructive hover:text-destructive" onClick={() => delPanne(p.id)}><Trash2 className="h-3 w-3" /></Button>
                             </div>
                           )}
                         </>
@@ -1365,28 +1357,28 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                   ))}
                 </div>
                 {canManage && codesPannes.length > 0 && (
-                  <div className="rounded-lg border border-amber-200 bg-amber-50/50 px-3 py-2.5 space-y-1.5">
-                    <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-500">Ajouter un type de panne</p>
+                  <div className="rounded-lg border border-warning/30 bg-warning-muted/50 px-3 py-2.5 space-y-1.5">
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-warning">Ajouter un type de panne</p>
                     <div className="flex items-center gap-2">
                       <Select key={panneSelectKey} onValueChange={addPanneFromCode}>
-                        <SelectTrigger className="flex-1 h-8 text-xs bg-white border-amber-200 hover:border-amber-400 transition-colors">
+                        <SelectTrigger className="flex-1 h-8 text-xs bg-card border-warning/30 hover:border-warning transition-colors">
                           <SelectValue placeholder="Sélectionner un code panne…" />
                         </SelectTrigger>
                         <SelectContent>
                           {codesPannes.map(c => (
                             <SelectItem key={c.id} value={c.libelle}>
-                              <span className="font-mono font-semibold text-amber-700">{c.code}</span>&nbsp;—&nbsp;{c.libelle}
+                              <span className="font-mono font-semibold text-warning-muted-foreground">{c.code}</span>&nbsp;—&nbsp;{c.libelle}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                       <div className="flex shrink-0 items-center gap-1">
                         {[1,2,3,4,5].map(n => (
-                          <button key={n} onClick={() => setNewPannePoids(n)} className={`h-6 w-6 rounded text-xs font-bold border transition-colors ${newPannePoids === n ? 'bg-amber-500 border-amber-500 text-white' : 'border-amber-200 text-amber-600 hover:bg-amber-100'}`}>{n}</button>
+                          <button key={n} onClick={() => setNewPannePoids(n)} className={`h-6 w-6 rounded text-xs font-bold border transition-colors ${newPannePoids === n ? 'bg-warning border-warning text-white' : 'border-warning/30 text-warning-muted-foreground hover:bg-warning-muted'}`}>{n}</button>
                         ))}
                       </div>
                     </div>
-                    <p className="text-right text-[10px] text-amber-500 font-medium">
+                    <p className="text-right text-[10px] text-warning font-medium">
                       Priorité&nbsp;: {newPannePoids <= 2 ? 'Faible' : newPannePoids === 3 ? 'Moyenne' : newPannePoids === 4 ? 'Élevée' : 'Critique'}
                     </p>
                   </div>
@@ -1406,13 +1398,13 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                           <div className="flex items-center gap-0.5">
                             {editingProcId === p.id ? (
                               <>
-                                <Button variant="ghost" size="icon" className="h-5 w-5 text-green-600" onClick={saveProcEdit}><Check className="h-3 w-3" /></Button>
+                                <Button variant="ghost" size="icon" className="h-5 w-5 text-success-muted-foreground" onClick={saveProcEdit}><Check className="h-3 w-3" /></Button>
                                 <Button variant="ghost" size="icon" className="h-5 w-5 text-muted-foreground" onClick={() => { setEditingProcId(null); setEditingProcData({ description: '', image_url: '' }); }}><X className="h-3 w-3" /></Button>
                               </>
                             ) : (
                               <>
-                                <Button variant="ghost" size="icon" className="h-5 w-5 text-blue-400 hover:text-blue-600" onClick={() => { setEditingProcId(p.id); setEditingProcData({ description: p.description, image_url: p.image_url || '' }); }}><Edit className="h-3 w-3" /></Button>
-                                <Button variant="ghost" size="icon" className="h-5 w-5 text-red-400 hover:text-red-600" onClick={() => delProc(p.id)}><Trash2 className="h-3 w-3" /></Button>
+                                <Button variant="ghost" size="icon" className="h-5 w-5 text-info hover:text-info-muted-foreground" onClick={() => { setEditingProcId(p.id); setEditingProcData({ description: p.description, image_url: p.image_url || '' }); }}><Edit className="h-3 w-3" /></Button>
+                                <Button variant="ghost" size="icon" className="h-5 w-5 text-destructive hover:text-destructive" onClick={() => delProc(p.id)}><Trash2 className="h-3 w-3" /></Button>
                               </>
                             )}
                           </div>
@@ -1440,7 +1432,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                     {(newProcPreview || newProc.image_url) && (
                       <div className="relative">
                         <img src={newProcPreview || newProc.image_url} alt="aperçu" className="max-h-36 w-full rounded border object-contain bg-muted/30" onError={e => { e.currentTarget.style.display = 'none'; }} />
-                        <button type="button" onClick={() => { setNewProc(p => ({ ...p, image_url: '' })); if (newProcPreview) URL.revokeObjectURL(newProcPreview); setNewProcFile(null); setNewProcPreview(null); }} className="absolute right-1 top-1 rounded-full bg-background/90 p-0.5 text-red-500 hover:bg-red-50 border border-red-200 shadow-sm"><X className="h-3 w-3" /></button>
+                        <button type="button" onClick={() => { setNewProc(p => ({ ...p, image_url: '' })); if (newProcPreview) URL.revokeObjectURL(newProcPreview); setNewProcFile(null); setNewProcPreview(null); }} className="absolute right-1 top-1 rounded-full bg-background/90 p-0.5 text-destructive hover:bg-destructive/10 border border-destructive/30 shadow-sm"><X className="h-3 w-3" /></button>
                       </div>
                     )}
                     <Label htmlFor="proc-new-photo-dialog" className="flex cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed border-primary/50 bg-primary/5 px-3 py-2 text-xs font-medium text-primary hover:bg-primary/10 transition-colors">
@@ -1527,7 +1519,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                     <div className="flex items-center gap-1 shrink-0">
                       <Badge variant="outline" className="text-xs">×{mp.quantite}</Badge>
                       {canManage && (
-                        <Button variant="ghost" size="icon" className="h-6 w-6 text-red-400 hover:text-red-600"
+                        <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:text-destructive"
                           onClick={e => { e.stopPropagation(); removePieceModele(mp.id); }}>
                           <Trash2 className="h-3 w-3" />
                         </Button>
@@ -1548,7 +1540,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                 <div className="text-center space-y-3 w-full">
                   {selectedCompoPiece.piece?.photo_url ? (
                     <img src={selectedCompoPiece.piece.photo_url} alt={selectedCompoPiece.piece.nom}
-                      className="max-h-44 object-contain mx-auto rounded border bg-white p-2" />
+                      className="max-h-44 object-contain mx-auto rounded border bg-card p-2" />
                   ) : (
                     <div className="h-32 w-full rounded border bg-muted/30 flex items-center justify-center">
                       <Package className="h-12 w-12 text-muted-foreground/30" />
@@ -1612,8 +1604,8 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
               <Select value={stockForm.type} onValueChange={v => setStockForm(f => ({ ...f, type: v }))}>
                 <SelectTrigger className="col-span-3"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="entree"><span className="flex items-center gap-1"><ArrowUpCircle className="h-3 w-3 text-green-600" /> Entrée</span></SelectItem>
-                  <SelectItem value="sortie"><span className="flex items-center gap-1"><ArrowDownCircle className="h-3 w-3 text-red-600" /> Sortie</span></SelectItem>
+                  <SelectItem value="entree"><span className="flex items-center gap-1"><ArrowUpCircle className="h-3 w-3 text-success-muted-foreground" /> Entrée</span></SelectItem>
+                  <SelectItem value="sortie"><span className="flex items-center gap-1"><ArrowDownCircle className="h-3 w-3 text-destructive" /> Sortie</span></SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -1645,7 +1637,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
 
           <div className="space-y-4 py-2">
             {/* Instructions */}
-            <div className="rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800 space-y-1">
+            <div className="rounded-md border border-info/30 bg-info-muted px-4 py-3 text-sm text-info-muted-foreground space-y-1">
               <p className="font-semibold">Format attendu (colonnes CSV) :</p>
               <p className="font-mono text-xs">Nom, Référence, Prix unitaire HT (€), Sous-ensemble, Type terminal, Commentaire</p>
               <p className="text-xs mt-1">
@@ -1677,11 +1669,11 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
 
             {/* Erreurs */}
             {importErrors.length > 0 && (
-              <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 space-y-1">
-                <p className="text-sm font-semibold text-red-700 flex items-center gap-1">
+              <div className="rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 space-y-1">
+                <p className="text-sm font-semibold text-destructive flex items-center gap-1">
                   <X className="h-4 w-4" /> {importErrors.length} erreur(s) détectée(s)
                 </p>
-                <ul className="text-xs text-red-600 space-y-0.5 list-disc list-inside">
+                <ul className="text-xs text-destructive space-y-0.5 list-disc list-inside">
                   {importErrors.map((e, i) => <li key={i}>{e}</li>)}
                 </ul>
               </div>
@@ -1707,11 +1699,11 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                     </TableHeader>
                     <TableBody>
                       {importRows.map((r, i) => (
-                        <TableRow key={i} className={r._errors.length ? 'bg-red-50' : ''}>
+                        <TableRow key={i} className={r._errors.length ? 'bg-destructive/10' : ''}>
                           <TableCell>
                             {r._errors.length
-                              ? <Badge className="bg-red-100 text-red-700 text-xs">Erreur</Badge>
-                              : <Badge className="bg-green-100 text-green-700 text-xs">OK</Badge>}
+                              ? <Badge className="bg-destructive/10 text-destructive text-xs">Erreur</Badge>
+                              : <Badge className="bg-success-muted text-success-muted-foreground text-xs">OK</Badge>}
                           </TableCell>
                           <TableCell className="text-sm">{r.nom || '—'}</TableCell>
                           <TableCell className="font-mono text-xs">{r.reference || '—'}</TableCell>

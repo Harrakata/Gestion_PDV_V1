@@ -9,9 +9,9 @@ const CRENEAU_SHORT = { [ABSENCE_CRENEAUX.MATIN]: 'AM', [ABSENCE_CRENEAUX.APRES_
 
 // Couleur de pastille par statut.
 const STATUS_DOT = {
-  [ABSENCE_STATUSES.PENDING]: 'bg-amber-500',
-  [ABSENCE_STATUSES.APPROVED]: 'bg-green-500',
-  [ABSENCE_STATUSES.REFUSED]: 'bg-red-500',
+  [ABSENCE_STATUSES.PENDING]: 'bg-warning',
+  [ABSENCE_STATUSES.APPROVED]: 'bg-success',
+  [ABSENCE_STATUSES.REFUSED]: 'bg-destructive',
   [ABSENCE_STATUSES.CANCELLED]: 'bg-gray-400',
 };
 

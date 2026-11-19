@@ -263,7 +263,7 @@ const RegionalMaintenanceSection = ({ regionName = '', allowAllRegions = false, 
 
   if (!effectiveRegionName && !allowAllRegions) {
     return (
-      <Card className="shadow-xl glassmorphism">
+      <Card>
         <CardHeader>
           <CardTitle className="text-2xl text-primary">Maintenance des Terminaux</CardTitle>
           <CardDescription>
@@ -280,7 +280,7 @@ const RegionalMaintenanceSection = ({ regionName = '', allowAllRegions = false, 
 
   return (
     <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-      <Card className="shadow-xl glassmorphism">
+      <Card>
         <CardHeader>
           <CardTitle className="flex items-center text-3xl font-bold text-primary">
             <Wrench className="mr-3 h-8 w-8" />
@@ -334,7 +334,7 @@ const RegionalMaintenanceSection = ({ regionName = '', allowAllRegions = false, 
             showAdvancedCharts
           />
 
-          <Card className="shadow-xl glassmorphism">
+          <Card>
             <CardHeader className="space-y-4">
               <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                 <div>
@@ -511,7 +511,7 @@ const RegionalMaintenanceSection = ({ regionName = '', allowAllRegions = false, 
                             <TableCell colSpan={5} className="p-0">
                               <div className="m-4 space-y-3">
                                 <div className="flex items-center justify-between">
-                                  <p className="font-semibold text-slate-900">
+                                  <p className="font-semibold text-foreground">
                                     Sous-ensembles du terminal {group.terminalReference}
                                   </p>
                                   <span className="text-xs text-muted-foreground">
@@ -544,20 +544,20 @@ const RegionalMaintenanceSection = ({ regionName = '', allowAllRegions = false, 
                                   return (
                                     <div
                                       key={seKey}
-                                      className={`overflow-hidden rounded-xl border bg-white shadow-sm ${isGood ? 'border-green-200' : 'border-red-200'}`}
+                                      className={`overflow-hidden rounded-xl border bg-card shadow-sm ${isGood ? 'border-success/30' : 'border-destructive/30'}`}
                                     >
                                       {/* En-tête cliquable */}
                                       <button
                                         type="button"
                                         onClick={rowInterventions.length > 0 ? toggleHistory : undefined}
-                                        className={`flex w-full items-center gap-3 px-4 py-3 text-left ${isGood ? 'bg-green-50' : 'bg-red-50'} ${rowInterventions.length > 0 ? 'cursor-pointer' : 'cursor-default'}`}
+                                        className={`flex w-full items-center gap-3 px-4 py-3 text-left ${isGood ? 'bg-success-muted' : 'bg-destructive/10'} ${rowInterventions.length > 0 ? 'cursor-pointer' : 'cursor-default'}`}
                                       >
                                         <div className="flex flex-1 flex-wrap items-center gap-2 min-w-0">
-                                          <span className="font-semibold text-slate-800">{row.sousEnsembleLabel}</span>
-                                          <span className={`rounded-full px-2 py-0.5 font-mono text-xs ${isGood ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                          <span className="font-semibold text-foreground">{row.sousEnsembleLabel}</span>
+                                          <span className={`rounded-full px-2 py-0.5 font-mono text-xs ${isGood ? 'bg-success-muted text-success-muted-foreground' : 'bg-destructive/10 text-destructive'}`}>
                                             {row.sousEnsembleReference}
                                           </span>
-                                          <span className={`text-xs ${isGood ? 'text-green-700' : 'text-red-700'}`}>
+                                          <span className={`text-xs ${isGood ? 'text-success-muted-foreground' : 'text-destructive'}`}>
                                             {row.followUp.detail}
                                           </span>
                                         </div>
@@ -566,7 +566,7 @@ const RegionalMaintenanceSection = ({ regionName = '', allowAllRegions = false, 
                                             {row.followUp.label}
                                           </Badge>
                                           {rowInterventions.length > 0 && (
-                                            <span className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium transition-colors ${historyOpen ? 'border-slate-300 bg-white text-slate-700' : 'border-slate-200 bg-white/70 text-muted-foreground'}`}>
+                                            <span className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium transition-colors ${historyOpen ? 'border-border bg-card text-foreground/80' : 'border-border bg-card/70 text-muted-foreground'}`}>
                                               {rowInterventions.length} interv.
                                               {historyOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
                                             </span>
@@ -612,11 +612,11 @@ const RegionalMaintenanceSection = ({ regionName = '', allowAllRegions = false, 
                                                 <div
                                                   key={i.id}
                                                   onClick={i.fiche_url ? () => openFiche(i.fiche_url) : undefined}
-                                                  className={`space-y-1.5 rounded-lg border px-3 py-2 text-xs ${isCurative ? 'border-red-100 bg-red-50/40' : 'border-blue-100 bg-blue-50/40'} ${i.fiche_url ? 'cursor-pointer transition-colors hover:border-primary/50 hover:bg-primary/5' : ''}`}
+                                                  className={`space-y-1.5 rounded-lg border px-3 py-2 text-xs ${isCurative ? 'border-destructive/30 bg-destructive/10' : 'border-info/30 bg-info-muted/40'} ${i.fiche_url ? 'cursor-pointer transition-colors hover:border-primary/50 hover:bg-primary/5' : ''}`}
                                                 >
                                                   <div className="flex flex-wrap items-center gap-2">
-                                                    <span className="font-semibold text-slate-700">{formatMaintenanceDateTime(i.date_intervention)}</span>
-                                                    <Badge variant="outline" className={`text-[10px] ${isCurative ? 'border-red-200 bg-red-50 text-red-700' : 'border-blue-200 bg-blue-50 text-blue-700'}`}>
+                                                    <span className="font-semibold text-foreground/80">{formatMaintenanceDateTime(i.date_intervention)}</span>
+                                                    <Badge variant="outline" className={`text-[10px] ${isCurative ? 'border-destructive/30 bg-destructive/10 text-destructive' : 'border-info/30 bg-info-muted text-info-muted-foreground'}`}>
                                                       {getMaintenanceInterventionTypeLabel(i.type_intervention)}
                                                     </Badge>
                                                     <Badge variant="outline" className={`text-[10px] ${getMaintenanceInterventionStatusClass(i.statut)}`}>
@@ -633,17 +633,17 @@ const RegionalMaintenanceSection = ({ regionName = '', allowAllRegions = false, 
                                                     )}
                                                   </div>
                                                   {isCurative && (codePanne || i.description_panne) && (
-                                                    <div className="flex flex-wrap items-start gap-3 rounded border border-red-100 bg-red-50 px-2 py-1.5">
+                                                    <div className="flex flex-wrap items-start gap-3 rounded border border-destructive/30 bg-destructive/10 px-2 py-1.5">
                                                       {codePanne && (
                                                         <div className="shrink-0">
-                                                          <span className="text-[10px] font-semibold uppercase text-red-400">Code panne</span>
-                                                          <p className="font-mono font-bold text-red-800">{codePanne.code} — {codePanne.libelle}</p>
+                                                          <span className="text-[10px] font-semibold uppercase text-destructive">Code panne</span>
+                                                          <p className="font-mono font-bold text-destructive">{codePanne.code} — {codePanne.libelle}</p>
                                                         </div>
                                                       )}
                                                       {i.description_panne && (
                                                         <div className="min-w-0">
-                                                          <span className="text-[10px] font-semibold uppercase text-red-400">Descriptif</span>
-                                                          <p className="text-red-800">{i.description_panne}</p>
+                                                          <span className="text-[10px] font-semibold uppercase text-destructive">Descriptif</span>
+                                                          <p className="text-destructive">{i.description_panne}</p>
                                                         </div>
                                                       )}
                                                     </div>

@@ -634,8 +634,6 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
     overscroll-behavior: contain;
     padding: 0.6rem;
     animation: app-space-drawer-in 0.22s ease;
-    backdrop-filter: blur(16px) saturate(1.4);
-    -webkit-backdrop-filter: blur(16px) saturate(1.4);
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
     scrollbar-color: transparent transparent;
@@ -697,40 +695,13 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
     justify-content: space-around;
     gap: 0.15rem;
     padding: 0.3rem 0.4rem;
-    /* Aspect translucide « verre » teinté (comme le popover Espaces) */
-    background:
-      linear-gradient(180deg, hsl(var(--primary) / 0.10), hsl(var(--primary) / 0.03) 55%),
-      hsl(var(--card) / var(--mobile-tabbar-opacity, 0.62));
-    border: 1px solid hsl(var(--primary) / 0.18);
-    border-radius: var(--mobile-card-radius, 1.15rem);
-    box-shadow: var(--mobile-tabbar-shadow, 0 12px 34px -14px rgba(15, 23, 42, 0.40)), inset 0 1px 0 hsl(0 0% 100% / 0.45);
-    backdrop-filter: blur(var(--mobile-tabbar-blur, 22px)) saturate(1.7);
-    -webkit-backdrop-filter: blur(var(--mobile-tabbar-blur, 22px)) saturate(1.7);
-  }
-
-  /* Barre du haut translucide « verre » teinté sur mobile (comme le popover Espaces) */
-  .app-top-header {
-    background:
-      linear-gradient(180deg, hsl(var(--primary) / 0.12) 0%, hsl(var(--card) / 0.80) 62%) !important;
-    backdrop-filter: blur(26px) saturate(1.85);
-    -webkit-backdrop-filter: blur(26px) saturate(1.85);
-    border-bottom: 1px solid hsl(var(--primary) / 0.20) !important;
-    box-shadow: 0 8px 26px -12px rgba(15, 23, 42, 0.28) !important;
+    /* Apparence (carte opaque) : bloc « Mode mobile / PWA épuré » en fin de fichier. */
   }
 
   /* Liseré dégradé du bas de l'en-tête, un peu plus marqué sur mobile */
   .app-top-header > .pointer-events-none.bottom-0 {
     height: 2.5px !important;
     opacity: 0.95;
-  }
-
-  /* Boutons d'en-tête (thème / menu) : pastilles « verre » assorties */
-  .app-top-header .md\:hidden button {
-    border-radius: 0.7rem;
-    border-color: hsl(var(--primary) / 0.22);
-    background: hsl(var(--primary) / 0.08);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
   }
 
   .mobile-tabbar-item {
@@ -1036,43 +1007,6 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
   .app-space-main .space-y-7 > :not([hidden]) ~ :not([hidden]),
   .app-space-main .space-y-6 > :not([hidden]) ~ :not([hidden]) {
     margin-top: 0.9rem !important;
-  }
-
-  .app-space-main .text-5xl,
-  .app-space-main .text-4xl {
-    font-size: 1.55rem !important;
-    line-height: 1.9rem !important;
-  }
-
-  .app-space-main .text-3xl {
-    font-size: 1.35rem !important;
-    line-height: 1.7rem !important;
-  }
-
-  .app-space-main .text-2xl {
-    font-size: 1.15rem !important;
-    line-height: 1.5rem !important;
-  }
-
-  .app-space-main .text-xl {
-    font-size: 1rem !important;
-    line-height: 1.35rem !important;
-  }
-
-  .app-space-main .text-base,
-  .app-space-main .text-lg {
-    font-size: 0.88rem !important;
-    line-height: 1.25rem !important;
-  }
-
-  .app-space-main .text-sm {
-    font-size: 0.875rem !important;
-    line-height: 1.25rem !important;
-  }
-
-  .app-space-main .text-xs {
-    font-size: 0.75rem !important;
-    line-height: 1.1rem !important;
   }
 
   [role="tablist"] {
@@ -2294,4 +2228,154 @@ html {
       font-size: 1rem !important;
     }
   }
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   Libellés DANS la zone du champ (toutes tailles d'écran, tous les écrans).
+   Tout couple « libellé + champ » (liste, saisie, date, zone de texte) affiche
+   son libellé en petit, en haut à gauche À L'INTÉRIEUR du champ ; la valeur
+   s'affiche dessous. Gain : une ligne de libellé en moins par filtre/champ.
+   Le libellé reste un vrai <label> (lu par les lecteurs d'écran).
+   Exclus : cases à cocher, boutons radio, curseurs, fichiers, libellés déjà
+   masqués (.sr-only, cf. FormField inline). Le mot de passe (conteneur
+   .password-field + bouton œil) est pris en charge ; les autres champs enveloppés
+   (ex. recherche à icône à gauche) gardent leur libellé au-dessus.
+   NB : pas de :has() imbriqué — non supporté par les navigateurs.
+   ════════════════════════════════════════════════════════════════════════════ */
+:is(#main-content, [role="dialog"]) :is(div, section, fieldset):has(> label:not(.sr-only) + :is(button[role="combobox"], input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]), select, textarea, .password-field)) {
+  position: relative;
+}
+
+:is(#main-content, [role="dialog"]) :is(div, section, fieldset) > label:not(.sr-only):has(+ :is(button[role="combobox"], input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]), select, textarea, .password-field)) {
+  position: absolute;
+  top: 0.3rem;
+  left: 0.75rem;
+  z-index: 1;
+  max-width: calc(100% - 2.75rem);
+  margin: 0 !important;
+  overflow: hidden;
+  color: hsl(var(--muted-foreground));
+  /* Base de l'app = 14px → 0.75rem ≈ 10.5px. */
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  line-height: 0.9rem !important;
+  letter-spacing: 0.02em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+:is(#main-content, [role="dialog"]) :is(div, section, fieldset) > label:not(.sr-only) + :is(button[role="combobox"], input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]), select),
+:is(#main-content, [role="dialog"]) :is(div, section, fieldset) > label:not(.sr-only) + .password-field > input {
+  height: auto !important;
+  min-height: 2.75rem !important;
+  margin-top: 0 !important;
+  padding-top: 1.05rem !important;
+  padding-bottom: 0.3rem !important;
+}
+
+:is(#main-content, [role="dialog"]) :is(div, section, fieldset) > label:not(.sr-only) + .password-field {
+  margin-top: 0 !important;
+}
+
+:is(#main-content, [role="dialog"]) :is(div, section, fieldset) > label:not(.sr-only) + textarea {
+  margin-top: 0 !important;
+  padding-top: 1.15rem !important;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   Titres — échelle unique sur PC (le mobile a la sienne plus haut).
+   En-tête de page (1re carte de l'écran, hors onglet / carte imbriquée) : 1.5rem.
+   Tous les autres titres de carte (y compris dans les onglets, ex. « Performance ») :
+   1.125rem. Les tailles codées écran par écran (text-3xl…) ne s'appliquent plus.
+   ════════════════════════════════════════════════════════════════════════════ */
+@media (min-width: 768px) {
+  #main-content .text-card-foreground :is(h2, h3) {
+    font-size: 1.125rem !important;
+    line-height: 1.5rem !important;
+  }
+
+  #main-content .text-card-foreground :is(h2, h3) > svg {
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+  }
+
+  #main-content .text-card-foreground:first-child:not(.text-card-foreground *):not([role="tabpanel"] *) :is(h1, h2, h3) {
+    font-size: 1.5rem !important;
+    line-height: 2rem !important;
+  }
+
+  #main-content .text-card-foreground:first-child:not(.text-card-foreground *):not([role="tabpanel"] *) :is(h1, h2, h3) > svg {
+    width: 1.5rem !important;
+    height: 1.5rem !important;
+  }
+}
+
+/* L'ancienne disposition mobile « libellé à gauche / champ à droite »
+   (.mobile-inline-fields) est remplacée par le libellé dans le champ. */
+@media (max-width: 767px) {
+  .mobile-inline-fields .space-y-2:has(> label:not(.sr-only)) {
+    display: block;
+  }
+}
+
+/* Filtre sur « toutes » (déclencheur data-all, cf. ui/select.jsx) : seul le
+   libellé s'affiche, à taille normale et centré — « Région » au lieu de
+   « Région » + « Toutes régions ». Une valeur réelle choisie → libellé en
+   petit au-dessus de la valeur.
+   Les :not(._sN) inutiles ne servent qu'à dépasser la spécificité de la règle
+   générale des libellés (dont le :has() compte comme input:not()×5). */
+:is(#main-content, [role="dialog"]) :is(div, section, fieldset) > label:not(.sr-only):not(._s1):not(._s2):not(._s3):not(._s4):not(._s5):not(._s6):has(+ button[role="combobox"][data-all]) {
+  top: 50%;
+  transform: translateY(-50%);
+  max-width: calc(100% - 2.5rem);
+  color: hsl(var(--foreground));
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  line-height: 1.25rem !important;
+  letter-spacing: 0;
+}
+
+:is(#main-content, [role="dialog"]) :is(div, section, fieldset) > label:not(.sr-only) + button[role="combobox"][data-all] > span:first-child {
+  visibility: hidden;
+}
+
+@media (max-width: 767px) {
+  :is(#main-content, [role="dialog"]) :is(div, section, fieldset) > label:not(.sr-only):not(._s1):not(._s2):not(._s3):not(._s4):not(._s5):not(._s6):not(._s7):has(+ button[role="combobox"][data-all]) {
+    font-size: 0.75rem !important;
+  }
+}
+
+/* Liseré bleu : réservé à l'en-tête d'écran. Masqué sur les cartes affichées
+   dans un onglet (ex. « Performance ») ou imbriquées dans une autre carte. */
+#main-content :is([role="tabpanel"] [data-card-rail], .text-card-foreground .text-card-foreground > [data-card-rail]) {
+  display: none;
+}
+
+/* Filtre sur « toutes » : pas de réserve pour le petit libellé → texte et
+   chevron centrés verticalement. (:not(._sN) : spécificité, cf. ci-dessus.) */
+:is(#main-content, [role="dialog"]) :is(div, section, fieldset) > label:not(.sr-only):not(._s1):not(._s2):not(._s3):not(._s4):not(._s5):not(._s6) + button[role="combobox"][data-all] {
+  padding-top: 0.3rem !important;
+}
+
+/* FILTRE avec une valeur choisie (déclencheur data-filter sans data-all, cf.
+   ui/select.jsx) : comme les filtres à choix multiple, on n'affiche QUE la valeur,
+   en style « filtre actif » (bordure + fond teintés). Le titre reste dans le DOM
+   (masqué visuellement) pour les lecteurs d'écran. Les champs de FORMULAIRE
+   (listes sans option « toutes ») gardent leur titre au-dessus de la valeur.
+   :not(._sN) : spécificité, cf. plus haut. */
+:is(#main-content, [role="dialog"]) :is(div, section, fieldset) > label:not(.sr-only):not(._s1):not(._s2):not(._s3):not(._s4):not(._s5):not(._s6):not(._s7):has(+ button[role="combobox"][data-filter]:not([data-all])) {
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+:is(#main-content, [role="dialog"]) :is(div, section, fieldset) > label:not(.sr-only):not(._s1):not(._s2):not(._s3):not(._s4):not(._s5):not(._s6) + button[role="combobox"][data-filter]:not([data-all]) {
+  padding-top: 0.3rem !important;
+  border-color: hsl(var(--primary) / 0.5);
+  background-color: hsl(var(--primary) / 0.05);
+  color: hsl(var(--primary));
+  font-weight: 600;
 }

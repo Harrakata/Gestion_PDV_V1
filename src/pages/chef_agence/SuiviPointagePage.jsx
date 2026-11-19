@@ -283,8 +283,7 @@ const SuiviPointagePage = () => {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-      <Card className="relative overflow-hidden border border-primary/20 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+      <Card variant="accent">
         <CardHeader>
           <CardTitle className="flex items-center text-3xl font-bold text-primary">
             <ClipboardCheck className="mr-3 h-8 w-8" />
@@ -327,7 +326,7 @@ const SuiviPointagePage = () => {
         />
       </div>
 
-      <Card className="shadow-xl glassmorphism">
+      <Card>
         <CardHeader className="space-y-4">
           <div>
             <CardTitle className="text-2xl text-primary">Analyse des non-conformités</CardTitle>
@@ -385,7 +384,7 @@ const SuiviPointagePage = () => {
         </CardContent>
       </Card>
 
-      <Card className="shadow-xl glassmorphism">
+      <Card>
         <CardHeader className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
@@ -450,7 +449,7 @@ const SuiviPointagePage = () => {
       </Card>
 
       {selectedGuichetiereRow && (
-        <Card className="shadow-xl glassmorphism">
+        <Card>
           <CardHeader>
             <CardTitle className="text-2xl text-primary">
               Détail du pointage - {selectedGuichetiereRow.nomComplet}
@@ -490,14 +489,14 @@ const SuiviPointagePage = () => {
                 </thead>
                 <tbody>
                   {selectedGuichetiereRow.pointages.length === 0 ? (
-                    <tr className="border-t bg-white">
+                    <tr className="border-t bg-card">
                       <td colSpan={3} className="px-4 py-6 text-center text-muted-foreground">
                         Aucun pointage enregistré sur cette date.
                       </td>
                     </tr>
                   ) : (
                     selectedGuichetiereRow.pointages.map((pointage) => (
-                      <tr key={pointage.id} className="border-t bg-white">
+                      <tr key={pointage.id} className="border-t bg-card">
                         <td className="px-4 py-3">{formatPointageDateTime(pointage.time)}</td>
                         <td className="px-4 py-3">{pointage.type || 'Présence'}</td>
                         <td className="px-4 py-3">Créneau {(pointage.creneauIndex ?? 0) + 1}</td>

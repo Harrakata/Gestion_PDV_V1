@@ -167,9 +167,9 @@ const MesGuichetieresPage = () => {
   }, [guichetieres, searchTerm]);
 
   const getDisponibiliteInfo = (g) => {
-    if (g.disponibilite === 'Disponible') return <span className="text-green-500">Disponible</span>;
+    if (g.disponibilite === 'Disponible') return <span className="text-success">Disponible</span>;
     
-    let infoText = g.disponibilite === 'Absent' ? <span className="text-yellow-500">Absent(e)</span> : <span className="text-red-500">Suspendu(e)</span>;
+    let infoText = g.disponibilite === 'Absent' ? <span className="text-warning">Absent(e)</span> : <span className="text-destructive">Suspendu(e)</span>;
     
     if (g.dateDebutIndisponibilite && g.dateFinIndisponibilite) {
       const debut = parseISO(g.dateDebutIndisponibilite);
@@ -202,8 +202,7 @@ const MesGuichetieresPage = () => {
       className="space-y-6"
     >
       {/* Titre — toujours en haut */}
-      <Card className="relative overflow-hidden border border-primary/20 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+      <Card variant="accent">
         <CardHeader>
           <div>
             <CardTitle className="text-3xl font-bold text-primary flex items-center">
@@ -225,8 +224,7 @@ const MesGuichetieresPage = () => {
         </TabsList>
 
         <TabsContent value="liste">
-          <Card className="relative overflow-hidden border border-primary/20 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+          <Card variant="accent">
             <CardHeader>
               <div className="relative flex-grow">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />

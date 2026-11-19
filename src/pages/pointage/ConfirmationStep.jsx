@@ -52,16 +52,16 @@ const ConfirmationStep = ({ onSubmit, onReset, isLoading, currentPointageStatus,
           animate={{ scale: 1, rotate: [0, 10, 0] }}
           className="mb-6"
         >
-          <CheckCircle className="h-28 w-28 text-green-500 mx-auto" />
+          <CheckCircle className="h-28 w-28 text-success mx-auto" />
         </motion.div>
       ) : canPointe ? (
-        <CheckCircle className="h-20 w-20 text-green-500 mx-auto mb-6" />
+        <CheckCircle className="h-20 w-20 text-success mx-auto mb-6" />
       ) : (
-        <AlertTriangle className="h-20 w-20 text-red-500 mx-auto mb-6" />
+        <AlertTriangle className="h-20 w-20 text-destructive mx-auto mb-6" />
       )}
       
       <h2 className="text-2xl font-semibold mb-3">Confirmation du Pointage</h2>
-      <p className={`text-lg mb-6 ${canPointe ? 'text-muted-foreground' : 'text-red-600 dark:text-red-400'}`}>
+      <p className={`text-lg mb-6 ${canPointe ? 'text-muted-foreground' : 'text-destructive dark:text-destructive'}`}>
         {message || (canPointe ? "Veuillez confirmer votre pointage." : "Impossible de pointer pour le moment.")}
       </p>
       
@@ -72,7 +72,7 @@ const ConfirmationStep = ({ onSubmit, onReset, isLoading, currentPointageStatus,
             <PenSquare className="h-5 w-5 mr-2 text-primary" />
             <h3 className="text-lg font-medium text-primary">Votre signature</h3>
           </div>
-          <div className="mx-auto bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md p-2 w-64 h-auto">
+          <div className="mx-auto bg-card dark:bg-gray-800 border border-border dark:border-gray-600 rounded-md p-2 w-64 h-auto">
             <img 
               src={signature} 
               alt="Signature électronique" 

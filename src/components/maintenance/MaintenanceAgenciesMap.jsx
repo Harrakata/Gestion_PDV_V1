@@ -380,10 +380,10 @@ const centerViewportOnMarker = (viewport, marker) => {
 };
 
 const getStatusBadgeClassName = (status, mode = 'maintenance') => {
-  if (mode === 'planning' && status === 'planned') return 'border-blue-200 bg-blue-50 text-blue-700';
-  if (status === 'ok') return 'border-emerald-200 bg-emerald-50 text-emerald-700';
-  if (status === 'empty') return 'border-amber-200 bg-amber-50 text-amber-700';
-  return 'border-red-200 bg-red-50 text-red-700';
+  if (mode === 'planning' && status === 'planned') return 'border-info/30 bg-info-muted text-info-muted-foreground';
+  if (status === 'ok') return 'border-success/30 bg-success-muted text-success-muted-foreground';
+  if (status === 'empty') return 'border-warning/30 bg-warning-muted text-warning-muted-foreground';
+  return 'border-destructive/30 bg-destructive/10 text-destructive';
 };
 
 const getStatusLabel = (row, mode = 'maintenance') => {
@@ -409,10 +409,10 @@ const getShortStatusLabel = (status, mode = 'maintenance') => {
 };
 
 const getMarkerClassName = (status, mode = 'maintenance') => {
-  if (mode === 'planning' && status === 'planned') return 'bg-blue-500 text-white';
-  if (status === 'ok') return 'bg-emerald-500 text-white';
-  if (status === 'empty') return 'bg-amber-500 text-white';
-  return 'bg-red-500 text-white';
+  if (mode === 'planning' && status === 'planned') return 'bg-primary text-white';
+  if (status === 'ok') return 'bg-success text-white';
+  if (status === 'empty') return 'bg-warning text-white';
+  return 'bg-destructive text-white';
 };
 
 const MaintenanceAgenciesMap = ({
@@ -609,7 +609,7 @@ const MaintenanceAgenciesMap = ({
   const isOperationalCard = appearance === 'operational';
   const cardClassName = cn(
     'w-full min-w-0 max-w-full overflow-hidden rounded-2xl border shadow-sm',
-    isOperationalCard ? 'surface-glass border-primary/15' : 'bg-white'
+    isOperationalCard ? 'surface-glass border-primary/15' : 'bg-card'
   );
   const headerClassName = cn(
     'flex flex-col gap-3 border-b',
@@ -664,10 +664,10 @@ const MaintenanceAgenciesMap = ({
               </p>
             </div>
             <div className="flex flex-wrap gap-2 text-xs">
-              <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">
+              <Badge variant="outline" className="border-success/30 bg-success-muted text-success-muted-foreground">
                 Localisées : 0/0
               </Badge>
-              <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">
+              <Badge variant="outline" className="border-warning/30 bg-warning-muted text-warning-muted-foreground">
                 À préciser : 0
               </Badge>
             </div>
@@ -702,10 +702,10 @@ const MaintenanceAgenciesMap = ({
             </p>
           </div>
           <div className="flex flex-wrap gap-2 text-xs">
-            <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">
+            <Badge variant="outline" className="border-success/30 bg-success-muted text-success-muted-foreground">
               Localisées : {markers.length}/{agencyRows.length}
             </Badge>
-            <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">
+            <Badge variant="outline" className="border-warning/30 bg-warning-muted text-warning-muted-foreground">
               À préciser : {unresolvedCount}
             </Badge>
           </div>
@@ -718,7 +718,7 @@ const MaintenanceAgenciesMap = ({
       </div>
 
       <div className="grid w-full min-w-0 max-w-full gap-0 overflow-hidden xl:grid-cols-[minmax(0,1fr)_minmax(18rem,22.5rem)]">
-        <div className="relative h-[520px] w-full min-w-0 overflow-hidden bg-slate-100" onWheel={handleMapWheel}>
+        <div className="relative h-[520px] w-full min-w-0 overflow-hidden bg-muted" onWheel={handleMapWheel}>
           {markers.length > 0 && viewport ? (
             <>
               {tiles.map((tile) => (
@@ -739,7 +739,7 @@ const MaintenanceAgenciesMap = ({
 
               <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(15,23,42,0.06)_1px,transparent_1px),linear-gradient(0deg,rgba(15,23,42,0.06)_1px,transparent_1px)] bg-[size:80px_80px]" />
 
-              <div className="absolute right-3 top-3 z-20 flex overflow-hidden rounded-xl border bg-white/95 shadow">
+              <div className="absolute right-3 top-3 z-20 flex overflow-hidden rounded-xl border bg-card/95 shadow">
                 <Button
                   type="button"
                   variant="ghost"
@@ -775,7 +775,7 @@ const MaintenanceAgenciesMap = ({
                 </Button>
               </div>
 
-              <div className="absolute left-3 top-3 z-20 rounded-full border bg-white/95 px-3 py-1 text-xs font-semibold text-slate-700 shadow">
+              <div className="absolute left-3 top-3 z-20 rounded-full border bg-card/95 px-3 py-1 text-xs font-semibold text-foreground/80 shadow">
                 Zoom {viewport.zoom}
               </div>
 
@@ -800,7 +800,7 @@ const MaintenanceAgenciesMap = ({
                     >
                       <MapPin className="h-5 w-5" />
                     </span>
-                    <span className="mt-1 max-w-[150px] truncate rounded-full border bg-white/95 px-2 py-0.5 text-[10px] font-semibold text-slate-700 shadow">
+                    <span className="mt-1 max-w-[150px] truncate rounded-full border bg-card/95 px-2 py-0.5 text-[10px] font-semibold text-foreground/80 shadow">
                       {marker.nom}
                     </span>
                   </button>
@@ -808,28 +808,28 @@ const MaintenanceAgenciesMap = ({
               })}
 
               {mode === 'planning' ? (
-                <div className="absolute bottom-3 left-3 flex flex-wrap gap-2 rounded-xl border bg-white/95 px-3 py-2 text-xs shadow">
+                <div className="absolute bottom-3 left-3 flex flex-wrap gap-2 rounded-xl border bg-card/95 px-3 py-2 text-xs shadow">
                   <span className="flex items-center gap-1">
-                    <span className="h-2.5 w-2.5 rounded-full bg-blue-500" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-primary" />
                     Planifiée
                   </span>
                   <span className="flex items-center gap-1">
-                    <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-warning" />
                     Adresse à préciser
                   </span>
                 </div>
               ) : (
-                <div className="absolute bottom-3 left-3 flex flex-wrap gap-2 rounded-xl border bg-white/95 px-3 py-2 text-xs shadow">
+                <div className="absolute bottom-3 left-3 flex flex-wrap gap-2 rounded-xl border bg-card/95 px-3 py-2 text-xs shadow">
                   <span className="flex items-center gap-1">
-                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-success" />
                     À jour
                   </span>
                   <span className="flex items-center gap-1">
-                    <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-destructive" />
                     À traiter
                   </span>
                   <span className="flex items-center gap-1">
-                    <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-warning" />
                     Sans suivi
                   </span>
                 </div>
@@ -855,16 +855,16 @@ const MaintenanceAgenciesMap = ({
 
         <div className={cn(
           'flex w-full min-w-0 max-w-full flex-col border-t xl:max-h-[520px] xl:border-l xl:border-t-0',
-          isOperationalCard ? 'bg-transparent' : 'bg-slate-50/70'
+          isOperationalCard ? 'bg-transparent' : 'bg-muted/50'
         )}>
           {selectedAgency ? (
             <div className={cn(
               'border-b px-4 py-3',
-              isOperationalCard ? 'bg-transparent' : 'bg-white'
+              isOperationalCard ? 'bg-transparent' : 'bg-card'
             )}>
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="truncate font-semibold text-slate-900">{selectedAgency.nom}</p>
+                  <p className="truncate font-semibold text-foreground">{selectedAgency.nom}</p>
                   <p className="text-xs text-muted-foreground">{selectedAgency.region}</p>
                 </div>
                 <Badge variant="outline" className={getStatusBadgeClassName(selectedAgency.status, mode)}>
@@ -878,15 +878,15 @@ const MaintenanceAgenciesMap = ({
               </div>
 
               <div className="mt-3 grid grid-cols-3 gap-2 text-center text-xs">
-                <div className="rounded-lg border bg-slate-50 px-2 py-2">
-                  <p className="font-semibold text-slate-900">{selectedAgency.terminalCount}</p>
+                <div className="rounded-lg border bg-muted/50 px-2 py-2">
+                  <p className="font-semibold text-foreground">{selectedAgency.terminalCount}</p>
                   <p className="text-muted-foreground">{mode === 'planning' ? 'Créneaux' : 'Terminaux'}</p>
                 </div>
-                <div className={`rounded-lg border px-2 py-2 ${mode === 'planning' ? 'bg-blue-50 text-blue-700' : 'bg-emerald-50 text-emerald-700'}`}>
+                <div className={`rounded-lg border px-2 py-2 ${mode === 'planning' ? 'bg-info-muted text-info-muted-foreground' : 'bg-success-muted text-success-muted-foreground'}`}>
                   <p className="font-semibold">{selectedAgency.upToDateCount}</p>
                   <p>{mode === 'planning' ? 'Matin' : 'À jour'}</p>
                 </div>
-                <div className={`rounded-lg border px-2 py-2 ${mode === 'planning' ? 'bg-violet-50 text-violet-700' : 'bg-red-50 text-red-700'}`}>
+                <div className={`rounded-lg border px-2 py-2 ${mode === 'planning' ? 'bg-violet-50 text-violet-700' : 'bg-destructive/10 text-destructive'}`}>
                   <p className="font-semibold">{selectedAgency.preventiveCount}</p>
                   <p>{mode === 'planning' ? 'Après-midi' : 'À traiter'}</p>
                 </div>
@@ -902,7 +902,7 @@ const MaintenanceAgenciesMap = ({
                   Localisation en cours...
                 </p>
               ) : selectedLocation?.status !== 'resolved' ? (
-                <p className="mt-2 text-xs text-amber-700">
+                <p className="mt-2 text-xs text-warning-muted-foreground">
                   {selectedLocation?.reason || 'Localisation automatique indisponible.'}
                 </p>
               ) : null}
@@ -929,12 +929,12 @@ const MaintenanceAgenciesMap = ({
                     type="button"
                     onClick={() => handleSelectAgency(row.key)}
                     className={`w-full rounded-xl border px-3 py-2 text-left transition-colors ${
-                      isSelected ? 'border-primary bg-primary/5' : 'bg-white hover:border-primary/30 hover:bg-primary/5'
+                      isSelected ? 'border-primary bg-primary/5' : 'bg-card hover:border-primary/30 hover:bg-primary/5'
                     }`}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-medium text-slate-900">{row.nom}</p>
+                        <p className="truncate text-sm font-medium text-foreground">{row.nom}</p>
                         <p className="text-xs text-muted-foreground">{row.region}</p>
                       </div>
                       {location?.status === 'loading' ? (
@@ -943,16 +943,16 @@ const MaintenanceAgenciesMap = ({
                         <MapPin
                           className={`mt-0.5 h-4 w-4 shrink-0 ${
                             mode === 'planning' && row.status === 'planned'
-                              ? 'text-blue-500'
+                              ? 'text-info'
                               : row.status === 'ok'
-                              ? 'text-emerald-500'
+                              ? 'text-success'
                               : row.status === 'empty'
-                                ? 'text-amber-500'
-                                : 'text-red-500'
+                                ? 'text-warning'
+                                : 'text-destructive'
                           }`}
                         />
                       ) : (
-                        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+                        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
                       )}
                     </div>
                     <div className="mt-2 flex flex-wrap gap-1">

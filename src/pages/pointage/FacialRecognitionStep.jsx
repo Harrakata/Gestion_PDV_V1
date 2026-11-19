@@ -69,7 +69,7 @@ const FacialRecognitionStep = ({ guichetiereInfo, onSubmit, onReset, isLoading: 
         setComparisonResult(simulatedMatch ? 'match' : 'no_match');
         setLocalIsLoading(false);
         if (simulatedMatch) {
-            toast({ title: "Correspondance !", description: "La reconnaissance faciale a réussi.", className: "bg-green-500 text-white"});
+            toast({ title: "Correspondance !", description: "La reconnaissance faciale a réussi.", className: "bg-success text-white"});
         } else {
             toast({ title: "Échec de la reconnaissance", description: "Les visages ne semblent pas correspondre. Veuillez réessayer ou annuler.", variant: "destructive", duration: 5000});
         }
@@ -112,13 +112,13 @@ const FacialRecognitionStep = ({ guichetiereInfo, onSubmit, onReset, isLoading: 
           {guichetierePhotoUrl ? (
             <Avatar className="w-24 h-24 md:w-32 md:h-32 rounded-full border-2 border-primary shadow-md">
               <AvatarImage src={guichetierePhotoUrl} alt={`Profil de ${guichetiereInfo?.prenom}`} className="object-cover" />
-              <AvatarFallback className="bg-gray-200 text-gray-400">
+              <AvatarFallback className="bg-muted text-muted-foreground">
                 <User className="w-12 h-12" />
               </AvatarFallback>
             </Avatar>
           ) : (
-             <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-gray-200 flex items-center justify-center border-2 border-muted">
-                <User className="w-12 h-12 text-gray-400" />
+             <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-muted flex items-center justify-center border-2 border-muted">
+                <User className="w-12 h-12 text-muted-foreground" />
              </div>
           )}
           <p className="mt-2 text-sm font-medium">{guichetiereInfo?.prenom} {guichetiereInfo?.nom}</p>
@@ -130,11 +130,11 @@ const FacialRecognitionStep = ({ guichetiereInfo, onSubmit, onReset, isLoading: 
             <video ref={videoRef} autoPlay className="w-24 h-24 md:w-32 md:h-32 rounded-lg object-cover border-2 border-input shadow-md bg-black"></video>
           )}
           {capturedImage && !isCameraActive && (
-            <img src={capturedImage} alt="Capture faciale" className="w-24 h-24 md:w-32 md:h-32 rounded-lg object-cover border-2 border-blue-500 shadow-md" />
+            <img src={capturedImage} alt="Capture faciale" className="w-24 h-24 md:w-32 md:h-32 rounded-lg object-cover border-2 border-info shadow-md" />
           )}
           {!isCameraActive && !capturedImage && (
-            <div className="w-24 h-24 md:w-32 md:h-32 rounded-lg bg-gray-200 flex items-center justify-center border-2 border-muted">
-              <Camera className="w-12 h-12 text-gray-400" />
+            <div className="w-24 h-24 md:w-32 md:h-32 rounded-lg bg-muted flex items-center justify-center border-2 border-muted">
+              <Camera className="w-12 h-12 text-muted-foreground" />
             </div>
           )}
           <canvas ref={canvasRef} className="hidden"></canvas>
@@ -145,7 +145,7 @@ const FacialRecognitionStep = ({ guichetiereInfo, onSubmit, onReset, isLoading: 
         <motion.div 
             initial={{opacity: 0, y:10}} animate={{opacity:1, y:0}}
             className={`p-2 rounded-md text-sm md:text-base font-semibold flex items-center justify-center
-            ${comparisonResult === 'match' ? 'bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100' : 'bg-red-100 text-red-700 dark:bg-red-700 dark:text-red-100'}`}
+            ${comparisonResult === 'match' ? 'bg-success-muted text-success-muted-foreground dark:bg-success dark:text-success-foreground' : 'bg-destructive/10 text-destructive dark:bg-destructive dark:text-destructive-foreground'}`}
         >
             {comparisonResult === 'match' ? <CheckCircle className="mr-2 h-5 w-5"/> : <XCircle className="mr-2 h-5 w-5"/>}
             {comparisonResult === 'match' ? 'Correspondance trouvée !' : 'Aucune correspondance trouvée.'}
@@ -154,7 +154,7 @@ const FacialRecognitionStep = ({ guichetiereInfo, onSubmit, onReset, isLoading: 
        {comparisonResult === 'pending' && (
         <motion.div 
             initial={{opacity: 0, y:10}} animate={{opacity:1, y:0}}
-            className="p-2 rounded-md text-sm md:text-base font-semibold flex items-center justify-center bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-blue-100"
+            className="p-2 rounded-md text-sm md:text-base font-semibold flex items-center justify-center bg-info-muted text-info-muted-foreground dark:bg-primary dark:text-info-foreground"
         >
             <Fingerprint className="mr-2 h-5 w-5 animate-pulse"/>
             Analyse en cours...
@@ -174,7 +174,7 @@ const FacialRecognitionStep = ({ guichetiereInfo, onSubmit, onReset, isLoading: 
       {isCameraActive && (
         <Button 
           onClick={takePhotoAndCompare} 
-          className="w-full text-base md:text-lg py-3 md:py-6 bg-green-500 hover:bg-green-600 text-white"
+          className="w-full text-base md:text-lg py-3 md:py-6 bg-success hover:bg-success/90 text-white"
           disabled={isLoading}
         >
           {isLoading ? 'Capture...' : 'Prendre la Photo & Comparer'} <Fingerprint className="ml-2 h-4 w-4 md:h-5 md:w-5" />
@@ -213,7 +213,7 @@ const FacialRecognitionStep = ({ guichetiereInfo, onSubmit, onReset, isLoading: 
         </Button>
       )}
        {!guichetierePhotoUrl && (
-        <p className="text-xs text-red-500 mt-2">La photo de profil de la guichetière est manquante. La reconnaissance faciale ne peut pas être effectuée.</p>
+        <p className="text-xs text-destructive mt-2">La photo de profil de la guichetière est manquante. La reconnaissance faciale ne peut pas être effectuée.</p>
       )}
     </motion.div>
   );

@@ -28,15 +28,15 @@ export const ACTIVITY_STATUS = {
 };
 
 export const ACTIVITY_STATUS_META = {
-  [ACTIVITY_STATUS.ONLINE]: { label: 'En ligne', className: 'bg-green-100 text-green-700 border-green-200' },
-  [ACTIVITY_STATUS.IDLE]: { label: 'Inactif', className: 'bg-amber-100 text-amber-700 border-amber-200' },
-  [ACTIVITY_STATUS.OFFLINE]: { label: 'Hors ligne', className: 'bg-slate-100 text-slate-600 border-slate-200' },
+  [ACTIVITY_STATUS.ONLINE]: { label: 'En ligne', className: 'bg-success-muted text-success-muted-foreground border-success/30' },
+  [ACTIVITY_STATUS.IDLE]: { label: 'Inactif', className: 'bg-warning-muted text-warning-muted-foreground border-warning/30' },
+  [ACTIVITY_STATUS.OFFLINE]: { label: 'Hors ligne', className: 'bg-muted text-foreground/80 border-border' },
 };
 
 export const EVENT_TYPE_META = {
-  login: { label: 'Connexion', className: 'bg-green-100 text-green-700' },
-  navigation: { label: 'Navigation', className: 'bg-blue-100 text-blue-700' },
-  logout: { label: 'Déconnexion', className: 'bg-red-100 text-red-700' },
+  login: { label: 'Connexion', className: 'bg-success-muted text-success-muted-foreground' },
+  navigation: { label: 'Navigation', className: 'bg-info-muted text-info-muted-foreground' },
+  logout: { label: 'Déconnexion', className: 'bg-destructive/10 text-destructive' },
 };
 
 /**

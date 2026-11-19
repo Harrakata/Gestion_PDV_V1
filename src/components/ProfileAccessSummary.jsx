@@ -10,8 +10,8 @@ export default function ProfileAccessSummary({ accessCount, accessibleTabs, perm
 
   return <div className="min-w-[11rem] max-w-md space-y-2 whitespace-normal">
     <div className="flex flex-wrap gap-2">
-      <Badge variant="outline" className="border-blue-200 bg-blue-50 text-blue-700">Lecture : {accessCount.readCount}</Badge>
-      <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">Écriture : {accessCount.writeCount}</Badge>
+      <Badge variant="outline" className="border-info/30 bg-info-muted text-info-muted-foreground">Lecture : {accessCount.readCount}</Badge>
+      <Badge variant="outline" className="border-success/30 bg-success-muted text-success-muted-foreground">Écriture : {accessCount.writeCount}</Badge>
     </div>
     {accessibleTabs.length === 0 ? <p className="text-xs text-muted-foreground">Aucun onglet autorisé.</p> : <>
       <button type="button" aria-expanded={expanded} aria-controls={detailsId} onClick={() => setExpanded((value) => !value)}
@@ -24,8 +24,8 @@ export default function ProfileAccessSummary({ accessCount, accessibleTabs, perm
         {expanded && <ul aria-label="Onglets autorisés" tabIndex={0} className="max-h-48 space-y-1 overflow-y-auto overscroll-contain border-l border-border py-1 pl-3 pr-2 text-xs leading-relaxed text-muted-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
           {accessibleTabs.map((item) => {
             const level = permissions[item.key];
-            const tone = level === 'write' ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-              : level === 'read' ? 'border-blue-200 bg-blue-50 text-blue-700' : 'text-muted-foreground';
+            const tone = level === 'write' ? 'border-success/30 bg-success-muted text-success-muted-foreground'
+              : level === 'read' ? 'border-info/30 bg-info-muted text-info-muted-foreground' : 'text-muted-foreground';
             return <li key={item.key} className="flex items-start gap-2 py-0.5" style={{ paddingLeft: `${Math.min(item.depth || 0, 3) * 12}px` }}>
               <span className="min-w-0 flex-1 [overflow-wrap:anywhere]">{item.label}</span>
               <Badge variant="outline" className={`shrink-0 whitespace-nowrap ${tone}`}>{getExploitationAccessLabel(level)}</Badge>

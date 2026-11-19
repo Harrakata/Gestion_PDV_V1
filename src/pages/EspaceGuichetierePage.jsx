@@ -178,7 +178,7 @@ const LoginPageGuichetiere = ({ onLogin }) => {
     toast({
       title: 'Connexion réussie',
       description: `Bienvenue ${buildGuichetiereDisplayName(profile)} dans votre espace Guichetière.`,
-      className: 'bg-green-500 text-white',
+      className: 'bg-success text-white',
     });
     setIsLoading(false);
   };
@@ -381,7 +381,7 @@ const EspaceGuichetierePage = () => {
     toast({
       title: 'Déconnexion',
       description: 'Vous avez été déconnectée de votre espace.',
-      className: 'bg-blue-500 text-white',
+      className: 'bg-primary text-white',
     });
     navigate('/');
   };
@@ -570,8 +570,7 @@ const EspaceGuichetierePage = () => {
             />
           </SpaceHeaderIdentity>
 
-          <Card className="relative overflow-hidden border border-primary/20 bg-white/92 shadow-[0_8px_30px_-12px_rgba(15,23,42,0.18)] backdrop-blur">
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-primary" />
+          <Card className="relative overflow-hidden">
             <CardContent className="relative p-3">
               <nav className="space-y-0.5">
                 {menuItems.map((item) => {
@@ -615,7 +614,7 @@ const EspaceGuichetierePage = () => {
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className="flex flex-1 flex-col items-center gap-1 rounded-2xl py-2.5 text-red-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                    className="flex flex-1 flex-col items-center gap-1 rounded-2xl py-2.5 text-destructive transition-colors hover:bg-destructive/10 hover:text-destructive"
                   >
                     <LogOut className="h-5 w-5" />
                     <span className="text-[0.6rem] font-semibold">Déconn.</span>
@@ -663,7 +662,7 @@ const EspaceGuichetierePage = () => {
           transition={{ duration: 0.3 }}
         >
           {!menuItems.length ? (
-            <Card className="shadow-xl glassmorphism">
+            <Card>
               <CardContent className="p-6 text-center text-muted-foreground">
                 Aucun onglet n’est actuellement autorisé pour votre profil Guichetière.
               </CardContent>

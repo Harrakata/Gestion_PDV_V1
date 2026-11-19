@@ -69,11 +69,11 @@ export const ABSENCE_TYPE_OPTIONS = [
 
 export const getAbsenceStatusBadgeClass = (statut) => {
   switch (statut) {
-    case ABSENCE_STATUSES.APPROVED: return 'bg-green-100 text-green-700 border-green-200';
-    case ABSENCE_STATUSES.REFUSED: return 'bg-red-100 text-red-700 border-red-200';
-    case ABSENCE_STATUSES.CANCELLED: return 'bg-gray-100 text-gray-600 border-gray-200';
+    case ABSENCE_STATUSES.APPROVED: return 'bg-success-muted text-success-muted-foreground border-success/30';
+    case ABSENCE_STATUSES.REFUSED: return 'bg-destructive/10 text-destructive border-destructive/30';
+    case ABSENCE_STATUSES.CANCELLED: return 'bg-muted text-foreground/80 border-border';
     case ABSENCE_STATUSES.PENDING:
-    default: return 'bg-amber-100 text-amber-700 border-amber-200';
+    default: return 'bg-warning-muted text-warning-muted-foreground border-warning/30';
   }
 };
 

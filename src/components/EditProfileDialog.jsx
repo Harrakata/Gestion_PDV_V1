@@ -274,7 +274,7 @@ const EditProfileDialog = ({
         return;
       }
 
-      toast({ title: 'Profil mis à jour', description: 'Vos informations ont été enregistrées.', className: 'bg-green-500 text-white' });
+      toast({ title: 'Profil mis à jour', description: 'Vos informations ont été enregistrées.', className: 'bg-success text-white' });
       onSaved?.(payload);
       onOpenChange(false);
     } catch (err) {
@@ -308,7 +308,7 @@ const EditProfileDialog = ({
         setIsSavingPassword(false);
         return;
       }
-      toast({ title: 'Mot de passe mis à jour', description: 'Votre mot de passe a été modifié.', className: 'bg-green-500 text-white' });
+      toast({ title: 'Mot de passe mis à jour', description: 'Votre mot de passe a été modifié.', className: 'bg-success text-white' });
       setNewPassword('');
       setConfirmPassword('');
       onOpenChange(false);
@@ -378,7 +378,7 @@ const EditProfileDialog = ({
                             <button
                               type="button"
                               onClick={() => { setPhotoFile(null); setPhotoUrl(null); }}
-                              className="absolute -right-1 -top-1 rounded-full bg-red-500 p-1 text-white shadow hover:bg-red-600"
+                              className="absolute -right-1 -top-1 rounded-full bg-destructive p-1 text-white shadow hover:bg-destructive/90"
                               disabled={busy}
                               aria-label="Retirer la photo"
                             >
@@ -489,7 +489,7 @@ const EditProfileDialog = ({
                 onClick={toggleAssistantVisibility}
                 className={`relative mt-0.5 inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${assistantVisible ? 'bg-primary' : 'bg-slate-300'}`}
               >
-                <span className={`inline-flex h-5 w-5 items-center justify-center rounded-full bg-white shadow transition-transform ${assistantVisible ? 'translate-x-5' : 'translate-x-0.5'}`}>
+                <span className={`inline-flex h-5 w-5 items-center justify-center rounded-full bg-card shadow transition-transform ${assistantVisible ? 'translate-x-5' : 'translate-x-0.5'}`}>
                   {isSavingAssistant ? <Loader2 className="h-3 w-3 animate-spin text-primary" /> : null}
                 </span>
               </button>

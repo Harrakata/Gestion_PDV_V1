@@ -93,10 +93,10 @@ const SOUS_ENSEMBLE_LABELS_TECH = {
 };
 
 const STATUT_CONFIG_TECH = {
-  defectueux: { label: 'Défectueux', cls: 'bg-red-100 text-red-800' },
-  assigne: { label: 'Assigné', cls: 'bg-blue-100 text-blue-800' },
-  a_tester: { label: 'À tester', cls: 'bg-yellow-100 text-yellow-800' },
-  repare: { label: 'Réparé', cls: 'bg-green-100 text-green-800' },
+  defectueux: { label: 'Défectueux', cls: 'bg-destructive/10 text-destructive' },
+  assigne: { label: 'Assigné', cls: 'bg-info-muted text-info-muted-foreground' },
+  a_tester: { label: 'À tester', cls: 'bg-warning-muted text-warning-muted-foreground' },
+  repare: { label: 'Réparé', cls: 'bg-success-muted text-success-muted-foreground' },
 };
 
 const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => {
@@ -432,7 +432,7 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
         title: 'Demande envoyée',
         description:
           "Votre demande de modification a bien été transmise au chef d'agence puis à l'Exploitation pour validation.",
-        className: 'bg-green-500 text-white',
+        className: 'bg-success text-white',
       });
       setIsRequestDialogOpen(false);
       setSelectedPlanningEntry(null);
@@ -483,8 +483,7 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       {!hideTitle && (
-        <Card className="relative overflow-hidden border border-primary/20 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+        <Card variant="accent">
           <CardHeader>
             <CardTitle className="flex items-center text-3xl font-bold text-primary">
               {view === 'reparation' ? (
@@ -534,8 +533,8 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
         <TabsContent value="planning" className="space-y-6">
 
       {isRequestTableMissing && (
-        <Card className="border-amber-200 bg-amber-50 shadow-sm">
-          <CardContent className="flex items-center gap-3 p-4 text-amber-800">
+        <Card className="border-warning/30 bg-warning-muted">
+          <CardContent className="flex items-center gap-3 p-4 text-warning-muted-foreground">
             <AlertTriangle className="h-5 w-5" />
             <p className="text-sm">
               Les demandes de modification nécessitent la table Supabase
@@ -573,19 +572,19 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
 
       {/* Sous-ensembles défectueux assignés */}
       {assignedDefectueux.length > 0 && (
-        <Card className="shadow-lg border-blue-200">
+        <Card className="border-info/30">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-xl text-primary">
               <Package className="h-5 w-5" />
               Mes sous-ensembles à réparer
-              <Badge className="bg-blue-100 text-blue-800 ml-2">{assignedDefectueux.length}</Badge>
+              <Badge className="bg-info-muted text-info-muted-foreground ml-2">{assignedDefectueux.length}</Badge>
             </CardTitle>
             <CardDescription>Sous-ensembles défectueux qui vous sont assignés pour réparation.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {assignedDefectueux.map(item => {
               const isExpanded = expandedDefectueuxId === item.id;
-              const cfg = STATUT_CONFIG_TECH[item.statut] || { label: item.statut, cls: 'bg-gray-100 text-gray-800' };
+              const cfg = STATUT_CONFIG_TECH[item.statut] || { label: item.statut, cls: 'bg-muted text-foreground' };
               return (
                 <div key={item.id} className="rounded-lg border overflow-hidden">
                   <button
@@ -604,7 +603,7 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
                   {isExpanded && (
                     <div className="border-t bg-muted/20 p-4 space-y-4">
                       {item.commentaire && (
-                        <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                        <div className="rounded-md border border-warning/30 bg-warning-muted px-3 py-2 text-sm text-warning-muted-foreground">
                           <AlertTriangle className="inline h-4 w-4 mr-1" /> {item.commentaire}
                         </div>
                       )}
@@ -626,11 +625,11 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
                             )}
                             {pPannes.length > 0 && (
                               <div>
-                                <p className="text-xs font-semibold text-amber-700 mb-1 flex items-center gap-1">
+                                <p className="text-xs font-semibold text-warning-muted-foreground mb-1 flex items-center gap-1">
                                   <AlertTriangle className="h-3 w-3" /> Types de pannes
                                 </p>
                                 {pPannes.map(p => (
-                                  <p key={p.id} className="text-xs rounded border border-amber-200 bg-amber-50 px-2 py-1 mb-1">{p.description}</p>
+                                  <p key={p.id} className="text-xs rounded border border-warning/30 bg-warning-muted px-2 py-1 mb-1">{p.description}</p>
                                 ))}
                               </div>
                             )}
@@ -657,8 +656,7 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
         </Card>
       )}
 
-      <Card className="relative overflow-hidden border border-primary/20 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+      <Card variant="accent">
         <CardHeader className="relative px-3 pb-0 pt-3 sm:px-6 sm:pt-6">
           <CardTitle className="flex items-center gap-2 text-base font-semibold text-primary sm:text-xl">
             <CalendarDays className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -701,7 +699,7 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
               disabled={isLoading}
               value={format(currentMonth, 'yyyy-MM-dd')}
               onChange={(e) => { if (e.target.value) setCurrentMonth(parseISO(e.target.value)); }}
-              className="hidden h-7 rounded-md border border-input bg-white px-2 text-xs text-slate-900 shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 sm:block"
+              className="hidden h-7 rounded-md border border-input bg-card px-2 text-xs text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 sm:block"
               title="Aller à une date"
             />
           </div>
@@ -714,7 +712,7 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
           {isLoading && planningEntries.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">Chargement du planning...</p>
           ) : (
-            <div className="planning-calendar overflow-hidden rounded-lg border border-border bg-white shadow-sm">
+            <div className="planning-calendar overflow-hidden rounded-lg border border-border bg-card shadow-sm">
               {/* En-tête jours */}
               <div className="grid grid-cols-7 bg-muted/60">
                 {(viewMode === 'week'
@@ -744,7 +742,7 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
                       key={dateStr}
                       className={`group flex min-h-[90px] flex-col
                         ${viewMode === 'month' && dayIdx === 0 ? colStartClasses : ''}
-                        ${!isCurrentMonthDay ? 'bg-muted/10' : isWeekend ? 'bg-slate-50/40' : 'bg-card'}
+                        ${!isCurrentMonthDay ? 'bg-muted/10' : isWeekend ? 'bg-muted/50' : 'bg-card'}
                       `}
                     >
                       {/* Header compact */}
@@ -753,7 +751,7 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
                           {format(day, 'd')}
                         </time>
                         {requestCount > 0 && (
-                          <span className={`flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold ${isToday ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-700'}`}>
+                          <span className={`flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold ${isToday ? 'bg-card/20 text-white' : 'bg-warning-muted text-warning-muted-foreground'}`}>
                             {requestCount}
                           </span>
                         )}
@@ -778,7 +776,7 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
                                 onClick={() => !isPending && !isPast && openRequestDialog(entry)}
                               >
                                 <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[0.5rem] font-bold text-white
-                                  ${isPast ? 'bg-muted-foreground/40' : isToday ? 'bg-white/90 !text-primary' : 'bg-primary'}
+                                  ${isPast ? 'bg-muted-foreground/40' : isToday ? 'bg-card/90 !text-primary' : 'bg-primary'}
                                 `}>
                                   <Wrench className="h-2.5 w-2.5" />
                                 </span>
@@ -790,7 +788,7 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
                                     {getMaintenancePlanningShiftLabel(entry.creneau)}
                                   </p>
                                 </div>
-                                {linkedRequest && <span className="ml-auto shrink-0 text-[0.5rem] text-amber-600">!</span>}
+                                {linkedRequest && <span className="ml-auto shrink-0 text-[0.5rem] text-warning-muted-foreground">!</span>}
                               </motion.div>
                             );
                           })}
@@ -806,14 +804,14 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
                               className="flex cursor-pointer items-center gap-1 transition-opacity hover:opacity-70"
                               onClick={() => setSelectedGroup(grp)}
                             >
-                              <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-white ${hasRealized ? 'bg-emerald-500' : 'bg-red-500'}`}>
+                              <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-white ${hasRealized ? 'bg-success' : 'bg-destructive'}`}>
                                 <CheckCircle2 className="h-2.5 w-2.5" />
                               </span>
                               <div className="min-w-0 flex-1">
                                 <p className={`truncate text-[0.6rem] font-medium leading-tight ${!isCurrentMonthDay ? 'text-muted-foreground/40' : 'text-foreground'}`}>{grp.agenceNom}</p>
-                                <p className="truncate text-[0.55rem] font-semibold leading-tight text-emerald-600">
+                                <p className="truncate text-[0.55rem] font-semibold leading-tight text-success-muted-foreground">
                                   {realizedCount} réalisée(s)
-                                  {refusedCount ? <span className="text-red-600"> · {refusedCount} refusée(s)</span> : null}
+                                  {refusedCount ? <span className="text-destructive"> · {refusedCount} refusée(s)</span> : null}
                                 </p>
                               </div>
                             </div>
@@ -829,7 +827,7 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
         </CardContent>
       </Card>
 
-      <Card className="shadow-xl glassmorphism">
+      <Card>
         <CardHeader>
           <CardTitle className="text-2xl text-primary">Mes interventions effectuées</CardTitle>
           <CardDescription>Interventions réalisées ce mois et leur statut de contrôle (présence sur site).</CardDescription>
@@ -858,9 +856,9 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
                       <TableCell>{iv.type_intervention === 'curative' ? 'Curative' : 'Préventive'}</TableCell>
                       <TableCell>
                         {iv.geo_refused === true ? (
-                          <span className="inline-flex rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">Refusée</span>
+                          <span className="inline-flex rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive">Refusée</span>
                         ) : (
-                          <span className="inline-flex rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">Validée</span>
+                          <span className="inline-flex rounded-full bg-success-muted px-2 py-0.5 text-xs font-medium text-success-muted-foreground">Validée</span>
                         )}
                       </TableCell>
                     </TableRow>
@@ -872,7 +870,7 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
         </CardContent>
       </Card>
 
-      <Card className="shadow-xl glassmorphism">
+      <Card>
         <CardHeader>
           <CardTitle className="text-2xl text-primary">Mes demandes de modification</CardTitle>
           <CardDescription>
@@ -919,7 +917,7 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
       </Card>
 
       <Dialog open={isRequestDialogOpen} onOpenChange={setIsRequestDialogOpen}>
-        <DialogContent className="sm:max-w-xl glassmorphism">
+        <DialogContent className="sm:max-w-xl">
           <DialogHeader>
             <DialogTitle className="text-2xl text-primary">Demander une modification</DialogTitle>
             <DialogDescription>
@@ -997,7 +995,7 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
       </Dialog>
 
       <Dialog open={!!selectedGroup} onOpenChange={(o) => { if (!o) setSelectedGroup(null); }}>
-        <DialogContent className="sm:max-w-lg glassmorphism max-h-[85vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-primary">Interventions réalisées</DialogTitle>
             <DialogDescription>
@@ -1012,29 +1010,29 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
               const dt = iv.effectiveDate || iv.date_fin;
               const creneauLabel = getMaintenancePlanningShiftLabel(getMaintenanceShiftFromDateTime(dt));
               return (
-                <div key={iv.id} className={`space-y-2 rounded-xl border p-4 shadow-sm ${isCurative ? 'border-red-100 bg-red-50/40' : 'border-blue-100 bg-blue-50/40'}`}>
+                <div key={iv.id} className={`space-y-2 rounded-xl border p-4 shadow-sm ${isCurative ? 'border-destructive/30 bg-destructive/10' : 'border-info/30 bg-info-muted/40'}`}>
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="font-semibold text-slate-800">{iv.terminalRef}</p>
+                    <p className="font-semibold text-foreground">{iv.terminalRef}</p>
                     <span className="text-sm text-muted-foreground">{dt ? format(new Date(dt), 'dd/MM/yyyy HH:mm') : '—'}</span>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant="outline" className={isCurative ? 'border-red-200 bg-red-50 text-red-700' : 'border-blue-200 bg-blue-50 text-blue-700'}>
+                    <Badge variant="outline" className={isCurative ? 'border-destructive/30 bg-destructive/10 text-destructive' : 'border-info/30 bg-info-muted text-info-muted-foreground'}>
                       {isCurative ? 'Curative' : 'Préventive'}
                     </Badge>
-                    <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">{creneauLabel}</Badge>
+                    <Badge variant="outline" className="border-success/30 bg-success-muted text-success-muted-foreground">{creneauLabel}</Badge>
                     {iv.geo_refused ? (
-                      <Badge variant="outline" className="border-red-200 bg-red-50 text-red-700">Refusée (hors zone)</Badge>
+                      <Badge variant="outline" className="border-destructive/30 bg-destructive/10 text-destructive">Refusée (hors zone)</Badge>
                     ) : (
-                      <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">Validée</Badge>
+                      <Badge variant="outline" className="border-success/30 bg-success-muted text-success-muted-foreground">Validée</Badge>
                     )}
                     {iv.sous_ensemble && (
-                      <Badge variant="outline" className="border-slate-200 bg-white text-slate-600">{iv.sous_ensemble}</Badge>
+                      <Badge variant="outline" className="border-border bg-card text-foreground/80">{iv.sous_ensemble}</Badge>
                     )}
                   </div>
                   {iv.description_panne && <p className="text-sm text-muted-foreground">{iv.description_panne}</p>}
-                  {iv.commentaire && <p className="border-t pt-2 text-sm italic text-slate-700">{iv.commentaire}</p>}
+                  {iv.commentaire && <p className="border-t pt-2 text-sm italic text-foreground/80">{iv.commentaire}</p>}
                   {iv.geo_refused && (Number.isFinite(Number(iv.geo_distance_m)) || iv.geo_justification) && (
-                    <p className="text-xs text-red-700">Hors zone{Number.isFinite(Number(iv.geo_distance_m)) ? ` · ${iv.geo_distance_m} m de l'agence` : ''}{iv.geo_justification ? ` — ${iv.geo_justification}` : ''}</p>
+                    <p className="text-xs text-destructive">Hors zone{Number.isFinite(Number(iv.geo_distance_m)) ? ` · ${iv.geo_distance_m} m de l'agence` : ''}{iv.geo_justification ? ` — ${iv.geo_justification}` : ''}</p>
                   )}
                   {iv.fiche_url && (
                     <div className="border-t pt-2">

@@ -288,7 +288,7 @@ const LoginPageChef = ({ onLogin }) => {
         toast({ 
           title: "Reconnaissance faciale réussie", 
           description: `Bienvenue ${chefTrouve.prenom} ${chefTrouve.nom} dans votre Espace Chef d'Agence.`, 
-          className: "bg-green-500 text-white" 
+          className: "bg-success text-white" 
         });
         
         setFacialAuthInProgress(false);
@@ -361,7 +361,7 @@ const LoginPageChef = ({ onLogin }) => {
     toast({
       title: "Connexion réussie",
       description: `Bienvenue ${chefTrouve.prenom} ${chefTrouve.nom} dans votre Espace Chef d'Agence.`,
-      className: "bg-green-500 text-white",
+      className: "bg-success text-white",
     });
     setIsLoading(false);
   };
@@ -855,7 +855,7 @@ const EspaceChefAgencePage = () => {
     setChefDetails(null);
     clearNotifWatch('espace-chef-agence');
     localStorage.removeItem('pmuChefAuth');
-    toast({ title: "Déconnexion", description: "Vous avez été déconnecté.", className: "bg-blue-500 text-white" });
+    toast({ title: "Déconnexion", description: "Vous avez été déconnecté.", className: "bg-primary text-white" });
     navigate('/');
   };
 
@@ -1065,8 +1065,7 @@ const EspaceChefAgencePage = () => {
             />
           </SpaceHeaderIdentity>
 
-          <Card className="relative overflow-hidden border border-primary/20 bg-white/92 shadow-[0_8px_30px_-12px_rgba(15,23,42,0.18)] backdrop-blur">
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-primary" />
+          <Card className="relative overflow-hidden">
             <CardContent className="relative p-3">
               <nav className="space-y-0.5">
                 {menuItems.map((item) => {
@@ -1110,7 +1109,7 @@ const EspaceChefAgencePage = () => {
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className="flex flex-1 flex-col items-center gap-1 rounded-2xl py-2.5 text-red-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                    className="flex flex-1 flex-col items-center gap-1 rounded-2xl py-2.5 text-destructive transition-colors hover:bg-destructive/10 hover:text-destructive"
                   >
                     <LogOut className="h-5 w-5" />
                     <span className="text-[0.6rem] font-semibold">Déconn.</span>
@@ -1143,9 +1142,9 @@ const EspaceChefAgencePage = () => {
           />
 
           {sessionExpiring && (
-            <div className="flex items-center gap-2 rounded-xl border border-yellow-200 bg-yellow-50 p-3">
-              <Timer className="h-4 w-4 shrink-0 text-yellow-600" />
-              <div className="text-xs font-medium text-yellow-800">
+            <div className="flex items-center gap-2 rounded-xl border border-warning/30 bg-warning-muted p-3">
+              <Timer className="h-4 w-4 shrink-0 text-warning-muted-foreground" />
+              <div className="text-xs font-medium text-warning-muted-foreground">
                 <div>Session expirante</div>
                 <div>{formatTimeRemaining()}</div>
               </div>
@@ -1165,7 +1164,7 @@ const EspaceChefAgencePage = () => {
           transition={{ duration: 0.3 }}
         >
           {!menuItems.length ? (
-            <Card className="shadow-xl glassmorphism">
+            <Card>
               <CardContent className="p-6 text-center text-muted-foreground">
                 Aucun onglet n’est actuellement autorisé pour votre profil Chef d'agence.
               </CardContent>

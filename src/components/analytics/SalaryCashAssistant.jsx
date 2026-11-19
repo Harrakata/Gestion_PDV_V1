@@ -18,7 +18,7 @@ function FilterSelect({ label, value, onChange, options }) {
   return <label className="block min-w-0 space-y-1 text-xs text-muted-foreground">
     <span>{label}</span>
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger aria-label={label} className="h-9 w-full min-w-0 bg-white [&>span]:truncate"><SelectValue /></SelectTrigger>
+      <SelectTrigger aria-label={label} className="h-9 w-full min-w-0 bg-card [&>span]:truncate"><SelectValue /></SelectTrigger>
       <SelectContent>{options.map(([key, title]) => <SelectItem key={key} value={key}>{title}</SelectItem>)}</SelectContent>
     </Select>
   </label>;
@@ -82,7 +82,7 @@ export default function SalaryCashAssistant({ rows, month, loading, error, onMon
       </Button>
     </div>
 
-    <div className="flex min-w-0 flex-wrap items-center gap-1 rounded-xl border border-slate-200/80 bg-white px-1.5 py-1 shadow-sm">
+    <div className="flex min-w-0 flex-wrap items-center gap-1 rounded-xl border border-border/80 bg-card px-1.5 py-1 shadow-sm">
       <Input type="month" aria-label="Période de rapprochement" className="h-7 w-[10.5rem] shrink-0 border-none bg-transparent px-2 text-xs focus:bg-background focus:ring-1 focus:ring-primary/30" value={month.monthKey} onChange={(event) => {
         if (event.target.value) { setPage(1); setExpanded(null); onMonthChange(event.target.value); }
       }} />
@@ -140,18 +140,18 @@ export default function SalaryCashAssistant({ rows, month, loading, error, onMon
         ['all', 'Toutes les sources'], ['no_payment', 'Sans versement'], ['no_operations', 'Sans opération CCOPE'], ['both', 'CCOPE et versements'],
       ]} />
       {[['min', 'Écart minimum'], ['max', 'Écart maximum']].map(([key, label]) => <label key={key} className="min-w-0 space-y-1 text-xs text-muted-foreground">{label}
-        <Input type="number" min="0" step="any" aria-label={label} aria-invalid={invalidRange} value={filters[key]} placeholder="Sans limite" className="h-9 w-full min-w-0 bg-white" onChange={(event) => setFilter(key, event.target.value === '' ? '' : String(Math.max(0, Number(event.target.value))))} />
+        <Input type="number" min="0" step="any" aria-label={label} aria-invalid={invalidRange} value={filters[key]} placeholder="Sans limite" className="h-9 w-full min-w-0 bg-card" onChange={(event) => setFilter(key, event.target.value === '' ? '' : String(Math.max(0, Number(event.target.value))))} />
       </label>)}
     </div>}
 
     {activeFilters.length > 0 && <div className="flex flex-wrap gap-2" aria-label="Filtres actifs">{activeFilters.map((filter) =>
-      <Badge key={filter.key} variant="outline" className="max-w-full gap-1 bg-white py-1 text-xs font-normal">
+      <Badge key={filter.key} variant="outline" className="max-w-full gap-1 bg-card py-1 text-xs font-normal">
         <span className="min-w-0 truncate" title={filter.label}>{filter.label}</span>
-        <button type="button" className="shrink-0 rounded p-1 hover:bg-slate-100" aria-label={`Retirer le filtre ${filter.label}`} title="Retirer ce filtre" onClick={() => setFilter(filter.key, filter.reset)}><X className="h-3 w-3" /></button>
+        <button type="button" className="shrink-0 rounded p-1 hover:bg-muted" aria-label={`Retirer le filtre ${filter.label}`} title="Retirer ce filtre" onClick={() => setFilter(filter.key, filter.reset)}><X className="h-3 w-3" /></button>
       </Badge>)}</div>}
 
-    {invalidRange && <p role="alert" className="text-sm text-red-700">Le montant minimum doit être inférieur ou égal au maximum.</p>}
-    {error ? <div role="alert" className="border-l-4 border-red-500 bg-red-50 p-4 text-sm text-red-700">{error}<Button variant="outline" size="sm" className="ml-3" onClick={() => onMonthChange(month.monthKey)}>Réessayer</Button></div>
+    {invalidRange && <p role="alert" className="text-sm text-destructive">Le montant minimum doit être inférieur ou égal au maximum.</p>}
+    {error ? <div role="alert" className="border-l-4 border-destructive bg-destructive/10 p-4 text-sm text-destructive">{error}<Button variant="outline" size="sm" className="ml-3" onClick={() => onMonthChange(month.monthKey)}>Réessayer</Button></div>
       : loading ? <p role="status" className="py-12 text-center text-sm text-muted-foreground">Chargement du rapprochement de {month.label}…</p>
       : <>
         <div className="grid gap-3 sm:grid-cols-3" aria-label="Totaux des résultats filtrés">
@@ -161,11 +161,11 @@ export default function SalaryCashAssistant({ rows, month, loading, error, onMon
         </div>
         <div className="flex flex-wrap justify-between gap-2 text-xs text-muted-foreground" role="status">
           <p>{filtered.length} dossier(s) retenu(s) sur {rows.length} · {summary.unknown} non identifié(s)</p>
-          <p>Manques : <span className="font-semibold text-red-700">{amount(summary.missing)}</span> · Surplus : <span className="font-semibold text-emerald-700">{amount(summary.surplus)}</span></p>
+          <p>Manques : <span className="font-semibold text-destructive">{amount(summary.missing)}</span> · Surplus : <span className="font-semibold text-success-muted-foreground">{amount(summary.surplus)}</span></p>
         </div>
 
-        <div ref={resultsRef} className="max-h-[64vh] w-full min-w-0 divide-y overflow-x-hidden overflow-y-auto rounded-xl border border-slate-200/80 bg-white shadow-[0_18px_45px_-32px_rgba(15,23,42,0.22)]" tabIndex={0} aria-label="Résultats du rapprochement">
-          <div className="sticky top-0 z-10 hidden min-h-12 grid-cols-[minmax(16rem,2fr)_repeat(3,minmax(10rem,1fr))_6rem] items-center gap-3 border-b border-slate-200/80 bg-slate-50 px-5 py-2 text-[0.78rem] font-semibold uppercase tracking-[0.08em] text-muted-foreground md:grid">
+        <div ref={resultsRef} className="max-h-[64vh] w-full min-w-0 divide-y overflow-x-hidden overflow-y-auto rounded-xl border border-border/80 bg-card shadow-[0_18px_45px_-32px_rgba(15,23,42,0.22)]" tabIndex={0} aria-label="Résultats du rapprochement">
+          <div className="sticky top-0 z-10 hidden min-h-12 grid-cols-[minmax(16rem,2fr)_repeat(3,minmax(10rem,1fr))_6rem] items-center gap-3 border-b border-border/80 bg-muted/50 px-5 py-2 text-[0.78rem] font-semibold uppercase tracking-[0.08em] text-muted-foreground md:grid">
             <span>Préposé / agence</span><span className="text-center">À verser</span><span className="text-center">Versé</span><span className="text-center">Écart</span><span className="text-center">Détail</span>
           </div>
           {visibleRows.length === 0 ? <div className="py-10 text-center text-sm text-muted-foreground">
@@ -181,7 +181,7 @@ export default function SalaryCashAssistant({ rows, month, loading, error, onMon
               <div className="col-span-2 grid grid-cols-3 gap-2 text-center text-sm tabular-nums md:contents">
                 <div className="min-w-0 break-words md:text-center"><span className="block text-xs text-muted-foreground md:hidden">À verser</span>{amount(row.soldeCaisse)}</div>
                 <div className="min-w-0 break-words md:text-center"><span className="block text-xs text-muted-foreground md:hidden">Versé</span>{amount(row.mtVerse)}</div>
-                <div className={`min-w-0 break-words font-semibold md:text-center ${row.status === 'missing' ? 'text-red-700' : 'text-emerald-700'}`}>
+                <div className={`min-w-0 break-words font-semibold md:text-center ${row.status === 'missing' ? 'text-destructive' : 'text-success-muted-foreground'}`}>
                   <span className="block text-xs font-normal">{statusLabels[row.status]}</span>{amount(row.absEcart)}
                 </div>
               </div>
@@ -190,7 +190,7 @@ export default function SalaryCashAssistant({ rows, month, loading, error, onMon
                 <IconButton label={`Ouvrir le préposé ${row.code}`} onClick={() => onOpenPrepose(row.code)}><ArrowRight className="h-4 w-4" /></IconButton>
               </div>
             </div>
-            {expanded === row.code && <div id={`salary-detail-${row.code}`} className="grid gap-3 bg-slate-50 px-4 py-3 text-xs sm:grid-cols-2 lg:grid-cols-4">
+            {expanded === row.code && <div id={`salary-detail-${row.code}`} className="grid gap-3 bg-muted/50 px-4 py-3 text-xs sm:grid-cols-2 lg:grid-cols-4">
               <p>Enregistré : <strong>{amount(row.mtEnr)}</strong><br />Annulé : <strong>{amount(row.mtAnnule)}</strong></p>
               <p>Avances : <strong>{amount(row.avance)}</strong><br />Retraits : <strong>{amount(row.retrait)}</strong></p>
               <p>{row.operationCount} ligne(s) CCOPE<br />Dernière opération : {date(row.lastOperation)}</p>

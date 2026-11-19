@@ -29,14 +29,14 @@ const SOUS_ENSEMBLE_LABELS = {
 };
 
 const STATUT_CONFIG = {
-  defectueux: { label: 'Défectueux', cls: 'bg-red-100 text-red-800' },
-  assigne: { label: 'Assigné', cls: 'bg-blue-100 text-blue-800' },
-  a_tester: { label: 'À tester', cls: 'bg-yellow-100 text-yellow-800' },
-  repare: { label: 'Réparé', cls: 'bg-green-100 text-green-800' },
+  defectueux: { label: 'Défectueux', cls: 'bg-destructive/10 text-destructive' },
+  assigne: { label: 'Assigné', cls: 'bg-info-muted text-info-muted-foreground' },
+  a_tester: { label: 'À tester', cls: 'bg-warning-muted text-warning-muted-foreground' },
+  repare: { label: 'Réparé', cls: 'bg-success-muted text-success-muted-foreground' },
 };
 
 const StatutBadge = ({ statut }) => {
-  const cfg = STATUT_CONFIG[statut] || { label: statut, cls: 'bg-gray-100 text-gray-800' };
+  const cfg = STATUT_CONFIG[statut] || { label: statut, cls: 'bg-muted text-foreground' };
   return <Badge className={cfg.cls}>{cfg.label}</Badge>;
 };
 
@@ -278,7 +278,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
     setIsHelpOpen(true);
   }, []);
 
-  const showOk = (msg) => toast({ title: msg, className: 'bg-green-500 text-white' });
+  const showOk = (msg) => toast({ title: msg, className: 'bg-success text-white' });
   const showErr = (msg) => toast({ title: 'Erreur', description: msg, variant: 'destructive' });
   const formatDate = (d) => d ? new Date(d).toLocaleDateString('fr-FR') : '—';
 
@@ -466,8 +466,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
 
   return (
     <div className="space-y-6">
-      <Card className="relative overflow-hidden shadow-xl glassmorphism">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+      <Card variant="accent">
         <CardHeader className="relative">
           <CardTitle className="flex items-center gap-2 text-2xl font-bold text-primary">
             <Wrench className="h-6 w-6" /> Réparation des Sous-ensembles
@@ -481,8 +480,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
       <div className="grid gap-6 lg:grid-cols-5">
         {/* Liste gauche */}
         <div className="lg:col-span-2">
-          <Card className="relative overflow-hidden shadow-lg">
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+          <Card variant="accent">
             <CardHeader className="relative pb-3">
               <CardTitle className="flex items-center gap-2 text-xl text-primary">
                 <Package2 className="h-5 w-5" /> Sous-ensembles à traiter
@@ -588,15 +586,15 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                                   const sp = stockPiecesById[mp.piece?.id];
                                   const pieceAction = treatedPieces[item.id]?.[mp.piece?.id];
                                   return (
-                                    <div key={mp.id} className={`flex flex-wrap items-center gap-x-1.5 gap-y-1 rounded-md border px-2.5 py-1.5 text-xs transition-colors ${pieceAction ? 'bg-green-50 border-green-200' : 'bg-background'}`}>
+                                    <div key={mp.id} className={`flex flex-wrap items-center gap-x-1.5 gap-y-1 rounded-md border px-2.5 py-1.5 text-xs transition-colors ${pieceAction ? 'bg-success-muted border-success/30' : 'bg-background'}`}>
                                       <span className="flex-1 basis-full sm:basis-0 min-w-0 font-medium truncate">{mp.piece?.nom}</span>
                                       {pieceAction && (
-                                        <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${pieceAction === 'nettoyage' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
+                                        <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${pieceAction === 'nettoyage' ? 'bg-success-muted text-success-muted-foreground' : 'bg-info-muted text-info-muted-foreground'}`}>
                                           {pieceAction === 'nettoyage' ? '✓ Nettoyée' : '✓ Remplacée'}
                                         </span>
                                       )}
                                       {sp && !pieceAction && (
-                                        <span className={`text-xs font-mono shrink-0 ${sp.quantite === 0 ? 'text-red-600' : sp.quantite <= (sp.seuil_alerte || 2) ? 'text-yellow-600' : 'text-green-700'}`}>
+                                        <span className={`text-xs font-mono shrink-0 ${sp.quantite === 0 ? 'text-destructive' : sp.quantite <= (sp.seuil_alerte || 2) ? 'text-warning-muted-foreground' : 'text-success-muted-foreground'}`}>
                                           ×{sp.quantite}
                                         </span>
                                       )}
@@ -605,7 +603,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                                 })}
                                 {item.statut === 'a_tester' && (
                                   <div className="pt-1.5 border-t border-dashed border-muted-foreground/20">
-                                    <p className="text-[10px] text-center text-yellow-700 font-medium">En attente de validation du test</p>
+                                    <p className="text-[10px] text-center text-warning-muted-foreground font-medium">En attente de validation du test</p>
                                   </div>
                                 )}
                               </>
@@ -624,8 +622,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
         {/* Détail droite */}
         <div className="lg:col-span-3 space-y-4">
           {!selectedItem ? (
-            <Card className="relative overflow-hidden flex items-center justify-center py-20">
-              <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+            <Card variant="accent" className="flex items-center justify-center py-20">
               <div className="text-center text-muted-foreground">
                 <Package2 className="mx-auto h-12 w-12 mb-3 opacity-30" />
                 <p>Sélectionnez un sous-ensemble pour commencer.</p>
@@ -633,8 +630,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
             </Card>
           ) : (
             <>
-              <Card className="relative overflow-hidden shadow-lg">
-                <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+              <Card variant="accent">
                 <CardHeader className="relative pb-3">
                   <div className="flex items-start justify-between flex-wrap gap-2">
                     <div>
@@ -654,30 +650,30 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                     return (
                       <div className="mt-3 space-y-2">
                         {cp && (
-                          <div className="flex items-start gap-2 rounded-md border border-red-200 bg-red-50 px-3 py-2">
-                            <AlertTriangle className="h-4 w-4 shrink-0 text-red-500 mt-0.5" />
+                          <div className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2">
+                            <AlertTriangle className="h-4 w-4 shrink-0 text-destructive mt-0.5" />
                             <div className="space-y-0.5">
                               <div className="flex items-center gap-4 flex-wrap">
                                 <div>
-                                  <p className="text-[10px] font-semibold uppercase tracking-wide text-red-400">Code panne</p>
-                                  <p className="text-sm font-mono font-bold text-red-800">{cp.code} — {cp.libelle}</p>
+                                  <p className="text-[10px] font-semibold uppercase tracking-wide text-destructive">Code panne</p>
+                                  <p className="text-sm font-mono font-bold text-destructive">{cp.code} — {cp.libelle}</p>
                                 </div>
                               </div>
                               {inv.description_panne && (
-                                <div className="mt-1.5 border-t border-red-200 pt-1.5">
-                                  <p className="text-[10px] font-semibold uppercase tracking-wide text-red-400">Descriptif panne</p>
-                                  <p className="text-sm text-red-800">{inv.description_panne}</p>
+                                <div className="mt-1.5 border-t border-destructive/30 pt-1.5">
+                                  <p className="text-[10px] font-semibold uppercase tracking-wide text-destructive">Descriptif panne</p>
+                                  <p className="text-sm text-destructive">{inv.description_panne}</p>
                                 </div>
                               )}
                             </div>
                           </div>
                         )}
                         {commentaire && (
-                          <div className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2">
-                            <AlertTriangle className="h-4 w-4 shrink-0 text-amber-500 mt-0.5" />
+                          <div className="flex items-start gap-2 rounded-md border border-warning/30 bg-warning-muted px-3 py-2">
+                            <AlertTriangle className="h-4 w-4 shrink-0 text-warning mt-0.5" />
                             <div>
-                              <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-400">Commentaire</p>
-                              <p className="text-sm text-amber-800">{commentaire}</p>
+                              <p className="text-[10px] font-semibold uppercase tracking-wide text-warning">Commentaire</p>
+                              <p className="text-sm text-warning-muted-foreground">{commentaire}</p>
                             </div>
                           </div>
                         )}
@@ -718,7 +714,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                             key={step.label}
                             className={`min-w-0 rounded-md border px-3 py-2 ${
                               step.done
-                                ? 'border-emerald-200 bg-emerald-50'
+                                ? 'border-success/30 bg-success-muted'
                                 : step.active
                                   ? 'border-primary/40 bg-primary/5'
                                   : 'border-border bg-muted/20'
@@ -727,7 +723,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                             <div className="flex items-center gap-2">
                               <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${
                                 step.done
-                                  ? 'bg-emerald-500 text-white'
+                                  ? 'bg-success text-white'
                                   : step.active
                                     ? 'bg-primary text-primary-foreground'
                                     : 'bg-muted text-muted-foreground'
@@ -756,20 +752,20 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                       <Button
                         size="sm"
                         variant="outline"
-                        className={Object.keys(treatedPieces[selectedItem.id] || {}).length > 0 ? 'bg-yellow-500 text-white border-yellow-500 hover:bg-yellow-600' : 'text-yellow-700 border-yellow-300'}
+                        className={Object.keys(treatedPieces[selectedItem.id] || {}).length > 0 ? 'bg-warning text-white border-warning hover:bg-warning/90' : 'text-warning-muted-foreground border-warning/30'}
                         onClick={() => markATester(selectedItem)}
                       >
                         <FlaskConical className="mr-2 h-4 w-4" />
                         Passer en test
                         {Object.keys(treatedPieces[selectedItem.id] || {}).length > 0 && (
-                          <span className="ml-1.5 rounded-full bg-white/30 px-1.5 text-[10px] font-bold">
+                          <span className="ml-1.5 rounded-full bg-card/30 px-1.5 text-[10px] font-bold">
                             {Object.keys(treatedPieces[selectedItem.id]).length}
                           </span>
                         )}
                       </Button>
                     )}
                     {canManage && selectedItem.statut === 'a_tester' && (
-                      <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white" onClick={() => markRepare(selectedItem)}>
+                      <Button size="sm" className="bg-success hover:bg-success/90 text-white" onClick={() => markRepare(selectedItem)}>
                         <CheckCircle2 className="mr-2 h-4 w-4" /> Marquer Réparé
                       </Button>
                     )}
@@ -786,9 +782,9 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                           const piece = itemPieces.find(mp => String(mp.piece?.id) === String(pieceId))?.piece
                             || (itemPiecesCache[selectedItem.id] || []).find(mp => String(mp.piece?.id) === String(pieceId))?.piece;
                           return (
-                            <div key={pieceId} className="flex items-center justify-between gap-2 rounded-md bg-white px-2.5 py-1.5 text-xs shadow-sm border border-white">
+                            <div key={pieceId} className="flex items-center justify-between gap-2 rounded-md bg-card px-2.5 py-1.5 text-xs shadow-sm border border-white">
                               <span className="font-medium truncate">{piece?.nom || `Pièce #${pieceId}`}</span>
-                              <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${action === 'nettoyage' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
+                              <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${action === 'nettoyage' ? 'bg-success-muted text-success-muted-foreground' : 'bg-info-muted text-info-muted-foreground'}`}>
                                 {action === 'nettoyage' ? '✓ Nettoyée' : '✓ Remplacée'}
                               </span>
                             </div>
@@ -826,7 +822,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                         const done = index < activeIndex;
                         const active = index === activeIndex;
                         return (
-                          <div key={label} className={`flex min-w-0 items-center justify-center gap-1 rounded px-1 py-1.5 text-[11px] font-medium ${active ? 'bg-primary text-primary-foreground' : done ? 'bg-emerald-50 text-emerald-700' : 'text-muted-foreground'}`}>
+                          <div key={label} className={`flex min-w-0 items-center justify-center gap-1 rounded px-1 py-1.5 text-[11px] font-medium ${active ? 'bg-primary text-primary-foreground' : done ? 'bg-success-muted text-success-muted-foreground' : 'text-muted-foreground'}`}>
                             {done ? <Check className="h-3 w-3 shrink-0" /> : <span className="shrink-0">{index + 1}</span>}
                             <span className="whitespace-nowrap">{label}</span>
                           </div>
@@ -893,14 +889,14 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                             <img
                               src={seDiagnosticPanne.piece.photo_url}
                               alt={seDiagnosticPanne.piece.nom}
-                              className="max-h-64 w-full rounded-md border bg-white object-contain"
+                              className="max-h-64 w-full rounded-md border bg-card object-contain"
                             />
                           </section>
                         )}
 
                         <section className="border-b pb-4">
                           <h4 className="flex items-center gap-2 text-sm font-semibold">
-                            <AlertTriangle className="h-4 w-4 text-amber-500" /> Pannes connues
+                            <AlertTriangle className="h-4 w-4 text-warning" /> Pannes connues
                           </h4>
                           <div className="mt-2 divide-y rounded-md border bg-background">
                             {seHelpPannes
@@ -910,10 +906,10 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                                   key={panne.id}
                                   type="button"
                                   onClick={() => { selectDiagnosticPanne(panne); setSeDiagnosticView('guide'); }}
-                                  className={`flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm hover:bg-muted/40 ${panne.id === seDiagnosticPanne?.id ? 'bg-amber-50 text-amber-900' : ''}`}
+                                  className={`flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm hover:bg-muted/40 ${panne.id === seDiagnosticPanne?.id ? 'bg-warning-muted text-warning-muted-foreground' : ''}`}
                                 >
                                   <span className="min-w-0 flex-1">{panne.description}</span>
-                                  {panne.id === seDiagnosticPanne?.id && <Badge className="bg-amber-100 text-amber-800">En cours</Badge>}
+                                  {panne.id === seDiagnosticPanne?.id && <Badge className="bg-warning-muted text-warning-muted-foreground">En cours</Badge>}
                                   <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
                                 </button>
                               ))}
@@ -936,7 +932,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                                   <div className="min-w-0 flex-1">
                                     <p className="whitespace-pre-line text-sm leading-6">{procedure.description}</p>
                                     {procedure.image_url && (
-                                      <img src={procedure.image_url} alt={`Étape ${index + 1}`} className="mt-2 max-h-56 w-full rounded-md border bg-white object-contain" />
+                                      <img src={procedure.image_url} alt={`Étape ${index + 1}`} className="mt-2 max-h-56 w-full rounded-md border bg-card object-contain" />
                                     )}
                                   </div>
                                 </li>
@@ -948,7 +944,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                     ) : isDiagnosticLoading ? (
                       <div className="py-8 text-center text-sm text-muted-foreground">Chargement du référentiel de diagnostic...</div>
                     ) : !seHelpItem?.modele_id ? (
-                      <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                      <div className="rounded-md border border-warning/30 bg-warning-muted px-4 py-3 text-sm text-warning-muted-foreground">
                         Aucun modèle n'est associé à ce sous-ensemble.
                       </div>
                     ) : seHelpPannes.length === 0 ? (
@@ -980,20 +976,20 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                                       checks.length === 0
                                         ? recommended
                                           // La panne déclarée reste repérable même sans contrôle référencé.
-                                          ? 'cursor-not-allowed border-amber-300 bg-amber-50/70'
+                                          ? 'cursor-not-allowed border-warning/30 bg-warning-muted/70'
                                           : 'cursor-not-allowed bg-muted/20 opacity-55'
                                         : recommended
-                                          ? 'border-amber-300 bg-amber-50 hover:bg-amber-100/70'
+                                          ? 'border-warning/30 bg-warning-muted hover:bg-warning-muted/70'
                                           : 'bg-background hover:border-primary/30 hover:bg-primary/5'
                                     }`}
                                   >
-                                    <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-xs font-bold ${recommended ? 'bg-amber-500 text-white' : 'bg-primary/10 text-primary'}`}>
+                                    <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-xs font-bold ${recommended ? 'bg-warning text-white' : 'bg-primary/10 text-primary'}`}>
                                       {panne.poids || 3}
                                     </span>
                                     <span className="min-w-0 flex-1">
                                       <span className="flex flex-wrap items-center gap-2">
                                         <span className="truncate text-sm font-semibold">{panne.piece?.nom || 'Pièce non renseignée'}</span>
-                                        {recommended && <Badge className="bg-amber-100 text-amber-800">Panne déclarée</Badge>}
+                                        {recommended && <Badge className="bg-warning-muted text-warning-muted-foreground">Panne déclarée</Badge>}
                                       </span>
                                       <span className="mt-0.5 block truncate text-xs text-muted-foreground">{panne.description}</span>
                                     </span>
@@ -1035,9 +1031,9 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                                   if (next.has(check.id)) next.delete(check.id); else next.add(check.id);
                                   return next;
                                 })}
-                                className={`flex w-full items-start gap-3 rounded-md border px-3 py-2.5 text-left transition-colors ${checked ? 'border-emerald-300 bg-emerald-50' : 'bg-background hover:bg-muted/30'}`}
+                                className={`flex w-full items-start gap-3 rounded-md border px-3 py-2.5 text-left transition-colors ${checked ? 'border-success/30 bg-success-muted' : 'bg-background hover:bg-muted/30'}`}
                               >
-                                <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border ${checked ? 'border-emerald-500 bg-emerald-500 text-white' : 'border-muted-foreground/30'}`}>
+                                <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border ${checked ? 'border-success bg-success text-white' : 'border-muted-foreground/30'}`}>
                                   {checked && <Check className="h-3 w-3" />}
                                 </span>
                                 <span className="min-w-0 flex-1">
@@ -1051,23 +1047,23 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                         </div>
 
                         {seDiagnosticCheckedIds.size > 0 && (
-                          <div className="space-y-2 rounded-md border border-emerald-200 bg-emerald-50/70 p-3">
+                          <div className="space-y-2 rounded-md border border-success/30 bg-success-muted/70 p-3">
                             <div className="flex items-center justify-between gap-2">
-                              <p className="text-xs font-semibold text-emerald-800">Résultat du diagnostic</p>
-                              <span className="text-[11px] text-emerald-700">{seDiagnosticCheckedIds.size}/{seDiagnosticChecks.length} contrôles</span>
+                              <p className="text-xs font-semibold text-success-muted-foreground">Résultat du diagnostic</p>
+                              <span className="text-[11px] text-success-muted-foreground">{seDiagnosticCheckedIds.size}/{seDiagnosticChecks.length} contrôles</span>
                             </div>
                             {seDiagnosticPieces.length === 0 ? (
                               <p className="text-xs text-muted-foreground">Aucune pièce spécifique n'est liée aux contrôles sélectionnés.</p>
                             ) : seDiagnosticPieces.map(piece => {
                               const action = treatedPieces[selectedItem.id]?.[piece.id];
                               return (
-                                <div key={piece.id} className="flex flex-wrap items-center gap-2 border-t border-emerald-200 pt-2 first:border-t-0 first:pt-0">
+                                <div key={piece.id} className="flex flex-wrap items-center gap-2 border-t border-success/30 pt-2 first:border-t-0 first:pt-0">
                                   <span className="min-w-0 flex-1 truncate text-sm font-medium">{piece.nom}</span>
                                   {action ? (
-                                    <Badge className="bg-emerald-100 text-emerald-800">{action === 'nettoyage' ? 'Nettoyée' : 'Remplacée'}</Badge>
+                                    <Badge className="bg-success-muted text-success-muted-foreground">{action === 'nettoyage' ? 'Nettoyée' : 'Remplacée'}</Badge>
                                   ) : canManage ? (
                                     <>
-                                      <Button size="sm" variant="outline" className="h-7 text-xs text-emerald-700" onClick={() => markNettoye(piece, selectedItem)}>
+                                      <Button size="sm" variant="outline" className="h-7 text-xs text-success-muted-foreground" onClick={() => markNettoye(piece, selectedItem)}>
                                         <Sparkles className="mr-1 h-3 w-3" /> Nettoyer
                                       </Button>
                                       <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => openReplace(piece, selectedItem)}>
@@ -1101,8 +1097,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
 
               {/* Pièces du modèle */}
               {(itemPieces.length > 0 || selectedItem.modele_id) && (
-                <Card className="relative overflow-hidden shadow-lg">
-                  <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+                <Card variant="accent">
                   <CardHeader className="relative py-2 px-4">
                     <CardTitle className="flex items-center gap-2 text-sm text-primary">
                       <Wrench className="h-3.5 w-3.5" /> Pièces du modèle
@@ -1121,7 +1116,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                           </div>
                           <span className="text-muted-foreground shrink-0">×{mp.quantite}</span>
                           {sp ? (
-                            <span className={`font-semibold shrink-0 ${sp.quantite === 0 ? 'text-red-600' : sp.quantite <= (sp.seuil_alerte || 2) ? 'text-yellow-600' : 'text-green-700'}`}>
+                            <span className={`font-semibold shrink-0 ${sp.quantite === 0 ? 'text-destructive' : sp.quantite <= (sp.seuil_alerte || 2) ? 'text-warning-muted-foreground' : 'text-success-muted-foreground'}`}>
                               Stock: {sp.quantite}
                             </span>
                           ) : <span className="text-muted-foreground shrink-0">Non suivi</span>}
@@ -1132,7 +1127,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                           )}
                           {canManage && mp.piece && (
                             <>
-                              <Button size="sm" variant="outline" className="h-6 text-xs px-2 text-green-700 border-green-300 shrink-0" onClick={() => markNettoye(mp.piece, selectedItem)}>
+                              <Button size="sm" variant="outline" className="h-6 text-xs px-2 text-success-muted-foreground border-success/30 shrink-0" onClick={() => markNettoye(mp.piece, selectedItem)}>
                                 <Sparkles className="mr-1 h-3 w-3" />Nettoyée
                               </Button>
                               <Button size="sm" variant="outline" className="h-6 text-xs px-2 shrink-0" onClick={() => openReplace(mp.piece)}>
@@ -1179,10 +1174,10 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
 
             {/* Filtre actif */}
             {wizardFilter && (
-              <div className="mb-3 flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 px-2.5 py-1.5">
-                <AlertTriangle className="h-3 w-3 shrink-0 text-amber-500" />
-                <span className="text-[11px] text-amber-700">Filtré sur&nbsp;: <span className="font-semibold">{wizardFilter}</span></span>
-                <button onClick={() => setWizardFilter(null)} className="ml-auto text-amber-400 hover:text-amber-600 transition-colors"><X className="h-3 w-3" /></button>
+              <div className="mb-3 flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-amber-50 to-orange-50 border border-warning/30 px-2.5 py-1.5">
+                <AlertTriangle className="h-3 w-3 shrink-0 text-warning" />
+                <span className="text-[11px] text-warning-muted-foreground">Filtré sur&nbsp;: <span className="font-semibold">{wizardFilter}</span></span>
+                <button onClick={() => setWizardFilter(null)} className="ml-auto text-warning hover:text-warning-muted-foreground transition-colors"><X className="h-3 w-3" /></button>
               </div>
             )}
 
@@ -1240,7 +1235,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                               <div className="absolute inset-y-0 left-0 w-1/4 rounded-full bg-gradient-to-r from-amber-400 to-primary" />
                             </div>
                             <div className="flex justify-between text-[10px] text-muted-foreground font-medium">
-                              <span className="text-amber-500">● Étape 1</span>
+                              <span className="text-warning">● Étape 1</span>
                               <span>Vérifications ○</span>
                             </div>
                           </div>
@@ -1263,7 +1258,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                                   onClick={() => { setWizardPanne(panne); setWizardStep(1); setWizardCheckedIds(new Set()); }}
                                   className={`group w-full text-left rounded-xl border transition-all ${
                                     hasChecks
-                                      ? 'border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50/40 hover:from-amber-100 hover:to-orange-50 hover:border-amber-300 hover:shadow-sm cursor-pointer'
+                                      ? 'border-warning/30 bg-gradient-to-r from-amber-50 to-orange-50/40 hover:from-amber-100 hover:to-orange-50 hover:border-warning/30 hover:shadow-sm cursor-pointer'
                                       : 'border-muted bg-muted/20 cursor-default opacity-50'
                                   }`}
                                 >
@@ -1273,7 +1268,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                                     </div>
                                     <span className="flex-1 text-sm font-medium truncate">{panne.description}</span>
                                     {hasChecks ? (
-                                      <div className="flex items-center gap-1 text-xs text-amber-600 shrink-0">
+                                      <div className="flex items-center gap-1 text-xs text-warning-muted-foreground shrink-0">
                                         <ListChecks className="h-3.5 w-3.5" />
                                         <span>{checks.length} vérif.</span>
                                         <ChevronRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -1312,13 +1307,13 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                       </div>
                       <div className="flex justify-between text-[10px] text-muted-foreground font-medium">
                         <span className="text-primary">● Étape 2</span>
-                        <span className={wizardCheckedIds.size === wizardChecks.length ? 'text-green-600 font-semibold' : ''}>
+                        <span className={wizardCheckedIds.size === wizardChecks.length ? 'text-success-muted-foreground font-semibold' : ''}>
                           {wizardCheckedIds.size} / {wizardChecks.length} vérifiés
                         </span>
                       </div>
                       {/* Symptôme sélectionné */}
                       <div className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/15 px-3 py-2">
-                        <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-500" />
+                        <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-warning" />
                         <span className="text-xs text-muted-foreground">Symptôme&nbsp;:&nbsp;</span>
                         <span className="text-xs font-semibold text-foreground truncate">{wizardPanne?.description}</span>
                       </div>
@@ -1338,13 +1333,13 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                             })}
                             className={`w-full text-left rounded-xl border px-4 py-3 flex items-start gap-3 transition-all ${
                               isChecked
-                                ? 'bg-gradient-to-r from-green-50 to-emerald-50/60 border-green-300 shadow-sm'
+                                ? 'bg-gradient-to-r from-green-50 to-emerald-50/60 border-success/30 shadow-sm'
                                 : 'bg-background border-muted hover:bg-muted/30 hover:border-border'
                             }`}
                           >
                             <div className={`mt-0.5 h-5 w-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
                               isChecked
-                                ? 'bg-gradient-to-br from-green-400 to-emerald-500 border-green-400'
+                                ? 'bg-gradient-to-br from-green-400 to-emerald-500 border-success'
                                 : 'border-muted-foreground/30'
                             }`}>
                               {isChecked && <Check className="h-2.5 w-2.5 text-white" />}
@@ -1359,7 +1354,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                                 </p>
                               )}
                             </div>
-                            <span className={`shrink-0 text-[10px] font-bold mt-0.5 ${isChecked ? 'text-green-600' : 'text-muted-foreground/50'}`}>
+                            <span className={`shrink-0 text-[10px] font-bold mt-0.5 ${isChecked ? 'text-success-muted-foreground' : 'text-muted-foreground/50'}`}>
                               {idx + 1}
                             </span>
                           </button>
@@ -1369,12 +1364,12 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
 
                     {/* Résumé pièces à traiter */}
                     {wizardCheckedIds.size > 0 && (
-                      <div className="rounded-xl border border-green-200 bg-gradient-to-br from-green-50 to-emerald-50/40 p-4 space-y-3">
+                      <div className="rounded-xl border border-success/30 bg-gradient-to-br from-green-50 to-emerald-50/40 p-4 space-y-3">
                         <div className="flex items-center gap-2">
                           <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-green-400 to-emerald-500">
                             <CheckCheck className="h-3.5 w-3.5 text-white" />
                           </div>
-                          <p className="text-xs font-semibold text-green-800">
+                          <p className="text-xs font-semibold text-success-muted-foreground">
                             {wizardCheckedIds.size === wizardChecks.length
                               ? 'Toutes les vérifications effectuées'
                               : `${wizardCheckedIds.size} / ${wizardChecks.length} vérifications effectuées`}
@@ -1382,13 +1377,13 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                         </div>
                         {uniquePiecesFromChecked.length > 0 && (
                           <div className="space-y-2">
-                            <p className="text-[11px] text-green-700 font-medium uppercase tracking-wide">Pièces à traiter</p>
+                            <p className="text-[11px] text-success-muted-foreground font-medium uppercase tracking-wide">Pièces à traiter</p>
                             {uniquePiecesFromChecked.map(piece => (
-                              <div key={piece.id} className="flex items-center justify-between gap-2 rounded-lg border border-green-200 bg-white/80 px-3 py-2">
+                              <div key={piece.id} className="flex items-center justify-between gap-2 rounded-lg border border-success/30 bg-card/80 px-3 py-2">
                                 <span className="text-sm font-medium truncate">{piece.nom}</span>
                                 <div className="flex gap-1 shrink-0">
                                   {selectedItem && canManage && (
-                                    <Button size="sm" variant="outline" className="h-6 text-xs px-2 text-green-700 border-green-300 hover:bg-green-50" onClick={() => markNettoye(piece, selectedItem)}>
+                                    <Button size="sm" variant="outline" className="h-6 text-xs px-2 text-success-muted-foreground border-success/30 hover:bg-success-muted" onClick={() => markNettoye(piece, selectedItem)}>
                                       <Sparkles className="mr-1 h-3 w-3" />Nettoyée
                                     </Button>
                                   )}
@@ -1419,11 +1414,11 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                 )}
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2 text-sm font-semibold">
-                    <AlertTriangle className="h-4 w-4 text-amber-500" /> Types de pannes
+                    <AlertTriangle className="h-4 w-4 text-warning" /> Types de pannes
                   </Label>
                   {pannes.length === 0 && <p className="text-sm text-muted-foreground">Aucune panne renseignée.</p>}
                   {pannes.map(p => (
-                    <div key={p.id} className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm">{p.description}</div>
+                    <div key={p.id} className="rounded-md border border-warning/30 bg-warning-muted px-3 py-2 text-sm">{p.description}</div>
                   ))}
                 </div>
                 <div className="space-y-2">
@@ -1471,7 +1466,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
               </Select>
             </div>
             {replacePieceId && (
-              <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+              <div className="rounded-md border border-warning/30 bg-warning-muted px-3 py-2 text-sm text-warning-muted-foreground">
                 Le sous-ensemble passera automatiquement à l'état <strong>À tester</strong> après remplacement.
               </div>
             )}

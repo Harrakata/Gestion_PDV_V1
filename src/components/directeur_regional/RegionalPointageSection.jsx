@@ -309,8 +309,7 @@ const RegionalPointageSection = ({ regionName = '', allowAllRegions = false, hid
 
   if (!effectiveRegionName && !allowAllRegions) {
     return (
-      <Card className="relative overflow-hidden border border-primary/20 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+      <Card variant="accent">
         <CardHeader>
           <CardTitle className="text-2xl text-primary">Suivi Pointage</CardTitle>
           <CardDescription>
@@ -328,8 +327,7 @@ const RegionalPointageSection = ({ regionName = '', allowAllRegions = false, hid
   return (
     <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
       {!hideHeader && (
-        <Card className="relative overflow-hidden border border-primary/20 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+        <Card variant="accent">
           <CardHeader>
             <CardTitle className="flex items-center text-3xl font-bold text-primary">
               <ClipboardCheck className="mr-3 h-8 w-8" />
@@ -373,7 +371,7 @@ const RegionalPointageSection = ({ regionName = '', allowAllRegions = false, hid
         />
       </div>
 
-      <Card className="shadow-xl glassmorphism">
+      <Card>
         <CardHeader className="space-y-4">
           <div>
             <CardTitle className="text-2xl text-primary">Analyse des non-conformités</CardTitle>
@@ -442,7 +440,7 @@ const RegionalPointageSection = ({ regionName = '', allowAllRegions = false, hid
         </CardContent>
       </Card>
 
-      <Card className="shadow-xl glassmorphism">
+      <Card>
         <CardHeader className="space-y-4">
           <div className="grid gap-4 md:grid-cols-3">
             <div className="space-y-2">
@@ -542,7 +540,7 @@ const RegionalPointageSection = ({ regionName = '', allowAllRegions = false, hid
       </Card>
 
       {selectedAgenceRow && (
-        <Card className="shadow-xl glassmorphism">
+        <Card>
           <CardHeader>
             <CardTitle className="text-2xl text-primary">
               Détail du pointage - {selectedAgenceRow.agenceNom}
@@ -584,7 +582,7 @@ const RegionalPointageSection = ({ regionName = '', allowAllRegions = false, hid
                 </thead>
                 <tbody>
                   {selectedAgenceRow.plannedGuichetieres.length === 0 ? (
-                    <tr className="border-t bg-white">
+                    <tr className="border-t bg-card">
                       <td colSpan={5} className="px-4 py-6 text-center text-muted-foreground">
                         Aucune guichetière planifiée sur cette date.
                       </td>
@@ -602,7 +600,7 @@ const RegionalPointageSection = ({ regionName = '', allowAllRegions = false, hid
                       )[0] || null;
 
                       return (
-                        <tr key={entry.id} className="border-t bg-white">
+                        <tr key={entry.id} className="border-t bg-card">
                           <td className="px-4 py-3 font-medium">
                             {guichetiere ? `${guichetiere.prenom} ${guichetiere.nom}` : 'Guichetière introuvable'}
                           </td>

@@ -437,8 +437,7 @@ const DevisPiecesTab = () => {
 
   return (
     <div className="space-y-6">
-      <Card className="relative overflow-hidden shadow-xl glassmorphism">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+      <Card variant="accent">
         <CardHeader className="relative">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -500,7 +499,7 @@ const DevisPiecesTab = () => {
       </div>
 
       {hasMissingPrices && (
-        <div className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        <div className="flex items-start gap-2 rounded-md border border-warning/30 bg-warning-muted px-4 py-3 text-sm text-warning-muted-foreground">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
           Certaines pièces ont un prix HT à 0. Renseignez le prix en euros dans le catalogue pour fiabiliser le devis.
         </div>
@@ -564,7 +563,7 @@ const DevisPiecesTab = () => {
                 <div key={field.id} className="grid grid-cols-[1fr_120px_32px] items-center gap-2">
                   <Input value={field.libelle} onChange={(e) => updateExtraField(field.id, 'libelle', e.target.value)} placeholder="Frais de transport" />
                   <Input type="number" min={0} step="0.01" value={field.montant_ht} onChange={(e) => updateExtraField(field.id, 'montant_ht', e.target.value)} placeholder="0,00" />
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500" onClick={() => removeExtraField(field.id)}>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => removeExtraField(field.id)}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
@@ -627,11 +626,11 @@ const DevisPiecesTab = () => {
                     </TableCell>
                   </TableRow>
                 ) : consumedLines.map((line) => (
-                  <TableRow key={line.key} className={line.source === 'manual' ? 'bg-emerald-50/50' : undefined}>
+                  <TableRow key={line.key} className={line.source === 'manual' ? 'bg-success-muted/50' : undefined}>
                     <TableCell className="font-medium">
                       {line.nom}
                       {line.source === 'manual' && (
-                        <Badge variant="outline" className="ml-2 border-emerald-300 text-[0.6rem] text-emerald-700">ajoutée</Badge>
+                        <Badge variant="outline" className="ml-2 border-success/30 text-[0.6rem] text-success-muted-foreground">ajoutée</Badge>
                       )}
                     </TableCell>
                     <TableCell className="font-mono text-sm">{line.reference}</TableCell>
@@ -657,7 +656,7 @@ const DevisPiecesTab = () => {
                     </TableCell>
                     <TableCell className="text-right font-semibold">{formatMoney(line.montant_ht)}</TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500" onClick={() => removeConsumedLine(line)} title="Retirer cette pièce">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => removeConsumedLine(line)} title="Retirer cette pièce">
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </TableCell>

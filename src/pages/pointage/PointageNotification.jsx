@@ -35,30 +35,30 @@ const PointageNotification = ({
   const getIcon = () => {
     switch (type) {
       case 'success':
-        return <CheckCircle2 className="h-8 w-8 text-green-500" />;
+        return <CheckCircle2 className="h-8 w-8 text-success" />;
       case 'late':
-        return <Clock className="h-8 w-8 text-red-500" />;
+        return <Clock className="h-8 w-8 text-destructive" />;
       case 'reminder':
       default:
-        return <Bell className="h-8 w-8 text-blue-500" />;
+        return <Bell className="h-8 w-8 text-info" />;
     }
   };
   
   const getBackgroundColor = () => {
     switch (type) {
-      case 'success': return 'bg-green-50 dark:bg-green-900/20';
-      case 'late': return 'bg-red-50 dark:bg-red-900/20';
+      case 'success': return 'bg-success-muted dark:bg-success/20';
+      case 'late': return 'bg-destructive/10 dark:bg-destructive/20';
       case 'reminder': 
-      default: return 'bg-blue-50 dark:bg-blue-900/20';
+      default: return 'bg-info-muted dark:bg-primary/20';
     }
   };
   
   const getBorderColor = () => {
     switch (type) {
-      case 'success': return 'border-l-green-500';
-      case 'late': return 'border-l-red-500';
+      case 'success': return 'border-l-success';
+      case 'late': return 'border-l-destructive';
       case 'reminder': 
-      default: return 'border-l-blue-500';
+      default: return 'border-l-info';
     }
   };
   
@@ -83,9 +83,9 @@ const PointageNotification = ({
                   {type === 'reminder' ? 'Rappel de pointage' : 
                    type === 'success' ? 'Pointage réussi' : 'Attention retard'}
                 </p>
-                <span className="text-xs text-gray-500">{currentTime}</span>
+                <span className="text-xs text-muted-foreground">{currentTime}</span>
               </div>
-              <p className="text-sm text-gray-600 dark:text-gray-300">
+              <p className="text-sm text-foreground/80 dark:text-muted-foreground">
                 {message || (
                   type === 'reminder' ? 'N\'oubliez pas de pointer votre entrée/sortie' : 
                   type === 'success' ? 'Votre pointage a bien été enregistré' : 
@@ -95,7 +95,7 @@ const PointageNotification = ({
               
               {action && (
                 <button 
-                  className="mt-2 text-xs font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                  className="mt-2 text-xs font-medium text-info-muted-foreground hover:text-info-muted-foreground dark:text-info dark:hover:text-info"
                   onClick={action.onClick}
                 >
                   {action.label}
@@ -103,7 +103,7 @@ const PointageNotification = ({
               )}
             </div>
             <button 
-              className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              className="absolute top-2 right-2 text-muted-foreground hover:text-foreground/80 dark:hover:text-muted-foreground"
               onClick={handleClose}
             >
               <X className="h-4 w-4" />

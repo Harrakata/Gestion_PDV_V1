@@ -130,7 +130,7 @@ const Scd2HistoryDialog = ({
     if (error) {
       toast({ title: 'Erreur sauvegarde', description: describeError(error, 'Scd2HistoryDialog'), variant: 'destructive' });
     } else {
-      toast({ title: 'Dates mises à jour', className: 'bg-green-500 text-white' });
+      toast({ title: 'Dates mises à jour', className: 'bg-success text-white' });
       cancelEdit();
       await load(tableName, keyField, keyValue);
       onChange?.();
@@ -157,7 +157,7 @@ const Scd2HistoryDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl glassmorphism">
+      <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl text-primary">
             <History className="h-5 w-5" />
@@ -172,11 +172,11 @@ const Scd2HistoryDialog = ({
             <p className="py-6 text-center text-sm text-muted-foreground">Chargement…</p>
           ) : loadError ? (
             <div className="py-6 flex flex-col items-center gap-3 text-center">
-              <AlertTriangle className="h-8 w-8 text-amber-500" />
+              <AlertTriangle className="h-8 w-8 text-warning" />
               <div>
                 <p className="text-sm font-semibold text-foreground">Erreur de chargement</p>
                 <p className="mt-1 text-xs text-muted-foreground max-w-xs">{loadError}</p>
-                <p className="mt-2 text-xs text-amber-600">Vérifiez que la migration SCD2 a été appliquée dans Supabase.</p>
+                <p className="mt-2 text-xs text-warning-muted-foreground">Vérifiez que la migration SCD2 a été appliquée dans Supabase.</p>
               </div>
               <Button size="sm" variant="outline" onClick={() => load(tableName, keyField, keyValue)} className="gap-1.5 text-xs">
                 <RefreshCw className="h-3 w-3" /> Réessayer
@@ -253,7 +253,7 @@ const Scd2HistoryDialog = ({
                           <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
                             <span>Du {debut}</span>
                             {fin ? (<><ArrowRight className="h-3 w-3 shrink-0" /><span>{fin}</span></>) : (
-                              <span className="text-emerald-600">— en cours</span>
+                              <span className="text-success-muted-foreground">— en cours</span>
                             )}
                           </div>
                           {secondaryFields.length > 0 && (
@@ -315,7 +315,7 @@ const Scd2HistoryDialog = ({
             <Button
               onClick={handleSaveAffectation}
               disabled={!newAffectation || !affectationDate || isSavingAffectation}
-              className="w-full gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white"
+              className="w-full gap-1.5 bg-success hover:bg-success/90 text-white"
             >
               <ArrowRight className="h-4 w-4" />
               {isSavingAffectation ? 'Enregistrement…' : 'Valider le changement'}

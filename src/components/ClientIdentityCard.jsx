@@ -55,7 +55,7 @@ const ClientIdentityCard = ({ canWrite = true }) => {
       } else {
         const { data: pub } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(data.path);
         setLogoUrl(pub.publicUrl);
-        toast({ title: 'Logo importé', description: "Cliquez sur « Sauvegarder l'identité » pour l'appliquer.", className: 'bg-green-500 text-white' });
+        toast({ title: 'Logo importé', description: "Cliquez sur « Sauvegarder l'identité » pour l'appliquer.", className: 'bg-success text-white' });
       }
     } catch (err) {
       toast({ title: 'Erreur', description: "Échec de l'import du logo.", variant: 'destructive' });
@@ -67,7 +67,7 @@ const ClientIdentityCard = ({ canWrite = true }) => {
     setIsSaving(true);
     try {
       await setBranding({ displayName, logoUrl, currency });
-      toast({ title: 'Identité client sauvegardée', className: 'bg-green-500 text-white' });
+      toast({ title: 'Identité client sauvegardée', className: 'bg-success text-white' });
     } catch (error) {
       toast({ title: 'Erreur de sauvegarde', description: describeError(error, 'ClientIdentityCard'), variant: 'destructive' });
     }
@@ -75,7 +75,7 @@ const ClientIdentityCard = ({ canWrite = true }) => {
   };
 
   return (
-    <Card className="shadow-xl glassmorphism">
+    <Card>
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-xl text-primary">
           <Building2 className="h-5 w-5" /> Identité client

@@ -112,8 +112,7 @@ const TicketsPanel = ({ mode = 'declarant', identity = {}, filter = {}, spaceKey
   return (
     <div className="space-y-4">
       {/* ── Bandeau titre ───────────────────────────────────────────────────── */}
-      <Card className="relative overflow-hidden border border-primary/20 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)]">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+      <Card variant="accent">
         <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <CardTitle className="flex items-center text-2xl font-bold text-primary sm:text-3xl">
@@ -137,7 +136,7 @@ const TicketsPanel = ({ mode = 'declarant', identity = {}, filter = {}, spaceKey
       </div>
 
       {/* ── Barre d'outils : vue + filtres ──────────────────────────────────── */}
-      <Card className="shadow-lg">
+      <Card>
         <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex rounded-md border p-0.5 self-start">
             <Button variant={view === 'liste' ? 'secondary' : 'ghost'} size="sm" className="h-7 px-2" onClick={() => setView('liste')} title="Liste">
@@ -210,7 +209,7 @@ const TicketsPanel = ({ mode = 'declarant', identity = {}, filter = {}, spaceKey
                         <div className="flex items-center gap-1.5">
                           <Badge variant="outline" className={getTicketStatusBadgeClass(r.statut)}>{ticketLabel(r.statut)}</Badge>
                           {ticketOverdue(r) && (
-                            <span className="flex items-center gap-0.5 text-xs text-red-600" title="Délai SLA dépassé"><AlertTriangle className="h-3.5 w-3.5" /> En retard</span>
+                            <span className="flex items-center gap-0.5 text-xs text-destructive" title="Délai SLA dépassé"><AlertTriangle className="h-3.5 w-3.5" /> En retard</span>
                           )}
                         </div>
                       </TableCell>

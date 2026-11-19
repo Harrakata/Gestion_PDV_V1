@@ -26,12 +26,12 @@ export const usePointageReminders = (currentTime, settings, toast, playSound) =>
       if (settings.rappelDebutCreneau && currentMinutes === debutTotalMinutes && !soundPlayedForCreneau[debutKey]) {
         playSound("debut");
         setSoundPlayedForCreneau(prev => ({...prev, [debutKey]: true}));
-        toast({ title: "Rappel Pointage", description: `Le créneau de pointage ${index + 1} (${creneau.debut}-${creneau.fin}) a commencé.`, className:"bg-blue-500 text-white", duration: 7000});
+        toast({ title: "Rappel Pointage", description: `Le créneau de pointage ${index + 1} (${creneau.debut}-${creneau.fin}) a commencé.`, className:"bg-primary text-white", duration: 7000});
       }
       if (settings.rappelFinCreneau && currentMinutes === rappelFinTime && !soundPlayedForCreneau[finKey]) {
         playSound("rappelFin");
         setSoundPlayedForCreneau(prev => ({...prev, [finKey]: true}));
-        toast({ title: "Rappel Pointage", description: `Le créneau de pointage ${index + 1} (${creneau.debut}-${creneau.fin}) se termine dans 5 minutes.`, className:"bg-yellow-500 text-black", duration: 7000});
+        toast({ title: "Rappel Pointage", description: `Le créneau de pointage ${index + 1} (${creneau.debut}-${creneau.fin}) se termine dans 5 minutes.`, className:"bg-warning text-black", duration: 7000});
       }
       
       if(currentMinutes > debutTotalMinutes && !soundPlayedForCreneau[debutKey]) setSoundPlayedForCreneau(prev => ({...prev, [debutKey]: true}));

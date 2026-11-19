@@ -121,16 +121,16 @@ const RemonteeDialog = ({ sender = {}, iconOnly = false, className = '' }) => {
                 ) : history.length === 0 ? (
                   <p className="py-5 text-center text-xs text-muted-foreground">Aucune remontée envoyée pour l'instant.</p>
                 ) : history.map((r) => (
-                  <div key={r.id} className="rounded-md border border-border/40 bg-white p-2">
+                  <div key={r.id} className="rounded-md border border-border/40 bg-card p-2">
                     <div className="mb-0.5 flex flex-wrap items-center gap-1.5">
                       <span className="truncate text-xs font-semibold text-foreground">{r.titre}</span>
                       <Badge variant="outline" className="px-1.5 py-0 text-[0.6rem]">{catLabel(r.categorie)}</Badge>
                       {r.traite ? (
-                        <Badge variant="outline" className="border-emerald-200 px-1.5 py-0 text-[0.6rem] text-emerald-600">
+                        <Badge variant="outline" className="border-success/30 px-1.5 py-0 text-[0.6rem] text-success-muted-foreground">
                           <CheckCircle2 className="mr-0.5 h-2.5 w-2.5" /> Traité
                         </Badge>
                       ) : (
-                        <Badge variant="outline" className="border-amber-200 px-1.5 py-0 text-[0.6rem] text-amber-600">En attente</Badge>
+                        <Badge variant="outline" className="border-warning/30 px-1.5 py-0 text-[0.6rem] text-warning-muted-foreground">En attente</Badge>
                       )}
                     </div>
                     {r.corps && <p className="line-clamp-2 text-[0.7rem] text-muted-foreground">{r.corps}</p>}

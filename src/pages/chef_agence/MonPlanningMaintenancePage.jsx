@@ -10,7 +10,7 @@ const MonPlanningMaintenancePage = () => {
 
   return (
     <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-      <Card className="shadow-xl glassmorphism">
+      <Card>
         <CardHeader>
           <CardTitle className="flex items-center text-3xl font-bold text-primary">
             <CalendarClock className="mr-3 h-8 w-8" />

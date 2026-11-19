@@ -31,7 +31,7 @@ const PointageFeedback = ({ onClose, onSubmit }) => {
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 50 }}
-      className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 rounded-t-2xl shadow-lg p-6 z-50"
+      className="fixed bottom-0 left-0 right-0 bg-card dark:bg-gray-900 rounded-t-2xl shadow-lg p-6 z-50"
     >
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-xl font-bold">Votre avis nous intéresse</h3>
@@ -50,7 +50,7 @@ const PointageFeedback = ({ onClose, onSubmit }) => {
             animate={{ rotate: [0, 10, -10, 0] }}
             transition={{ repeat: 1, duration: 0.5 }}
           >
-            <ThumbsUp className="h-16 w-16 text-green-500 mb-4" />
+            <ThumbsUp className="h-16 w-16 text-success mb-4" />
           </motion.div>
           <p className="text-xl font-medium">Merci pour votre feedback!</p>
         </motion.div>
@@ -62,7 +62,7 @@ const PointageFeedback = ({ onClose, onSubmit }) => {
             <div className="flex justify-center gap-6 mb-6">
               <Button 
                 variant={isHappy === true ? "default" : "outline"}
-                className={`flex-col gap-2 py-6 ${isHappy === true ? 'bg-green-500 hover:bg-green-600' : ''}`}
+                className={`flex-col gap-2 py-6 ${isHappy === true ? 'bg-success hover:bg-success/90' : ''}`}
                 onClick={() => setIsHappy(true)}
               >
                 <ThumbsUp className="h-8 w-8" />
@@ -71,7 +71,7 @@ const PointageFeedback = ({ onClose, onSubmit }) => {
               
               <Button 
                 variant={isHappy === false ? "default" : "outline"}
-                className={`flex-col gap-2 py-6 ${isHappy === false ? 'bg-red-500 hover:bg-red-600' : ''}`}
+                className={`flex-col gap-2 py-6 ${isHappy === false ? 'bg-destructive hover:bg-destructive/90' : ''}`}
                 onClick={() => setIsHappy(false)}
               >
                 <ThumbsDown className="h-8 w-8" />
@@ -86,7 +86,7 @@ const PointageFeedback = ({ onClose, onSubmit }) => {
                   key={star}
                   variant="ghost"
                   size="icon"
-                  className={`h-12 w-12 ${rating >= star ? 'text-yellow-500' : 'text-gray-300'}`}
+                  className={`h-12 w-12 ${rating >= star ? 'text-warning' : 'text-muted-foreground'}`}
                   onClick={() => setRating(star)}
                 >
                   <Star className="h-8 w-8 fill-current" />

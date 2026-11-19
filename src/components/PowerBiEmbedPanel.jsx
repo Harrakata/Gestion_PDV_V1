@@ -192,8 +192,8 @@ const PowerBiEmbedPanel = ({ reportId, embedUrl, height = 580 }) => {
       {/* Erreur */}
       {status === 'error' && (
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-background/95 p-8">
-          <div className="rounded-2xl bg-red-50 p-4">
-            <AlertCircle className="h-8 w-8 text-red-500" />
+          <div className="rounded-2xl bg-destructive/10 p-4">
+            <AlertCircle className="h-8 w-8 text-destructive" />
           </div>
           <p className="text-sm font-semibold text-foreground">Le rapport n'a pas pu se charger</p>
           {errorMsg && (

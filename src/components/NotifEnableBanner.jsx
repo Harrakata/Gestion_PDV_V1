@@ -73,7 +73,7 @@ const NotifEnableBanner = ({ reader = {}, className = '' }) => {
   };
 
   return (
-    <div className={`flex flex-wrap items-center gap-2.5 rounded-lg border border-primary/20 bg-white px-3 py-2 shadow-soft sm:flex-nowrap ${className}`}>
+    <div className={`flex flex-wrap items-center gap-2.5 rounded-lg border border-primary/20 bg-card px-3 py-2 shadow-soft sm:flex-nowrap ${className}`}>
       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
         <BellRing className="h-4 w-4" />
       </span>

@@ -47,16 +47,16 @@ const ALL_FILTER_VALUE = '__all__';
 // Couleur de la pastille du calendrier selon l'état de réalisation du créneau,
 // pour distinguer d'un coup d'œil les maintenances planifiées des effectuées.
 const EXECUTION_PIN_STYLES = {
-  planifiee: 'bg-blue-500',
-  effectuee: 'bg-emerald-500',
-  non_effectuee: 'bg-red-500',
+  planifiee: 'bg-primary',
+  effectuee: 'bg-success',
+  non_effectuee: 'bg-destructive',
   annulee: 'bg-slate-400',
 };
 
 const CALENDAR_LEGEND = [
-  { status: 'planifiee', label: 'Planifiée', dot: 'bg-blue-500' },
-  { status: 'effectuee', label: 'Effectuée', dot: 'bg-emerald-500' },
-  { status: 'non_effectuee', label: 'Non effectuée', dot: 'bg-red-500' },
+  { status: 'planifiee', label: 'Planifiée', dot: 'bg-primary' },
+  { status: 'effectuee', label: 'Effectuée', dot: 'bg-success' },
+  { status: 'non_effectuee', label: 'Non effectuée', dot: 'bg-destructive' },
   { status: 'annulee', label: 'Annulée', dot: 'bg-slate-400' },
 ];
 
@@ -652,7 +652,7 @@ const MaintenancePlanningSection = ({
         description: currentPlanning
           ? 'La planification maintenance a été mise à jour.'
           : 'La maintenance a été planifiée avec succès.',
-        className: 'bg-green-500 text-white',
+        className: 'bg-success text-white',
       });
       // Push au technicien planifié (création OU réassignation) — best-effort, respecte
       // le réglage global « Planning d'intervention ».
@@ -691,7 +691,7 @@ const MaintenancePlanningSection = ({
       toast({
         title: 'Planification annulée',
         description: 'Le créneau a été retiré du planning actif.',
-        className: 'bg-green-500 text-white',
+        className: 'bg-success text-white',
       });
       loadData();
     }
@@ -805,7 +805,7 @@ const MaintenancePlanningSection = ({
       toast({
         title: 'Planning copié',
         description: `${pendingEntries.length} créneau(x) copiés depuis ${period === 'month' ? 'le mois' : 'la semaine'} précédent(e).${skippedForAbsence > 0 ? ` ${skippedForAbsence} ignoré(s) (absence validée).` : ''}`,
-        className: 'bg-green-500 text-white',
+        className: 'bg-success text-white',
       });
       loadData();
     }
@@ -818,7 +818,7 @@ const MaintenancePlanningSection = ({
 
   return (
     <div className="space-y-6">
-      <Card className="shadow-xl glassmorphism">
+      <Card>
         <CardHeader className="space-y-4">
           <div>
             <CardTitle className="flex items-center text-2xl font-bold text-primary">
@@ -829,7 +829,7 @@ const MaintenancePlanningSection = ({
           </div>
 
           {!canManage && readOnlyMessage && (
-            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+            <div className="rounded-xl border border-warning/30 bg-warning-muted p-4 text-sm text-warning-muted-foreground">
               {readOnlyMessage}
             </div>
           )}
@@ -1030,7 +1030,7 @@ const MaintenancePlanningSection = ({
 
         <CardContent>
           {showPlanningMap && (
-            <div className="mb-5 overflow-hidden rounded-2xl border border-border bg-white shadow-sm">
+            <div className="mb-5 overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
               <MaintenanceAgenciesMap
                 agencies={planningMapAgencies}
                 groups={planningMapGroups}
@@ -1071,7 +1071,7 @@ const MaintenancePlanningSection = ({
                       key={dateKey}
                       className={`group flex min-h-[90px] flex-col
                         ${viewMode === 'month' && dayIndex === 0 ? colStartClass : ''}
-                        ${!isCurrentMonthDay ? 'bg-muted/10' : isWeekend ? 'bg-slate-50/40' : 'bg-card'}
+                        ${!isCurrentMonthDay ? 'bg-muted/10' : isWeekend ? 'bg-muted/50' : 'bg-card'}
                       `}
                     >
                       {/* Header compact */}
@@ -1082,7 +1082,7 @@ const MaintenancePlanningSection = ({
                         {isCurrentMonthDay && canManage && (
                           <button
                             type="button"
-                            className={`flex h-4 w-4 items-center justify-center rounded opacity-0 transition-all group-hover:opacity-100 ${isToday ? 'text-white/70 hover:bg-white/20' : 'text-muted-foreground/30 hover:bg-primary/10 hover:text-primary'}`}
+                            className={`flex h-4 w-4 items-center justify-center rounded opacity-0 transition-all group-hover:opacity-100 ${isToday ? 'text-white/70 hover:bg-card/20' : 'text-muted-foreground/30 hover:bg-primary/10 hover:text-primary'}`}
                             onClick={() => openCreateDialogForDate(day)}
                             disabled={isLoading}
                           >
@@ -1112,7 +1112,7 @@ const MaintenancePlanningSection = ({
                             className="flex cursor-pointer items-center gap-1 transition-opacity hover:opacity-70"
                           >
                             <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[0.5rem] font-bold text-white
-                              ${EXECUTION_PIN_STYLES[row.executionStatus] || 'bg-emerald-500'}
+                              ${EXECUTION_PIN_STYLES[row.executionStatus] || 'bg-success'}
                               ${String(selectedPlanningId) === String(row.id) ? 'ring-2 ring-offset-1 ring-primary/50' : ''}
                             `}>
                               {row.executionStatus === 'effectuee'
@@ -1130,7 +1130,7 @@ const MaintenancePlanningSection = ({
                             {canManage && (
                               <button
                                 type="button"
-                                className="shrink-0 text-muted-foreground/30 opacity-0 transition-all group-hover:opacity-100 hover:text-blue-500"
+                                className="shrink-0 text-muted-foreground/30 opacity-0 transition-all group-hover:opacity-100 hover:text-info"
                                 onClick={(event) => {
                                   event.stopPropagation();
                                   openDialog(row);
@@ -1164,16 +1164,16 @@ const MaintenancePlanningSection = ({
                               }}
                               className="flex cursor-pointer items-center gap-1 transition-opacity hover:opacity-70"
                             >
-                              <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[0.5rem] font-bold text-white ${hasRealized ? 'bg-emerald-500' : 'bg-red-500'}`}>
+                              <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[0.5rem] font-bold text-white ${hasRealized ? 'bg-success' : 'bg-destructive'}`}>
                                 <CheckCircle2 className="h-2.5 w-2.5" />
                               </span>
                               <div className="min-w-0 flex-1">
                                 <p className={`truncate text-[0.6rem] font-medium leading-tight ${!isCurrentMonthDay ? 'text-muted-foreground/40' : 'text-foreground'}`}>
                                   {showAgenceColumn ? item.agenceNom : 'Réalisée'}
                                 </p>
-                                <p className="truncate text-[0.55rem] leading-tight text-emerald-700/80">
+                                <p className="truncate text-[0.55rem] leading-tight text-success-muted-foreground/80">
                                   {realizedCount} réalisée(s)
-                                  {refusedCount ? <span className="text-red-600"> · {refusedCount} refusée(s)</span> : null}
+                                  {refusedCount ? <span className="text-destructive"> · {refusedCount} refusée(s)</span> : null}
                                 </p>
                               </div>
                             </motion.div>
@@ -1200,7 +1200,7 @@ const MaintenancePlanningSection = ({
                   title={active ? `Masquer « ${item.label} »` : `Afficher « ${item.label} »`}
                   className={`flex items-center gap-1.5 rounded-full border px-2 py-0.5 transition-colors ${
                     active
-                      ? 'border-slate-300 bg-white text-foreground'
+                      ? 'border-border bg-card text-foreground'
                       : 'border-transparent bg-transparent text-muted-foreground/40 line-through'
                   }`}
                 >
@@ -1218,7 +1218,7 @@ const MaintenancePlanningSection = ({
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-2xl glassmorphism">
+        <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle className="text-2xl text-primary">
               {currentPlanning ? 'Modifier le planning maintenance' : 'Nouvelle planification maintenance'}
@@ -1381,10 +1381,10 @@ const MaintenancePlanningSection = ({
       </Dialog>
 
       <Dialog open={Boolean(realizedDetail)} onOpenChange={(open) => !open && setRealizedDetail(null)}>
-        <DialogContent className="sm:max-w-2xl glassmorphism">
+        <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-2xl text-primary">
-              <CheckCircle2 className="h-6 w-6 text-emerald-500" />
+              <CheckCircle2 className="h-6 w-6 text-success" />
               Interventions réalisées
             </DialogTitle>
             <DialogDescription>
@@ -1405,10 +1405,10 @@ const MaintenancePlanningSection = ({
               return (
                 <div
                   key={intervention.id}
-                  className={`space-y-2 rounded-xl border p-4 shadow-sm ${isCurative ? 'border-red-100 bg-red-50/40' : 'border-blue-100 bg-blue-50/40'}`}
+                  className={`space-y-2 rounded-xl border p-4 shadow-sm ${isCurative ? 'border-destructive/30 bg-destructive/10' : 'border-info/30 bg-info-muted/40'}`}
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="font-semibold text-slate-800">
+                    <p className="font-semibold text-foreground">
                       {terminal?.reference || `Terminal #${intervention.terminal_id}`}
                     </p>
                     <span className="text-sm text-muted-foreground">
@@ -1416,19 +1416,19 @@ const MaintenancePlanningSection = ({
                     </span>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant="outline" className={isCurative ? 'border-red-200 bg-red-50 text-red-700' : 'border-blue-200 bg-blue-50 text-blue-700'}>
+                    <Badge variant="outline" className={isCurative ? 'border-destructive/30 bg-destructive/10 text-destructive' : 'border-info/30 bg-info-muted text-info-muted-foreground'}>
                       {getMaintenanceInterventionTypeLabel(intervention.type_intervention)}
                     </Badge>
-                    <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">
+                    <Badge variant="outline" className="border-success/30 bg-success-muted text-success-muted-foreground">
                       {creneauLabel}
                     </Badge>
                     {intervention.geo_refused === true ? (
-                      <Badge variant="outline" className="border-red-200 bg-red-50 text-red-700">Refusée (hors zone)</Badge>
+                      <Badge variant="outline" className="border-destructive/30 bg-destructive/10 text-destructive">Refusée (hors zone)</Badge>
                     ) : (
-                      <Badge variant="outline" className="border-slate-200 bg-slate-100 text-slate-700">{intervention.statut}</Badge>
+                      <Badge variant="outline" className="border-border bg-muted text-foreground/80">{intervention.statut}</Badge>
                     )}
                     {intervention.sous_ensemble && (
-                      <Badge variant="outline" className="border-slate-200 bg-white text-slate-600">
+                      <Badge variant="outline" className="border-border bg-card text-foreground/80">
                         {intervention.sous_ensemble}
                       </Badge>
                     )}
@@ -1440,7 +1440,7 @@ const MaintenancePlanningSection = ({
                     </p>
                   )}
                   {intervention.commentaire && (
-                    <p className="border-t pt-2 text-sm italic text-slate-700">{intervention.commentaire}</p>
+                    <p className="border-t pt-2 text-sm italic text-foreground/80">{intervention.commentaire}</p>
                   )}
                   {intervention.fiche_url && (
                     <div className="border-t pt-2">
@@ -1493,7 +1493,7 @@ const MaintenancePlanningSection = ({
       </Dialog>
 
       <Dialog open={Boolean(selectedPlanning)} onOpenChange={(isOpen) => { if (!isOpen) setSelectedPlanningId(null); }}>
-        <DialogContent className="sm:max-w-3xl glassmorphism max-h-[85vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-3xl max-h-[85vh] overflow-y-auto">
           {selectedPlanning && (
           <>
           <DialogHeader>
@@ -1545,7 +1545,7 @@ const MaintenancePlanningSection = ({
 
               <div className="rounded-xl border bg-background/70 p-4">
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">Notes</p>
-                <p className="mt-2 whitespace-pre-wrap text-sm text-slate-700">
+                <p className="mt-2 whitespace-pre-wrap text-sm text-foreground/80">
                   {selectedPlanning.notes || 'Aucune consigne particulière.'}
                 </p>
               </div>
@@ -1556,7 +1556,7 @@ const MaintenancePlanningSection = ({
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">
                   Interventions enregistrées sur ce créneau
                 </p>
-                <Badge variant="outline" className="border-slate-200 bg-slate-100 text-slate-700">
+                <Badge variant="outline" className="border-border bg-muted text-foreground/80">
                   {selectedPlanning.matchedInterventions.length}
                 </Badge>
               </div>
@@ -1568,7 +1568,7 @@ const MaintenancePlanningSection = ({
               ) : (
                 <div className="space-y-3">
                   {selectedPlanning.matchedInterventions.map((intervention) => (
-                    <div key={intervention.id} className="rounded-xl border bg-white p-4 shadow-sm">
+                    <div key={intervention.id} className="rounded-xl border bg-card p-4 shadow-sm">
                       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                         <div>
                           <p className="font-medium">
@@ -1583,14 +1583,14 @@ const MaintenancePlanningSection = ({
                         </div>
                       </div>
                       <div className="mt-3 flex flex-wrap gap-2">
-                        <Badge variant="outline" className="border-slate-200 bg-slate-100 text-slate-700">
+                        <Badge variant="outline" className="border-border bg-muted text-foreground/80">
                           {getMaintenanceInterventionTypeLabel(intervention.type_intervention)}
                         </Badge>
-                        <Badge variant="outline" className="border-slate-200 bg-slate-100 text-slate-700">
+                        <Badge variant="outline" className="border-border bg-muted text-foreground/80">
                           {intervention.statut}
                         </Badge>
                       </div>
-                      <p className="mt-3 text-sm text-slate-700">
+                      <p className="mt-3 text-sm text-foreground/80">
                         {intervention.commentaire || 'Aucun commentaire technique.'}
                       </p>
                     </div>

@@ -49,18 +49,18 @@ export const getPlanningRequestTypeLabel = (value) => {
 
 export const getRequestStatusBadgeClass = (status) => {
   if (status === REQUEST_STATUS.APPROVED) {
-    return 'border-green-200 bg-green-50 text-green-700';
+    return 'border-success/30 bg-success-muted text-success-muted-foreground';
   }
 
   if (status === REQUEST_STATUS.REFUSED) {
-    return 'border-red-200 bg-red-50 text-red-700';
+    return 'border-destructive/30 bg-destructive/10 text-destructive';
   }
 
   if (status === REQUEST_STATUS.CANCELLED) {
-    return 'border-slate-200 bg-slate-100 text-slate-700';
+    return 'border-border bg-muted text-foreground/80';
   }
 
-  return 'border-amber-200 bg-amber-50 text-amber-700';
+  return 'border-warning/30 bg-warning-muted text-warning-muted-foreground';
 };
 
 export const buildGuichetiereDisplayName = (guichetiere) =>

@@ -169,7 +169,7 @@ const LoginPage = ({ onLogin, spaceConfig }) => {
     toast({
       title: 'Connexion réussie',
       description: `Bienvenue ${data.prenom} ${data.nom}.`,
-      className: 'bg-green-500 text-white',
+      className: 'bg-success text-white',
     });
     setIsLoading(false);
   };
@@ -538,7 +538,7 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
         decision === 'approve'
           ? `La demande a été transmise au ${nextStepLabel}.`
           : 'La demande a été refusée et clôturée.',
-      className: decision === 'approve' ? 'bg-green-500 text-white' : 'bg-red-500 text-white',
+      className: decision === 'approve' ? 'bg-success text-white' : 'bg-destructive text-white',
     });
 
     setActionComment('');
@@ -568,7 +568,7 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <Card className="shadow-sm">
+        <Card>
           <CardHeader>
             <CardTitle className="text-lg text-primary">Informations du gagnant</CardTitle>
           </CardHeader>
@@ -584,7 +584,7 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
           </CardContent>
         </Card>
 
-        <Card className="shadow-sm">
+        <Card>
           <CardHeader>
             <CardTitle className="text-lg text-primary">Informations de course et ticket</CardTitle>
           </CardHeader>
@@ -599,7 +599,7 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <Card className="shadow-sm">
+        <Card>
           <CardHeader>
             <CardTitle className="text-lg text-primary">Pièce d’identité et paiement</CardTitle>
           </CardHeader>
@@ -612,7 +612,7 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
           </CardContent>
         </Card>
 
-        <Card className="shadow-sm">
+        <Card>
           <CardHeader>
             <CardTitle className="text-lg text-primary">Agences et validation</CardTitle>
           </CardHeader>
@@ -626,7 +626,7 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
         </Card>
       </div>
 
-      <Card className="shadow-sm">
+      <Card>
         <CardHeader>
           <CardTitle className="text-lg text-primary">Dates de validation</CardTitle>
         </CardHeader>
@@ -640,7 +640,7 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
       </Card>
 
       {demande.photoPieceUrl && (
-        <Card className="shadow-sm">
+        <Card>
           <CardHeader>
             <CardTitle className="text-lg text-primary">Pièce d’identité jointe</CardTitle>
           </CardHeader>
@@ -686,8 +686,7 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
 
   const renderPaymentSection = () => (
     <div className="space-y-6">
-      <Card className="relative overflow-hidden border border-primary/20 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+      <Card variant="accent">
         <CardHeader>
           <CardTitle className="flex items-center text-3xl font-bold text-primary">
             <ShieldCheck className="mr-3 h-8 w-8" />
@@ -730,7 +729,7 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
         </TabsList>
 
         <TabsContent value="pending" className="space-y-6">
-          <Card className="shadow-xl glassmorphism">
+          <Card>
             <CardHeader>
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
@@ -815,7 +814,7 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
           </Card>
 
           {selectedDemande && isSelectedDemandeActionable && (
-            <Card className="shadow-xl glassmorphism">
+            <Card>
               <CardHeader>
                 <CardTitle className="text-2xl text-primary">Détail de la demande {selectedDemande.codeDemande}</CardTitle>
                 <CardDescription>
@@ -841,7 +840,7 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
                   <Button
                     onClick={() => handleDecision('approve')}
                     disabled={isActionLoading}
-                    className="bg-green-600 text-white hover:bg-green-700"
+                    className="bg-success text-white hover:bg-success/90"
                   >
                     {isActionLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
                     Valider la demande
@@ -856,7 +855,7 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
                   </Button>
                 </div>
 
-                <Card className="shadow-sm">
+                <Card>
                   <CardHeader>
                     <CardTitle className="text-lg text-primary">Historique du workflow</CardTitle>
                   </CardHeader>
@@ -868,7 +867,7 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
         </TabsContent>
 
         <TabsContent value="history" className="space-y-6">
-          <Card className="shadow-xl glassmorphism">
+          <Card>
             <CardHeader>
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
@@ -938,7 +937,7 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
           </Card>
 
           {selectedDemande && (
-            <Card className="shadow-xl glassmorphism">
+            <Card>
               <CardHeader>
                 <CardTitle className="text-2xl text-primary">Détail de la demande {selectedDemande.codeDemande}</CardTitle>
                 <CardDescription>
@@ -948,7 +947,7 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
               <CardContent className="space-y-6">
                 {renderDemandeDetailsSections(selectedDemande)}
 
-                <Card className="shadow-sm">
+                <Card>
                   <CardHeader>
                     <CardTitle className="text-lg text-primary">Historique du workflow</CardTitle>
                   </CardHeader>
@@ -963,7 +962,7 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
   );
 
   const renderUnavailableRegionalSection = (title, description) => (
-    <Card className="shadow-xl glassmorphism">
+    <Card>
       <CardHeader>
         <CardTitle className="text-2xl text-primary">{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
@@ -1125,8 +1124,7 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
             />
           </SpaceHeaderIdentity>
 
-          <Card className="relative overflow-hidden border border-primary/20 bg-white/92 shadow-[0_8px_30px_-12px_rgba(15,23,42,0.18)] backdrop-blur">
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-primary" />
+          <Card className="relative overflow-hidden">
             <CardContent className="relative p-3">
               <nav className="space-y-0.5">
                 {menuItems.map((item) => {
@@ -1174,7 +1172,7 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className="flex flex-1 flex-col items-center gap-1 rounded-2xl py-2.5 text-red-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                    className="flex flex-1 flex-col items-center gap-1 rounded-2xl py-2.5 text-destructive transition-colors hover:bg-destructive/10 hover:text-destructive"
                   >
                     <LogOut className="h-5 w-5" />
                     <span className="text-[0.6rem] font-semibold">Déconn.</span>
@@ -1185,7 +1183,7 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
           </Card>
 
           {spaceConfig.expectedFunction === VALIDATOR_FUNCTIONS.REGIONAL && !isRegionalProfile && (
-            <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700">
+            <div className="rounded-xl border border-warning/30 bg-warning-muted px-3 py-2 text-xs text-warning-muted-foreground">
               Les onglets Maintenance et Suivi Pointage sont disponibles uniquement pour un directeur régional avec région assignée.
             </div>
           )}
@@ -1217,7 +1215,7 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
           transition={{ duration: 0.3 }}
         >
           {menuItems.length === 0 ? (
-            <Card className="shadow-xl glassmorphism">
+            <Card>
               <CardContent className="p-6 text-center text-muted-foreground">
                 Aucun onglet n’est actuellement activé pour cet espace.
               </CardContent>

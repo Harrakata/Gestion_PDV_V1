@@ -37,8 +37,7 @@ function useSecteurAgences(secteurName) {
 }
 
 const SectionShell = ({ icon: Icon, title, secteurName, children }) => (
-  <Card className="relative overflow-hidden border border-primary/20 bg-white/92 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-    <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+  <Card variant="accent">
     <CardHeader>
       <CardTitle className="flex items-center gap-2 text-2xl text-primary"><Icon className="h-6 w-6" /> {title}</CardTitle>
       <CardDescription>Secteur : <span className="font-semibold">{secteurName || '—'}</span></CardDescription>
@@ -170,9 +169,9 @@ export const MaintenanceSecteurSection = ({ chef }) => {
                     <TableCell data-label="Position">{t.position || '—'}</TableCell>
                     <TableCell data-label="Statut">
                       <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${
-                        t.statut === 'En service' ? 'bg-green-100 text-green-700'
-                          : ['Hors service', 'En panne'].includes(t.statut) ? 'bg-red-100 text-red-700'
-                          : t.statut === 'Maintenance' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-700'
+                        t.statut === 'En service' ? 'bg-success-muted text-success-muted-foreground'
+                          : ['Hors service', 'En panne'].includes(t.statut) ? 'bg-destructive/10 text-destructive'
+                          : t.statut === 'Maintenance' ? 'bg-warning-muted text-warning-muted-foreground' : 'bg-muted text-foreground/80'
                       }`}>{t.statut || '—'}</span>
                     </TableCell>
                   </TableRow>

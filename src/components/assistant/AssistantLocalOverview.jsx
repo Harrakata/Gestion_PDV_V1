@@ -72,7 +72,7 @@ export default function AssistantLocalOverview({ currentTab, online: onlineProp,
   }, [onlineProp]);
 
   return (
-    <section className={embedded ? 'mt-4 border-t border-slate-200 pt-3' : 'overflow-hidden rounded-xl border border-primary/15 bg-white shadow-sm'} aria-label="Informations disponibles sans intelligence artificielle">
+    <section className={embedded ? 'mt-4 border-t border-border pt-3' : 'overflow-hidden rounded-xl border border-primary/15 bg-card shadow-sm'} aria-label="Informations disponibles sans intelligence artificielle">
       <div className={embedded ? 'flex items-center gap-2 pb-2.5' : 'flex items-center gap-2 border-b px-3 py-2.5'}>
         <Database className="h-4 w-4 text-primary" />
         <h2 className="min-w-0 flex-1 text-xs font-semibold text-foreground">Données accessibles sans IA</h2>
@@ -82,7 +82,7 @@ export default function AssistantLocalOverview({ currentTab, online: onlineProp,
       </div>
       <dl className={embedded ? 'grid overflow-hidden rounded-lg border bg-background/50 text-xs sm:grid-cols-2' : 'divide-y text-xs'}>
         <div className="flex items-start gap-3 px-3 py-2.5">
-          {online ? <Database className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> : <CloudOff className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />}
+          {online ? <Database className="mt-0.5 h-4 w-4 shrink-0 text-success-muted-foreground" /> : <CloudOff className="mt-0.5 h-4 w-4 shrink-0 text-warning-muted-foreground" />}
           <dt className="w-24 shrink-0 text-muted-foreground">Contexte</dt>
           <dd className="min-w-0 flex-1 font-medium text-foreground">{pageLabel(currentTab)} · {online ? 'Réseau disponible' : 'Hors ligne'}</dd>
         </div>
@@ -92,7 +92,7 @@ export default function AssistantLocalOverview({ currentTab, online: onlineProp,
           <dd className="min-w-0 flex-1 font-medium text-foreground">{ASSISTANT_GUIDES.length} fiches consultables et interrogeables</dd>
         </div>
         <div className="flex items-start gap-3 px-3 py-2.5">
-          <FileClock className={`mt-0.5 h-4 w-4 shrink-0 ${queue.failed ? 'text-red-600' : queue.count ? 'text-amber-600' : 'text-emerald-600'}`} />
+          <FileClock className={`mt-0.5 h-4 w-4 shrink-0 ${queue.failed ? 'text-destructive' : queue.count ? 'text-warning-muted-foreground' : 'text-success-muted-foreground'}`} />
           <dt className="w-24 shrink-0 text-muted-foreground">Synchronisation</dt>
           <dd className="min-w-0 flex-1 font-medium text-foreground">
             {queue.count

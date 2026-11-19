@@ -253,7 +253,7 @@ const MesPointsVenteMobiPage = () => {
       toast({
         title: 'Demande envoyée',
         description: 'La demande de modification a été transmise à l’exploitation.',
-        className: 'bg-green-500 text-white',
+        className: 'bg-success text-white',
       });
       setIsDialogOpen(false);
       setSelectedPointVente(null);
@@ -266,8 +266,7 @@ const MesPointsVenteMobiPage = () => {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-      <Card className="relative overflow-hidden border border-primary/20 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+      <Card variant="accent">
         <CardHeader>
           <CardTitle className="flex items-center text-3xl font-bold text-primary">
             <MapPin className="mr-3 h-8 w-8" />
@@ -304,7 +303,7 @@ const MesPointsVenteMobiPage = () => {
         />
       </div>
 
-      <Card className="shadow-xl glassmorphism">
+      <Card>
         <CardHeader>
           <CardTitle className="text-2xl text-primary">Affectations actives</CardTitle>
           <CardDescription>Demandez une évolution si votre point de vente doit être réaffecté.</CardDescription>
@@ -352,7 +351,7 @@ const MesPointsVenteMobiPage = () => {
         </CardContent>
       </Card>
 
-      <Card className="shadow-xl glassmorphism">
+      <Card>
         <CardHeader>
           <CardTitle className="text-2xl text-primary">Mes demandes de modification</CardTitle>
         </CardHeader>
@@ -445,7 +444,7 @@ const MesPointsVenteMobiPage = () => {
                         <TableCell>{formatDisplayDate(p.dateDebutValidite)}</TableCell>
                         <TableCell>{formatDisplayDate(p.dateFinValidite)}</TableCell>
                         <TableCell>
-                          <Badge className={mobiPointDisplayStatus(p, mobiToday()) === 'Actif' ? 'border-green-200 bg-green-50 text-green-700' : 'border-slate-200 bg-slate-100 text-slate-700'}>
+                          <Badge className={mobiPointDisplayStatus(p, mobiToday()) === 'Actif' ? 'border-success/30 bg-success-muted text-success-muted-foreground' : 'border-border bg-muted text-foreground/80'}>
                             {mobiPointDisplayStatus(p, mobiToday())}
                           </Badge>
                         </TableCell>
@@ -463,7 +462,7 @@ const MesPointsVenteMobiPage = () => {
       })()}
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-xl glassmorphism">
+        <DialogContent className="sm:max-w-xl">
           <DialogHeader>
             <DialogTitle className="text-primary">Demander une modification d’affectation</DialogTitle>
             <DialogDescription>

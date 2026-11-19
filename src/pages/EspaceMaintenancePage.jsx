@@ -138,7 +138,7 @@ const LoginPage = ({ onLogin }) => {
     toast({
       title: 'Connexion réussie',
       description: `Bienvenue ${profile.prenom} ${profile.nom}`,
-      className: 'bg-green-500 text-white',
+      className: 'bg-success text-white',
     });
     setIsLoading(false);
   };
@@ -419,8 +419,7 @@ const EspaceMaintenancePage = () => {
             />
           </SpaceHeaderIdentity>
 
-          <Card className="relative overflow-hidden border border-primary/20 bg-white/92 shadow-[0_8px_30px_-12px_rgba(15,23,42,0.18)] backdrop-blur">
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-primary" />
+          <Card className="relative overflow-hidden">
             <CardContent className="relative p-3">
               <nav className="space-y-1">
                 {menuItems.map((item) => {
@@ -465,7 +464,7 @@ const EspaceMaintenancePage = () => {
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className="flex flex-1 flex-col items-center gap-1 rounded-2xl py-2.5 text-red-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                    className="flex flex-1 flex-col items-center gap-1 rounded-2xl py-2.5 text-destructive transition-colors hover:bg-destructive/10 hover:text-destructive"
                   >
                     <LogOut className="h-5 w-5" />
                     <span className="text-[0.6rem] font-semibold">Déconn.</span>
@@ -501,7 +500,7 @@ const EspaceMaintenancePage = () => {
         >
           <Suspense fallback={<SectionLoader />}>
           {!menuItems.length ? (
-            <Card className="shadow-xl glassmorphism">
+            <Card>
               <CardContent className="p-6 text-center text-muted-foreground">
                 Aucun onglet n’est actuellement activé pour l’Espace Technicien.
               </CardContent>
@@ -535,8 +534,7 @@ const EspaceMaintenancePage = () => {
             <MonPlanningMaintenancePage technicien={userData} view="reparation" />
           ) : (
             <div className="space-y-6">
-              <Card className="relative overflow-hidden border border-primary/20 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-                <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+              <Card variant="accent">
                 <CardHeader>
                   <CardTitle className="flex items-center text-3xl font-bold text-primary">
                     <CalendarDays className="mr-3 h-8 w-8" /> Maintenance

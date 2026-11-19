@@ -50,7 +50,7 @@ const PieChartGraphic = ({ data }) => {
   return (
     <div className="grid gap-3 xl:grid-cols-[160px_minmax(0,1fr)] xl:items-start">
       <div className="flex justify-center pt-1">
-        <div className="relative flex h-40 w-40 items-center justify-center rounded-full border border-white/60 bg-white/80 shadow-inner">
+        <div className="relative flex h-40 w-40 items-center justify-center rounded-full border border-white/60 bg-card/80 shadow-inner">
           <div
             className="h-33 w-33 rounded-full shadow-[inset_0_0_18px_rgba(15,23,42,0.10)]"
             style={{ background: `conic-gradient(${gradientSegments.join(', ')})`, width: '8.25rem', height: '8.25rem' }}
@@ -68,7 +68,7 @@ const PieChartGraphic = ({ data }) => {
           return (
             <div
               key={`${item.label}-${index}`}
-              className="rounded-xl border border-border/70 bg-white/70 px-3 py-2 shadow-sm"
+              className="rounded-xl border border-border/70 bg-card/70 px-3 py-2 shadow-sm"
             >
               <div className="flex items-center justify-between gap-2">
                 <div className="flex min-w-0 items-center gap-2">
@@ -139,22 +139,22 @@ const LineChartGraphic = ({ data }) => {
   return (
     <div className="space-y-2">
       <div className="grid gap-2 grid-cols-3">
-        <div className="rounded-xl border border-border/70 bg-white/70 px-3 py-2 shadow-sm">
+        <div className="rounded-xl border border-border/70 bg-card/70 px-3 py-2 shadow-sm">
           <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">Pic</p>
           <p className="mt-0.5 text-xl font-bold text-foreground">{formatChartValue(maxValue)}</p>
         </div>
-        <div className="rounded-xl border border-border/70 bg-white/70 px-3 py-2 shadow-sm">
+        <div className="rounded-xl border border-border/70 bg-card/70 px-3 py-2 shadow-sm">
           <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">Dernière valeur</p>
           <p className="mt-0.5 text-xl font-bold text-foreground">{formatChartValue(latestValue)}</p>
         </div>
-        <div className="rounded-xl border border-border/70 bg-white/70 px-3 py-2 shadow-sm">
+        <div className="rounded-xl border border-border/70 bg-card/70 px-3 py-2 shadow-sm">
           <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">Variation</p>
-          <p className={`mt-0.5 text-xl font-bold ${delta > 0 ? 'text-red-600' : delta < 0 ? 'text-emerald-600' : 'text-foreground'}`}>
+          <p className={`mt-0.5 text-xl font-bold ${delta > 0 ? 'text-destructive' : delta < 0 ? 'text-success-muted-foreground' : 'text-foreground'}`}>
             {deltaLabel}
           </p>
         </div>
       </div>
-      <div className="overflow-x-auto rounded-xl border border-border/70 bg-white/70 p-2 shadow-sm">
+      <div className="overflow-x-auto rounded-xl border border-border/70 bg-card/70 p-2 shadow-sm">
         <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="h-48 min-w-[580px] w-full">
           <defs>
             <linearGradient id="analytics-line-fill" x1="0" x2="0" y1="0" y2="1">
@@ -217,7 +217,7 @@ const BarChartGraphic = ({ data }) => {
         const width = maxValue === 0 ? 0 : (value / maxValue) * 100;
 
         return (
-          <div key={`${item.label}-${index}`} className="rounded-xl border border-border/70 bg-white/70 px-3 py-2 shadow-sm">
+          <div key={`${item.label}-${index}`} className="rounded-xl border border-border/70 bg-card/70 px-3 py-2 shadow-sm">
             <div className="mb-1.5 flex items-center justify-between gap-2">
               <div className="flex min-w-0 items-center gap-2">
                 <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white shadow-sm" style={{ backgroundColor: getChartColor(index) }}>
@@ -253,7 +253,7 @@ const ProgressChartGraphic = ({ data }) => {
 
   return (
     <div className="space-y-2">
-      <div className="rounded-xl border border-border/70 bg-white/70 px-3 py-2 shadow-sm">
+      <div className="rounded-xl border border-border/70 bg-card/70 px-3 py-2 shadow-sm">
         <div className="mb-2 flex items-center justify-between gap-2">
           <div>
             <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">Volume total</p>
@@ -339,7 +339,7 @@ const StatsChartCard = ({ title, description, type = 'pie', data = [] }) => {
   })();
 
   return (
-    <Card className="overflow-hidden border-white/70 bg-white/75 shadow-sm backdrop-blur">
+    <Card className="overflow-hidden">
       <CardHeader className="border-b border-border/60 px-4 py-3">
         <CardTitle className="flex items-center gap-2 text-sm font-semibold text-primary">
           <Icon className="h-4 w-4 shrink-0" />

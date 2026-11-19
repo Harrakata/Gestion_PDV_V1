@@ -107,7 +107,7 @@ const SignatureStep = ({ onSubmit, onReset, isLoading }) => {
       <div className="relative">
         <canvas
           ref={canvasRef}
-          className="w-full h-64 bg-white dark:bg-gray-800 rounded-md border-2 border-primary cursor-crosshair touch-none"
+          className="w-full h-64 bg-card dark:bg-gray-800 rounded-md border-2 border-primary cursor-crosshair touch-none"
           onMouseDown={startDrawing}
           onMouseMove={draw}
           onMouseUp={stopDrawing}
@@ -118,7 +118,7 @@ const SignatureStep = ({ onSubmit, onReset, isLoading }) => {
         />
         
         {!hasSignature && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-gray-400 dark:text-gray-500">
+          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-muted-foreground dark:text-muted-foreground">
             <Edit3 className="h-12 w-12 mb-2" />
             <p>Signez ici</p>
           </div>
@@ -127,7 +127,7 @@ const SignatureStep = ({ onSubmit, onReset, isLoading }) => {
         <Button 
           variant="ghost" 
           size="sm" 
-          className="absolute top-2 right-2 bg-white/80 dark:bg-gray-800/80"
+          className="absolute top-2 right-2 bg-card/80 dark:bg-gray-800/80"
           onClick={clearSignature}
           disabled={isLoading || !hasSignature}
         >

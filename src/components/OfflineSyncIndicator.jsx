@@ -54,10 +54,10 @@ const OfflineSyncIndicator = ({ enabled }) => {
 
   const status = getOfflineSyncStatus({ ...summary, online, syncing });
   const badgeClass = {
-    conflict: 'border-red-300 bg-red-50 text-red-700 hover:bg-red-100',
-    local: 'border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100',
-    pending: 'border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100',
-    synced: 'border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100',
+    conflict: 'border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/10',
+    local: 'border-warning/30 bg-warning-muted text-warning-muted-foreground hover:bg-warning-muted',
+    pending: 'border-info/30 bg-info-muted text-info-muted-foreground hover:bg-info-muted',
+    synced: 'border-success/30 bg-success-muted text-success-muted-foreground hover:bg-success-muted',
   }[status.kind];
   const Icon = syncing ? RefreshCw : status.kind === 'conflict' ? AlertTriangle
     : status.kind === 'local' ? CloudOff : status.kind === 'synced' ? CheckCircle2 : RefreshCw;

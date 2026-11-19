@@ -114,7 +114,7 @@ const MaintenanceAnalyticsSection = ({
   const rankingData = useMemo(() => distributionData.slice(0, 8), [distributionData]);
 
   return (
-    <Card className="shadow-xl glassmorphism">
+    <Card>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between gap-3">
           <CardTitle className="flex items-center gap-2 text-lg text-primary truncate">

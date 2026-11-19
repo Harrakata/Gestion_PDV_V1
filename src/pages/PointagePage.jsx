@@ -111,8 +111,7 @@ const PointagePage = () => {
         animate={{ opacity: 1, y: 0 }}
         className="flex flex-col items-center justify-center min-h-[calc(100vh-12rem)] p-3 md:p-8 text-center"
       >
-        <Card className="relative overflow-hidden w-full max-w-lg border border-primary/20 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur p-4 md:p-8">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+        <Card variant="accent" className="w-full max-w-lg p-4 md:p-8">
           <AlertTriangle className="h-10 w-10 md:h-16 md:w-16 text-primary mx-auto mb-3 md:mb-6" />
           <CardTitle className="text-xl md:text-3xl font-bold text-primary mb-2 md:mb-4">Accès Chef d'Agence Requis</CardTitle>
           <p className="text-sm md:text-lg text-muted-foreground mb-4 md:mb-8">
@@ -138,14 +137,14 @@ const PointagePage = () => {
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-4 p-3 sm:p-4 border-2 border-red-500 bg-red-50 dark:bg-red-900/30 rounded-lg shadow-md"
+          className="mb-4 p-3 sm:p-4 border-2 border-destructive bg-destructive/10 dark:bg-destructive/30 rounded-lg shadow-md"
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <AlertTriangle className="h-5 w-5 sm:h-6 sm:w-6 text-red-500 mr-2" />
+              <AlertTriangle className="h-5 w-5 sm:h-6 sm:w-6 text-destructive mr-2" />
               <div>
-                <h3 className="font-semibold text-red-700 dark:text-red-400">Session en cours d'expiration</h3>
-                <p className="text-xs sm:text-sm text-red-600 dark:text-red-300">{sessionExpirationMessage}</p>
+                <h3 className="font-semibold text-destructive dark:text-destructive">Session en cours d'expiration</h3>
+                <p className="text-xs sm:text-sm text-destructive dark:text-destructive">{sessionExpirationMessage}</p>
               </div>
             </div>
             <Button
@@ -167,8 +166,7 @@ const PointagePage = () => {
         transition={{ duration: 0.5 }}
         className="mb-3 md:mb-6"
       >
-        <Card className="relative overflow-hidden border border-primary/20 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+        <Card variant="accent">
           <CardContent className="relative py-5 px-6">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div>
@@ -211,8 +209,7 @@ const PointagePage = () => {
         transition={{ duration: 0.5, delay: 0.1 }}
         className="mb-3 md:mb-6"
       >
-        <Card className="relative overflow-hidden border border-primary/20 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+        <Card variant="accent">
           <CardHeader className="relative px-3 sm:px-6 pt-3 sm:pt-5 pb-2">
             <div className="flex justify-between items-center">
               <CardTitle className="text-lg sm:text-xl font-semibold text-primary flex items-center">
@@ -270,8 +267,7 @@ const PointagePage = () => {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="md:col-span-2"
         >
-          <Card className="relative overflow-hidden border border-primary/20 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+          <Card variant="accent">
             <CardHeader className="relative px-3 sm:px-6 pt-3 sm:pt-6 pb-2 sm:pb-4">
                 <div className="flex justify-between items-center">
                     <CardTitle className="text-lg sm:text-xl md:text-2xl text-primary">Processus de Pointage</CardTitle>
@@ -295,8 +291,7 @@ const PointagePage = () => {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
         >
-          <Card className="relative overflow-hidden border border-primary/20 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+          <Card variant="accent">
             <CardHeader className="relative px-3 sm:px-6 pt-3 sm:pt-6 pb-2 sm:pb-4">
               <CardTitle className="text-base sm:text-lg md:text-xl text-primary flex items-center">
                 <Info className="mr-2 h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6" /> Statut Quotidien

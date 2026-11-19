@@ -16,7 +16,7 @@ export const PasswordInput = React.forwardRef(({ className, visible, onVisibleCh
   };
 
   return (
-    <div className="relative">
+    <div className="password-field relative">
       <Input
         ref={ref}
         type={isVisible ? 'text' : 'password'}

@@ -56,12 +56,13 @@ const Combobox = ({ options, value, onSelect, placeholder, searchPlaceholder, em
     const isAllMode = values.length === 0;
     const isSelected = (v) => values.includes(v);
 
-    // Label du bouton : "Préposé" si rien sélectionné, "X (3)" si plusieurs, "X" si un seul.
-    const triggerLabel = isAllMode
-      ? (allOption?.label ?? placeholder)
-      : values.length === 1
-        ? (options.find((o) => o.value === values[0])?.label ?? values[0])
-        : `${allOption?.label ?? placeholder} (${values.length})`;
+    // Champ : titre du filtre si rien n'est choisi ; sinon 1re valeur + pastille « +N »
+    // (l'ancien « Sous-ensemble (3) » tronqué ne disait pas CE qui était filtré).
+    const fieldLabel = allOption?.label ?? placeholder;
+    const realOptions = allOption ? options.filter((o) => o !== allOption) : options;
+    const labelOf = (v) => options.find((o) => o.value === v)?.label ?? v;
+    const selectedLabels = values.map(labelOf);
+    const triggerTitle = isAllMode ? fieldLabel : `${fieldLabel} : ${selectedLabels.join(', ')}`;
 
     const toggle = (v) => {
       // Click sur ALL → vider la sélection (équivaut à "tout afficher")
@@ -93,35 +94,60 @@ const Combobox = ({ options, value, onSelect, placeholder, searchPlaceholder, em
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className={cn("w-full justify-between", values.length > 0 && "border-primary/50 bg-primary/5 text-primary")}
+            aria-label={triggerTitle}
+            title={triggerTitle}
+            className={cn("w-full justify-between gap-1", values.length > 0 && "border-primary/50 bg-primary/5 text-primary")}
             disabled={disabled}
           >
-            <span className="truncate">{!isAllMode && valuePrefix}{triggerLabel}</span>
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            <span className="flex min-w-0 items-center gap-1">
+              <span className="truncate">{isAllMode ? fieldLabel : <>{valuePrefix}{selectedLabels[0]}</>}</span>
+              {values.length > 1 && (
+                <span className="shrink-0 rounded-full bg-primary/15 px-1.5 py-px text-[0.65rem] font-bold leading-4 text-primary" aria-hidden="true">
+                  +{values.length - 1}
+                </span>
+              )}
+            </span>
+            <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
           </Button>
         }
       >
           <Command>
             <CommandInput ref={searchInputRef} placeholder={searchPlaceholder} aria-label={searchPlaceholder || 'Rechercher une option'} />
+            {/* « Tout afficher » : action d'en-tête, pas une ligne de liste (la 1re ligne
+                est surlignée par le clavier et paraissait sélectionnée). */}
+            <div className="flex items-center justify-between gap-2 border-b px-3 py-1.5 text-xs">
+              <span className="text-muted-foreground">
+                {isAllMode ? 'Aucun filtre — tout est affiché' : `${values.length} sélectionné(s)`}
+              </span>
+              {!isAllMode && (
+                <button
+                  type="button"
+                  onClick={() => onSelect([])}
+                  className="rounded px-1.5 py-0.5 font-semibold text-primary hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  Tout afficher
+                </button>
+              )}
+            </div>
             <CommandList className="max-h-56 overflow-y-auto">
               <CommandEmpty>{emptyText}</CommandEmpty>
               <CommandGroup>
-                {options.map((option) => {
-                  const isAll = allOption && option.value === allOption.value;
-                  const selected = isAll ? isAllMode : isSelected(option.value);
+                {realOptions.map((option) => {
+                  const selected = isSelected(option.value);
                   return (
                     <CommandItem
                       key={option.value}
                       value={getSearchableValue(option)}
                       onSelect={() => toggle(option.value)}
+                      aria-checked={selected}
                     >
                       <Check
                         className={cn(
-                          "mr-2 h-4 w-4 shrink-0",
+                          "mr-2 h-4 w-4 shrink-0 text-primary",
                           selected ? "opacity-100" : "opacity-0"
                         )}
                       />
-                      <span className={cn("truncate", isAll && "italic text-muted-foreground")}>{option.label}</span>
+                      <span className={cn("truncate", selected && "font-semibold")}>{option.label}</span>
                     </CommandItem>
                   );
                 })}

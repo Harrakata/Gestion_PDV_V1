@@ -156,7 +156,7 @@ const TicketProcessDialog = ({ open, onOpenChange, ticket, mode, actor, spaceKey
           </div>
 
           {ticket.intervention_id ? (
-            <p className="text-xs text-green-700">Intervention de maintenance liée : #{ticket.intervention_id}</p>
+            <p className="text-xs text-success-muted-foreground">Intervention de maintenance liée : #{ticket.intervention_id}</p>
           ) : statut === TICKET_STATUSES.RESOLVED && ticket.terminal_id && ticket.terminal_kind !== 'mobi' ? (
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" className="h-4 w-4 rounded border-input" checked={createInterv} onChange={(e) => setCreateInterv(e.target.checked)} />

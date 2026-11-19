@@ -159,22 +159,23 @@ const ValidationSignatureField = ({
   statusLabel,
   helperText,
 }) => (
-  <div className="space-y-4 rounded-2xl border bg-white p-5 shadow-sm">
-    <div className="flex flex-col gap-3 border-b border-slate-100 pb-4 sm:flex-row sm:items-start sm:justify-between">
+  <div className="space-y-4 rounded-2xl border bg-card p-5 shadow-sm">
+    <div className="flex flex-col gap-3 border-b border-border pb-4 sm:flex-row sm:items-start sm:justify-between">
       <div>
         <h4 className="font-medium text-primary">{title}</h4>
         <p className="text-sm text-muted-foreground">{signerName}</p>
       </div>
-      <span className={`inline-flex w-fit rounded-full px-3 py-1 text-xs font-medium ${signatureValue ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+      <span className={`inline-flex w-fit rounded-full px-3 py-1 text-xs font-medium ${signatureValue ? 'bg-success-muted text-success-muted-foreground' : 'bg-warning-muted text-warning-muted-foreground'}`}>
         {statusLabel}
       </span>
     </div>
 
-    <div className="rounded-xl border bg-slate-50 p-3">
+    <div className="rounded-xl border bg-muted/50 p-3">
       <SignatureCanvas
         ref={signatureRef}
         penColor="#111827"
         canvasProps={{
+          // Fond TOUJOURS blanc (encre foncée), y compris en mode sombre.
           className: 'h-44 w-full rounded-lg bg-white',
         }}
       />
@@ -185,8 +186,8 @@ const ValidationSignatureField = ({
     </p>
 
     {signatureValue && (
-      <div className="rounded-xl border bg-emerald-50/60 p-3">
-        <p className="mb-2 text-xs font-medium uppercase tracking-wide text-emerald-700">Apercu de la signature</p>
+      <div className="rounded-xl border bg-success-muted/60 p-3">
+        <p className="mb-2 text-xs font-medium uppercase tracking-wide text-success-muted-foreground">Apercu de la signature</p>
         <img src={signatureValue} alt={`Signature de ${signerName}`} className="h-24 w-full object-contain" />
       </div>
     )}
@@ -204,16 +205,16 @@ const ValidationSignatureField = ({
 
 const ValidationInfoBlock = ({ label, value, tone = 'default', fullWidth = false }) => {
   const toneClassName = {
-    default: 'border-slate-200 bg-slate-50/70',
-    accent: 'border-blue-200 bg-blue-50/70',
-    success: 'border-emerald-200 bg-emerald-50/70',
-    warning: 'border-amber-200 bg-amber-50/70',
+    default: 'border-border bg-muted/50',
+    accent: 'border-info/30 bg-info-muted/70',
+    success: 'border-success/30 bg-success-muted/70',
+    warning: 'border-warning/30 bg-warning-muted/70',
   }[tone];
 
   return (
     <div className={`${fullWidth ? 'md:col-span-2' : ''} rounded-xl border p-4 ${toneClassName}`}>
       <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
-      <div className="mt-1 text-sm font-medium text-slate-900">{value}</div>
+      <div className="mt-1 text-sm font-medium text-foreground">{value}</div>
     </div>
   );
 };
@@ -1051,7 +1052,7 @@ const MaintenanceTab = ({ technicien }) => {
     toast({
       title: 'Intervention ajoutée',
       description: `${item.sousEnsemble} est prêt pour la validation finale.`,
-      className: 'bg-blue-500 text-white',
+      className: 'bg-primary text-white',
     });
   };
 
@@ -1919,7 +1920,7 @@ const MaintenanceTab = ({ technicien }) => {
         toast({
           title: 'Succès',
           description: 'Intervention enregistrée avec succès',
-          className: "bg-green-500 text-white"
+          className: "bg-success text-white"
         });
       }
 
@@ -2026,7 +2027,7 @@ const MaintenanceTab = ({ technicien }) => {
         description: savedOffline
           ? `Intervention enregistrée localement (${itemsToSave.length} sous-ensemble(s) concerné(s)). Synchronisation automatique au retour de la connexion.`
           : `Intervention enregistrée pour le terminal (${itemsToSave.length} sous-ensemble(s) concerné(s)).`,
-        className: savedOffline ? 'bg-blue-600 text-white' : 'bg-green-500 text-white',
+        className: savedOffline ? 'bg-primary text-white' : 'bg-success text-white',
       });
 
       return savedInterventions;
@@ -2049,7 +2050,7 @@ const MaintenanceTab = ({ technicien }) => {
     toast({
       title: 'Signature enregistrée',
       description: `${signerLabel} a signé la fiche.`,
-      className: 'bg-blue-500 text-white',
+      className: 'bg-primary text-white',
     });
   };
 
@@ -2087,7 +2088,7 @@ const MaintenanceTab = ({ technicien }) => {
       toast({
         title: 'Export alternatif généré',
         description: "L'impression PDF n'a pas pu démarrer. La fiche a été téléchargée en HTML.",
-        className: 'bg-yellow-500 text-white',
+        className: 'bg-warning text-white',
       });
     }
   };
@@ -2212,7 +2213,7 @@ const MaintenanceTab = ({ technicien }) => {
         description: validationFile.storedInSupabase
           ? 'La fiche de validation a été enregistrée et archivée.'
           : 'La fiche a été générée et téléchargée localement.',
-        className: 'bg-green-500 text-white',
+        className: 'bg-success text-white',
       });
     } finally {
       setIsLoading(false);
@@ -2256,9 +2257,9 @@ const MaintenanceTab = ({ technicien }) => {
         animate={{ opacity: 1, y: 0 }}
         className="mt-4"
       >
-        <Card className="shadow-lg glassmorphism">
+        <Card>
         <CardHeader>
-            <CardTitle className="text-xl text-green-600">✅ Intervention Terminée</CardTitle>
+            <CardTitle className="text-xl text-success-muted-foreground">✅ Intervention Terminée</CardTitle>
             <CardDescription>Récapitulatif et validation de l'intervention de maintenance</CardDescription>
         </CardHeader>
           <CardContent className="space-y-4">
@@ -2272,15 +2273,15 @@ const MaintenanceTab = ({ technicien }) => {
             </div>
 
             {recap.validationFile?.publicUrl ? (
-              <div className="flex flex-col items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50/60 p-5 text-center">
-                <CheckCircle2 className="h-8 w-8 text-emerald-600" />
-                <p className="text-sm font-medium text-emerald-800">Fiche d'intervention enregistrée et signée.</p>
+              <div className="flex flex-col items-center gap-2 rounded-2xl border border-success/30 bg-success-muted/60 p-5 text-center">
+                <CheckCircle2 className="h-8 w-8 text-success-muted-foreground" />
+                <p className="text-sm font-medium text-success-muted-foreground">Fiche d'intervention enregistrée et signée.</p>
                 <Button type="button" onClick={() => openFicheInDialog(recap.validationFile.publicUrl)} className="mt-1 gap-2">
                   <FileText className="h-4 w-4" /> Voir la fiche d'intervention
                 </Button>
               </div>
             ) : (
-              <p className="rounded-xl border bg-slate-50 p-4 text-sm text-muted-foreground">
+              <p className="rounded-xl border bg-muted/50 p-4 text-sm text-muted-foreground">
                 La fiche d'intervention n'est pas disponible pour le moment.
               </p>
             )}
@@ -2327,8 +2328,7 @@ const MaintenanceTab = ({ technicien }) => {
       animate={{ opacity: 1, y: 0 }}
       className="mt-4 space-y-6"
     >
-      <Card className="relative overflow-hidden border border-primary/20 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+      <Card variant="accent">
         <CardHeader className="relative">
           <CardTitle className="flex items-center text-3xl font-bold text-primary">
             <ClipboardList className="mr-3 h-8 w-8" />
@@ -2371,7 +2371,7 @@ const MaintenanceTab = ({ technicien }) => {
         />
       </div>
 
-      <Card className="shadow-lg glassmorphism">
+      <Card>
       <CardHeader>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
             <div>
@@ -2386,12 +2386,12 @@ const MaintenanceTab = ({ technicien }) => {
                   <Building2 className="h-3 w-3" />
                   {selectedAgence.nom}
                 </span>
-                <span className="inline-flex items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 font-medium text-blue-700">
+                <span className="inline-flex items-center gap-1 rounded-full border border-info/30 bg-info-muted px-3 py-1 font-medium text-info-muted-foreground">
                   <Wrench className="h-3 w-3" />
                   {selectedTerminal.reference}
                 </span>
                 {form.sousEnsemble && (
-                  <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 font-medium text-emerald-700">
+                  <span className="inline-flex items-center gap-1 rounded-full border border-success/30 bg-success-muted px-3 py-1 font-medium text-success-muted-foreground">
                     <ClipboardList className="h-3 w-3" />
                     {form.sousEnsemble}
                   </span>
@@ -2488,9 +2488,9 @@ const MaintenanceTab = ({ technicien }) => {
                   <p className="text-xs text-muted-foreground">En curatif, sélectionnez le sous-ensemble concerné par la panne.</p>
                 </div>
               ) : (
-                <div className="rounded-2xl border border-emerald-100 bg-emerald-50/50 p-4">
-                  <p className="font-medium text-emerald-800">Maintenance préventive — tous les sous-ensembles</p>
-                  <p className="text-sm text-emerald-700">
+                <div className="rounded-2xl border border-success/30 bg-success-muted/50 p-4">
+                  <p className="font-medium text-success-muted-foreground">Maintenance préventive — tous les sous-ensembles</p>
+                  <p className="text-sm text-success-muted-foreground">
                     En préventif, l'intervention couvre automatiquement tous les sous-ensembles du terminal ; aucun sous-ensemble à sélectionner ici.
                   </p>
                 </div>
@@ -2580,7 +2580,7 @@ const MaintenanceTab = ({ technicien }) => {
                 {/* Type choisi à l'étape 1 — rappel en lecture seule */}
                 <div className="flex flex-wrap items-center gap-2 text-sm">
                   <span className="text-muted-foreground">Type d'intervention :</span>
-                  <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${form.typeIntervention === 'curative' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                  <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${form.typeIntervention === 'curative' ? 'bg-warning-muted text-warning-muted-foreground' : 'bg-success-muted text-success-muted-foreground'}`}>
                     {form.typeIntervention === 'curative' ? 'Curative (Réparation)' : 'Préventive (Maintenance)'}
                   </span>
                   <button type="button" onClick={() => setStep(1)} className="text-xs text-primary underline">Modifier</button>
@@ -2604,22 +2604,22 @@ const MaintenanceTab = ({ technicien }) => {
                       />
                     </div>
 
-                    <div className="rounded-2xl border border-emerald-100 bg-emerald-50/50 p-4">
-                      <p className="font-medium text-emerald-800">Tous les sous-ensembles du terminal seront inclus</p>
-                      <p className="mb-3 text-sm text-emerald-700">
+                    <div className="rounded-2xl border border-success/30 bg-success-muted/50 p-4">
+                      <p className="font-medium text-success-muted-foreground">Tous les sous-ensembles du terminal seront inclus</p>
+                      <p className="mb-3 text-sm text-success-muted-foreground">
                         La maintenance préventive s'applique automatiquement à chaque sous-ensemble du terminal {selectedTerminal?.reference || ''}.
                       </p>
                       {sousEnsemblesOptions.length > 0 ? (
                         <div className="flex flex-wrap gap-2">
                           {sousEnsemblesOptions.map((opt) => (
-                            <span key={opt.value} className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-white px-3 py-1 text-xs font-medium text-emerald-700">
+                            <span key={opt.value} className="inline-flex items-center gap-1 rounded-full border border-success/30 bg-card px-3 py-1 text-xs font-medium text-success-muted-foreground">
                               <ClipboardList className="h-3 w-3" />
                               {opt.label}
                             </span>
                           ))}
                         </div>
                       ) : (
-                        <p className="text-sm text-red-600">Aucun sous-ensemble enregistré pour ce terminal.</p>
+                        <p className="text-sm text-destructive">Aucun sous-ensemble enregistré pour ce terminal.</p>
                       )}
                     </div>
 
@@ -2652,7 +2652,7 @@ const MaintenanceTab = ({ technicien }) => {
                         Ajoutez une ligne par sous-ensemble traité avant de passer à la signature.
                       </p>
                       {currentSousEnsembleAlreadyPrepared && (
-                        <p className="text-xs font-medium text-red-600">
+                        <p className="text-xs font-medium text-destructive">
                           Ce sous-ensemble est déjà ajouté à cette intervention.
                         </p>
                       )}
@@ -2730,7 +2730,7 @@ const MaintenanceTab = ({ technicien }) => {
                       )}
                     </div>
 
-                    <div className="flex flex-col gap-3 rounded-2xl border border-blue-100 bg-blue-50/50 p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex flex-col gap-3 rounded-2xl border border-info/30 bg-info-muted/50 p-4 sm:flex-row sm:items-center sm:justify-between">
                       <div>
                         <p className="font-medium text-primary">Intervenir sur un autre sous-ensemble</p>
                         <p className="text-sm text-muted-foreground">
@@ -2744,8 +2744,8 @@ const MaintenanceTab = ({ technicien }) => {
                     </div>
 
                     {interventionItems.length > 0 && (
-                      <div className="overflow-hidden rounded-2xl border bg-white shadow-sm">
-                        <div className="border-b bg-slate-50 px-4 py-3">
+                      <div className="overflow-hidden rounded-2xl border bg-card shadow-sm">
+                        <div className="border-b bg-muted/50 px-4 py-3">
                           <p className="font-medium text-primary">Sous-ensembles préparés</p>
                           <p className="text-sm text-muted-foreground">
                             {interventionItems.length} sous-ensemble(s) seront inclus dans l'intervention du terminal.
@@ -2783,7 +2783,7 @@ const MaintenanceTab = ({ technicien }) => {
                                     disabled={isLoading}
                                     title="Retirer cette intervention"
                                   >
-                                    <Trash2 className="h-4 w-4 text-red-500" />
+                                    <Trash2 className="h-4 w-4 text-destructive" />
                                   </Button>
                                 </TableCell>
                               </TableRow>
@@ -2809,31 +2809,31 @@ const MaintenanceTab = ({ technicien }) => {
                     </span>
                     <h3 className="text-base font-semibold tracking-tight text-primary truncate">Validation de l'intervention</h3>
                   </div>
-                  <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600">
-                    <div className="rounded-lg border border-white/70 bg-white/90 px-3 py-1.5">
+                  <div className="flex flex-wrap items-center gap-3 text-xs text-foreground/80">
+                    <div className="rounded-lg border border-white/70 bg-card/90 px-3 py-1.5">
                       <span className="text-muted-foreground uppercase tracking-wide mr-1.5">Date</span>
                       <span className="font-medium">{formatValidationDate()}</span>
                     </div>
-                    <div className="rounded-lg border border-white/70 bg-white/90 px-3 py-1.5">
+                    <div className="rounded-lg border border-white/70 bg-card/90 px-3 py-1.5">
                       <span className="text-muted-foreground uppercase tracking-wide mr-1.5">Agence</span>
                       <span className="font-medium">{selectedAgence?.nom || "N/A"}</span>
                     </div>
-                    <div className="rounded-lg border border-white/70 bg-white/90 px-3 py-1.5">
+                    <div className="rounded-lg border border-white/70 bg-card/90 px-3 py-1.5">
                       <span className="text-muted-foreground uppercase tracking-wide mr-1.5">État</span>
-                      <span className={`font-medium ${chefAgence ? 'text-emerald-700' : 'text-amber-700'}`}>{validationStatusText}</span>
+                      <span className={`font-medium ${chefAgence ? 'text-success-muted-foreground' : 'text-warning-muted-foreground'}`}>{validationStatusText}</span>
                     </div>
                   </div>
                 </div>
               </div>
 
               <div className="grid gap-6 xl:grid-cols-[1.5fr_0.95fr]">
-                <div className="rounded-2xl border bg-white p-6 shadow-sm">
-                  <div className="mb-5 flex flex-col gap-3 border-b border-slate-100 pb-5 md:flex-row md:items-start md:justify-between">
+                <div className="rounded-2xl border bg-card p-6 shadow-sm">
+                  <div className="mb-5 flex flex-col gap-3 border-b border-border pb-5 md:flex-row md:items-start md:justify-between">
                     <div>
                       <h4 className="text-xl font-semibold text-primary">Fiche de validation d'intervention</h4>
                       <p className="text-sm text-muted-foreground">Mise en page resserrée pour lecture et impression</p>
                     </div>
-                    <div className="rounded-2xl border bg-slate-50 px-4 py-3 text-sm text-muted-foreground">
+                    <div className="rounded-2xl border bg-muted/50 px-4 py-3 text-sm text-muted-foreground">
                       <p><strong>Terminal :</strong> {selectedTerminal?.reference || 'N/A'}</p>
                       <p><strong>Sous-ensembles concernés :</strong> {validationInterventionItems.length}</p>
                     </div>
@@ -2842,7 +2842,7 @@ const MaintenanceTab = ({ technicien }) => {
                   <div className="space-y-6">
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <h5 className="text-sm font-semibold uppercase tracking-wide text-slate-700">Contexte</h5>
+                        <h5 className="text-sm font-semibold uppercase tracking-wide text-foreground/80">Contexte</h5>
                         <span className="text-xs text-muted-foreground">Document pret a signer</span>
                       </div>
                       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -2854,7 +2854,7 @@ const MaintenanceTab = ({ technicien }) => {
                     </div>
 
                     <div className="space-y-3">
-                      <h5 className="text-sm font-semibold uppercase tracking-wide text-slate-700">Interventions à valider</h5>
+                      <h5 className="text-sm font-semibold uppercase tracking-wide text-foreground/80">Interventions à valider</h5>
                       <div className="overflow-x-auto rounded-xl border">
                         <Table>
                           <TableHeader>
@@ -2887,36 +2887,36 @@ const MaintenanceTab = ({ technicien }) => {
                 </div>
 
                 <div className="space-y-4">
-                  <div className="rounded-2xl border bg-white p-5 shadow-sm">
+                  <div className="rounded-2xl border bg-card p-5 shadow-sm">
                     <div className="mb-4 flex items-center justify-between">
                       <h4 className="text-base font-semibold text-primary">Acteurs de validation</h4>
-                      <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${validationReadyCount === 2 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                      <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${validationReadyCount === 2 ? 'bg-success-muted text-success-muted-foreground' : 'bg-warning-muted text-warning-muted-foreground'}`}>
                         {validationReadyCount}/2 signes
                       </span>
                     </div>
 
                     <div className="space-y-3">
-                      <div className="rounded-xl border bg-slate-50/80 p-4">
+                      <div className="rounded-xl border bg-muted/50 p-4">
                         <p className="text-xs uppercase tracking-wide text-muted-foreground">Technicien</p>
-                        <p className="mt-1 font-medium text-slate-900">{technicien?.prenom} {technicien?.nom}</p>
+                        <p className="mt-1 font-medium text-foreground">{technicien?.prenom} {technicien?.nom}</p>
                         <p className="text-sm text-muted-foreground">{technicien?.matricule || 'Sans matricule'}</p>
-                        <p className={`mt-2 text-xs font-medium ${technicienSignature ? 'text-emerald-700' : 'text-amber-700'}`}>
+                        <p className={`mt-2 text-xs font-medium ${technicienSignature ? 'text-success-muted-foreground' : 'text-warning-muted-foreground'}`}>
                           {technicienSignature ? 'Signature validee' : 'Signature en attente'}
                         </p>
                       </div>
 
-                      <div className="rounded-xl border bg-slate-50/80 p-4">
+                      <div className="rounded-xl border bg-muted/50 p-4">
                         <p className="text-xs uppercase tracking-wide text-muted-foreground">Chef d'agence</p>
                         {chefAgence ? (
                           <>
-                            <p className="mt-1 font-medium text-slate-900">{chefAgence.prenom} {chefAgence.nom}</p>
+                            <p className="mt-1 font-medium text-foreground">{chefAgence.prenom} {chefAgence.nom}</p>
                             <p className="text-sm text-muted-foreground">{chefAgence.matricule || chefAgence.codePDV || 'Aucune reference'}</p>
-                            <p className={`mt-2 text-xs font-medium ${chefAgenceSignature ? 'text-emerald-700' : 'text-amber-700'}`}>
+                            <p className={`mt-2 text-xs font-medium ${chefAgenceSignature ? 'text-success-muted-foreground' : 'text-warning-muted-foreground'}`}>
                               {chefAgenceSignature ? 'Signature validee' : 'Signature en attente'}
                             </p>
                           </>
                         ) : (
-                          <p className="mt-2 text-sm leading-6 text-red-600">
+                          <p className="mt-2 text-sm leading-6 text-destructive">
                             Aucun chef d'agence n'est actuellement associe a l'agence selectionnee.
                           </p>
                         )}
@@ -2924,30 +2924,30 @@ const MaintenanceTab = ({ technicien }) => {
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border bg-white p-5 shadow-sm">
+                  <div className="rounded-2xl border bg-card p-5 shadow-sm">
                     <h4 className="mb-4 text-base font-semibold text-primary">Etat du dossier</h4>
-                    <div className="space-y-3 text-sm text-slate-700">
-                      <div className="flex items-start justify-between gap-3 rounded-xl border bg-slate-50/80 px-4 py-3">
+                    <div className="space-y-3 text-sm text-foreground/80">
+                      <div className="flex items-start justify-between gap-3 rounded-xl border bg-muted/50 px-4 py-3">
                         <span>Fiche de validation</span>
-                        <span className="font-medium text-emerald-700">Prete</span>
+                        <span className="font-medium text-success-muted-foreground">Prete</span>
                       </div>
-                      <div className="flex items-start justify-between gap-3 rounded-xl border bg-slate-50/80 px-4 py-3">
+                      <div className="flex items-start justify-between gap-3 rounded-xl border bg-muted/50 px-4 py-3">
                         <span>Signatures</span>
-                        <span className={`font-medium ${validationReadyCount === 2 ? 'text-emerald-700' : 'text-amber-700'}`}>
+                        <span className={`font-medium ${validationReadyCount === 2 ? 'text-success-muted-foreground' : 'text-warning-muted-foreground'}`}>
                           {validationStatusText}
                         </span>
                       </div>
-                      <div className="flex items-start justify-between gap-3 rounded-xl border bg-slate-50/80 px-4 py-3">
+                      <div className="flex items-start justify-between gap-3 rounded-xl border bg-muted/50 px-4 py-3">
                         <span>Sortie du document</span>
-                        <span className="font-medium text-slate-900">PDF ou archivage</span>
+                        <span className="font-medium text-foreground">PDF ou archivage</span>
                       </div>
                     </div>
                   </div>
 
                   {savedValidationFile?.fileName && (
-                    <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 text-sm shadow-sm">
-                      <p className="font-medium text-emerald-800">Derniere fiche preparee</p>
-                      <p className="mt-2 break-words text-emerald-900">{savedValidationFile.fileName}</p>
+                    <div className="rounded-2xl border border-success/30 bg-success-muted p-5 text-sm shadow-sm">
+                      <p className="font-medium text-success-muted-foreground">Derniere fiche preparee</p>
+                      <p className="mt-2 break-words text-success-muted-foreground">{savedValidationFile.fileName}</p>
                       {savedValidationFile.publicUrl && (
                         <button
                           type="button"
@@ -2970,7 +2970,7 @@ const MaintenanceTab = ({ technicien }) => {
                       Les deux signatures sont requises avant l'enregistrement definitif.
                     </p>
                   </div>
-                  <span className={`inline-flex w-fit rounded-full px-3 py-1 text-xs font-medium ${validationReadyCount === 2 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                  <span className={`inline-flex w-fit rounded-full px-3 py-1 text-xs font-medium ${validationReadyCount === 2 ? 'bg-success-muted text-success-muted-foreground' : 'bg-warning-muted text-warning-muted-foreground'}`}>
                     {validationReadyCount === 2 ? 'Validation complete' : 'Validation en cours'}
                   </span>
                 </div>
@@ -3064,7 +3064,7 @@ const MaintenanceTab = ({ technicien }) => {
     {geoWarn && (
       <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
         <div className="w-full max-w-md rounded-xl border bg-background p-5 shadow-2xl">
-          <h3 className="flex items-center gap-2 text-lg font-semibold text-amber-600">
+          <h3 className="flex items-center gap-2 text-lg font-semibold text-warning-muted-foreground">
             <AlertTriangle className="h-5 w-5" /> Hors de la zone de l'agence
           </h3>
           <p className="mt-2 text-sm text-muted-foreground">

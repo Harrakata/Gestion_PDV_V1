@@ -17,8 +17,7 @@ const EtatCaissePage = () => {
       transition={{ duration: 0.4 }}
       className="space-y-6"
     >
-      <Card className="relative overflow-hidden border border-primary/20 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+      <Card variant="accent">
         <CardHeader>
           <CardTitle className="flex items-center text-2xl font-bold text-primary">
             <Wallet className="mr-3 h-7 w-7" /> État de Caisse

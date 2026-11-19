@@ -76,8 +76,8 @@ const formatOptionalDate = (value) => (value ? formatDisplayDate(value) : 'N/A')
 
 const getStatusBadgeClass = (status) =>
   status === 'Actif'
-    ? 'border-green-200 bg-green-50 text-green-700'
-    : 'border-slate-200 bg-slate-100 text-slate-700';
+    ? 'border-success/30 bg-success-muted text-success-muted-foreground'
+    : 'border-border bg-muted text-foreground/80';
 
 const getPointRequestScope = (pointVente) =>
   [
@@ -437,7 +437,7 @@ const PointsVenteMobiChefPage = () => {
       toast({
         title: 'Demande envoyée',
         description: `La modification du point de vente ${selectedPointVente.codePointVente} a été transmise à l’exploitation.`,
-        className: 'bg-green-500 text-white',
+        className: 'bg-success text-white',
       });
       setIsEditDialogOpen(false);
       setSelectedPointVente(null);
@@ -459,7 +459,7 @@ const PointsVenteMobiChefPage = () => {
       toast({
         title: 'Suivi Mobi actualisé',
         description: `${data?.upserted ?? 0} ligne(s) quotidienne(s) synchronisée(s).`,
-        className: 'bg-green-500 text-white',
+        className: 'bg-success text-white',
       });
     } catch (cause) {
       await loadSuiviData();
@@ -477,8 +477,7 @@ const PointsVenteMobiChefPage = () => {
 
   return (
     <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-      <Card className="relative overflow-hidden border border-primary/20 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+      <Card variant="accent">
         <CardHeader>
           <CardTitle className="flex items-center text-3xl font-bold text-primary">
             <MapPin className="mr-3 h-8 w-8" />
@@ -522,8 +521,7 @@ const PointsVenteMobiChefPage = () => {
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[340px_1fr] lg:items-start">
-        <Card className="relative overflow-hidden border border-primary/20 bg-white/90 shadow-xl backdrop-blur lg:order-1">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+        <Card variant="accent" className="lg:order-1">
           <CardHeader className="relative space-y-3">
             <div className="flex items-start justify-between gap-2">
               <div>
@@ -549,7 +547,7 @@ const PointsVenteMobiChefPage = () => {
                     const isStale = diffH >= 6;
 
                     return (
-                      <span className={`text-[10px] ${isStale ? 'font-medium text-amber-600' : 'text-muted-foreground'}`}>
+                      <span className={`text-[10px] ${isStale ? 'font-medium text-warning-muted-foreground' : 'text-muted-foreground'}`}>
                         Données : {diffH === 0 ? '< 1 h' : `${diffH} h`}
                       </span>
                     );
@@ -633,8 +631,7 @@ const PointsVenteMobiChefPage = () => {
           </CardContent>
         </Card>
 
-        <Card className="relative overflow-hidden border border-primary/20 bg-white/90 shadow-xl backdrop-blur lg:order-2">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+        <Card variant="accent" className="lg:order-2">
           <CardHeader className="relative">
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -714,8 +711,8 @@ const PointsVenteMobiChefPage = () => {
                         {
                           label: 'Dern. utilisation',
                           value: formatDisplayDate(terminalSuivi.derniere_utilisation),
-                          border: 'border-l-blue-400',
-                          text: 'text-blue-700',
+                          border: 'border-l-info',
+                          text: 'text-info-muted-foreground',
                         },
                         {
                           label: 'Dern. proposé',
@@ -726,14 +723,14 @@ const PointsVenteMobiChefPage = () => {
                         {
                           label: 'Hors service',
                           value: terminalSuivi.hors_service != null ? `${terminalSuivi.hors_service} j` : 'N/A',
-                          border: 'border-l-amber-400',
-                          text: 'text-amber-700',
+                          border: 'border-l-warning',
+                          text: 'text-warning-muted-foreground',
                         },
                         {
                           label: 'Age utilisation',
                           value: terminalSuivi.age_d_utilisation != null ? `${terminalSuivi.age_d_utilisation} j` : 'N/A',
-                          border: 'border-l-emerald-400',
-                          text: 'text-emerald-700',
+                          border: 'border-l-success',
+                          text: 'text-success-muted-foreground',
                         },
                       ].map(({ label, value, border, text }) => (
                         <div key={label} className={`rounded-md border border-l-4 bg-muted/20 px-3 py-2 ${border}`}>
@@ -753,7 +750,7 @@ const PointsVenteMobiChefPage = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="gap-1.5 text-blue-500 hover:text-blue-700"
+                    className="gap-1.5 text-info hover:text-info-muted-foreground"
                     onClick={() => openEditDialog(selectedActivePoint)}
                     disabled={isLoading}
                   >
@@ -783,7 +780,7 @@ const PointsVenteMobiChefPage = () => {
         </Card>
       </div>
 
-      <Card className="shadow-xl glassmorphism">
+      <Card>
         <CardHeader>
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
@@ -882,7 +879,7 @@ const PointsVenteMobiChefPage = () => {
                             openEditDialog(pointVente);
                           }}
                           title="Modifier le point de vente"
-                          className="rounded-md p-1.5 text-blue-500 transition-colors hover:bg-blue-50 hover:text-blue-700"
+                          className="rounded-md p-1.5 text-info transition-colors hover:bg-info-muted hover:text-info-muted-foreground"
                         >
                           <Edit className="h-4 w-4" />
                         </button>
@@ -907,7 +904,7 @@ const PointsVenteMobiChefPage = () => {
         </CardContent>
       </Card>
 
-      <Card className="shadow-xl glassmorphism">
+      <Card>
         <CardHeader>
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
@@ -916,14 +913,14 @@ const PointsVenteMobiChefPage = () => {
                 Suivi des demandes envoyées à l’exploitation pour les points de vente de votre agence.
               </CardDescription>
             </div>
-            <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">
+            <Badge variant="outline" className="border-warning/30 bg-warning-muted text-warning-muted-foreground">
               En attente : {pendingRequestsCount}
             </Badge>
           </div>
         </CardHeader>
         <CardContent>
           {isRequestTableMissing ? (
-            <p className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+            <p className="rounded-md border border-warning/30 bg-warning-muted p-3 text-sm text-warning-muted-foreground">
               La table points_vente_mobi_change_requests n’existe pas encore dans Supabase.
             </p>
           ) : (
@@ -1065,7 +1062,7 @@ const PointsVenteMobiChefPage = () => {
       })()}
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-xl glassmorphism">
+        <DialogContent className="sm:max-w-xl">
           <DialogHeader>
             <DialogTitle className="text-primary">Modifier le point de vente</DialogTitle>
             <DialogDescription>

@@ -6,18 +6,18 @@ import {
 
 // Accent de colonne par statut (point + barre d'en-tête).
 const COLUMNS = [
-  { key: TICKET_STATUSES.OPEN, label: 'Ouvert', dot: 'bg-blue-500', bar: 'from-blue-500/70', head: 'text-blue-700' },
-  { key: TICKET_STATUSES.IN_PROGRESS, label: 'En cours', dot: 'bg-amber-500', bar: 'from-amber-500/70', head: 'text-amber-700' },
-  { key: TICKET_STATUSES.RESOLVED, label: 'Résolu', dot: 'bg-emerald-500', bar: 'from-emerald-500/70', head: 'text-emerald-700' },
-  { key: TICKET_STATUSES.CLOSED, label: 'Clôturé', dot: 'bg-slate-400', bar: 'from-slate-400/70', head: 'text-slate-600' },
+  { key: TICKET_STATUSES.OPEN, label: 'Ouvert', dot: 'bg-primary', bar: 'from-blue-500/70', head: 'text-info-muted-foreground' },
+  { key: TICKET_STATUSES.IN_PROGRESS, label: 'En cours', dot: 'bg-warning', bar: 'from-amber-500/70', head: 'text-warning-muted-foreground' },
+  { key: TICKET_STATUSES.RESOLVED, label: 'Résolu', dot: 'bg-success', bar: 'from-emerald-500/70', head: 'text-success-muted-foreground' },
+  { key: TICKET_STATUSES.CLOSED, label: 'Clôturé', dot: 'bg-slate-400', bar: 'from-slate-400/70', head: 'text-foreground/80' },
 ];
 
 // Couleur d'accent de carte (bordure gauche) + pastille selon la priorité.
 const PRIORITY_ACCENT = {
-  urgente: { border: 'border-l-red-500', pill: 'bg-red-100 text-red-700' },
-  haute: { border: 'border-l-orange-500', pill: 'bg-orange-100 text-orange-700' },
-  normale: { border: 'border-l-sky-400', pill: 'bg-sky-100 text-sky-700' },
-  basse: { border: 'border-l-slate-300', pill: 'bg-slate-100 text-slate-600' },
+  urgente: { border: 'border-l-destructive', pill: 'bg-destructive/10 text-destructive' },
+  haute: { border: 'border-l-warning', pill: 'bg-warning-muted text-warning-muted-foreground' },
+  normale: { border: 'border-l-info', pill: 'bg-info-muted text-info-muted-foreground' },
+  basse: { border: 'border-l-border', pill: 'bg-muted text-foreground/80' },
 };
 
 const initials = (name) =>
@@ -138,7 +138,7 @@ const TicketsKanban = ({ rows = [], onCardClick, onStatusChange }) => {
                             </span>
                           ) : <span />}
                           {overdue && (
-                            <span className="inline-flex items-center gap-0.5 rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-semibold text-red-700">
+                            <span className="inline-flex items-center gap-0.5 rounded-full bg-destructive/10 px-1.5 py-0.5 text-[10px] font-semibold text-destructive">
                               <AlertTriangle className="h-3 w-3" /> Retard
                             </span>
                           )}

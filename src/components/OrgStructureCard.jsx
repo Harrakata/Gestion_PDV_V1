@@ -57,7 +57,7 @@ const MiniSwitch = ({ checked, onClick, disabled, busy }) => (
   >
     <span
       className={[
-        'inline-flex h-4 w-4 items-center justify-center rounded-full bg-white shadow transition-transform',
+        'inline-flex h-4 w-4 items-center justify-center rounded-full bg-card shadow transition-transform',
         checked ? 'translate-x-4' : 'translate-x-0.5',
       ].join(' ')}
     >
@@ -72,17 +72,17 @@ const SpaceChip = ({ spaceKey, enabled, onToggle, disabled, busy, hint }) => (
     className={[
       'flex items-center justify-between gap-3 rounded-xl border px-3 py-2 transition-colors',
       disabled
-        ? 'border-slate-200 bg-slate-50/60 opacity-70'
+        ? 'border-border bg-muted/50 opacity-70'
         : enabled
           ? 'border-primary/20 bg-primary/[0.04]'
-          : 'border-slate-200 bg-background/60',
+          : 'border-border bg-background/60',
     ].join(' ')}
   >
-    <span className="flex items-center gap-2 text-xs font-medium text-slate-700">
+    <span className="flex items-center gap-2 text-xs font-medium text-foreground/80">
       <span
         className={[
           'flex h-6 w-6 items-center justify-center rounded-lg',
-          enabled && !disabled ? 'bg-primary/10 text-primary' : 'bg-slate-200 text-slate-500',
+          enabled && !disabled ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground',
         ].join(' ')}
       >
         {SPACE_ICONS[spaceKey]}
@@ -102,13 +102,13 @@ const ManageTabChip = ({ tabKey, label, enabled, onToggle, disabled, busy }) => 
     className={[
       'inline-flex items-center gap-2 rounded-lg border px-2 py-1 transition-colors',
       disabled
-        ? 'border-slate-200 bg-slate-50/60 opacity-70'
+        ? 'border-border bg-muted/50 opacity-70'
         : enabled
           ? 'border-primary/20 bg-primary/[0.04]'
-          : 'border-slate-200 bg-background/60',
+          : 'border-border bg-background/60',
     ].join(' ')}
   >
-    <span className="text-[11px] font-medium text-slate-700">{label || tabLabel(tabKey)}</span>
+    <span className="text-[11px] font-medium text-foreground/80">{label || tabLabel(tabKey)}</span>
     <MiniSwitch checked={enabled} onClick={onToggle} disabled={disabled} busy={busy} />
   </div>
 );
@@ -144,7 +144,7 @@ const Node = ({ icon, title, subtitle, badge, disabled = false, accent = false, 
     className={[
       'relative w-full max-w-md rounded-2xl border p-4 shadow-sm transition-all duration-300',
       disabled
-        ? 'border-dashed border-slate-300 bg-slate-50/70 opacity-80'
+        ? 'border-dashed border-border bg-muted/50 opacity-80'
         : accent
           ? 'border-primary/30 bg-primary/[0.04]'
           : 'border-primary/20 bg-primary/[0.04]',
@@ -154,14 +154,14 @@ const Node = ({ icon, title, subtitle, badge, disabled = false, accent = false, 
       <div
         className={[
           'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors',
-          disabled ? 'bg-slate-200 text-slate-500' : 'bg-primary/10 text-primary',
+          disabled ? 'bg-muted text-muted-foreground' : 'bg-primary/10 text-primary',
         ].join(' ')}
       >
         {icon}
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <p className={['font-semibold', disabled ? 'text-slate-500' : 'text-slate-900'].join(' ')}>{title}</p>
+          <p className={['font-semibold', disabled ? 'text-muted-foreground' : 'text-foreground'].join(' ')}>{title}</p>
           {badge}
         </div>
         {subtitle ? <p className="mt-0.5 text-xs text-muted-foreground">{subtitle}</p> : null}
@@ -178,7 +178,7 @@ const Connector = ({ dashed = false, muted = false, label }) => (
       className={[
         'absolute inset-y-0 border-l-2',
         dashed ? 'border-dashed' : '',
-        muted ? 'border-slate-300' : 'border-primary/40',
+        muted ? 'border-border' : 'border-primary/40',
       ].join(' ')}
     />
     {label ? (
@@ -222,7 +222,7 @@ const OrgStructureCard = ({
     setPending(key);
     try {
       await setOrgStructure(partial);
-      toast({ title: 'Structure mise à jour', className: 'bg-green-500 text-white' });
+      toast({ title: 'Structure mise à jour', className: 'bg-success text-white' });
     } catch (error) {
       toast({ title: 'Erreur de sauvegarde', description: describeError(error, 'OrgStructureCard'), variant: 'destructive' });
     }
@@ -255,7 +255,7 @@ const OrgStructureCard = ({
   // Bloc « Création & gestion » : liste d'onglets d'exploitation rattachés au niveau.
   // Chaque item peut être une clé d'onglet (string) ou { key, label } pour un libellé dédié.
   const renderManage = (items, { disabled = false } = {}) => (
-    <div className="rounded-xl border border-slate-100 bg-slate-50/60 p-2">
+    <div className="rounded-xl border border-border bg-muted/50 p-2">
       <p className="mb-1.5 flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
         <Pencil className="h-3 w-3" /> Création &amp; gestion
       </p>
@@ -280,7 +280,7 @@ const OrgStructureCard = ({
   );
 
   return (
-    <Card className="shadow-xl glassmorphism">
+    <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-2xl text-primary">
           <Network className="h-6 w-6" /> Structure organisationnelle
@@ -328,7 +328,7 @@ const OrgStructureCard = ({
               <Layers className="h-3.5 w-3.5" /> Administration
             </p>
             <div className="flex items-center justify-between gap-3 rounded-xl border border-primary/20 bg-primary/[0.03] px-3 py-2">
-              <span className="flex items-center gap-2 text-xs font-medium text-slate-700">
+              <span className="flex items-center gap-2 text-xs font-medium text-foreground/80">
                 <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-primary/10 text-primary">
                   <ShieldCheck className="h-3.5 w-3.5" />
                 </span>
@@ -379,8 +379,8 @@ const OrgStructureCard = ({
                 variant="outline"
                 className={
                   secteurEnabled
-                    ? 'border-green-200 bg-green-50 text-green-700'
-                    : 'border-slate-200 bg-slate-100 text-slate-600'
+                    ? 'border-success/30 bg-success-muted text-success-muted-foreground'
+                    : 'border-border bg-muted text-foreground/80'
                 }
               >
                 {secteurEnabled ? 'Actif' : 'Inactif'}

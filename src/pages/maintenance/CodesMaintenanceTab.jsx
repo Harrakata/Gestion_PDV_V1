@@ -15,8 +15,7 @@ import { AlertTriangle, Edit, Plus, Trash2, Wrench, Zap } from 'lucide-react';
 const DEFAULT_FORM = { code: '', libelle: '', descriptif: '' };
 
 const CodeTable = ({ title, description, icon, rows, canManage, onAdd, onEdit, onDelete, isLoading }) => (
-  <Card className="relative overflow-hidden shadow-lg">
-    <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+  <Card variant="accent">
     <CardHeader className="relative">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -55,10 +54,10 @@ const CodeTable = ({ title, description, icon, rows, canManage, onAdd, onEdit, o
               {canManage && (
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-1">
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-blue-500" onClick={() => onEdit(row)}>
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-info" onClick={() => onEdit(row)}>
                       <Edit className="h-3.5 w-3.5" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => onDelete(row)}>
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => onDelete(row)}>
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   </div>
@@ -81,7 +80,7 @@ const CodesMaintenanceTab = ({ canManage = true }) => {
 
   const [dialogState, setDialogState] = useState({ open: false, table: null, editing: null, form: DEFAULT_FORM });
 
-  const showOk = (msg) => toast({ title: msg, className: 'bg-green-500 text-white' });
+  const showOk = (msg) => toast({ title: msg, className: 'bg-success text-white' });
   const showErr = (msg) => toast({ title: 'Erreur', description: msg, variant: 'destructive' });
 
   const load = useCallback(async () => {
@@ -126,8 +125,7 @@ const CodesMaintenanceTab = ({ canManage = true }) => {
 
   return (
     <div className="space-y-6">
-      <Card className="relative overflow-hidden shadow-xl glassmorphism">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+      <Card variant="accent">
         <CardHeader className="relative">
           <CardTitle className="flex items-center gap-2 text-2xl font-bold text-primary">
             <Wrench className="h-6 w-6" /> Codes de Maintenance
@@ -139,7 +137,7 @@ const CodesMaintenanceTab = ({ canManage = true }) => {
       </Card>
 
       {!canManage && (
-        <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+        <div className="flex items-center gap-2 rounded-lg border border-warning/30 bg-warning-muted px-4 py-3 text-sm text-warning-muted-foreground">
           <AlertTriangle className="h-4 w-4 shrink-0" />
           Votre profil est en lecture seule sur cet espace.
         </div>
@@ -148,7 +146,7 @@ const CodesMaintenanceTab = ({ canManage = true }) => {
       <CodeTable
         title="Codes Pannes"
         description="Codes utilisés lors des interventions curatives pour qualifier la panne."
-        icon={<Zap className="h-5 w-5 text-red-500" />}
+        icon={<Zap className="h-5 w-5 text-destructive" />}
         rows={codesPannes}
         canManage={canManage}
         isLoading={isLoading}
@@ -160,7 +158,7 @@ const CodesMaintenanceTab = ({ canManage = true }) => {
       <CodeTable
         title="Codes Interventions"
         description="Codes utilisés lors des interventions préventives pour décrire l'opération effectuée."
-        icon={<Wrench className="h-5 w-5 text-blue-500" />}
+        icon={<Wrench className="h-5 w-5 text-info" />}
         rows={codesInterventions}
         canManage={canManage}
         isLoading={isLoading}

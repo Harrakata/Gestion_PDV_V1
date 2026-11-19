@@ -13,16 +13,16 @@ import { fr } from 'date-fns/locale';
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 const SEVERITY_DOT = {
-  red:   'bg-red-500',
-  amber: 'bg-amber-500',
-  blue:  'bg-blue-500',
-  green: 'bg-green-500',
+  red:   'bg-destructive',
+  amber: 'bg-warning',
+  blue:  'bg-primary',
+  green: 'bg-success',
 };
 
 const CAT_META = {
-  info:   { Icon: Info,          color: 'text-blue-600',  bg: 'bg-blue-50',  border: 'border-blue-200',  label: 'Information' },
-  urgent: { Icon: AlertTriangle, color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200', label: 'Urgent'      },
-  alerte: { Icon: AlertOctagon,  color: 'text-red-600',   bg: 'bg-red-50',   border: 'border-red-200',   label: 'Alerte'      },
+  info:   { Icon: Info,          color: 'text-info-muted-foreground',  bg: 'bg-info-muted',  border: 'border-info/30',  label: 'Information' },
+  urgent: { Icon: AlertTriangle, color: 'text-warning-muted-foreground', bg: 'bg-warning-muted', border: 'border-warning/30', label: 'Urgent'      },
+  alerte: { Icon: AlertOctagon,  color: 'text-destructive',   bg: 'bg-destructive/10',   border: 'border-destructive/30',   label: 'Alerte'      },
 };
 
 const STORAGE_PREFIX = 'expl_msgs_read_';
@@ -210,7 +210,7 @@ const NotificationBell = ({ notifications = [], totalCount = 0, onNavigate, stor
     >
       <Bell className="h-4 w-4" />
       {!!effectiveBadge && (
-        <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-red-500 px-1 text-[0.6rem] font-bold leading-none text-white ring-2 ring-background">
+        <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-destructive px-1 text-[0.6rem] font-bold leading-none text-white ring-2 ring-background">
           {effectiveBadge}
         </span>
       )}
@@ -227,14 +227,14 @@ const NotificationBell = ({ notifications = [], totalCount = 0, onNavigate, stor
             <Bell className="h-4 w-4 text-primary" /> Notifications
           </span>
           {!!effectiveBadge && (
-            <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">{effectiveBadge}</span>
+            <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-semibold text-destructive">{effectiveBadge}</span>
           )}
         </div>
         <div className="mx-3 mb-1 h-px bg-primary/15" />
 
         {notifications.length === 0 ? (
           <div className="flex flex-col items-center gap-2 px-4 py-8 text-center text-muted-foreground">
-            <CheckCircle2 className="h-7 w-7 text-green-500/70" />
+            <CheckCircle2 className="h-7 w-7 text-success/70" />
             <p className="text-sm">Aucune alerte en attente.</p>
           </div>
         ) : (
@@ -271,7 +271,7 @@ const NotificationBell = ({ notifications = [], totalCount = 0, onNavigate, stor
                           )}
                           {/* Badge non-lus */}
                           {hasMessages && hasUnread && (
-                            <span className="shrink-0 rounded-full bg-blue-500 px-1.5 text-[0.6rem] font-bold text-white">
+                            <span className="shrink-0 rounded-full bg-primary px-1.5 text-[0.6rem] font-bold text-white">
                               {unreadCount} non lu{unreadCount > 1 ? 's' : ''}
                             </span>
                           )}
@@ -301,18 +301,18 @@ const NotificationBell = ({ notifications = [], totalCount = 0, onNavigate, stor
                           const unread = isUnread(msg.id);
                           return (
                             <div key={msg.id}
-                              className={`rounded-lg border p-2.5 transition-all ${cat.border} ${cat.bg} ${unread ? 'ring-1 ring-blue-300' : 'opacity-80'}`}>
+                              className={`rounded-lg border p-2.5 transition-all ${cat.border} ${cat.bg} ${unread ? 'ring-1 ring-info/30' : 'opacity-80'}`}>
                               <div className="mb-1 flex items-start gap-2">
-                                <div className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded ${cat.border} bg-white/70`}>
+                                <div className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded ${cat.border} bg-card/70`}>
                                   <cat.Icon className={`h-3 w-3 ${cat.color}`} />
                                 </div>
                                 <div className="min-w-0 flex-1">
                                   <p className="truncate text-xs font-bold text-foreground">{msg.titre}</p>
                                 </div>
                                 {unread ? (
-                                  <span className="shrink-0 rounded-full bg-blue-500 px-1.5 py-0.5 text-[0.6rem] font-bold text-white">Nouveau</span>
+                                  <span className="shrink-0 rounded-full bg-primary px-1.5 py-0.5 text-[0.6rem] font-bold text-white">Nouveau</span>
                                 ) : (
-                                  <span className={`shrink-0 rounded-full border px-1.5 py-0.5 text-[0.6rem] font-semibold ${cat.color} ${cat.border} bg-white/60`}>
+                                  <span className={`shrink-0 rounded-full border px-1.5 py-0.5 text-[0.6rem] font-semibold ${cat.color} ${cat.border} bg-card/60`}>
                                     {cat.label}
                                   </span>
                                 )}

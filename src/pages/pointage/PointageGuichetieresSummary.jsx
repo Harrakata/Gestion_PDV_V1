@@ -7,7 +7,7 @@ import { format, isValid } from 'date-fns';
 const PointageGuichetieresSummary = ({ guichetieresPlanifiees, pointagesData, creneauxPointageSettings, currentCreneauIndex }) => {
   if (!guichetieresPlanifiees || guichetieresPlanifiees.length === 0) {
     return (
-      <Card className="shadow-lg glassmorphism">
+      <Card>
         <CardHeader>
           <CardTitle className="text-lg text-primary flex items-center">
             <Users className="mr-2 h-5 w-5" /> Statut des Guichetières
@@ -61,10 +61,10 @@ const PointageGuichetieresSummary = ({ guichetieresPlanifiees, pointagesData, cr
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'complet': return 'bg-green-500 text-white';
-      case 'en-cours': return 'bg-blue-500 text-white';
-      case 'retard': return 'bg-yellow-500 text-white';
-      case 'absent': return 'bg-red-500 text-white';
+      case 'complet': return 'bg-success text-white';
+      case 'en-cours': return 'bg-primary text-white';
+      case 'retard': return 'bg-warning text-white';
+      case 'absent': return 'bg-destructive text-white';
       default: return 'bg-gray-500 text-white';
     }
   };
@@ -90,7 +90,7 @@ const PointageGuichetieresSummary = ({ guichetieresPlanifiees, pointagesData, cr
   };
 
   return (
-    <Card className="shadow-lg glassmorphism">
+    <Card>
       <CardHeader>
         <CardTitle className="text-lg text-primary flex items-center">
           <Users className="mr-2 h-5 w-5" /> Statut des Guichetières
@@ -128,7 +128,7 @@ const PointageGuichetieresSummary = ({ guichetieresPlanifiees, pointagesData, cr
                 </div>
                 <div className="w-full bg-muted h-1.5 rounded-full mt-1 overflow-hidden">
                   <div 
-                    className={`h-full rounded-full ${g.progressPercent >= 100 ? 'bg-green-500' : 'bg-blue-500'}`}
+                    className={`h-full rounded-full ${g.progressPercent >= 100 ? 'bg-success' : 'bg-primary'}`}
                     style={{ width: `${Math.min(100, g.progressPercent)}%` }}
                   />
                 </div>

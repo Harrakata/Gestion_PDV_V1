@@ -82,7 +82,7 @@ const ResetPasswordPage = () => {
       // On déconnecte la session de récupération pour forcer une reconnexion propre.
       await defaultSupabase.auth.signOut().catch(() => {});
       setStatus('done');
-      toast({ title: 'Mot de passe réinitialisé', description: 'Vous pouvez maintenant vous reconnecter.', className: 'bg-green-500 text-white' });
+      toast({ title: 'Mot de passe réinitialisé', description: 'Vous pouvez maintenant vous reconnecter.', className: 'bg-success text-white' });
     } catch (err) {
       toast({ title: 'Erreur', description: "Une erreur inattendue s'est produite.", variant: 'destructive' });
       setIsLoading(false);

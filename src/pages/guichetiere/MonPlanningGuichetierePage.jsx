@@ -280,7 +280,7 @@ const MonPlanningGuichetierePage = () => {
       toast({
         title: 'Demande envoyée',
         description: 'Votre demande de modification a bien été transmise au chef d’agence.',
-        className: 'bg-green-500 text-white',
+        className: 'bg-success text-white',
       });
       setIsRequestDialogOpen(false);
       setSelectedPlanningEntry(null);
@@ -303,8 +303,7 @@ const MonPlanningGuichetierePage = () => {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-      <Card className="relative overflow-hidden border border-primary/20 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+      <Card variant="accent">
         <CardHeader className="relative">
           <CardTitle className="flex items-center text-3xl font-bold text-primary">
             <CalendarDays className="mr-3 h-8 w-8" />
@@ -341,8 +340,7 @@ const MonPlanningGuichetierePage = () => {
         />
       </div>
 
-      <Card className="relative overflow-hidden border border-primary/20 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+      <Card variant="accent">
         <CardHeader className="relative pb-0">
           <CardTitle className="flex items-center gap-2 text-xl font-semibold text-primary">
             <CalendarDays className="h-5 w-5" />
@@ -372,7 +370,7 @@ const MonPlanningGuichetierePage = () => {
               disabled={isLoading}
               value={format(currentMonth, 'yyyy-MM-dd')}
               onChange={(e) => { if (e.target.value) setCurrentMonth(parseISO(e.target.value)); }}
-              className="h-7 rounded-md border border-input bg-white px-2 text-xs text-slate-900 shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+              className="h-7 rounded-md border border-input bg-card px-2 text-xs text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
               title="Aller à une date"
             />
           </div>
@@ -385,7 +383,7 @@ const MonPlanningGuichetierePage = () => {
           {isLoading && planningEntries.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">Chargement du planning...</p>
           ) : (
-            <div className="planning-calendar overflow-hidden rounded-lg border border-border bg-white shadow-sm">
+            <div className="planning-calendar overflow-hidden rounded-lg border border-border bg-card shadow-sm">
               {/* En-tête jours */}
               <div className="grid grid-cols-7 bg-muted/60">
                 {(viewMode === 'week'
@@ -409,7 +407,7 @@ const MonPlanningGuichetierePage = () => {
                       key={dateStr}
                       className={`group flex min-h-[90px] flex-col
                         ${viewMode === 'month' && dayIdx === 0 ? colStartClasses : ''}
-                        ${!isCurrentMonthDay ? 'bg-muted/10' : isWeekend ? 'bg-slate-50/40' : 'bg-card'}
+                        ${!isCurrentMonthDay ? 'bg-muted/10' : isWeekend ? 'bg-muted/50' : 'bg-card'}
                       `}
                     >
                       {/* Header compact */}
@@ -434,7 +432,7 @@ const MonPlanningGuichetierePage = () => {
                                 onClick={() => openRequestDialog(entry)}
                               >
                                 <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[0.5rem] font-bold text-white
-                                  ${linkedRequest?.statut === REQUEST_STATUS.PENDING ? 'bg-amber-400' : isToday ? 'bg-white/90 !text-primary' : 'bg-primary'}
+                                  ${linkedRequest?.statut === REQUEST_STATUS.PENDING ? 'bg-warning/40' : isToday ? 'bg-card/90 !text-primary' : 'bg-primary'}
                                 `}>
                                   {linkedRequest?.statut === REQUEST_STATUS.PENDING ? '!' : '✓'}
                                 </span>
@@ -455,7 +453,7 @@ const MonPlanningGuichetierePage = () => {
         </CardContent>
       </Card>
 
-      <Card className="shadow-xl glassmorphism">
+      <Card>
         <CardHeader>
           <CardTitle className="text-2xl text-primary">Mes demandes de modification</CardTitle>
           <CardDescription>Suivez le traitement de vos demandes par votre chef d’agence.</CardDescription>
@@ -501,7 +499,7 @@ const MonPlanningGuichetierePage = () => {
       </Card>
 
       <Dialog open={isRequestDialogOpen} onOpenChange={setIsRequestDialogOpen}>
-        <DialogContent className="sm:max-w-lg glassmorphism">
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-primary">Demander une modification</DialogTitle>
             <DialogDescription>

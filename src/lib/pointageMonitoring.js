@@ -17,27 +17,27 @@ export const getPointageStatusMeta = (count, expectedCount) => {
   if (expectedCount === 0) {
     return {
       label: 'Aucun planning',
-      className: 'border-slate-200 bg-slate-100 text-slate-700',
+      className: 'border-border bg-muted text-foreground/80',
     };
   }
 
   if (count === 0) {
     return {
       label: 'En attente',
-      className: 'border-amber-200 bg-amber-50 text-amber-700',
+      className: 'border-warning/30 bg-warning-muted text-warning-muted-foreground',
     };
   }
 
   if (count < expectedCount) {
     return {
       label: 'En cours',
-      className: 'border-blue-200 bg-blue-50 text-blue-700',
+      className: 'border-info/30 bg-info-muted text-info-muted-foreground',
     };
   }
 
   return {
     label: 'Complet',
-    className: 'border-green-200 bg-green-50 text-green-700',
+    className: 'border-success/30 bg-success-muted text-success-muted-foreground',
   };
 };
 

@@ -33,14 +33,14 @@ const SOUS_ENSEMBLE_LABELS = {
 };
 
 const STATUT_CONFIG = {
-  defectueux: { label: 'Défectueux', cls: 'bg-red-100 text-red-800' },
-  assigne: { label: 'Assigné', cls: 'bg-blue-100 text-blue-800' },
-  a_tester: { label: 'À tester', cls: 'bg-yellow-100 text-yellow-800' },
-  repare: { label: 'Réparé', cls: 'bg-green-100 text-green-800' },
+  defectueux: { label: 'Défectueux', cls: 'bg-destructive/10 text-destructive' },
+  assigne: { label: 'Assigné', cls: 'bg-info-muted text-info-muted-foreground' },
+  a_tester: { label: 'À tester', cls: 'bg-warning-muted text-warning-muted-foreground' },
+  repare: { label: 'Réparé', cls: 'bg-success-muted text-success-muted-foreground' },
 };
 
 const StatutBadge = ({ statut }) => {
-  const cfg = STATUT_CONFIG[statut] || { label: statut, cls: 'bg-gray-100 text-gray-800' };
+  const cfg = STATUT_CONFIG[statut] || { label: statut, cls: 'bg-muted text-foreground' };
   return <Badge className={cfg.cls}>{cfg.label}</Badge>;
 };
 
@@ -116,7 +116,7 @@ const StockDefectueuxTab = ({ canManage = true, technicienId = null }) => {
     };
   }), [techniciens]);
 
-  const showOk = (msg) => toast({ title: msg, className: 'bg-green-500 text-white' });
+  const showOk = (msg) => toast({ title: msg, className: 'bg-success text-white' });
   const showErr = (msg) => toast({ title: 'Erreur', description: msg, variant: 'destructive' });
 
   const openAssignDialog = useCallback((item) => {
@@ -204,8 +204,7 @@ const StockDefectueuxTab = ({ canManage = true, technicienId = null }) => {
 
   return (
     <div className="space-y-6">
-      <Card className="relative overflow-hidden shadow-xl glassmorphism">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+      <Card variant="accent">
         <CardHeader className="relative">
           <CardTitle className="flex items-center gap-2 text-2xl font-bold text-primary">
             <Package className="h-6 w-6" /> Stock de Sous-ensembles Défectueux
@@ -262,7 +261,7 @@ const StockDefectueuxTab = ({ canManage = true, technicienId = null }) => {
             <TableCaption>
               {filtered.length === 0 ? 'Aucun sous-ensemble défectueux.' : `${filtered.length} sous-ensemble(s).`}
             </TableCaption>
-            <TableHeader className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-sm">
+            <TableHeader className="sticky top-0 z-10 bg-muted/50 backdrop-blur-sm">
               <TableRow>
                 <TableHead>Référence</TableHead>
                 <TableHead>Type</TableHead>
@@ -434,7 +433,7 @@ const StockDefectueuxTab = ({ canManage = true, technicienId = null }) => {
                       <div key={m.id} className="flex items-center gap-2 rounded-md border bg-muted/30 px-3 py-1.5 text-xs">
                         <span className="flex-1 font-medium">{m.piece?.nom || '—'}</span>
                         <span className="font-mono text-muted-foreground">{m.piece?.reference}</span>
-                        <Badge className={m.type === 'nettoyage' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}>
+                        <Badge className={m.type === 'nettoyage' ? 'bg-success-muted text-success-muted-foreground' : 'bg-info-muted text-info-muted-foreground'}>
                           {m.type === 'nettoyage' ? 'Nettoyée' : 'Remplacée'}
                         </Badge>
                       </div>
@@ -460,7 +459,7 @@ const StockDefectueuxTab = ({ canManage = true, technicienId = null }) => {
                     </>
                   )}
                   {detailItem.statut === 'a_tester' && (
-                    <Button size="sm" className="bg-green-600 text-white hover:bg-green-700" onClick={() => { updateStatut(detailItem, 'repare'); setIsDetailOpen(false); }}>
+                    <Button size="sm" className="bg-success text-white hover:bg-success/90" onClick={() => { updateStatut(detailItem, 'repare'); setIsDetailOpen(false); }}>
                       Marquer Réparé
                     </Button>
                   )}

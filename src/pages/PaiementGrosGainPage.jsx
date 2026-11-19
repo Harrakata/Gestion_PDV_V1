@@ -838,7 +838,7 @@ const PaiementGrosGainPage = () => {
         toast({
           title: 'Demande enregistrée hors-ligne',
           description: `La demande ${codeDemande}${photoFile ? ' et sa pièce d’identité seront transmises' : ' sera transmise'} automatiquement au retour de la connexion.`,
-          className: 'bg-blue-600 text-white',
+          className: 'bg-primary text-white',
         });
 
         resetForm();
@@ -884,7 +884,7 @@ const PaiementGrosGainPage = () => {
       description: waitingChefApproval
         ? `La demande ${codeDemande} a été créée et attend maintenant la validation du chef d’agence.`
         : `La demande ${codeDemande} a été créée et transmise dans le circuit de validation.`,
-      className: 'bg-green-500 text-white',
+      className: 'bg-success text-white',
     });
 
     resetForm();
@@ -990,7 +990,7 @@ const PaiementGrosGainPage = () => {
         decision === 'approve'
           ? `La demande ${demandeToHandle.codeDemande} a été transmise au ${nextLabel}.`
           : `La demande ${demandeToHandle.codeDemande} a été refusée par le chef d’agence.`,
-      className: decision === 'approve' ? 'bg-green-500 text-white' : 'bg-red-500 text-white',
+      className: decision === 'approve' ? 'bg-success text-white' : 'bg-destructive text-white',
     });
 
     // Notification SMS du parieur en cas de refus (best-effort).
@@ -1067,7 +1067,7 @@ const PaiementGrosGainPage = () => {
     toast({
       title: 'Paiement final validé',
       description: `Le paiement du gain ${demandeToPay.codeDemande} a été confirmé.`,
-      className: 'bg-green-500 text-white',
+      className: 'bg-success text-white',
     });
 
     // Notification SMS du parieur (confirmation de paiement, best-effort).
@@ -1216,8 +1216,7 @@ const PaiementGrosGainPage = () => {
         animate={{ opacity: 1, y: 0 }}
         className="flex flex-col items-center justify-center min-h-[calc(100vh-12rem)] p-3 md:p-8 text-center"
       >
-        <Card className="relative overflow-hidden w-full max-w-lg border border-primary/20 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur p-4 md:p-8">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+        <Card variant="accent" className="w-full max-w-lg p-4 md:p-8">
           <Wallet className="h-10 w-10 md:h-16 md:w-16 text-primary mx-auto mb-3 md:mb-6" />
           <CardTitle className="text-xl md:text-3xl font-bold text-primary mb-2 md:mb-4">Paiement Gros Gain</CardTitle>
           <p className="text-sm md:text-lg text-muted-foreground mb-4 md:mb-8">
@@ -1238,8 +1237,7 @@ const PaiementGrosGainPage = () => {
 
   return (
     <div className="space-y-6">
-      <Card className="relative overflow-hidden border border-primary/20 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+      <Card variant="accent">
         <CardHeader>
           <div>
             <CardTitle className="flex items-center text-3xl font-bold text-primary">
@@ -1293,7 +1291,7 @@ const PaiementGrosGainPage = () => {
           </TabsList>
 
           <TabsContent value="pending" className="space-y-6">
-            <Card className="shadow-xl glassmorphism">
+            <Card>
               <CardHeader>
                 <CardTitle className="text-2xl text-primary">Demandes à traiter par le chef d’agence</CardTitle>
                 <CardDescription>
@@ -1353,7 +1351,7 @@ const PaiementGrosGainPage = () => {
             </Card>
 
             {selectedChefActionDemande && (
-              <Card className="shadow-xl glassmorphism">
+              <Card>
                 <CardHeader>
                   <CardTitle className="text-2xl text-primary">
                     Traitement de la demande {selectedChefActionDemande.codeDemande}
@@ -1370,7 +1368,7 @@ const PaiementGrosGainPage = () => {
                   {renderDemandeDetailsSections(selectedChefActionDemande)}
 
                   {selectedChefActionDemandeAwaitingChefDecision && (
-                    <Card className="shadow-sm">
+                    <Card>
                       <CardHeader>
                         <CardTitle className="text-lg text-primary">Validation du chef d’agence</CardTitle>
                         <CardDescription>
@@ -1393,7 +1391,7 @@ const PaiementGrosGainPage = () => {
                           <Button
                             onClick={() => handleChefDecision('approve')}
                             disabled={isChefDecisionLoading}
-                            className="bg-green-600 text-white hover:bg-green-700"
+                            className="bg-success text-white hover:bg-success/90"
                           >
                             {isChefDecisionLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
                             Valider et transmettre
@@ -1426,7 +1424,7 @@ const PaiementGrosGainPage = () => {
                       <Button
                         onClick={handleConfirmPayment}
                         disabled={isPaymentSubmitting}
-                        className="bg-green-600 text-white hover:bg-green-700"
+                        className="bg-success text-white hover:bg-success/90"
                       >
                         {isPaymentSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
                         Confirmer le paiement final
@@ -1434,7 +1432,7 @@ const PaiementGrosGainPage = () => {
                     </>
                   )}
 
-                  <Card className="shadow-sm">
+                  <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center gap-1.5 text-lg text-primary">
                         <History className="h-4 w-4" />
@@ -1449,7 +1447,7 @@ const PaiementGrosGainPage = () => {
           </TabsContent>
 
           <TabsContent value="history" className="space-y-6">
-            <Card className="shadow-xl glassmorphism">
+            <Card>
               <CardHeader>
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                   <div>
@@ -1540,14 +1538,14 @@ const PaiementGrosGainPage = () => {
             </Card>
 
             {selectedAgencyDemande && (
-              <Card className="shadow-xl glassmorphism">
+              <Card>
                 <CardHeader>
                   <CardTitle className="text-2xl text-primary">Suivi de la demande {selectedAgencyDemande.codeDemande}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   {renderDemandeDetailsSections(selectedAgencyDemande)}
 
-                  <Card className="shadow-sm">
+                  <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center gap-1.5 text-lg text-primary">
                         <History className="h-4 w-4" />
@@ -1569,7 +1567,7 @@ const PaiementGrosGainPage = () => {
         </TabsList>
 
         <TabsContent value="demande" className="space-y-6">
-          <Card className="shadow-xl glassmorphism">
+          <Card>
             <CardHeader>
               <CardTitle className="text-2xl text-primary">Créer une demande de paiement</CardTitle>
               <CardDescription>
@@ -1795,7 +1793,7 @@ const PaiementGrosGainPage = () => {
               )}
 
               {selectedProcedure?.requiresGeneralApproval && (
-                <Card className="shadow-sm">
+                <Card>
                   <CardHeader>
                     <CardTitle className="text-lg text-primary">Direction générale sollicitée</CardTitle>
                   </CardHeader>
@@ -1805,7 +1803,7 @@ const PaiementGrosGainPage = () => {
                         La demande sera transmise à <span className="font-medium">{selectedGeneralValidator.prenom} {selectedGeneralValidator.nom}</span>.
                       </p>
                     ) : (
-                      <p className="text-sm text-red-600">Aucun directeur général actif n’est configuré pour le moment.</p>
+                      <p className="text-sm text-destructive">Aucun directeur général actif n’est configuré pour le moment.</p>
                     )}
                   </CardContent>
                 </Card>
@@ -1827,7 +1825,7 @@ const PaiementGrosGainPage = () => {
             </CardContent>
           </Card>
 
-          <Card className="shadow-xl glassmorphism">
+          <Card>
             <CardHeader>
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
@@ -1922,7 +1920,7 @@ const PaiementGrosGainPage = () => {
           </Card>
 
           {selectedOwnDemande && (
-            <Card className="shadow-xl glassmorphism">
+            <Card>
               <CardHeader>
                 <CardTitle className="text-2xl text-primary">Suivi de la demande {selectedOwnDemande.codeDemande}</CardTitle>
               </CardHeader>
@@ -1930,7 +1928,7 @@ const PaiementGrosGainPage = () => {
                 {renderDemandeDetailsSections(selectedOwnDemande)}
 
                 {selectedOwnDemandeAwaitingChefDecision && (
-                  <Card className="shadow-sm">
+                  <Card>
                     <CardHeader>
                       <CardTitle className="text-lg text-primary">Validation du chef d’agence</CardTitle>
                       <CardDescription>
@@ -1953,7 +1951,7 @@ const PaiementGrosGainPage = () => {
                         <Button
                           onClick={() => handleChefDecision('approve')}
                           disabled={isChefDecisionLoading}
-                          className="bg-green-600 text-white hover:bg-green-700"
+                          className="bg-success text-white hover:bg-success/90"
                         >
                           {isChefDecisionLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
                           Valider et transmettre
@@ -1970,7 +1968,7 @@ const PaiementGrosGainPage = () => {
                   </Card>
                 )}
 
-                <Card className="shadow-sm">
+                <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-1.5 text-lg text-primary">
                       <History className="h-4 w-4" />
@@ -1985,7 +1983,7 @@ const PaiementGrosGainPage = () => {
         </TabsContent>
 
         <TabsContent value="autorisation" className="space-y-6">
-          <Card className="shadow-xl glassmorphism">
+          <Card>
             <CardHeader>
               <CardTitle className="text-2xl text-primary">Autorisations reçues pour paiement</CardTitle>
               <CardDescription>
@@ -2039,7 +2037,7 @@ const PaiementGrosGainPage = () => {
           </Card>
 
           {selectedPaymentDemande && (
-            <Card className="shadow-xl glassmorphism">
+            <Card>
               <CardHeader>
                 <CardTitle className="text-2xl text-primary">
                   Finaliser le paiement {selectedPaymentDemande.codeDemande}
@@ -2084,7 +2082,7 @@ const PaiementGrosGainPage = () => {
                 <Button
                   onClick={handleConfirmPayment}
                   disabled={isPaymentSubmitting}
-                  className="bg-green-600 text-white hover:bg-green-700"
+                  className="bg-success text-white hover:bg-success/90"
                 >
                   {isPaymentSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
                   Confirmer le paiement final
@@ -2113,7 +2111,7 @@ const PaiementGrosGainPage = () => {
             </Card>
           )}
 
-          <Card className="shadow-xl glassmorphism">
+          <Card>
             <CardHeader>
               <CardTitle className="text-2xl text-primary">Historique des paiements finalisés</CardTitle>
             </CardHeader>

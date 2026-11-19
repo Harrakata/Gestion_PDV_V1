@@ -444,7 +444,7 @@ export const usePointageLogic = () => {
     
     setIdentifiedGuichetiere(foundGuichetiere);
     
-    toast({ title: 'Guichetière identifiée', description: `Bonjour ${foundGuichetiere.prenom} ${foundGuichetiere.nom}. Prête pour le pointage.`, className: "bg-green-500 text-white" });
+    toast({ title: 'Guichetière identifiée', description: `Bonjour ${foundGuichetiere.prenom} ${foundGuichetiere.nom}. Prête pour le pointage.`, className: "bg-success text-white" });
     setStep(2);
     setIsLoading(false);
   };
@@ -462,7 +462,7 @@ export const usePointageLogic = () => {
     setIsLoading(true);
     setSignature(signatureDataURL);
     await new Promise(resolve => setTimeout(resolve, 400)); 
-    toast({ title: 'Signature', description: 'Signature validée.', className: "bg-yellow-500 text-white" });
+    toast({ title: 'Signature', description: 'Signature validée.', className: "bg-warning text-white" });
     setStep(4);
     setIsLoading(false);
   };
@@ -516,7 +516,7 @@ export const usePointageLogic = () => {
           const rows = Array.isArray(cached?.data) ? cached.data : [];
           await putCache(cacheKey, [...rows, newPointage]);
         } catch { /* le patch de cache est best-effort */ }
-        toast({ title: 'Pointage enregistré hors-ligne', description: 'Il sera synchronisé automatiquement dès le retour de la connexion.', className: 'bg-blue-600 text-white' });
+        toast({ title: 'Pointage enregistré hors-ligne', description: 'Il sera synchronisé automatiquement dès le retour de la connexion.', className: 'bg-primary text-white' });
         resetProcess();
       } catch (e) {
         toast({ title: 'Erreur', description: "Impossible d'enregistrer le pointage hors-ligne.", variant: 'destructive' });
@@ -530,7 +530,7 @@ export const usePointageLogic = () => {
     if (error) {
       toast({ title: 'Erreur de validation', description: describeError(error, 'usePointageLogic'), variant: 'destructive' });
     } else {
-      toast({ title: 'Pointage validé !', description: `Merci ${identifiedGuichetiere.prenom}, votre pointage pour le créneau ${currentCreneauIndex + 1} à ${nomAgenceAffichee} a été enregistré.`, className: "bg-green-600 text-white" });
+      toast({ title: 'Pointage validé !', description: `Merci ${identifiedGuichetiere.prenom}, votre pointage pour le créneau ${currentCreneauIndex + 1} à ${nomAgenceAffichee} a été enregistré.`, className: "bg-success text-white" });
       resetProcess();
     }
     setIsLoading(false);

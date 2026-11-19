@@ -61,22 +61,22 @@ export const ticketLabel = (value) => LABELS[value] || value || '—';
 
 export const getTicketStatusBadgeClass = (statut) => {
   switch (statut) {
-    case TICKET_STATUSES.OPEN: return 'bg-blue-100 text-blue-700 border-blue-200';
-    case TICKET_STATUSES.IN_PROGRESS: return 'bg-amber-100 text-amber-700 border-amber-200';
-    case TICKET_STATUSES.RESOLVED: return 'bg-green-100 text-green-700 border-green-200';
-    case TICKET_STATUSES.CLOSED: return 'bg-gray-100 text-gray-600 border-gray-200';
-    case TICKET_STATUSES.CANCELLED: return 'bg-red-100 text-red-700 border-red-200';
-    default: return 'bg-gray-100 text-gray-600 border-gray-200';
+    case TICKET_STATUSES.OPEN: return 'bg-info-muted text-info-muted-foreground border-info/30';
+    case TICKET_STATUSES.IN_PROGRESS: return 'bg-warning-muted text-warning-muted-foreground border-warning/30';
+    case TICKET_STATUSES.RESOLVED: return 'bg-success-muted text-success-muted-foreground border-success/30';
+    case TICKET_STATUSES.CLOSED: return 'bg-muted text-foreground/80 border-border';
+    case TICKET_STATUSES.CANCELLED: return 'bg-destructive/10 text-destructive border-destructive/30';
+    default: return 'bg-muted text-foreground/80 border-border';
   }
 };
 
 export const getTicketPriorityBadgeClass = (priorite) => {
   switch (priorite) {
-    case TICKET_PRIORITIES.URGENTE: return 'bg-red-100 text-red-700 border-red-200';
-    case TICKET_PRIORITIES.HAUTE: return 'bg-orange-100 text-orange-700 border-orange-200';
-    case TICKET_PRIORITIES.NORMALE: return 'bg-slate-100 text-slate-700 border-slate-200';
-    case TICKET_PRIORITIES.BASSE: return 'bg-slate-50 text-slate-500 border-slate-200';
-    default: return 'bg-slate-100 text-slate-700 border-slate-200';
+    case TICKET_PRIORITIES.URGENTE: return 'bg-destructive/10 text-destructive border-destructive/30';
+    case TICKET_PRIORITIES.HAUTE: return 'bg-warning-muted text-warning-muted-foreground border-warning/30';
+    case TICKET_PRIORITIES.NORMALE: return 'bg-muted text-foreground/80 border-border';
+    case TICKET_PRIORITIES.BASSE: return 'bg-muted/50 text-muted-foreground border-border';
+    default: return 'bg-muted text-foreground/80 border-border';
   }
 };
 

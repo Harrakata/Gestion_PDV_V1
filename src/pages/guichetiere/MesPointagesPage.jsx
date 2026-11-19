@@ -128,8 +128,7 @@ const MesPointagesPage = () => {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-      <Card className="relative overflow-hidden border border-primary/20 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+      <Card variant="accent">
         <CardHeader>
           <CardTitle className="flex items-center text-3xl font-bold text-primary">
             <FileText className="mr-3 h-8 w-8" />
@@ -172,7 +171,7 @@ const MesPointagesPage = () => {
         />
       </div>
 
-      <Card className="shadow-xl glassmorphism">
+      <Card>
         <CardHeader>
           <CardTitle className="text-2xl text-primary">Historique de mes pointages</CardTitle>
           <CardDescription>
@@ -215,7 +214,7 @@ const MesPointagesPage = () => {
                   <TableCell>{pointage.agence || guichetiereInfo?.nomAgence}</TableCell>
                   <TableCell>{pointage.type || 'Présence'}</TableCell>
                   <TableCell>
-                    <Badge className="border-slate-200 bg-slate-100 text-slate-700">
+                    <Badge className="border-border bg-muted text-foreground/80">
                       Créneau {(pointage.creneauIndex ?? 0) + 1}
                     </Badge>
                   </TableCell>

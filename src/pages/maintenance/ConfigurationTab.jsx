@@ -1411,8 +1411,7 @@ const ConfigurationTab = ({
 
   const configurationContent = (
     <div className={showEquipmentManagement ? 'space-y-6' : 'space-y-4'}>
-      <Card className="relative overflow-hidden shadow-lg">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+      <Card variant="accent">
         <CardHeader className="relative">
           <CardTitle>Configuration des terminaux</CardTitle>
           <CardDescription>
@@ -1796,7 +1795,7 @@ const ConfigurationTab = ({
         </CardContent>
       </Card>
 
-      <Card className="relative overflow-hidden shadow-lg">
+      <Card className="relative overflow-hidden">
         <CardHeader className="relative space-y-4">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
             <div>
@@ -1968,7 +1967,7 @@ const ConfigurationTab = ({
         </CardContent>
       </Card>
 
-      <Card className="relative overflow-hidden shadow-lg">
+      <Card className="relative overflow-hidden">
         <CardHeader className={showEquipmentManagement ? 'relative space-y-4' : 'relative space-y-3'}>
           <div className="flex flex-col gap-2">
             <CardTitle>Parc de Terminaux</CardTitle>

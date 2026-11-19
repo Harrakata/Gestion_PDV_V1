@@ -28,8 +28,8 @@ class ErrorBoundary extends React.Component {
 
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-5 p-8">
-        <div className="rounded-2xl bg-red-50 p-5">
-          <AlertTriangle className="h-12 w-12 text-red-500" />
+        <div className="rounded-2xl bg-destructive/10 p-5">
+          <AlertTriangle className="h-12 w-12 text-destructive" />
         </div>
         <div className="text-center">
           <h2 className="text-xl font-semibold text-foreground">Une erreur est survenue</h2>

@@ -310,7 +310,7 @@ const MonPlanningPage = () => {
     if (error) {
       toast({ title: 'Erreur d\'ajout', description: error.message.includes('duplicate key') ? 'Cette guichetière est déjà planifiée.' : error.message, variant: 'destructive' });
     } else {
-      toast({ title: 'Succès', description: 'Guichetière ajoutée au planning.', className: "bg-green-500 text-white" });
+      toast({ title: 'Succès', description: 'Guichetière ajoutée au planning.', className: "bg-success text-white" });
       fetchPlanning(); 
       setIsAddModalOpen(false);
     }
@@ -323,7 +323,7 @@ const MonPlanningPage = () => {
     if (error) {
       toast({ title: 'Erreur de suppression', description: describeError(error, 'MonPlanningPage'), variant: 'destructive' });
     } else {
-      toast({ title: 'Succès', description: 'Guichetière retirée du planning.', className: "bg-red-500 text-white" });
+      toast({ title: 'Succès', description: 'Guichetière retirée du planning.', className: "bg-destructive text-white" });
       fetchPlanning(); 
       setIsEditModalOpen(false);
     }
@@ -365,7 +365,7 @@ const MonPlanningPage = () => {
     if (error) {
         toast({ title: 'Erreur de remplacement', description: describeError(error, 'MonPlanningPage'), variant: 'destructive' });
     } else {
-        toast({ title: 'Succès', description: 'Guichetière remplacée avec succès.', className: "bg-green-500 text-white" });
+        toast({ title: 'Succès', description: 'Guichetière remplacée avec succès.', className: "bg-success text-white" });
         fetchPlanning();
         setIsEditModalOpen(false);
     }
@@ -426,7 +426,7 @@ const MonPlanningPage = () => {
       toast({
         title: 'Dates passées ignorées',
         description: `${skippedPast} affectation(s) sur des dates antérieures à aujourd'hui n'ont pas été copiées.`,
-        className: 'bg-amber-500 text-white',
+        className: 'bg-warning text-white',
       });
     }
 
@@ -435,7 +435,7 @@ const MonPlanningPage = () => {
       if (insertError) {
         toast({ title: 'Erreur de copie', description: insertError.message.includes('duplicate key') ? 'Certaines affectations existaient déjà.' : insertError.message, variant: insertError.message.includes('duplicate key') ? 'warning' : 'destructive' });
       } else {
-        toast({ title: 'Succès', description: `Planning ${period === 'month' ? 'mensuel' : 'hebdomadaire'} précédent copié.`, className: "bg-green-500 text-white" });
+        toast({ title: 'Succès', description: `Planning ${period === 'month' ? 'mensuel' : 'hebdomadaire'} précédent copié.`, className: "bg-success text-white" });
       }
       fetchPlanning();
     } else {
@@ -545,7 +545,7 @@ const MonPlanningPage = () => {
       toast({
         title: nextStatus === REQUEST_STATUS.APPROVED ? 'Demande validée' : 'Demande refusée',
         description: `La demande de ${request.guichetiere_nom || request.guichetiere_matricule} a bien été traitée.`,
-        className: nextStatus === REQUEST_STATUS.APPROVED ? 'bg-green-500 text-white' : 'bg-slate-700 text-white',
+        className: nextStatus === REQUEST_STATUS.APPROVED ? 'bg-success text-white' : 'bg-slate-700 text-white',
       });
 
       fetchPlanning();
@@ -564,8 +564,7 @@ const MonPlanningPage = () => {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4 md:space-y-6 p-2 md:p-0">
-      <Card className="relative overflow-hidden border border-primary/20 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+      <Card variant="accent">
         <CardHeader className="relative">
           <CardTitle className="flex items-center text-3xl font-bold text-primary">
             <Calendar className="mr-3 h-8 w-8" />
@@ -601,8 +600,7 @@ const MonPlanningPage = () => {
         />
       </div>
 
-      <Card className="relative overflow-hidden border border-primary/20 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+      <Card variant="accent">
         <CardHeader className="p-3 md:p-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 md:gap-4">
             <div>
@@ -632,7 +630,7 @@ const MonPlanningPage = () => {
                 disabled={isLoading}
                 value={format(currentMonth, 'yyyy-MM-dd')}
                 onChange={(e) => { if (e.target.value) setCurrentMonth(parseISO(e.target.value)); }}
-                className="h-8 w-[7.5rem] rounded-md border border-input bg-white px-2 text-xs text-slate-900 shadow-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:w-auto md:text-sm"
+                className="h-8 w-[7.5rem] rounded-md border border-input bg-card px-2 text-xs text-foreground shadow-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:w-auto md:text-sm"
                 title="Aller à une date"
                 aria-label="Aller à une date"
               />
@@ -645,7 +643,7 @@ const MonPlanningPage = () => {
           {isLoading && Object.keys(planning).length === 0 ? (
             <p className="text-center text-muted-foreground py-8 text-sm md:text-base">Chargement du planning...</p>
           ) : (
-            <div className="planning-calendar overflow-hidden rounded-lg border border-border bg-white shadow-sm">
+            <div className="planning-calendar overflow-hidden rounded-lg border border-border bg-card shadow-sm">
               {/* En-tête jours */}
               <div className="grid grid-cols-7 bg-muted/60">
                 {(viewMode === 'week'
@@ -671,7 +669,7 @@ const MonPlanningPage = () => {
                       key={day.toString()}
                       className={`group flex min-h-[90px] flex-col
                         ${viewMode === 'month' && dayIdx === 0 ? colStartClasses : ''}
-                        ${!isCurrentMonthDay ? 'bg-muted/10' : isPast ? 'bg-muted/30' : isWeekend ? 'bg-slate-50/40' : 'bg-card'}
+                        ${!isCurrentMonthDay ? 'bg-muted/10' : isPast ? 'bg-muted/30' : isWeekend ? 'bg-muted/50' : 'bg-card'}
                       `}
                     >
                       {/* Header compact */}
@@ -681,13 +679,13 @@ const MonPlanningPage = () => {
                         </time>
                         <div className="flex items-center gap-0.5">
                           {dayRequests.length > 0 && (
-                            <span className={`flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold ${isToday ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-700'}`}>
+                            <span className={`flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold ${isToday ? 'bg-card/20 text-white' : 'bg-warning-muted text-warning-muted-foreground'}`}>
                               {dayRequests.length}
                             </span>
                           )}
                           {isCurrentMonthDay && !isPast && (
                             <button
-                              className={`flex h-4 w-4 items-center justify-center rounded opacity-0 transition-all group-hover:opacity-100 ${isToday ? 'text-white/70 hover:bg-white/20' : 'text-muted-foreground/30 hover:bg-primary/10 hover:text-primary'}`}
+                              className={`flex h-4 w-4 items-center justify-center rounded opacity-0 transition-all group-hover:opacity-100 ${isToday ? 'text-white/70 hover:bg-card/20' : 'text-muted-foreground/30 hover:bg-primary/10 hover:text-primary'}`}
                               onClick={() => openAddModal(day)}
                               disabled={isLoading}
                             >
@@ -717,14 +715,14 @@ const MonPlanningPage = () => {
                                 onClick={() => openEditModal(event, day)}
                               >
                                 <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[0.5rem] font-bold text-white
-                                  ${event.est_remplacante ? 'bg-orange-400' : isToday ? 'bg-white/90 !text-primary' : 'bg-primary'}
+                                  ${event.est_remplacante ? 'bg-warning/40' : isToday ? 'bg-card/90 !text-primary' : 'bg-primary'}
                                 `}>
                                   {initials}
                                 </span>
                                 <span className={`truncate text-[0.6rem] font-medium leading-tight ${!isCurrentMonthDay ? 'text-muted-foreground/40' : 'text-foreground'}`}>
                                   {name}
                                 </span>
-                                {linkedRequest && <span className="ml-auto shrink-0 text-[0.5rem] text-amber-600">!</span>}
+                                {linkedRequest && <span className="ml-auto shrink-0 text-[0.5rem] text-warning-muted-foreground">!</span>}
                               </motion.div>
                             );
                           })}
@@ -739,7 +737,7 @@ const MonPlanningPage = () => {
         </CardContent>
       </Card>
 
-      <Card className="shadow-xl glassmorphism">
+      <Card>
         <CardHeader>
           <CardTitle className="text-2xl text-primary">Demandes de modification des guichetières</CardTitle>
           <CardDescription>
@@ -817,7 +815,7 @@ const MonPlanningPage = () => {
       </Card>
 
       <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-        <DialogContent className="sm:max-w-md glassmorphism">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-primary text-lg md:text-xl">Ajouter au Planning</DialogTitle>
             <DialogDescription className="text-xs md:text-sm">
@@ -830,9 +828,9 @@ const MonPlanningPage = () => {
               const ds = format(selectedDate, 'yyyy-MM-dd');
               const used = (planning[ds] || []).length;
               const remaining = Math.max(0, nbreTerminaux - used);
-              const cls = remaining === 0 ? 'border-red-200 bg-red-50 text-red-700'
-                : remaining === 1 ? 'border-amber-200 bg-amber-50 text-amber-700'
-                : 'border-emerald-200 bg-emerald-50 text-emerald-700';
+              const cls = remaining === 0 ? 'border-destructive/30 bg-destructive/10 text-destructive'
+                : remaining === 1 ? 'border-warning/30 bg-warning-muted text-warning-muted-foreground'
+                : 'border-success/30 bg-success-muted text-success-muted-foreground';
               return (
                 <div className={`rounded border ${cls} px-2.5 py-1.5 text-xs flex items-center justify-between`}>
                   <span><strong>{used}</strong> guichetière(s) déjà planifiée(s) sur <strong>{nbreTerminaux}</strong> terminal(aux)</span>
@@ -866,7 +864,7 @@ const MonPlanningPage = () => {
       </Dialog>
 
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <DialogContent className="sm:max-w-lg glassmorphism">
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-primary text-lg md:text-xl">Modifier l'Affectation</DialogTitle>
             {editingEvent && (

@@ -434,8 +434,7 @@ const MaintenanceTerminauxPage = () => {
 
   return (
     <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-      <Card className="relative overflow-hidden border border-primary/20 shadow-[0_22px_60px_-30px_rgba(15,23,42,0.28)] backdrop-blur">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
+      <Card variant="accent">
         <CardHeader>
           <CardTitle className="flex items-center text-3xl font-bold text-primary">
             <Wrench className="mr-3 h-8 w-8" />
@@ -524,7 +523,7 @@ const MaintenanceTerminauxPage = () => {
             showAdvancedCharts
           />
 
-          <Card className="shadow-xl glassmorphism">
+          <Card>
             <CardHeader className="space-y-4">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
@@ -850,7 +849,7 @@ const MaintenanceTerminauxPage = () => {
             </CardContent>
           </Card>
 
-          <Card className="shadow-xl glassmorphism">
+          <Card>
             <CardHeader className="space-y-4">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
@@ -1012,7 +1011,7 @@ const MaintenanceTerminauxPage = () => {
           </Card>
 
           {selectedIntervention && (
-            <Card className="shadow-xl glassmorphism">
+            <Card>
               <CardHeader>
                 <CardTitle className="text-2xl text-primary">
                   Détail de l’intervention {selectedIntervention.terminalReference}
@@ -1092,7 +1091,7 @@ const MaintenanceTerminauxPage = () => {
             />
 
             {isPlanningRequestTableMissing ? (
-              <Card className="border-warning/25 bg-warning-muted shadow-sm">
+              <Card className="border-warning/25 bg-warning-muted">
                 <CardContent className="p-4 text-sm text-warning-muted-foreground">
                   La table
                   {' '}
@@ -1102,7 +1101,7 @@ const MaintenanceTerminauxPage = () => {
                 </CardContent>
               </Card>
             ) : (
-              <Card className="shadow-xl glassmorphism">
+              <Card>
                 <CardHeader>
                   <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                     <div>

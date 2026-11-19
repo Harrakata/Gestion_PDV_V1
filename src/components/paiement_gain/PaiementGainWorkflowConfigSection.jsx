@@ -39,8 +39,8 @@ const BOOLEAN_OPTIONS = [
 ];
 
 const STATUS_BADGE_CLASS = {
-  [WORKFLOW_CONFIG_STATUSES.ACTIVE]: 'border-emerald-200 bg-emerald-50 text-emerald-700',
-  [WORKFLOW_CONFIG_STATUSES.INACTIVE]: 'border-slate-200 bg-slate-100 text-slate-600',
+  [WORKFLOW_CONFIG_STATUSES.ACTIVE]: 'border-success/30 bg-success-muted text-success-muted-foreground',
+  [WORKFLOW_CONFIG_STATUSES.INACTIVE]: 'border-border bg-muted text-foreground/80',
 };
 
 const DEFAULT_FORM_DATA = {
@@ -135,10 +135,10 @@ const PaiementGainWorkflowConfigSection = ({
 
   const addButtonClassName = canWriteCurrentPage
     ? 'bg-primary text-white hover:bg-primary/90'
-    : 'bg-slate-200 text-slate-500 hover:bg-slate-200 hover:text-slate-500 cursor-not-allowed';
+    : 'bg-muted text-muted-foreground hover:bg-muted hover:text-muted-foreground cursor-not-allowed';
 
   const editButtonClassName = canWriteCurrentPage && !isLoading && !isMissingTable
-    ? 'h-8 w-8 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-400 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-950'
+    ? 'h-8 w-8 border-info/30 text-info-muted-foreground hover:bg-info-muted hover:border-info dark:border-info dark:text-info dark:hover:bg-primary/90'
     : 'h-8 w-8 cursor-not-allowed opacity-40';
 
   const activeConfigs = useMemo(
@@ -243,7 +243,7 @@ const PaiementGainWorkflowConfigSection = ({
     toast({
       title: currentWorkflowConfig?.persisted ? 'Workflow mis à jour' : 'Workflow ajouté',
       description: `La configuration ${payload.codeWorkflow} a bien été enregistrée.`,
-      className: 'bg-green-500 text-white',
+      className: 'bg-success text-white',
     });
 
     setIsDialogOpen(false);
@@ -295,7 +295,7 @@ const PaiementGainWorkflowConfigSection = ({
     toast({
       title: 'Statut mis à jour',
       description: `${config.libelle} est maintenant ${nextStatus.toLowerCase()}.`,
-      className: 'bg-blue-500 text-white',
+      className: 'bg-primary text-white',
     });
 
     await loadData();
@@ -330,7 +330,7 @@ const PaiementGainWorkflowConfigSection = ({
     toast({
       title: 'Workflows initialisés',
       description: 'Les règles par défaut ont été enregistrées en base.',
-      className: 'bg-green-500 text-white',
+      className: 'bg-success text-white',
     });
 
     await loadData();
@@ -340,7 +340,7 @@ const PaiementGainWorkflowConfigSection = ({
   return (
     <div className="space-y-6">
       {(isFallback || isMissingTable) && (
-        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        <div className="rounded-2xl border border-warning/30 bg-warning-muted px-4 py-3 text-sm text-warning-muted-foreground">
           <p className="font-medium">
             {isMissingTable ? 'Configuration locale temporaire' : 'Configuration par défaut affichée'}
           </p>
@@ -359,7 +359,7 @@ const PaiementGainWorkflowConfigSection = ({
                 Initialiser les workflows par défaut
               </Button>
             )}
-            <span className="self-center text-xs text-amber-700">
+            <span className="self-center text-xs text-warning-muted-foreground">
               {isMissingTable
                 ? 'Créez la table de configuration des workflows dans Supabase, puis rechargez la page.'
                 : 'Vous pouvez initialiser ces workflows dans Supabase pour ensuite les modifier depuis cet écran.'}
@@ -392,7 +392,7 @@ const PaiementGainWorkflowConfigSection = ({
         />
       </div>
 
-      <Card className="shadow-xl glassmorphism">
+      <Card>
         <CardHeader>
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
@@ -420,7 +420,7 @@ const PaiementGainWorkflowConfigSection = ({
                 </Button>
               </DialogTrigger>
 
-              <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-4xl glassmorphism">
+              <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-4xl">
                 <DialogHeader>
                   <DialogTitle className="text-2xl text-primary">
                     {currentWorkflowConfig?.persisted ? 'Modifier' : 'Créer'} une règle de workflow
@@ -703,8 +703,8 @@ const PaiementGainWorkflowConfigSection = ({
                             !canWriteCurrentPage || isLoading || isMissingTable
                               ? 'h-8 w-8 cursor-not-allowed opacity-40'
                               : config.statut === WORKFLOW_CONFIG_STATUSES.ACTIVE
-                                ? 'h-8 w-8 border-red-200 text-red-500 hover:bg-red-50 hover:border-red-400 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950'
-                                : 'h-8 w-8 border-emerald-200 text-emerald-600 hover:bg-emerald-50 hover:border-emerald-400 dark:border-emerald-800 dark:text-emerald-400 dark:hover:bg-emerald-950'
+                                ? 'h-8 w-8 border-destructive/30 text-destructive hover:bg-destructive/10 hover:border-destructive dark:border-destructive dark:text-destructive dark:hover:bg-destructive/90'
+                                : 'h-8 w-8 border-success/30 text-success-muted-foreground hover:bg-success-muted hover:border-success dark:border-success dark:text-success dark:hover:bg-success/90'
                           }
                           disabled={isLoading || !canWriteCurrentPage || isMissingTable}
                         >
