@@ -14,6 +14,8 @@ import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, Tabl
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/components/ui/use-toast';
+import { TablePagination } from '@/components/ui/table-pagination';
+import { usePagination } from '@/hooks/usePagination';
 import {
   AlertTriangle, AlertOctagon, BookOpen, Check, CheckCircle2, ChevronDown, ChevronRight, Download, Edit, FileUp, HelpCircle,
   ImagePlus, Layers, ListChecks, Package, Plus, Search, Trash2, ArrowUpCircle, ArrowDownCircle, Wrench, X,
@@ -213,6 +215,12 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
         || String(s.piece?.reference ?? '').toLowerCase().includes(term));
   }, [stockRows, stockFilters, stockSearch]);
 
+  // Tableau du stock paginé (retour page 1 à chaque changement de filtre / recherche).
+  const stockPager = usePagination(filteredStockRows, {
+    pageSize: 25,
+    resetKey: `${stockSearch}|${JSON.stringify(stockFilters)}`,
+  });
+
   const hasActiveStockFilter =
     stockFilters.sous_ensemble.length > 0 ||
     stockFilters.type_terminal.length > 0 ||
@@ -231,6 +239,15 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
       .filter(p => !search || p.nom.toLowerCase().includes(search.toLowerCase()) || p.reference.toLowerCase().includes(search.toLowerCase())),
     [pieces, filters, search]
   );
+
+  // Modèles de composition : même pied de tableau que les autres listes.
+  const modelePager = usePagination(modeles, { pageSize: 25 });
+
+  // Catalogue paginé (retour page 1 à chaque changement de filtre / recherche).
+  const catalogPager = usePagination(filteredPieces, {
+    pageSize: 25,
+    resetKey: `${search}|${JSON.stringify(filters)}`,
+  });
 
   const helpPieceOptions = useMemo(() =>
     pieces.map((p) => {
@@ -594,7 +611,13 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                   )}
                 </div>
               </div>
-              <div className="flex flex-wrap items-end gap-2 pt-2">
+              {/* En-tête de liste (format « Liste des Guichetières ») */}
+              <div className="mt-6 flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+                <div className="min-w-0">
+                  <p className="text-lg font-semibold text-primary">Liste des pièces</p>
+                  <p className="text-sm text-muted-foreground">Filtrez par sous-ensemble ou type de terminal, ou recherchez par nom ou référence.</p>
+                </div>
+              <div className="flex flex-wrap items-center gap-2 xl:justify-end">
                 <div className="w-44">
                   <Combobox
                     multi
@@ -615,16 +638,17 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                     emptyText="Aucun."
                   />
                 </div>
-                <div className="relative min-w-[180px] flex-1">
+                <div className="relative w-full sm:w-64">
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input className="pl-10" placeholder="Rechercher : nom, référence..." value={search} onChange={e => setSearch(e.target.value)} />
+                  <Input className="pl-10" placeholder="Rechercher : nom, référence..." aria-label="Rechercher dans le catalogue" value={search} onChange={e => setSearch(e.target.value)} />
                 </div>
               </div>
+              </div>
             </CardHeader>
-            <CardContent className="p-0">
-              <Table>
-                <TableCaption>{filteredPieces.length === 0 ? 'Aucune pièce.' : `${filteredPieces.length} pièce(s).`}</TableCaption>
-                <TableHeader>
+            <CardContent>
+              <Table containerClassName="max-h-[520px]" aria-label="Catalogue des pièces">
+                {filteredPieces.length === 0 && <TableCaption>Aucune pièce.</TableCaption>}
+                <TableHeader className="sticky top-0 z-10 bg-surface-subtle">
                   <TableRow>
                     <TableHead>Nom</TableHead>
                     <TableHead>Référence</TableHead>
@@ -636,7 +660,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredPieces.map(p => {
+                  {catalogPager.pageItems.map(p => {
                     const s = stockById[p.id];
                     return (
                       <TableRow key={p.id}>
@@ -714,6 +738,10 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                   })}
                 </TableBody>
               </Table>
+              <TablePagination
+                {...catalogPager}
+                label={filteredPieces.length < pieces.length ? `entrée(s) sur ${pieces.length}` : 'entrée(s)'}
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -1007,10 +1035,10 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                 )}
               </div>
             </CardHeader>
-            <CardContent className="p-0">
-              <Table>
-                <TableCaption>{modeles.length === 0 ? 'Aucun modèle.' : `${modeles.length} modèle(s).`}</TableCaption>
-                <TableHeader>
+            <CardContent>
+              <Table containerClassName="max-h-[520px]" aria-label="Modèles de composition">
+                {modeles.length === 0 && <TableCaption>Aucun modèle.</TableCaption>}
+                <TableHeader className="sticky top-0 z-10 bg-surface-subtle">
                   <TableRow>
                     <TableHead>Nom</TableHead>
                     <TableHead>Sous-ensemble</TableHead>
@@ -1019,7 +1047,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {modeles.map(m => (
+                  {modelePager.pageItems.map(m => (
                     <TableRow key={m.id}>
                       <TableCell className="font-medium">{m.nom}</TableCell>
                       <TableCell><Badge variant="outline">{SOUS_ENSEMBLE_LABELS[m.sous_ensemble] || m.sous_ensemble}</Badge></TableCell>
@@ -1037,6 +1065,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                   ))}
                 </TableBody>
               </Table>
+              <TablePagination {...modelePager} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -1082,8 +1111,14 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                 </button>
               </div>
 
-              {/* Filtres — libellé intégré au champ (option « tout » = libellé court) */}
-              <div className="flex flex-wrap items-end gap-2 pt-4">
+              {/* En-tête de liste (format « Liste des Guichetières ») : titre à gauche,
+                  filtres + recherche à droite. */}
+              <div className="mt-6 flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+                <div className="min-w-0">
+                  <p className="text-lg font-semibold text-primary">Liste des pièces en stock</p>
+                  <p className="text-sm text-muted-foreground">Filtrez par sous-ensemble, type de terminal ou état, ou recherchez par nom ou référence.</p>
+                </div>
+              <div className="flex flex-wrap items-center gap-2 xl:justify-end">
                 <div className="w-44">
                   <Combobox
                     multi
@@ -1114,9 +1149,9 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                     emptyText="Aucun."
                   />
                 </div>
-                <div className="relative min-w-[200px] flex-1">
+                <div className="relative w-full sm:w-64">
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input className="pl-10 pr-9" placeholder="Rechercher : nom, référence..." value={stockSearch} onChange={e => setStockSearch(e.target.value)} />
+                  <Input className="pl-10 pr-9" placeholder="Rechercher : nom, référence..." aria-label="Rechercher une pièce" value={stockSearch} onChange={e => setStockSearch(e.target.value)} />
                   {stockSearch && (
                     <button
                       type="button"
@@ -1133,15 +1168,14 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                   </Button>
                 )}
               </div>
+              </div>
             </CardHeader>
-            <CardContent className="p-0">
-              <Table>
-                <TableCaption>
-                  {filteredStockRows.length === 0
-                    ? 'Aucune pièce ne correspond aux filtres.'
-                    : `${filteredStockRows.length} pièce(s)${hasActiveStockFilter ? ` sur ${stockRows.length}` : ''}.`}
-                </TableCaption>
-                <TableHeader>
+            <CardContent>
+              <Table containerClassName="max-h-[520px]" aria-label="Stock des pièces">
+                {filteredStockRows.length === 0 && (
+                  <TableCaption>Aucune pièce ne correspond aux filtres.</TableCaption>
+                )}
+                <TableHeader className="sticky top-0 z-10 bg-surface-subtle">
                   <TableRow>
                     <TableHead>Pièce</TableHead>
                     <TableHead>Référence</TableHead>
@@ -1151,7 +1185,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredStockRows.map(s => (
+                  {stockPager.pageItems.map(s => (
                     <TableRow key={s.id}>
                       <TableCell className="font-medium">{s.piece?.nom || '—'}</TableCell>
                       <TableCell className="font-mono text-sm">{s.piece?.reference || '—'}</TableCell>
@@ -1162,6 +1196,10 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                   ))}
                 </TableBody>
               </Table>
+              <TablePagination
+                {...stockPager}
+                label={hasActiveStockFilter ? `entrée(s) sur ${stockRows.length}` : 'entrée(s)'}
+              />
             </CardContent>
           </Card>
         </TabsContent>

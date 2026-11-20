@@ -256,13 +256,7 @@ const Layout = () => {
             )}
             <div className="ml-auto flex min-w-0 items-center gap-2">
               <OfflineSyncIndicator enabled={spaceFunctionalities.offline_mode === true} />
-              <span className="space-header-actions flex shrink-0 items-center">
-                <button type="button" onClick={toggleTheme}
-                  aria-label={isDarkMode ? 'Activer le thème clair' : 'Activer le thème sombre'}
-                  className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                  {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                </button>
-              </span>
+              {/* Thème clair/sombre : réglé dans Paramètres → Personnalisation (pas de bouton ici). */}
               <div ref={setProfileTarget} className="min-w-0" />
             </div>
           </div>

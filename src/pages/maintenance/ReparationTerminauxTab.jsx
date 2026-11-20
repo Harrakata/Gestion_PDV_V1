@@ -464,12 +464,25 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
     setIsLoading(false);
   };
 
+  // Pièces de remplacement : UNIQUEMENT la même pièce (même référence ou même nom —
+  // une même pièce peut exister sous plusieurs références fournisseur), du même
+  // sous-ensemble, compatible avec le type de terminal, et en stock.
+  // (Avant : toute pièce du sous-ensemble, et toute pièce « tous terminaux » quel
+  // que soit le sous-ensemble.)
   const compatiblePieces = useMemo(() => {
     if (!replacingPiece || !selectedItem) return [];
-    return pieces.filter(p =>
-      (p.sous_ensemble === selectedItem.type_sous_ensemble || p.type_terminal === 'tous') &&
-      (stockPiecesById[p.id]?.quantite || 0) > 0
-    );
+    const norm = (v) => String(v ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ').trim().toLowerCase();
+    const refKey = norm(replacingPiece.reference);
+    const nameKey = norm(replacingPiece.nom);
+    const terminal = selectedItem.type_terminal;
+    return pieces.filter((p) => {
+      const samePiece = p.id === replacingPiece.id
+        || (refKey && norm(p.reference) === refKey)
+        || (nameKey && norm(p.nom) === nameKey);
+      const sameSousEnsemble = !p.sous_ensemble || p.sous_ensemble === selectedItem.type_sous_ensemble;
+      const terminalOk = !terminal || !p.type_terminal || p.type_terminal === 'tous' || p.type_terminal === terminal;
+      return samePiece && sameSousEnsemble && terminalOk && (stockPiecesById[p.id]?.quantite || 0) > 0;
+    });
   }, [pieces, replacingPiece, selectedItem, stockPiecesById]);
 
   return (
@@ -1505,14 +1518,18 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <p className="text-sm text-muted-foreground">
-              Sélectionnez la pièce de remplacement dans le stock disponible. La quantité sera décrémentée de 1.
+              Seules les pièces <strong>{replacingPiece?.nom}</strong> disponibles en stock sont proposées. La quantité sera décrémentée de 1.
             </p>
+            {compatiblePieces.length === 0 ? (
+              <p className="rounded-xl border border-dashed border-border px-3 py-3 text-center text-sm text-muted-foreground">
+                Aucune pièce <strong>{replacingPiece?.nom}</strong> en stock pour ce sous-ensemble.
+              </p>
+            ) : (
             <div className="space-y-1">
               <Label>Pièce de remplacement</Label>
               <Select value={replacePieceId} onValueChange={setReplacePieceId}>
                 <SelectTrigger><SelectValue placeholder="Choisir une pièce..." /></SelectTrigger>
                 <SelectContent>
-                  {compatiblePieces.length === 0 && <SelectItem value="__none__" disabled>Aucune pièce compatible en stock</SelectItem>}
                   {compatiblePieces.map(p => {
                     const sp = stockPiecesById[p.id];
                     return (
@@ -1524,6 +1541,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                 </SelectContent>
               </Select>
             </div>
+            )}
             {replacePieceId && (
               <div className="rounded-md border border-warning/30 bg-warning-muted px-3 py-2 text-sm text-warning-muted-foreground">
                 Le sous-ensemble passera automatiquement à l'état <strong>À tester</strong> après remplacement.

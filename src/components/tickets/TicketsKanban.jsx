@@ -6,18 +6,18 @@ import {
 
 // Accent de colonne par statut (point + barre d'en-tête).
 const COLUMNS = [
-  { key: TICKET_STATUSES.OPEN, label: 'Ouvert', dot: 'bg-primary', bar: 'from-blue-500/70', head: 'text-info-muted-foreground' },
-  { key: TICKET_STATUSES.IN_PROGRESS, label: 'En cours', dot: 'bg-warning', bar: 'from-amber-500/70', head: 'text-warning-muted-foreground' },
-  { key: TICKET_STATUSES.RESOLVED, label: 'Résolu', dot: 'bg-success', bar: 'from-emerald-500/70', head: 'text-success-muted-foreground' },
-  { key: TICKET_STATUSES.CLOSED, label: 'Clôturé', dot: 'bg-slate-400', bar: 'from-slate-400/70', head: 'text-foreground/80' },
+  { key: TICKET_STATUSES.OPEN, label: 'Ouvert', dot: 'bg-primary', bar: 'bg-primary', head: 'text-info-muted-foreground' },
+  { key: TICKET_STATUSES.IN_PROGRESS, label: 'En cours', dot: 'bg-warning', bar: 'bg-warning', head: 'text-warning-muted-foreground' },
+  { key: TICKET_STATUSES.RESOLVED, label: 'Résolu', dot: 'bg-success', bar: 'bg-success', head: 'text-success-muted-foreground' },
+  { key: TICKET_STATUSES.CLOSED, label: 'Clôturé', dot: 'bg-muted-foreground', bar: 'bg-muted-foreground', head: 'text-foreground/80' },
 ];
 
 // Couleur d'accent de carte (bordure gauche) + pastille selon la priorité.
 const PRIORITY_ACCENT = {
-  urgente: { border: 'border-l-destructive', pill: 'bg-destructive/10 text-destructive' },
-  haute: { border: 'border-l-warning', pill: 'bg-warning-muted text-warning-muted-foreground' },
-  normale: { border: 'border-l-info', pill: 'bg-info-muted text-info-muted-foreground' },
-  basse: { border: 'border-l-border', pill: 'bg-muted text-foreground/80' },
+  urgente: { pill: 'bg-destructive/10 text-destructive' },
+  haute: { pill: 'bg-warning-muted text-warning-muted-foreground' },
+  normale: { pill: 'bg-info-muted text-info-muted-foreground' },
+  basse: { pill: 'bg-muted text-foreground/80' },
 };
 
 const initials = (name) =>
@@ -71,7 +71,7 @@ const TicketsKanban = ({ rows = [], onCardClick, onStatusChange }) => {
           >
             {/* En-tête de colonne */}
             <div className="relative overflow-hidden rounded-t-2xl">
-              <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${col.bar} to-transparent`} />
+              <div className={`absolute inset-x-0 top-0 h-1 ${col.bar}`} />
               <div className="flex items-center gap-2 px-3 py-2.5">
                 <span className={`h-2.5 w-2.5 rounded-full ${col.dot}`} />
                 <span className={`text-sm font-semibold ${col.head}`}>{col.label}</span>
@@ -102,7 +102,7 @@ const TicketsKanban = ({ rows = [], onCardClick, onStatusChange }) => {
                       onDragEnd={draggable ? () => { setDraggingId(null); setOverCol(null); } : undefined}
                       onClick={() => onCardClick?.(r)}
                       onKeyDown={(e) => { if (e.key === 'Enter') onCardClick?.(r); }}
-                      className={`group relative rounded-xl border border-l-4 ${accent.border} bg-card p-3 text-xs shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary/40 ${draggable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'} ${isDragging ? 'opacity-50 rotate-1' : ''}`}
+                      className={`group relative rounded-xl border border-border bg-card p-3 text-xs shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary/40 ${draggable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'} ${isDragging ? 'opacity-50 rotate-1' : ''}`}
                     >
                       {/* Ligne haute : réf + priorité */}
                       <div className="flex items-center justify-between gap-2">
