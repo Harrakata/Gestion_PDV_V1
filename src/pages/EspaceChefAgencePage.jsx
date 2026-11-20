@@ -1022,6 +1022,7 @@ const EspaceChefAgencePage = () => {
         photoUrl={chefDetails?.photo_url || chefAgenceInfo?.photo_url}
         initials={chefAgenceInfo?.nomChef?.split(' ').map(n => n[0]).join('') || 'CA'}
         name={chefAgenceInfo?.nomChef}
+        role="Chef d'agence"
         actions={(
           <>
             <NotificationBell
@@ -1051,6 +1052,7 @@ const EspaceChefAgencePage = () => {
               photoUrl={chefDetails?.photo_url || chefAgenceInfo?.photo_url}
               initials={chefAgenceInfo?.nomChef?.split(' ').map(n => n[0]).join('') || 'CA'}
               name={chefAgenceInfo?.nomChef}
+              role="Chef d'agence"
               actions={(
                 <>
                   <NotificationBell

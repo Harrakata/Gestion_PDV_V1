@@ -81,6 +81,7 @@ const SPACE_CONFIGS = {
     loginDescription: 'Connectez-vous avec le profil directeur régional créé dans l’espace Exploitation.',
     expectedFunction: VALIDATOR_FUNCTIONS.REGIONAL,
     fallbackInitials: 'DR',
+    roleLabel: 'Directeur régional',
   },
   general: {
     storageKey: 'pmuDirecteurGeneralAuth',
@@ -88,6 +89,7 @@ const SPACE_CONFIGS = {
     loginDescription: 'Connectez-vous avec le profil directeur général créé dans l’espace Exploitation.',
     expectedFunction: VALIDATOR_FUNCTIONS.GENERAL,
     fallbackInitials: 'DG',
+    roleLabel: 'Directeur général',
   },
 };
 
@@ -1084,6 +1086,7 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
         photoUrl={validator.photo_url}
         initials={[validator.prenom?.[0], validator.nom?.[0]].filter(Boolean).join('') || spaceConfig.fallbackInitials}
         name={`${validator.prenom || ''} ${validator.nom || ''}`.trim()}
+        role={spaceConfig.roleLabel}
         actions={(
           <NotificationBell
             notifications={spaceNotifications}
@@ -1112,6 +1115,7 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
               photoUrl={validator.photo_url}
               initials={[validator.prenom?.[0], validator.nom?.[0]].filter(Boolean).join('') || spaceConfig.fallbackInitials}
               name={`${validator.prenom || ''} ${validator.nom || ''}`.trim()}
+              role={spaceConfig.roleLabel}
               actions={(
                 <NotificationBell
                   notifications={spaceNotifications}

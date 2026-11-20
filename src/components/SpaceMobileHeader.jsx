@@ -10,7 +10,7 @@ import SpaceHeaderSearch from '@/components/SpaceHeaderSearch';
  * recherche, actions (cloche, remontée…) et bouton menu en pastilles rondes.
  * La recherche se déplie sous la carte et réutilise celle du PC.
  */
-export default function SpaceMobileHeader({ photoUrl, initials, name, actions, menuOpen, onToggleMenu }) {
+export default function SpaceMobileHeader({ photoUrl, initials, name, role, actions, menuOpen, onToggleMenu }) {
   const context = useContext(SpaceHeaderContext);
   const location = useLocation();
   const [searchOpen, setSearchOpen] = React.useState(false);
@@ -28,7 +28,10 @@ export default function SpaceMobileHeader({ photoUrl, initials, name, actions, m
             {(initials || '?').slice(0, 2).toUpperCase()}
           </span>
         )}
-        <p className="min-w-0 flex-1 truncate text-sm font-bold text-foreground">{name || '—'}</p>
+        <div className="min-w-0 flex-1 leading-tight">
+          <p className="truncate text-sm font-bold text-foreground">{name || '—'}</p>
+          {role && <p className="truncate text-xs font-medium text-muted-foreground">{role}</p>}
+        </div>
         <div className="space-header-actions flex shrink-0 items-center gap-1.5">
           <button
             type="button"

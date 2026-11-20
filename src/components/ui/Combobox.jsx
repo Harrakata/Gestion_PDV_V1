@@ -96,6 +96,7 @@ const Combobox = ({ options, value, onSelect, placeholder, searchPlaceholder, em
             aria-expanded={open}
             aria-label={triggerTitle}
             title={triggerTitle}
+            data-all={isAllMode ? '' : undefined}
             className={cn("w-full justify-between gap-1", values.length > 0 && "border-primary/50 bg-primary/5 text-primary")}
             disabled={disabled}
           >
@@ -173,6 +174,7 @@ const Combobox = ({ options, value, onSelect, placeholder, searchPlaceholder, em
       variant="outline"
       role="combobox"
       aria-expanded={open}
+      data-placeholder={selectedOption ? undefined : ''}
       className="w-full justify-between"
       disabled={disabled}
     >

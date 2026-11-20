@@ -8,6 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Combobox } from '@/components/ui/Combobox';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { TablePagination } from '@/components/ui/table-pagination';
+import { usePagination } from '@/hooks/usePagination';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
 import KpiStatCard from '@/components/analytics/KpiStatCard';
@@ -264,6 +266,7 @@ const DevisPiecesTab = () => {
       piece.commentaire,
     ].some((value) => String(value || '').toLowerCase().includes(term)));
   }, [catalogPieces, catalogSearch]);
+  const catalogPager = usePagination(filteredCatalogPieces, { pageSize: 25, resetKey: catalogSearch });
 
   const extraLines = useMemo(() => extraFields
     .map((field) => ({
@@ -582,9 +585,9 @@ const DevisPiecesTab = () => {
               <Badge variant="outline">{quoteNumber}</Badge>
             </div>
           </CardHeader>
-          <CardContent className="p-0">
+          <CardContent className="space-y-3">
             {/* Ajout manuel d'une pièce consommée depuis le catalogue */}
-            <div className="flex flex-wrap items-end gap-2 border-b bg-transparent p-3">
+            <div className="flex flex-wrap items-end gap-2">
               <div className="grid min-w-[180px] flex-1 gap-1">
                 <Label className="text-xs">Ajouter une pièce du catalogue</Label>
                 <Combobox
@@ -604,7 +607,7 @@ const DevisPiecesTab = () => {
                 <Plus className="mr-2 h-4 w-4" /> Ajouter
               </Button>
             </div>
-            <Table>
+            <Table aria-label="Pièces consommées">
               <TableCaption>
                 {isLoading ? 'Chargement...' : `${consumedLines.length} ligne(s) — dont ${movements.length} mouvement(s) de stock.`}
               </TableCaption>
@@ -701,20 +704,17 @@ const DevisPiecesTab = () => {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="p-0">
-          <div className="max-h-[360px] overflow-auto">
-            <Table className="min-w-[900px]">
-              <TableCaption>
-                {isLoading ? 'Chargement...' : `${filteredCatalogPieces.length} pièce(s) affichée(s) sur ${catalogPieces.length}.`}
-              </TableCaption>
-              <TableHeader>
+        <CardContent>
+            <Table className="min-w-[900px]" containerClassName="max-h-[520px]" aria-label="Catalogue des pièces">
+              {isLoading && <TableCaption>Chargement...</TableCaption>}
+              <TableHeader className="sticky top-0 z-10 bg-surface-subtle">
                 <TableRow>
-                  <TableHead className="sticky top-0 z-10 bg-background">Pièce</TableHead>
-                  <TableHead className="sticky top-0 z-10 bg-background">Référence</TableHead>
-                  <TableHead className="sticky top-0 z-10 bg-background text-right">Prix unitaire HT (€)</TableHead>
-                  <TableHead className="sticky top-0 z-10 bg-background">Sous-ensemble</TableHead>
-                  <TableHead className="sticky top-0 z-10 bg-background">Type terminal</TableHead>
-                  <TableHead className="sticky top-0 z-10 bg-background">Commentaire</TableHead>
+                  <TableHead>Pièce</TableHead>
+                  <TableHead>Référence</TableHead>
+                  <TableHead className="text-right">Prix unitaire HT (€)</TableHead>
+                  <TableHead>Sous-ensemble</TableHead>
+                  <TableHead>Type terminal</TableHead>
+                  <TableHead>Commentaire</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -724,7 +724,7 @@ const DevisPiecesTab = () => {
                       Aucune pièce dans le catalogue.
                     </TableCell>
                   </TableRow>
-                ) : filteredCatalogPieces.map((piece) => (
+                ) : catalogPager.pageItems.map((piece) => (
                   <TableRow key={piece.id}>
                     <TableCell className="font-medium">{piece.nom || '-'}</TableCell>
                     <TableCell className="font-mono text-sm">{piece.reference || '-'}</TableCell>
@@ -738,7 +738,10 @@ const DevisPiecesTab = () => {
                 ))}
               </TableBody>
             </Table>
-          </div>
+            <TablePagination
+              {...catalogPager}
+              label={filteredCatalogPieces.length < catalogPieces.length ? `pièce(s) sur ${catalogPieces.length}` : 'pièce(s)'}
+            />
         </CardContent>
       </Card>
     </div>

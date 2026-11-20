@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 120" role="img" aria-label="Gestion PDV — Gestion des points de vente">
+  <!-- Gestion PDV — logo horizontal, pour fond clair. Police : Poppins (chargée par l'application). -->
+  <svg x="0" y="12" width="160" height="96" viewBox="10 0 150 90">
+    <g fill="#0F2A5C">
+      <path d="M113 34 C122 30 134 30 146 34 C150 35 154 38 156 41 C150 39 144 38 138 39 C144 41 149 44 152 48 C145 45 137 43 129 42 C123 41 117 41 114 41 Z"/>
+      <path d="M14 33 C13 30 14 28 16 27 L36 11 L39 3 L42 10 L44 11 C52 13 58 21 62 29 C64 32 68 33 72 34 C82 37 94 35 104 32 C110 31 114 35 115 41 C116 47 114 52 110 55 C104 58 98 58 92 58 C84 59 76 60 68 61 C62 61 56 60 52 56 C50 50 46 40 42 32 C38 34 33 35 28 36 C24 37 20 38 17 37 C15 36 14 35 14 33 Z"/>
+      <path d="M52 52 C48 56 44 59 39 61 C34 63 30 64 26 65 L22 66 C20 67 19 69 21 69 L27 68 C32 67 36 66 41 65 C46 63 52 60 56 56 Z"/>
+      <path d="M58 58 C58 63 57 67 56 70 C58 73 62 75 66 77 C68 78 69 80 67 81 C62 80 57 77 53 72 C53 67 54 62 55 58 Z"/>
+      <path d="M108 50 C113 54 118 57 123 59 C128 62 132 64 136 66 L140 67 C142 68 142 70 140 70 L134 69 C129 67 124 65 120 63 C114 60 108 57 102 54 Z"/>
+      <path d="M100 55 C103 60 104 64 103 68 C100 72 96 75 92 78 L89 80 C87 81 86 80 87 78 L90 76 C94 72 97 69 98 66 C97 62 95 59 93 57 Z"/>
+    </g>
+    <g fill="#F2A900">
+      <circle cx="60" cy="14" r="4.2"/>
+      <path d="M57 14 L51 16 L57 17 Z"/>
+      <path d="M57 20 C62 15 72 13 80 15 C85 17 86 22 83 25 C79 27 74 26 70 25 C66 24 61 23 57 22 Z"/>
+    </g>
+    <g fill="none" stroke="#F2A900" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M62 19 C59 22 56 24 52 25" stroke-width="2.6"/>
+      <path d="M80 24 C76 26 73 27 71 28 C72 31 74 32 77 33" stroke-width="3.2"/>
+    </g>
+    <path d="M52 25 C42 26 30 30 19 34" fill="none" stroke="#FFFFFF" stroke-width="0.7"/>
+    <circle cx="30" cy="21" r="1.2" fill="#FFFFFF"/>
+  </svg>
+  <text x="178" y="66" font-family="Poppins, 'Segoe UI', Arial, sans-serif" font-size="46" letter-spacing="-0.5" fill="#0F2A5C"><tspan font-weight="500">Gestion </tspan><tspan font-weight="800" fill="#2563EB">PDV</tspan></text>
+  <text x="180" y="94" font-family="Poppins, 'Segoe UI', Arial, sans-serif" font-size="13" font-weight="600" letter-spacing="3" fill="#475569">GESTION DES POINTS DE VENTE</text>
+</svg>

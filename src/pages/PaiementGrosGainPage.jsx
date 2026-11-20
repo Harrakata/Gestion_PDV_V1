@@ -5,6 +5,7 @@ import { usePageState } from '@/hooks/usePageState';
 import { motion } from 'framer-motion';
 import {
   Building2,
+  ArrowRight,
   CalendarClock,
   Camera,
   CheckCircle2,
@@ -1577,218 +1578,287 @@ const PaiementGrosGainPage = () => {
             <CardContent className="space-y-6">
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 <div className="space-y-2">
-                  <Label>Veuillez saisir le montant de votre gain</Label>
+                  <Label htmlFor="pg-montantGain">Montant du gain (FCFA)</Label>
                   <Input
+                    id="pg-montantGain"
                     type="number"
                     min="0"
+                    placeholder="Ex : 1 500 000"
                     value={formData.montantGain}
                     onChange={(event) => handleFormFieldChange('montantGain', event.target.value)}
-                    placeholder="Montant en FCFA"
                     disabled={isSubmitting}
                   />
                 </div>
               </div>
 
               {selectedProcedure && (
-                <div className="grid gap-4 rounded-2xl border border-primary/20 bg-primary/5 p-5 lg:grid-cols-4">
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground">Tranche</p>
-                    <p className="font-medium">{selectedProcedure.trancheLabel}</p>
-                    {selectedProcedure.workflowLabel && selectedProcedure.workflowLabel !== selectedProcedure.trancheLabel ? (
-                      <p className="mt-1 text-xs text-muted-foreground">{selectedProcedure.workflowLabel}</p>
-                    ) : null}
-                  </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground">Mode de paiement</p>
-                    <p className="font-medium">{selectedProcedure.modePaiement}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground">Lieu de paiement</p>
-                    <p className="font-medium">{selectedProcedure.lieuPaiement}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground">Circuit</p>
-                    <p className="font-medium">{selectedProcedure.circuit.join(' -> ')}</p>
-                  </div>
-                  <div className="lg:col-span-4">
-                    <p className="text-sm text-muted-foreground">{selectedProcedure.description}</p>
+                <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
+                  <dl className="grid gap-4 sm:grid-cols-3">
+                    <div className="min-w-0">
+                      <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Tranche</dt>
+                      <dd className="mt-1 font-semibold text-foreground">{selectedProcedure.trancheLabel}</dd>
+                      {selectedProcedure.workflowLabel && selectedProcedure.workflowLabel !== selectedProcedure.trancheLabel ? (
+                        <dd className="mt-0.5 text-xs text-muted-foreground">{selectedProcedure.workflowLabel}</dd>
+                      ) : null}
+                    </div>
+                    <div className="min-w-0">
+                      <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Mode de paiement</dt>
+                      <dd className="mt-1 font-semibold text-foreground">{selectedProcedure.modePaiement}</dd>
+                    </div>
+                    <div className="min-w-0">
+                      <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Lieu de paiement</dt>
+                      <dd className="mt-1 font-semibold text-foreground">{selectedProcedure.lieuPaiement}</dd>
+                    </div>
+                  </dl>
+                  <div className="mt-4 border-t border-primary/15 pt-3">
+                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Circuit de validation</p>
+                    <ol className="mt-2 flex flex-wrap items-center gap-1.5" aria-label="Circuit de validation">
+                      {selectedProcedure.circuit.map((step, index) => (
+                        <li key={`${step}-${index}`} className="flex items-center gap-1.5">
+                          {index > 0 && <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />}
+                          <span className="rounded-md bg-card px-2.5 py-1 text-sm font-medium text-foreground ring-1 ring-border">
+                            {step}
+                          </span>
+                        </li>
+                      ))}
+                    </ol>
+                    {selectedProcedure.description && (
+                      <p className="mt-3 text-sm text-muted-foreground">{selectedProcedure.description}</p>
+                    )}
                   </div>
                 </div>
               )}
 
               {selectedProcedure?.identificationRequired && (
                 <div className="space-y-6">
-                  <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                    <div className="space-y-2">
-                      <Label>Numéro de la course</Label>
-                      <Input
-                        value={formData.numeroCourse}
-                        onChange={(event) => handleFormFieldChange('numeroCourse', event.target.value)}
-                        disabled={isSubmitting}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Type de pari</Label>
-                      <Input
-                        value={formData.typePari}
-                        onChange={(event) => handleFormFieldChange('typePari', event.target.value)}
-                        disabled={isSubmitting}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Région souhaitée</Label>
-                      <Combobox
-                        options={regionOptions}
-                        value={formData.regionPaiementSouhaitee}
-                        onSelect={(selectedValue) => handleFormFieldChange('regionPaiementSouhaitee', selectedValue)}
-                        placeholder="Sélectionner une région"
-                        searchPlaceholder="Rechercher une région..."
-                        emptyText="Aucune région disponible."
-                        disabled={isSubmitting}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Agence souhaitée</Label>
-                      <Combobox
-                        options={desiredAgencyOptions}
-                        value={formData.agenceSouhaiteeNom}
-                        onSelect={(selectedValue) => handleFormFieldChange('agenceSouhaiteeNom', selectedValue)}
-                        placeholder={
-                          formData.regionPaiementSouhaitee
-                            ? "Sélectionner une agence"
-                            : "Choisir d'abord une région"
-                        }
-                        searchPlaceholder="Rechercher une agence..."
-                        emptyText="Aucune agence disponible pour cette région."
-                        disabled={isSubmitting || !formData.regionPaiementSouhaitee}
-                      />
-                    </div>
-                    {selectedProcedure?.requiresRegionalApproval && (
+                  <section className="space-y-4 border-t border-border/60 pt-5">
+                    <h4 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                      <Ticket className="h-4 w-4 text-primary" aria-hidden="true" />
+                      Course et ticket
+                    </h4>
+                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                       <div className="space-y-2">
-                        <Label>Directeur régional associé</Label>
+                        <Label htmlFor="pg-numeroCourse">Numéro de la course</Label>
+                        <Input
+                          id="pg-numeroCourse"
+                          value={formData.numeroCourse}
+                          onChange={(event) => handleFormFieldChange('numeroCourse', event.target.value)}
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="pg-typePari">Type de pari</Label>
+                        <Input
+                          id="pg-typePari"
+                          value={formData.typePari}
+                          onChange={(event) => handleFormFieldChange('typePari', event.target.value)}
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="pg-numeroTicketGagnant">Numéro du ticket gagnant</Label>
+                        <Input
+                          id="pg-numeroTicketGagnant"
+                          value={formData.numeroTicketGagnant}
+                          onChange={(event) => handleFormFieldChange('numeroTicketGagnant', event.target.value)}
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="pg-dateReunionCourse">Date du jour de la réunion</Label>
+                        <Input
+                          id="pg-dateReunionCourse"
+                          type="date"
+                          value={formData.dateReunionCourse}
+                          onChange={(event) => handleFormFieldChange('dateReunionCourse', event.target.value)}
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="pg-dateCourse">Date de la course</Label>
+                        <Input
+                          id="pg-dateCourse"
+                          type="date"
+                          value={formData.dateCourse}
+                          onChange={(event) => handleFormFieldChange('dateCourse', event.target.value)}
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                    </div>
+                  </section>
+
+                  <section className="space-y-4 border-t border-border/60 pt-5">
+                    <h4 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                      <MapPin className="h-4 w-4 text-primary" aria-hidden="true" />
+                      Lieu de paiement
+                    </h4>
+                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                      <div className="space-y-2">
+                        <Label>Région souhaitée</Label>
                         <Combobox
-                          options={regionalValidatorOptions}
-                          value={formData.directeurRegionalId}
-                          onSelect={(selectedValue) => handleFormFieldChange('directeurRegionalId', selectedValue)}
-                          placeholder="Sélectionner un directeur régional"
-                          searchPlaceholder="Rechercher un directeur régional..."
-                          emptyText="Aucun directeur régional actif pour cette région."
+                          options={regionOptions}
+                          value={formData.regionPaiementSouhaitee}
+                          onSelect={(selectedValue) => handleFormFieldChange('regionPaiementSouhaitee', selectedValue)}
+                          placeholder="Sélectionner une région"
+                          searchPlaceholder="Rechercher une région..."
+                          emptyText="Aucune région disponible."
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Agence souhaitée</Label>
+                        <Combobox
+                          options={desiredAgencyOptions}
+                          value={formData.agenceSouhaiteeNom}
+                          onSelect={(selectedValue) => handleFormFieldChange('agenceSouhaiteeNom', selectedValue)}
+                          placeholder={formData.regionPaiementSouhaitee ? 'Sélectionner une agence' : "Choisir d'abord une région"}
+                          searchPlaceholder="Rechercher une agence..."
+                          emptyText="Aucune agence disponible pour cette région."
                           disabled={isSubmitting || !formData.regionPaiementSouhaitee}
                         />
                       </div>
-                    )}
-                    <div className="space-y-2">
-                      <Label>Date du jour de la réunion</Label>
-                      <Input
-                        type="date"
-                        value={formData.dateReunionCourse}
-                        onChange={(event) => handleFormFieldChange('dateReunionCourse', event.target.value)}
-                        disabled={isSubmitting}
-                      />
+                      {selectedProcedure?.requiresRegionalApproval && (
+                        <div className="space-y-2">
+                          <Label>Directeur régional associé</Label>
+                          <Combobox
+                            options={regionalValidatorOptions}
+                            value={formData.directeurRegionalId}
+                            onSelect={(selectedValue) => handleFormFieldChange('directeurRegionalId', selectedValue)}
+                            placeholder="Sélectionner un directeur régional"
+                            searchPlaceholder="Rechercher un directeur régional..."
+                            emptyText="Aucun directeur régional actif pour cette région."
+                            disabled={isSubmitting || !formData.regionPaiementSouhaitee}
+                          />
+                        </div>
+                      )}
                     </div>
-                    <div className="space-y-2">
-                      <Label>Date de la course</Label>
-                      <Input
-                        type="date"
-                        value={formData.dateCourse}
-                        onChange={(event) => handleFormFieldChange('dateCourse', event.target.value)}
-                        disabled={isSubmitting}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Numéro du ticket gagnant</Label>
-                      <Input
-                        value={formData.numeroTicketGagnant}
-                        onChange={(event) => handleFormFieldChange('numeroTicketGagnant', event.target.value)}
-                        disabled={isSubmitting}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Nom du gagnant</Label>
-                      <Input
-                        value={formData.nomGagnant}
-                        onChange={(event) => handleFormFieldChange('nomGagnant', event.target.value)}
-                        disabled={isSubmitting}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Prénom du gagnant</Label>
-                      <Input
-                        value={formData.prenomGagnant}
-                        onChange={(event) => handleFormFieldChange('prenomGagnant', event.target.value)}
-                        disabled={isSubmitting}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Téléphone du gagnant</Label>
-                      <Input
-                        type="tel"
-                        value={formData.telephoneGagnant}
-                        onChange={(event) => handleFormFieldChange('telephoneGagnant', event.target.value)}
-                        placeholder="Ex : 70 00 00 00 ou +226 70 00 00 00"
-                        disabled={isSubmitting}
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Utilisé pour notifier le parieur par SMS dès l’autorisation du paiement.
-                      </p>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Secteur de résidence</Label>
-                      <Input
-                        value={formData.secteurResidence}
-                        onChange={(event) => handleFormFieldChange('secteurResidence', event.target.value)}
-                        disabled={isSubmitting}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Province de résidence</Label>
-                      <Input
-                        value={formData.provinceResidence}
-                        onChange={(event) => handleFormFieldChange('provinceResidence', event.target.value)}
-                        disabled={isSubmitting}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Numéro de la carte d’identité</Label>
-                      <Input
-                        value={formData.numeroPieceIdentite}
-                        onChange={(event) => handleFormFieldChange('numeroPieceIdentite', event.target.value)}
-                        disabled={isSubmitting}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Date d’établissement de la carte</Label>
-                      <Input
-                        type="date"
-                        value={formData.dateEtablissementPiece}
-                        onChange={(event) => handleFormFieldChange('dateEtablissementPiece', event.target.value)}
-                        disabled={isSubmitting}
-                      />
-                    </div>
-                    <div className="space-y-2 md:col-span-2 xl:col-span-3">
-                      <Label>Autorité ayant délivré la pièce d’identité</Label>
-                      <Input
-                        value={formData.autoritePieceIdentite}
-                        onChange={(event) => handleFormFieldChange('autoritePieceIdentite', event.target.value)}
-                        disabled={isSubmitting}
-                      />
-                    </div>
-                  </div>
+                  </section>
 
-                  <div className="space-y-3">
-                    <Label className="flex items-center gap-2">
-                      <Camera className="h-4 w-4" />
-                      Photo de la pièce d’identité
-                    </Label>
-                    <Input type="file" accept="image/*" capture="environment" onChange={handlePhotoChange} disabled={isSubmitting} />
-                    {photoPreview ? (
-                      <img src={photoPreview} alt="Prévisualisation pièce" className="max-h-72 rounded-xl border object-contain" />
-                    ) : (
-                      <p className="text-sm text-muted-foreground">
-                        Vous pouvez importer une image existante ou prendre la photo directement depuis un mobile.
-                      </p>
-                    )}
-                  </div>
+                  <section className="space-y-4 border-t border-border/60 pt-5">
+                    <h4 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                      <User className="h-4 w-4 text-primary" aria-hidden="true" />
+                      Gagnant
+                    </h4>
+                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                      <div className="space-y-2">
+                        <Label htmlFor="pg-nomGagnant">Nom du gagnant</Label>
+                        <Input
+                          id="pg-nomGagnant"
+                          value={formData.nomGagnant}
+                          onChange={(event) => handleFormFieldChange('nomGagnant', event.target.value)}
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="pg-prenomGagnant">Prénom du gagnant</Label>
+                        <Input
+                          id="pg-prenomGagnant"
+                          value={formData.prenomGagnant}
+                          onChange={(event) => handleFormFieldChange('prenomGagnant', event.target.value)}
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="pg-telephoneGagnant">Téléphone du gagnant</Label>
+                        <Input
+                          id="pg-telephoneGagnant"
+                          type="tel"
+                          placeholder="Ex : 70 00 00 00 ou +226 70 00 00 00"
+                          aria-describedby="pg-telephoneGagnant-hint"
+                          value={formData.telephoneGagnant}
+                          onChange={(event) => handleFormFieldChange('telephoneGagnant', event.target.value)}
+                          disabled={isSubmitting}
+                        />
+                        <p id="pg-telephoneGagnant-hint" className="text-xs text-muted-foreground">
+                          Utilisé pour notifier le parieur par SMS dès l’autorisation du paiement.
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="pg-secteurResidence">Secteur de résidence</Label>
+                        <Input
+                          id="pg-secteurResidence"
+                          value={formData.secteurResidence}
+                          onChange={(event) => handleFormFieldChange('secteurResidence', event.target.value)}
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="pg-provinceResidence">Province de résidence</Label>
+                        <Input
+                          id="pg-provinceResidence"
+                          value={formData.provinceResidence}
+                          onChange={(event) => handleFormFieldChange('provinceResidence', event.target.value)}
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                    </div>
+                  </section>
+
+                  <section className="space-y-4 border-t border-border/60 pt-5">
+                    <h4 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                      <CreditCard className="h-4 w-4 text-primary" aria-hidden="true" />
+                      Pièce d’identité
+                    </h4>
+                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                      <div className="space-y-2">
+                        <Label htmlFor="pg-numeroPieceIdentite">Numéro de la carte d’identité</Label>
+                        <Input
+                          id="pg-numeroPieceIdentite"
+                          value={formData.numeroPieceIdentite}
+                          onChange={(event) => handleFormFieldChange('numeroPieceIdentite', event.target.value)}
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="pg-dateEtablissementPiece">Date d’établissement de la carte</Label>
+                        <Input
+                          id="pg-dateEtablissementPiece"
+                          type="date"
+                          value={formData.dateEtablissementPiece}
+                          onChange={(event) => handleFormFieldChange('dateEtablissementPiece', event.target.value)}
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="pg-autoritePieceIdentite">Autorité ayant délivré la pièce</Label>
+                        <Input
+                          id="pg-autoritePieceIdentite"
+                          value={formData.autoritePieceIdentite}
+                          onChange={(event) => handleFormFieldChange('autoritePieceIdentite', event.target.value)}
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                      <label
+                        htmlFor="pg-photo"
+                        className={`flex cursor-pointer items-center gap-4 rounded-lg border border-dashed border-border bg-surface-subtle p-4 transition-colors hover:border-primary/50 hover:bg-primary/5 focus-within:ring-2 focus-within:ring-ring md:col-span-2 xl:col-span-3 ${isSubmitting ? 'pointer-events-none opacity-60' : ''}`}
+                      >
+                        {photoPreview ? (
+                          <img src={photoPreview} alt="Prévisualisation de la pièce d’identité" className="h-20 w-28 shrink-0 rounded-md border border-border object-cover" />
+                        ) : (
+                          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                            <Camera className="h-5 w-5" aria-hidden="true" />
+                          </span>
+                        )}
+                        <span className="min-w-0">
+                          <span className="block text-sm font-semibold text-foreground">Photo de la pièce d’identité</span>
+                          <span className="block truncate text-xs text-muted-foreground">
+                            {photoFile
+                              ? `${photoFile.name} — cliquer pour remplacer`
+                              : 'Importer une image ou prendre la photo directement depuis un mobile.'}
+                          </span>
+                        </span>
+                        <input
+                          id="pg-photo"
+                          type="file"
+                          accept="image/*"
+                          capture="environment"
+                          onChange={handlePhotoChange}
+                          disabled={isSubmitting}
+                          className="sr-only"
+                        />
+                      </label>
+                    </div>
+                  </section>
                 </div>
               )}
 
@@ -1813,7 +1883,6 @@ const PaiementGrosGainPage = () => {
                 <Button
                   onClick={handleSubmitDemande}
                   disabled={isSubmitting}
-                  className="bg-primary text-white hover:bg-primary/90"
                 >
                   {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UploadCloud className="mr-2 h-4 w-4" />}
                   Envoyer la demande

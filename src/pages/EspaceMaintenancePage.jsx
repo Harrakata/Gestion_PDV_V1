@@ -371,6 +371,7 @@ const EspaceMaintenancePage = () => {
         photoUrl={userData?.photo_url}
         initials={[userData?.prenom?.[0], userData?.nom?.[0]].filter(Boolean).join('') || 'TM'}
         name={`${userData?.prenom || ''} ${userData?.nom || ''}`.trim()}
+        role="Technicien maintenance"
         actions={(
           <>
             <NotificationBell
@@ -404,6 +405,7 @@ const EspaceMaintenancePage = () => {
               photoUrl={userData?.photo_url}
               initials={[userData?.prenom?.[0], userData?.nom?.[0]].filter(Boolean).join('') || 'TM'}
               name={`${userData?.prenom || ''} ${userData?.nom || ''}`.trim()}
+              role="Technicien maintenance"
               actions={(
                 <>
                   <NotificationBell

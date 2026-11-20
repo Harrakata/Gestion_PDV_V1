@@ -109,7 +109,7 @@ const AnchoredPopover = ({
     <>
       <span
         ref={triggerRef}
-        className={triggerWrapClassName}
+        className={`anchored-trigger ${triggerWrapClassName}`}
         onClick={() => { if (!disabled) setOpen((o) => !o); }}
       >
         {trigger}

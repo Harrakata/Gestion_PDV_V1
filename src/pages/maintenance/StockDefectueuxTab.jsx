@@ -9,6 +9,8 @@ import { Input } from '@/components/ui/input';
 import FormField from '@/components/ui/form-field';
 import { Combobox } from '@/components/ui/Combobox';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { TablePagination } from '@/components/ui/table-pagination';
+import { usePagination } from '@/hooks/usePagination';
 import { useToast } from '@/components/ui/use-toast';
 import KpiStatCard from '@/components/analytics/KpiStatCard';
 import { getStockDefectueuxRecordIds, regrouperStockDefectueuxActif } from '@/lib/stockDefectueux';
@@ -104,6 +106,9 @@ const StockDefectueuxTab = ({ canManage = true, technicienId = null }) => {
       .filter(s => !term || [s.reference_sous_ensemble, s.type_sous_ensemble, s.technicien_nom, s.agence?.nom, s.commentaire]
         .some(v => String(v || '').toLowerCase().includes(term)));
   }, [stock, filters, search]);
+
+  // Tableau paginé — pied standard (retour page 1 à chaque filtre / recherche).
+  const pager = usePagination(filtered, { pageSize: 25, resetKey: `${search}|${JSON.stringify(filters)}` });
 
   const technicienOptions = useMemo(() => techniciens.map((technicien) => {
     const fullName = [technicien.prenom, technicien.nom].filter(Boolean).join(' ').trim();
@@ -256,12 +261,10 @@ const StockDefectueuxTab = ({ canManage = true, technicienId = null }) => {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="p-0">
-          <Table containerClassName="max-h-[60vh]">
-            <TableCaption>
-              {filtered.length === 0 ? 'Aucun sous-ensemble défectueux.' : `${filtered.length} sous-ensemble(s).`}
-            </TableCaption>
-            <TableHeader className="sticky top-0 z-10 bg-muted/50 backdrop-blur-sm">
+        <CardContent>
+          <Table containerClassName="max-h-[520px]" aria-label="Stock de sous-ensembles défectueux">
+            {filtered.length === 0 && <TableCaption>Aucun sous-ensemble défectueux.</TableCaption>}
+            <TableHeader className="sticky top-0 z-10 bg-surface-subtle">
               <TableRow>
                 <TableHead>Référence</TableHead>
                 <TableHead>Type</TableHead>
@@ -275,7 +278,7 @@ const StockDefectueuxTab = ({ canManage = true, technicienId = null }) => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map(item => (
+              {pager.pageItems.map(item => (
                 <TableRow key={item.id} className="cursor-pointer hover:bg-muted/40" onClick={() => openDetail(item)}>
                   <TableCell className="font-medium font-mono">{item.reference_sous_ensemble}</TableCell>
                   <TableCell><Badge variant="outline">{SOUS_ENSEMBLE_LABELS[item.type_sous_ensemble] || item.type_sous_ensemble}</Badge></TableCell>
@@ -313,6 +316,7 @@ const StockDefectueuxTab = ({ canManage = true, technicienId = null }) => {
               ))}
             </TableBody>
           </Table>
+          <TablePagination {...pager} label={filtered.length < stock.length ? `entrée(s) sur ${stock.length}` : 'entrée(s)'} />
         </CardContent>
       </Card>
 

@@ -9,12 +9,16 @@ import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogT
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { TablePagination } from '@/components/ui/table-pagination';
+import { usePagination } from '@/hooks/usePagination';
 import { useToast } from '@/components/ui/use-toast';
 import { AlertTriangle, Edit, Plus, Trash2, Wrench, Zap } from 'lucide-react';
 
 const DEFAULT_FORM = { code: '', libelle: '', descriptif: '' };
 
-const CodeTable = ({ title, description, icon, rows, canManage, onAdd, onEdit, onDelete, isLoading }) => (
+const CodeTable = ({ title, description, icon, rows, canManage, onAdd, onEdit, onDelete, isLoading }) => {
+  const pager = usePagination(rows, { pageSize: 25 });
+  return (
   <Card variant="accent">
     <CardHeader className="relative">
       <div className="flex items-center justify-between">
@@ -32,10 +36,10 @@ const CodeTable = ({ title, description, icon, rows, canManage, onAdd, onEdit, o
         )}
       </div>
     </CardHeader>
-    <CardContent className="p-0">
-      <Table>
-        <TableCaption>{rows.length === 0 ? 'Aucun code.' : `${rows.length} code(s).`}</TableCaption>
-        <TableHeader>
+    <CardContent>
+      <Table containerClassName="max-h-[520px]" aria-label={title}>
+        {rows.length === 0 && <TableCaption>Aucun code.</TableCaption>}
+        <TableHeader className="sticky top-0 z-10 bg-surface-subtle">
           <TableRow>
             <TableHead className="w-32">Code</TableHead>
             <TableHead>Libellé</TableHead>
@@ -44,7 +48,7 @@ const CodeTable = ({ title, description, icon, rows, canManage, onAdd, onEdit, o
           </TableRow>
         </TableHeader>
         <TableBody>
-          {rows.map(row => (
+          {pager.pageItems.map(row => (
             <TableRow key={row.id}>
               <TableCell>
                 <Badge variant="outline" className="font-mono">{row.code}</Badge>
@@ -67,9 +71,11 @@ const CodeTable = ({ title, description, icon, rows, canManage, onAdd, onEdit, o
           ))}
         </TableBody>
       </Table>
+      <TablePagination {...pager} label="code(s)" />
     </CardContent>
   </Card>
-);
+  );
+};
 
 const CodesMaintenanceTab = ({ canManage = true }) => {
   const { toast } = useToast();

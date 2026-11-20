@@ -522,6 +522,7 @@ const EspaceGuichetierePage = () => {
         photoUrl={guichetiereInfo?.photo_url || guichetiereDetails?.photo_url}
         initials={guichetiereInfo?.nomComplet?.split(' ').map((part) => part[0]).join('') || 'G'}
         name={guichetiereInfo?.nomComplet}
+        role="Guichetière"
         actions={(
           <>
             <NotificationBell
@@ -555,6 +556,7 @@ const EspaceGuichetierePage = () => {
               photoUrl={guichetiereInfo?.photo_url || guichetiereDetails?.photo_url}
               initials={guichetiereInfo?.nomComplet?.split(' ').map((part) => part[0]).join('') || 'G'}
               name={guichetiereInfo?.nomComplet}
+              role="Guichetière"
               actions={(
                 <>
                   <NotificationBell

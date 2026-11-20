@@ -243,6 +243,9 @@ const Layout = () => {
                 <span className="mt-0.5 block truncate text-[0.7rem] font-bold uppercase tracking-[0.12em] text-primary">
                   {client.displayName || 'GestionPDV'}
                 </span>
+                <span className="space-brand-space mt-0.5 block truncate text-xs font-semibold text-muted-foreground">
+                  {activeSpaceLabel}
+                </span>
               </span>
             )}
           </Link>

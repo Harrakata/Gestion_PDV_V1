@@ -325,6 +325,7 @@ const EspaceChefSecteurPage = () => {
         photoUrl={chef.photo_url}
         initials={initials}
         name={`${chef.prenom || ''} ${chef.nom || ''}`.trim()}
+        role="Chef de secteur"
         actions={(
           <>
             <NotificationBell notifications={chefNotifications} totalCount={chefNotifCount} onRefresh={refreshChefNotifs} reader={{ id: chef?.id, role: 'chef_secteur', nom: [chef?.prenom, chef?.nom].filter(Boolean).join(' '), agence: null }} />
@@ -348,6 +349,7 @@ const EspaceChefSecteurPage = () => {
               photoUrl={chef.photo_url}
               initials={initials}
               name={`${chef.prenom || ''} ${chef.nom || ''}`.trim()}
+              role="Chef de secteur"
               actions={(
                 <>
                   <NotificationBell notifications={chefNotifications} totalCount={chefNotifCount} onRefresh={refreshChefNotifs} reader={{ id: chef?.id, role: 'chef_secteur', nom: [chef?.prenom, chef?.nom].filter(Boolean).join(' '), agence: null }} />

@@ -1557,10 +1557,18 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
     letter-spacing: -0.01em;
   }
 
-  .connected-space-shell .app-top-header .space-brand-copy > span:last-child {
+  .connected-space-shell .app-top-header .space-brand-copy > span:nth-child(2) {
     margin-top: 0.25rem;
     font-size: 0.95rem;
     letter-spacing: 0.1em;
+  }
+
+  /* 3e ligne : nom de l'espace connecté (ex. « Espace Directeur régional »). */
+  .connected-space-shell .app-top-header .space-brand-copy > .space-brand-space {
+    margin-top: 0.2rem;
+    font-size: 0.78rem;
+    line-height: 1.2;
+    letter-spacing: 0;
   }
 
   .connected-space-shell #main-content {
@@ -1986,18 +1994,18 @@ html {
   }
 
   /* En-tête de page : garde une taille de titre supérieure. */
-  #main-content .text-card-foreground:first-child:not(.text-card-foreground *):not([role="tabpanel"] *) :is(h1, h2, h3) {
+  #main-content .text-card-foreground:first-child:not(.text-card-foreground *):not([role="tabpanel"] *) :is(h1, h2, h3):not(.text-card-foreground .text-card-foreground *) {
     font-size: 1rem !important;
     line-height: 1.35rem !important;
     font-weight: 700 !important;
   }
 
-  #main-content .text-card-foreground:first-child:not(.text-card-foreground *):not([role="tabpanel"] *) :is(h1, h2, h3) > svg {
+  #main-content .text-card-foreground:first-child:not(.text-card-foreground *):not([role="tabpanel"] *) :is(h1, h2, h3):not(.text-card-foreground .text-card-foreground *) > svg {
     width: 1.125rem !important;
     height: 1.125rem !important;
   }
 
-  #main-content .text-card-foreground:first-child:not(.text-card-foreground *):not([role="tabpanel"] *) .card-description {
+  #main-content .text-card-foreground:first-child:not(.text-card-foreground *):not([role="tabpanel"] *) .card-description:not(.text-card-foreground .text-card-foreground *) {
     font-size: 0.8125rem !important;
     line-height: 1.2rem !important;
   }
@@ -2295,12 +2303,12 @@ html {
     height: 1.25rem !important;
   }
 
-  #main-content .text-card-foreground:first-child:not(.text-card-foreground *):not([role="tabpanel"] *) :is(h1, h2, h3) {
+  #main-content .text-card-foreground:first-child:not(.text-card-foreground *):not([role="tabpanel"] *) :is(h1, h2, h3):not(.text-card-foreground .text-card-foreground *) {
     font-size: 1.5rem !important;
     line-height: 2rem !important;
   }
 
-  #main-content .text-card-foreground:first-child:not(.text-card-foreground *):not([role="tabpanel"] *) :is(h1, h2, h3) > svg {
+  #main-content .text-card-foreground:first-child:not(.text-card-foreground *):not([role="tabpanel"] *) :is(h1, h2, h3):not(.text-card-foreground .text-card-foreground *) > svg {
     width: 1.5rem !important;
     height: 1.5rem !important;
   }
@@ -2321,7 +2329,7 @@ html {
    Les :not(._sN) inutiles ne servent qu'à dépasser la spécificité de la règle
    générale des libellés (dont le :has() compte comme input:not()×5). */
 :is(#main-content, [role="dialog"]) :is(div, section, fieldset) > label:not(.sr-only):not(._s1):not(._s2):not(._s3):not(._s4):not(._s5):not(._s6):has(+ button[role="combobox"][data-all]) {
-  top: 50%;
+  top: 1.375rem; /* milieu du champ (2.75rem), pas du bloc : le bloc peut être étiré par la grille */
   transform: translateY(-50%);
   max-width: calc(100% - 2.5rem);
   color: hsl(var(--foreground));
@@ -2405,4 +2413,112 @@ html {
   .app-space-main {
     zoom: var(--mobile-font-scale, 1);
   }
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   Champ VIDE : un seul titre. Tant qu'un champ (saisie, liste, Combobox) n'est
+   pas rempli, seul son libellé s'affiche, à taille normale et centré — plus de
+   « titre + texte indicatif » superposés. Au focus ou une fois rempli, le
+   libellé remonte en petit et l'indication (« Ex : 70 00 00 00 ») apparaît.
+   - saisie : :placeholder-shown (ui/input pose un placeholder « » par défaut) ;
+   - liste Select / Combobox : attribut data-placeholder (Radix / ui/Combobox) ;
+   - Combobox : déclencheur enveloppé dans .anchored-trigger (ui/AnchoredPopover).
+   :not(._sN) : spécificité, cf. « Filtre sur toutes » plus haut.
+   ════════════════════════════════════════════════════════════════════════════ */
+:is(#main-content, [role="dialog"]) :is(div, section, fieldset):has(> label:not(.sr-only) + .anchored-trigger > button[role="combobox"]) {
+  position: relative;
+}
+
+:is(#main-content, [role="dialog"]) :is(div, section, fieldset) > label:not(.sr-only):has(+ .anchored-trigger > button[role="combobox"]) {
+  position: absolute;
+  top: 0.3rem;
+  left: 0.75rem;
+  z-index: 1;
+  max-width: calc(100% - 2.75rem);
+  margin: 0 !important;
+  overflow: hidden;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  line-height: 0.9rem !important;
+  letter-spacing: 0.02em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+:is(#main-content, [role="dialog"]) :is(div, section, fieldset) > label:not(.sr-only) + .anchored-trigger > button[role="combobox"] {
+  height: auto !important;
+  min-height: 2.75rem !important;
+  margin-top: 0 !important;
+  padding-top: 1.05rem !important;
+  padding-bottom: 0.3rem !important;
+}
+
+/* Libellé centré, taille normale, quand le champ est vide. */
+:is(#main-content, [role="dialog"]) :is(div, section, fieldset) > label:not(.sr-only):not(._s1):not(._s2):not(._s3):not(._s4):not(._s5):not(._s6):not(._s7):has(
+  + button[role="combobox"][data-placeholder],
+  + .anchored-trigger > button[role="combobox"]:is([data-placeholder], [data-all]),
+  + input:placeholder-shown:not(:focus),
+  + .password-field > input:placeholder-shown:not(:focus)
+) {
+  top: 1.375rem; /* milieu du champ (2.75rem), pas du bloc étiré par la grille */
+  transform: translateY(-50%);
+  max-width: calc(100% - 2.5rem);
+  color: hsl(var(--muted-foreground));
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  line-height: 1.25rem !important;
+  letter-spacing: 0;
+}
+
+/* Zone de texte vide : libellé à taille normale, en haut. */
+:is(#main-content, [role="dialog"]) :is(div, section, fieldset) > label:not(.sr-only):not(._s1):not(._s2):not(._s3):not(._s4):not(._s5):not(._s6):not(._s7):has(+ textarea:placeholder-shown:not(:focus)) {
+  top: 0.65rem;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  line-height: 1.25rem !important;
+  letter-spacing: 0;
+}
+
+/* Le texte indicatif n'apparaît qu'au focus. */
+:is(#main-content, [role="dialog"]) :is(div, section, fieldset) > label:not(.sr-only) + :is(input, textarea):placeholder-shown:not(:focus)::placeholder,
+:is(#main-content, [role="dialog"]) :is(div, section, fieldset) > label:not(.sr-only) + .password-field > input:placeholder-shown:not(:focus)::placeholder {
+  color: transparent;
+}
+
+/* Liste / Combobox vide : texte indicatif masqué, chevron recentré. */
+:is(#main-content, [role="dialog"]) :is(div, section, fieldset) > label:not(.sr-only) + button[role="combobox"][data-placeholder] > span:first-child,
+:is(#main-content, [role="dialog"]) :is(div, section, fieldset) > label:not(.sr-only) + .anchored-trigger > button[role="combobox"]:is([data-placeholder], [data-all]) > span:first-child {
+  visibility: hidden;
+}
+
+:is(#main-content, [role="dialog"]) :is(div, section, fieldset) > label:not(.sr-only):not(._s1):not(._s2):not(._s3):not(._s4):not(._s5):not(._s6) + button[role="combobox"][data-placeholder],
+:is(#main-content, [role="dialog"]) :is(div, section, fieldset) > label:not(.sr-only):not(._s1):not(._s2):not(._s3):not(._s4):not(._s5):not(._s6) + .anchored-trigger > button[role="combobox"]:is([data-placeholder], [data-all]) {
+  padding-top: 0.3rem !important;
+}
+
+@media (max-width: 767px) {
+  :is(#main-content, [role="dialog"]) :is(div, section, fieldset) > label:not(.sr-only):not(._s1):not(._s2):not(._s3):not(._s4):not(._s5):not(._s6):not(._s7):not(._s8):has(
+    + button[role="combobox"][data-placeholder],
+    + .anchored-trigger > button[role="combobox"]:is([data-placeholder], [data-all]),
+    + input:placeholder-shown:not(:focus),
+    + .password-field > input:placeholder-shown:not(:focus),
+    + textarea:placeholder-shown:not(:focus)
+  ) {
+    font-size: 0.8125rem !important;
+  }
+}
+
+/* Tableau de bord : la carte d'en-tête englobe tout l'écran ; les cartes internes
+   (Radar, Jauges KPI, Tendances…) gardent des titres compacts, comme leurs
+   indicateurs — pas la taille standard des titres de carte (1.125rem). */
+#main-content .dashboard-white-cards .text-card-foreground .text-card-foreground :is(h2, h3) {
+  font-size: 0.875rem !important;
+  line-height: 1.25rem !important;
+}
+
+#main-content .dashboard-white-cards .text-card-foreground .text-card-foreground :is(h2, h3) > svg {
+  width: 1rem !important;
+  height: 1rem !important;
 }
