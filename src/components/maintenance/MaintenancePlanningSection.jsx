@@ -895,9 +895,9 @@ const MaintenancePlanningSection = ({
                 <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={handlePrev} disabled={isLoading}>
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <h2 className="flex-1 px-1 text-center text-sm font-semibold capitalize text-foreground whitespace-nowrap sm:text-base">
+                <p className="flex-1 px-1 text-center text-sm font-semibold capitalize text-foreground whitespace-nowrap" aria-live="polite">
                   {format(currentCalendarDate, viewMode === 'month' ? 'MMMM yyyy' : "'Semaine du' dd MMMM", { locale: fr })}
-                </h2>
+                </p>
                 <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={handleNext} disabled={isLoading}>
                   <ChevronRight className="h-4 w-4" />
                 </Button>

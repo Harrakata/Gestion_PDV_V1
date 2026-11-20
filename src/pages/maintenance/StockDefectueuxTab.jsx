@@ -319,7 +319,6 @@ const StockDefectueuxTab = ({ canManage = true, technicienId = null }) => {
       {/* Dialog Assigner technicien */}
       <Dialog open={isAssignOpen} onOpenChange={setIsAssignOpen}>
         <DialogContent className="sm:max-w-md relative overflow-hidden p-0">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
           <div className="relative px-6 pb-6 pt-6 space-y-4">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-primary">
@@ -389,7 +388,6 @@ const StockDefectueuxTab = ({ canManage = true, technicienId = null }) => {
       {/* Dialog Détail */}
       <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
         <DialogContent className="sm:max-w-lg relative overflow-hidden p-0">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
           <div className="relative px-6 pb-6 pt-6">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-primary">

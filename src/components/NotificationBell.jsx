@@ -219,7 +219,6 @@ const NotificationBell = ({ notifications = [], totalCount = 0, onNavigate, stor
 
   const panelBody = (
     <>
-        <span className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-primary" />
 
         {/* En-tête */}
         <div className="flex items-center justify-between px-3 pb-2 pt-3.5">

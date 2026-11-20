@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/components/ui/use-toast';
 import { getStockDefectueuxRecordIds, regrouperStockDefectueuxActif } from '@/lib/stockDefectueux';
-import { AlertTriangle, CheckCircle2, HelpCircle, Package2, Wrench, ArrowRight, FlaskConical, ChevronDown, ChevronRight, ChevronLeft, Sparkles, CheckCheck, Search, X, Check, ListChecks, Stethoscope } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, HelpCircle, Package2, Wrench, ArrowRight, FlaskConical, ChevronDown, ChevronRight, ChevronLeft, Sparkles, CheckCheck, Search, X, Check, ListChecks, Stethoscope, MessageSquare, CalendarDays } from 'lucide-react';
 
 const SOUS_ENSEMBLE_LABELS = {
   imprimante: 'Imprimante',
@@ -33,6 +33,14 @@ const STATUT_CONFIG = {
   assigne: { label: 'Assigné', cls: 'bg-info-muted text-info-muted-foreground' },
   a_tester: { label: 'À tester', cls: 'bg-warning-muted text-warning-muted-foreground' },
   repare: { label: 'Réparé', cls: 'bg-success-muted text-success-muted-foreground' },
+};
+
+/** État de stock d'une pièce (pastille) — même rendu dans la liste et dans la fiche. */
+const getStockState = (sp) => {
+  if (!sp) return { tone: 'bg-muted text-muted-foreground', label: 'Non suivi', level: 'untracked' };
+  if (sp.quantite === 0) return { tone: 'bg-destructive/10 text-destructive', label: 'Rupture', level: 'out' };
+  if (sp.quantite <= (sp.seuil_alerte || 2)) return { tone: 'bg-warning-muted text-warning-muted-foreground', label: `Stock bas · ${sp.quantite}`, level: 'low' };
+  return { tone: 'bg-success-muted text-success-muted-foreground', label: `En stock · ${sp.quantite}`, level: 'ok' };
 };
 
 const StatutBadge = ({ statut }) => {
@@ -534,35 +542,43 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                     const isLoadingExpand = loadingExpandIds.has(item.id);
                     const isSelected = selectedItem?.id === item.id;
                     return (
-                      <div key={item.id} className={isSelected ? 'bg-primary/10' : ''}>
-                        <div className="flex items-center min-w-0">
+                      <div key={item.id} className={isSelected ? 'bg-primary/5' : ''}>
+                        <div className="flex min-w-0 items-center gap-1 pr-2">
                           <button
-                            className="flex-1 min-w-0 text-left px-3 py-4 transition-colors hover:bg-muted/50"
+                            className="min-w-0 flex-1 px-3 py-3 text-left transition-colors hover:bg-muted/40"
                             onClick={() => loadItemDetail(item)}
+                            aria-current={isSelected ? 'true' : undefined}
                           >
-                            <div className="flex items-center gap-2 min-w-0">
-                              <span className="font-bold text-base font-mono shrink-0">{item.reference_sous_ensemble}</span>
-                              <Badge variant="outline" className="text-sm shrink-0">{SOUS_ENSEMBLE_LABELS[item.type_sous_ensemble] || item.type_sous_ensemble}</Badge>
-                              {item.type_terminal && <span className="text-sm text-muted-foreground truncate">· {item.type_terminal}</span>}
+                            <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                              <span className={`shrink-0 font-mono text-sm font-bold ${isSelected ? 'text-primary' : 'text-foreground'}`}>{item.reference_sous_ensemble}</span>
+                              <span className="shrink-0 rounded-full border border-border bg-muted/50 px-2 py-0.5 text-[11px] font-medium text-foreground/80">
+                                {SOUS_ENSEMBLE_LABELS[item.type_sous_ensemble] || item.type_sous_ensemble}
+                              </span>
+                              {item.type_terminal && (
+                                <span className="shrink-0 rounded-full border border-border bg-muted/50 px-2 py-0.5 text-[11px] font-medium text-foreground/80">{item.type_terminal}</span>
+                              )}
                             </div>
                           </button>
                           <button
-                            className="px-2.5 self-stretch flex items-center justify-center gap-1.5 text-xs font-medium text-primary hover:bg-primary/10 transition-colors shrink-0"
+                            className="flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/10"
                             onClick={(e) => openSousEnsembleHelp(item, e)}
+                            title="Lancer le diagnostic guidé"
                           >
                             <Stethoscope className="h-3.5 w-3.5 shrink-0" />
                             <span className="hidden xs:inline">Diagnostiquer</span>
                           </button>
                           <button
-                            className="px-1.5 self-stretch flex items-center justify-center hover:bg-muted/50 transition-colors text-muted-foreground"
+                            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted"
                             title={isExpanded ? 'Réduire' : 'Voir les pièces'}
+                            aria-label={isExpanded ? `Réduire les pièces de ${item.reference_sous_ensemble}` : `Voir les pièces de ${item.reference_sous_ensemble}`}
+                            aria-expanded={isExpanded}
                             onClick={() => toggleExpand(item)}
                           >
                             {isExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
                           </button>
                         </div>
                         {isExpanded && (
-                          <div className="px-3 pb-3 bg-muted/20 space-y-1.5">
+                          <div className="space-y-1.5 px-3 pb-3">
                             {isLoadingExpand ? (
                               <p className="text-xs text-muted-foreground py-2 text-center">Chargement des pièces...</p>
                             ) : !cachedPieces || cachedPieces.length === 0 ? (
@@ -577,30 +593,29 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                                 ) ? (
                                   <p className="text-xs text-muted-foreground py-1 text-center italic">Aucune pièce ne correspond à la recherche.</p>
                                 ) : null}
+                                <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
                                 {cachedPieces
                                   .filter(mp => !pieceSearchLower ||
                                     mp.piece?.nom?.toLowerCase().includes(pieceSearchLower) ||
                                     mp.piece?.reference?.toLowerCase().includes(pieceSearchLower)
                                   )
                                   .map(mp => {
-                                  const sp = stockPiecesById[mp.piece?.id];
+                                  const stock = getStockState(stockPiecesById[mp.piece?.id]);
                                   const pieceAction = treatedPieces[item.id]?.[mp.piece?.id];
                                   return (
-                                    <div key={mp.id} className={`flex flex-wrap items-center gap-x-1.5 gap-y-1 rounded-md border px-2.5 py-1.5 text-xs transition-colors ${pieceAction ? 'bg-success-muted border-success/30' : 'bg-background'}`}>
-                                      <span className="flex-1 basis-full sm:basis-0 min-w-0 font-medium truncate">{mp.piece?.nom}</span>
-                                      {pieceAction && (
-                                        <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${pieceAction === 'nettoyage' ? 'bg-success-muted text-success-muted-foreground' : 'bg-info-muted text-info-muted-foreground'}`}>
+                                    <li key={mp.id} className={`flex items-center gap-2 px-2.5 py-1.5 text-xs ${pieceAction ? 'bg-success-muted/40' : ''}`}>
+                                      <span className="min-w-0 flex-1 truncate font-medium text-foreground">{mp.piece?.nom}</span>
+                                      {pieceAction ? (
+                                        <span className={`shrink-0 rounded-full px-2 py-px text-[10px] font-semibold ${pieceAction === 'nettoyage' ? 'bg-success-muted text-success-muted-foreground' : 'bg-info-muted text-info-muted-foreground'}`}>
                                           {pieceAction === 'nettoyage' ? '✓ Nettoyée' : '✓ Remplacée'}
                                         </span>
+                                      ) : (
+                                        <span className={`shrink-0 rounded-full px-2 py-px text-[10px] font-semibold ${stock.tone}`}>{stock.label}</span>
                                       )}
-                                      {sp && !pieceAction && (
-                                        <span className={`text-xs font-mono shrink-0 ${sp.quantite === 0 ? 'text-destructive' : sp.quantite <= (sp.seuil_alerte || 2) ? 'text-warning-muted-foreground' : 'text-success-muted-foreground'}`}>
-                                          ×{sp.quantite}
-                                        </span>
-                                      )}
-                                    </div>
+                                    </li>
                                   );
                                 })}
+                                </ul>
                                 {item.statut === 'a_tester' && (
                                   <div className="pt-1.5 border-t border-dashed border-muted-foreground/20">
                                     <p className="text-[10px] text-center text-warning-muted-foreground font-medium">En attente de validation du test</p>
@@ -631,51 +646,51 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
           ) : (
             <>
               <Card variant="accent">
-                <CardHeader className="relative pb-3">
-                  <div className="flex items-start justify-between flex-wrap gap-2">
-                    <div>
-                      <CardTitle className="text-lg font-mono">{selectedItem.reference_sous_ensemble}</CardTitle>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {SOUS_ENSEMBLE_LABELS[selectedItem.type_sous_ensemble]} — {selectedItem.type_terminal || 'N/A'} — {selectedItem.agence?.nom || 'N/A'}
-                      </p>
-                      <p className="text-xs text-muted-foreground">Entré le {formatDate(selectedItem.date_entree)}</p>
+                <CardHeader className="relative space-y-3 pb-3">
+                  {/* Identité du sous-ensemble : référence, contexte en pastilles, date, statut */}
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div className="min-w-0 space-y-1.5">
+                      <CardTitle className="font-mono">{selectedItem.reference_sous_ensemble}</CardTitle>
+                      <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                        {[SOUS_ENSEMBLE_LABELS[selectedItem.type_sous_ensemble], selectedItem.type_terminal, selectedItem.agence?.nom]
+                          .filter(Boolean)
+                          .map((info) => (
+                            <span key={info} className="rounded-full border border-border bg-muted/50 px-2 py-0.5 font-medium text-foreground/80">{info}</span>
+                          ))}
+                        <span className="inline-flex items-center gap-1 text-muted-foreground">
+                          <CalendarDays className="h-3.5 w-3.5" /> Entré le {formatDate(selectedItem.date_entree)}
+                        </span>
+                      </div>
                     </div>
                     <StatutBadge statut={selectedItem.statut} />
                   </div>
+
+                  {/* Fiche panne : un seul encart neutre, liseré rouge = panne signalée */}
                   {(() => {
                     const inv = selectedItem.intervention;
                     const cp = inv?.code_panne || inv?.code_intervention;
                     const commentaire = inv?.commentaire || selectedItem.commentaire;
                     if (!cp && !commentaire) return null;
                     return (
-                      <div className="mt-3 space-y-2">
+                      <div className="space-y-2 rounded-xl border border-border bg-muted/30 px-3 py-2.5">
                         {cp && (
-                          <div className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2">
-                            <AlertTriangle className="h-4 w-4 shrink-0 text-destructive mt-0.5" />
-                            <div className="space-y-0.5">
-                              <div className="flex items-center gap-4 flex-wrap">
-                                <div>
-                                  <p className="text-[10px] font-semibold uppercase tracking-wide text-destructive">Code panne</p>
-                                  <p className="text-sm font-mono font-bold text-destructive">{cp.code} — {cp.libelle}</p>
-                                </div>
-                              </div>
-                              {inv.description_panne && (
-                                <div className="mt-1.5 border-t border-destructive/30 pt-1.5">
-                                  <p className="text-[10px] font-semibold uppercase tracking-wide text-destructive">Descriptif panne</p>
-                                  <p className="text-sm text-destructive">{inv.description_panne}</p>
-                                </div>
-                              )}
-                            </div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <AlertTriangle className="h-4 w-4 shrink-0 text-destructive" aria-hidden="true" />
+                            <span className="sr-only">Code panne :</span>
+                            <span className="rounded-md bg-destructive/10 px-1.5 py-0.5 font-mono text-xs font-bold text-destructive">{cp.code}</span>
+                            <span className="text-sm font-semibold text-foreground">{cp.libelle}</span>
                           </div>
                         )}
+                        {inv?.description_panne && (
+                          <p className="pl-6 text-sm text-foreground/80">
+                            <span className="font-medium text-muted-foreground">Descriptif : </span>{inv.description_panne}
+                          </p>
+                        )}
                         {commentaire && (
-                          <div className="flex items-start gap-2 rounded-md border border-warning/30 bg-warning-muted px-3 py-2">
-                            <AlertTriangle className="h-4 w-4 shrink-0 text-warning mt-0.5" />
-                            <div>
-                              <p className="text-[10px] font-semibold uppercase tracking-wide text-warning">Commentaire</p>
-                              <p className="text-sm text-warning-muted-foreground">{commentaire}</p>
-                            </div>
-                          </div>
+                          <p className="flex items-start gap-2 border-t border-border/70 pt-2 text-xs text-muted-foreground" title={commentaire}>
+                            <MessageSquare className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                            <span className="line-clamp-2"><span className="font-medium">Commentaire : </span>{commentaire}</span>
+                          </p>
                         )}
                       </div>
                     );
@@ -707,35 +722,35 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                         active: selectedItem.statut === 'a_tester',
                       },
                     ];
+                    // Frise de progression : pastilles reliées par un trait (vert jusqu'à
+                    // la dernière étape terminée), libellé + détail centrés dessous.
                     return (
-                      <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
-                        {steps.map((step, index) => (
-                          <div
-                            key={step.label}
-                            className={`min-w-0 rounded-md border px-3 py-2 ${
-                              step.done
-                                ? 'border-success/30 bg-success-muted'
-                                : step.active
-                                  ? 'border-primary/40 bg-primary/5'
-                                  : 'border-border bg-muted/20'
-                            }`}
-                          >
-                            <div className="flex items-center gap-2">
-                              <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${
+                      <ol className="grid grid-cols-4" aria-label="Avancement de la réparation">
+                        {steps.map((step, index) => {
+                          const next = steps[index + 1];
+                          return (
+                            <li key={step.label} className="relative flex min-w-0 flex-col items-center px-1 text-center" aria-current={step.active ? 'step' : undefined}>
+                              {next && (
+                                <span
+                                  aria-hidden="true"
+                                  className={`absolute left-[calc(50%+0.875rem)] right-[calc(-50%+0.875rem)] top-3 h-0.5 rounded-full ${step.done && (next.done || next.active) ? 'bg-success' : 'bg-border'}`}
+                                />
+                              )}
+                              <span className={`relative z-[1] flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold ring-4 ring-card ${
                                 step.done
-                                  ? 'bg-success text-white'
+                                  ? 'bg-success text-success-foreground'
                                   : step.active
                                     ? 'bg-primary text-primary-foreground'
                                     : 'bg-muted text-muted-foreground'
                               }`}>
-                                {step.done ? <Check className="h-3 w-3" /> : index + 1}
+                                {step.done ? <Check className="h-3.5 w-3.5" /> : index + 1}
                               </span>
-                              <span className="truncate text-xs font-semibold">{step.label}</span>
-                            </div>
-                            <p className="mt-1 truncate pl-7 text-[10px] text-muted-foreground">{step.detail}</p>
-                          </div>
-                        ))}
-                      </div>
+                              <span className={`mt-1.5 max-w-full truncate text-xs font-semibold ${step.active ? 'text-primary' : step.done ? 'text-foreground' : 'text-muted-foreground'}`}>{step.label}</span>
+                              <span className="max-w-full truncate text-[10px] text-muted-foreground">{step.detail}</span>
+                            </li>
+                          );
+                        })}
+                      </ol>
                     );
                   })()}
                   <div className="flex flex-wrap gap-2">
@@ -799,7 +814,6 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
               {isSEHelpOpen && seHelpItem?.id === selectedItem.id && (
                 <Dialog open={isSEHelpOpen} onOpenChange={setIsSEHelpOpen}>
                 <DialogContent className="diagnostic-guided-dialog sm:max-w-3xl w-[min(94vw,52rem)] max-h-[84vh] flex flex-col gap-0 overflow-hidden border-primary/25 p-0">
-                  <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
                   <div className="relative shrink-0 border-b bg-transparent px-4 pb-3 pt-5 pr-14 sm:px-6 sm:pr-14">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
@@ -822,7 +836,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                         const done = index < activeIndex;
                         const active = index === activeIndex;
                         return (
-                          <div key={label} className={`flex min-w-0 items-center justify-center gap-1 rounded px-1 py-1.5 text-[11px] font-medium ${active ? 'bg-primary text-primary-foreground' : done ? 'bg-success-muted text-success-muted-foreground' : 'text-muted-foreground'}`}>
+                          <div key={label} className={`flex min-w-0 items-center justify-center gap-1 rounded-md px-1 py-1.5 text-[11px] font-medium ${active ? 'bg-primary text-primary-foreground' : done ? 'bg-success-muted text-success-muted-foreground' : 'text-muted-foreground'}`}>
                             {done ? <Check className="h-3 w-3 shrink-0" /> : <span className="shrink-0">{index + 1}</span>}
                             <span className="whitespace-nowrap">{label}</span>
                           </div>
@@ -834,7 +848,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                       <button
                         type="button"
                         onClick={() => setSeDiagnosticView('guide')}
-                        className={`flex items-center justify-center gap-2 rounded px-3 py-2 text-xs font-semibold transition-colors ${seDiagnosticView === 'guide' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'}`}
+                        className={`flex items-center justify-center gap-2 rounded-md px-3 py-2 text-xs font-semibold transition-colors ${seDiagnosticView === 'guide' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'}`}
                       >
                         <Stethoscope className="h-4 w-4" /> Guide diagnostic
                       </button>
@@ -842,7 +856,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                         type="button"
                         disabled={!seDiagnosticPanne?.piece}
                         onClick={() => setSeDiagnosticView('documentation')}
-                        className={`flex items-center justify-center gap-2 rounded px-3 py-2 text-xs font-semibold transition-colors ${
+                        className={`flex items-center justify-center gap-2 rounded-md px-3 py-2 text-xs font-semibold transition-colors ${
                           seDiagnosticView === 'documentation'
                             ? 'bg-primary text-primary-foreground'
                             : seDiagnosticPanne?.piece
@@ -962,43 +976,47 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                             return bMatch - aMatch || (b.poids || 3) - (a.poids || 3);
                           });
                           return (
-                            <div className="max-h-[24rem] space-y-2 overflow-y-auto pr-1">
+                            // Liste unique à séparateurs : le SYMPTÔME d'abord (la question posée),
+                            // la pièce concernée en second ; poids en pastille discrète.
+                            <ul className="max-h-[24rem] divide-y divide-border overflow-y-auto rounded-xl border border-border">
                               {sortedPannes.map(panne => {
                                 const checks = seHelpChecksMap[panne.id] || [];
+                                const hasChecks = checks.length > 0;
                                 const recommended = declaredFault && normalize(panne.description) === normalize(declaredFault);
                                 return (
-                                  <button
-                                    key={panne.id}
-                                    type="button"
-                                    disabled={checks.length === 0}
-                                    onClick={() => selectDiagnosticPanne(panne)}
-                                    className={`flex w-full items-center gap-3 rounded-md border px-3 py-3 text-left transition-colors ${
-                                      checks.length === 0
-                                        ? recommended
-                                          // La panne déclarée reste repérable même sans contrôle référencé.
-                                          ? 'cursor-not-allowed border-warning/30 bg-warning-muted/70'
-                                          : 'cursor-not-allowed bg-muted/20 opacity-55'
-                                        : recommended
-                                          ? 'border-warning/30 bg-warning-muted hover:bg-warning-muted/70'
-                                          : 'bg-background hover:border-primary/30 hover:bg-primary/5'
-                                    }`}
-                                  >
-                                    <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-xs font-bold ${recommended ? 'bg-warning text-white' : 'bg-primary/10 text-primary'}`}>
-                                      {panne.poids || 3}
-                                    </span>
-                                    <span className="min-w-0 flex-1">
-                                      <span className="flex flex-wrap items-center gap-2">
-                                        <span className="truncate text-sm font-semibold">{panne.piece?.nom || 'Pièce non renseignée'}</span>
-                                        {recommended && <Badge className="bg-warning-muted text-warning-muted-foreground">Panne déclarée</Badge>}
+                                  <li key={panne.id}>
+                                    <button
+                                      type="button"
+                                      disabled={!hasChecks}
+                                      onClick={() => selectDiagnosticPanne(panne)}
+                                      className={`flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors ${
+                                        recommended ? 'bg-warning-muted/50' : ''
+                                      } ${hasChecks ? (recommended ? 'hover:bg-warning-muted' : 'hover:bg-muted/40') : 'cursor-not-allowed'}`}
+                                    >
+                                      <span
+                                        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${
+                                          recommended ? 'bg-warning text-warning-foreground' : hasChecks ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+                                        }`}
+                                        title="Poids du symptôme (fréquence / probabilité)"
+                                      >
+                                        {panne.poids || 3}
                                       </span>
-                                      <span className="mt-0.5 block truncate text-xs text-muted-foreground">{panne.description}</span>
-                                    </span>
-                                    <span className="shrink-0 text-[11px] text-muted-foreground">{checks.length} contrôle{checks.length > 1 ? 's' : ''}</span>
-                                    {checks.length > 0 && <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />}
-                                  </button>
+                                      <span className="min-w-0 flex-1">
+                                        <span className="flex flex-wrap items-center gap-1.5">
+                                          <span className={`truncate text-sm font-semibold ${hasChecks || recommended ? 'text-foreground' : 'text-muted-foreground'}`}>{panne.description}</span>
+                                          {recommended && <span className="rounded-full bg-warning-muted px-2 py-px text-[10px] font-semibold text-warning-muted-foreground">Panne déclarée</span>}
+                                        </span>
+                                        <span className="mt-0.5 block truncate text-[11px] uppercase tracking-wide text-muted-foreground">{panne.piece?.nom || 'Pièce non renseignée'}</span>
+                                      </span>
+                                      <span className={`shrink-0 rounded-full px-2 py-px text-[10px] font-semibold ${hasChecks ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                                        {hasChecks ? `${checks.length} contrôle${checks.length > 1 ? 's' : ''}` : 'Aucun contrôle'}
+                                      </span>
+                                      {hasChecks && <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />}
+                                    </button>
+                                  </li>
                                 );
                               })}
-                            </div>
+                            </ul>
                           );
                         })()}
                       </>
@@ -1096,51 +1114,67 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
               )}
 
               {/* Pièces du modèle */}
-              {(itemPieces.length > 0 || selectedItem.modele_id) && (
-                <Card variant="accent">
-                  <CardHeader className="relative py-2 px-4">
-                    <CardTitle className="flex items-center gap-2 text-sm text-primary">
-                      <Wrench className="h-3.5 w-3.5" /> Pièces du modèle
+              {(itemPieces.length > 0 || selectedItem.modele_id) && (() => {
+                const levels = itemPieces.map((mp) => getStockState(stockPiecesById[mp.piece?.id]).level);
+                const outOfStock = levels.filter((l) => l === 'out').length;
+                const lowStock = levels.filter((l) => l === 'low').length;
+                return (
+                <Card>
+                  <CardHeader className="flex-row flex-wrap items-center justify-between gap-2 space-y-0 px-4 py-3">
+                    <CardTitle className="flex items-center gap-2 text-primary">
+                      <Wrench className="h-4 w-4" /> Pièces du modèle
                     </CardTitle>
+                    {itemPieces.length > 0 && (
+                      <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                        <span className="text-muted-foreground">{itemPieces.length} pièce(s)</span>
+                        {outOfStock > 0 && <span className="rounded-full bg-destructive/10 px-2 py-0.5 font-semibold text-destructive">{outOfStock} en rupture</span>}
+                        {lowStock > 0 && <span className="rounded-full bg-warning-muted px-2 py-0.5 font-semibold text-warning-muted-foreground">{lowStock} stock bas</span>}
+                      </div>
+                    )}
                   </CardHeader>
-                  <CardContent className="px-4 pb-3 pt-0 space-y-1.5 max-h-[22rem] overflow-y-auto">
+                  <CardContent className="px-4 pb-4 pt-0">
                     {itemPieces.length === 0 ? (
-                      <p className="text-xs text-muted-foreground">Aucune pièce référencée.</p>
-                    ) : itemPieces.map(mp => {
-                      const sp = stockPiecesById[mp.piece?.id];
-                      return (
-                        <div key={mp.id} className="flex flex-wrap items-center gap-x-2 gap-y-1.5 rounded-md border bg-background/60 px-3 py-1.5 text-xs">
-                          <div className="flex-1 basis-full sm:basis-0 min-w-0 truncate">
-                            <span className="font-medium">{mp.piece?.nom}</span>
-                            <span className="ml-2 font-mono text-muted-foreground">{mp.piece?.reference}</span>
-                          </div>
-                          <span className="text-muted-foreground shrink-0">×{mp.quantite}</span>
-                          {sp ? (
-                            <span className={`font-semibold shrink-0 ${sp.quantite === 0 ? 'text-destructive' : sp.quantite <= (sp.seuil_alerte || 2) ? 'text-warning-muted-foreground' : 'text-success-muted-foreground'}`}>
-                              Stock: {sp.quantite}
-                            </span>
-                          ) : <span className="text-muted-foreground shrink-0">Non suivi</span>}
-                          {mp.piece && (
-                            <Button variant="ghost" size="icon" className="h-6 w-6 text-primary shrink-0" title="Aide réparation" onClick={() => loadPieceHelp(mp.piece)}>
-                              <HelpCircle className="h-3.5 w-3.5" />
-                            </Button>
-                          )}
-                          {canManage && mp.piece && (
-                            <>
-                              <Button size="sm" variant="outline" className="h-6 text-xs px-2 text-success-muted-foreground border-success/30 shrink-0" onClick={() => markNettoye(mp.piece, selectedItem)}>
-                                <Sparkles className="mr-1 h-3 w-3" />Nettoyée
-                              </Button>
-                              <Button size="sm" variant="outline" className="h-6 text-xs px-2 shrink-0" onClick={() => openReplace(mp.piece)}>
-                                <ArrowRight className="mr-1 h-3 w-3" />Remplacer
-                              </Button>
-                            </>
-                          )}
-                        </div>
-                      );
-                    })}
+                      <p className="rounded-xl border border-dashed border-border px-3 py-4 text-center text-xs text-muted-foreground">Aucune pièce référencée pour ce modèle.</p>
+                    ) : (
+                      <ul className="max-h-[22rem] divide-y divide-border overflow-y-auto rounded-xl border border-border">
+                        {itemPieces.map((mp) => {
+                          const stock = getStockState(stockPiecesById[mp.piece?.id]);
+                          return (
+                            <li key={mp.id} className="flex flex-wrap items-center gap-x-3 gap-y-2 px-3 py-2 transition-colors hover:bg-muted/40">
+                              <div className="min-w-0 flex-1 basis-[12rem]">
+                                <p className="truncate text-xs font-semibold text-foreground">{mp.piece?.nom}</p>
+                                <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1">
+                                  <span className="truncate font-mono text-[10px] text-muted-foreground">{mp.piece?.reference}</span>
+                                  <span className="text-[10px] tabular-nums text-muted-foreground" title="Quantité dans le modèle">×{mp.quantite}</span>
+                                  <span className={`rounded-full px-2 py-px text-[10px] font-semibold ${stock.tone}`}>{stock.label}</span>
+                                </div>
+                              </div>
+                              <div className="ml-auto flex shrink-0 items-center gap-1">
+                                {mp.piece && (
+                                  <Button variant="ghost" size="icon" className="h-7 w-7 text-primary" title="Aide à la réparation" aria-label={`Aide à la réparation — ${mp.piece.nom}`} onClick={() => loadPieceHelp(mp.piece)}>
+                                    <HelpCircle className="h-3.5 w-3.5" />
+                                  </Button>
+                                )}
+                                {canManage && mp.piece && (
+                                  <>
+                                    <Button size="sm" variant="ghost" className="h-7 px-2 text-xs text-success-muted-foreground hover:bg-success-muted" onClick={() => markNettoye(mp.piece, selectedItem)}>
+                                      <Sparkles className="mr-1 h-3 w-3" />Nettoyée
+                                    </Button>
+                                    <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => openReplace(mp.piece)}>
+                                      <ArrowRight className="mr-1 h-3 w-3" />Remplacer
+                                    </Button>
+                                  </>
+                                )}
+                              </div>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
                   </CardContent>
                 </Card>
-              )}
+                );
+              })()}
             </>
           )}
         </div>
@@ -1150,8 +1184,6 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
       <Dialog open={isHelpOpen} onOpenChange={setIsHelpOpen}>
         <DialogContent className="sm:max-w-lg w-full flex flex-col h-[62vh] p-0 gap-0 overflow-hidden !rounded-2xl">
 
-          {/* Bande de couleur supérieure */}
-          <div className="h-1.5 w-full shrink-0 bg-primary" />
 
           {/* Header */}
           <div className="shrink-0 px-6 pt-5 pb-0 border-b bg-gradient-to-b from-primary/8 to-white">
@@ -1407,31 +1439,58 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
             {selectedPieceHelp && helpTab === 'docs' && (
               <div className="space-y-6">
                 {selectedPieceHelp.description_aide && (
-                  <div className="space-y-1">
-                    <Label className="text-sm font-semibold">Description</Label>
-                    <p className="rounded-md border bg-muted/40 px-3 py-2 text-sm">{selectedPieceHelp.description_aide}</p>
-                  </div>
+                  <section className="space-y-1.5">
+                    <h4 className="text-sm font-semibold text-foreground">Description</h4>
+                    <p className="rounded-xl border border-border bg-muted/30 px-3 py-2 text-sm text-foreground/80">{selectedPieceHelp.description_aide}</p>
+                  </section>
                 )}
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-2 text-sm font-semibold">
-                    <AlertTriangle className="h-4 w-4 text-warning" /> Types de pannes
-                  </Label>
-                  {pannes.length === 0 && <p className="text-sm text-muted-foreground">Aucune panne renseignée.</p>}
-                  {pannes.map(p => (
-                    <div key={p.id} className="rounded-md border border-warning/30 bg-warning-muted px-3 py-2 text-sm">{p.description}</div>
-                  ))}
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold">Procédure de réparation</Label>
-                  {procedures.length === 0 && <p className="text-sm text-muted-foreground">Aucune procédure.</p>}
-                  {procedures.map((p, i) => (
-                    <div key={p.id} className="rounded-md border p-3 space-y-2">
-                      <span className="font-medium text-primary text-sm">Étape {i + 1}</span>
-                      <p className="text-sm">{p.description}</p>
-                      {p.image_url && <img src={p.image_url} alt={`Étape ${i + 1}`} className="max-h-48 rounded border object-contain" />}
-                    </div>
-                  ))}
-                </div>
+
+                {/* Types de pannes : liste unique à séparateurs */}
+                <section className="space-y-1.5">
+                  <h4 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                    <AlertTriangle className="h-4 w-4 text-warning" aria-hidden="true" /> Types de pannes
+                    {pannes.length > 0 && <span className="rounded-full bg-muted px-2 py-px text-[10px] font-semibold text-muted-foreground">{pannes.length}</span>}
+                  </h4>
+                  {pannes.length === 0 ? (
+                    <p className="rounded-xl border border-dashed border-border px-3 py-3 text-center text-xs text-muted-foreground">Aucune panne renseignée.</p>
+                  ) : (
+                    <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border">
+                      {pannes.map((p) => (
+                        <li key={p.id} className="flex items-center gap-2.5 px-3 py-2 text-sm text-foreground">
+                          <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-warning" aria-hidden="true" />
+                          {p.description}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </section>
+
+                {/* Procédure : frise d'étapes numérotées */}
+                <section className="space-y-1.5">
+                  <h4 className="text-sm font-semibold text-foreground">Procédure de réparation</h4>
+                  {procedures.length === 0 ? (
+                    <p className="rounded-xl border border-dashed border-border px-3 py-3 text-center text-xs text-muted-foreground">Aucune procédure renseignée.</p>
+                  ) : (
+                    <ol className="space-y-0">
+                      {procedures.map((p, i) => (
+                        <li key={p.id} className="relative flex gap-3 pb-4 last:pb-0">
+                          {i < procedures.length - 1 && (
+                            <span className="absolute bottom-0 left-3 top-7 w-px bg-border" aria-hidden="true" />
+                          )}
+                          <span className="relative z-[1] flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground">
+                            {i + 1}
+                          </span>
+                          <div className="min-w-0 flex-1 space-y-2 pt-0.5">
+                            <p className="whitespace-pre-line text-sm text-foreground">{p.description}</p>
+                            {p.image_url && (
+                              <img src={p.image_url} alt={`Étape ${i + 1}`} className="max-h-48 rounded-xl border border-border object-contain" />
+                            )}
+                          </div>
+                        </li>
+                      ))}
+                    </ol>
+                  )}
+                </section>
               </div>
             )}
           </div>

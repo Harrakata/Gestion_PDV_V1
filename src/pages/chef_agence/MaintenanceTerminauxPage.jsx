@@ -748,7 +748,7 @@ const MaintenanceTerminauxPage = () => {
                                                   key={n}
                                                   type="button"
                                                   onClick={() => setLimit(n)}
-                                                  className={`min-h-10 min-w-10 rounded px-2 py-1 text-xs font-medium transition-colors ${historyLimit === n ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
+                                                  className={`min-h-10 min-w-10 rounded-md px-2 py-1 text-xs font-medium transition-colors ${historyLimit === n ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
                                                 >
                                                   {n}
                                                 </button>
@@ -756,7 +756,7 @@ const MaintenanceTerminauxPage = () => {
                                               <button
                                                 type="button"
                                                 onClick={() => setLimit(0)}
-                                                className={`min-h-10 min-w-10 rounded px-2 py-1 text-xs font-medium transition-colors ${historyLimit === 0 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
+                                                className={`min-h-10 min-w-10 rounded-md px-2 py-1 text-xs font-medium transition-colors ${historyLimit === 0 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
                                               >
                                                 Tout
                                               </button>

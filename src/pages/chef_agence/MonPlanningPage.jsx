@@ -618,9 +618,9 @@ const MonPlanningPage = () => {
           <div className="planning-toolbar mt-2 flex flex-wrap items-center justify-between gap-1.5 md:mt-6 md:gap-4">
             <div className="flex min-w-0 items-center gap-1 md:gap-2">
               <Button variant="outline" size="icon" onClick={handlePrev} disabled={isLoading} className="h-8 w-8 md:h-9 md:w-9" aria-label="Période précédente"><ChevronLeft className="h-4 w-4" /></Button>
-              <h2 className="min-w-0 truncate text-sm font-semibold capitalize text-foreground sm:text-lg md:text-xl">
+              <p className="min-w-0 truncate text-sm font-semibold capitalize text-foreground" aria-live="polite">
                 {format(currentMonth, viewMode === 'month' ? 'MMMM yyyy' : "'Semaine du' dd MMMM", { locale: fr })}
-              </h2>
+              </p>
               <Button variant="outline" size="icon" onClick={handleNext} disabled={isLoading} className="h-8 w-8 md:h-9 md:w-9" aria-label="Période suivante"><ChevronRight className="h-4 w-4" /></Button>
             </div>
             <div className="flex flex-wrap items-center gap-1 md:gap-2">

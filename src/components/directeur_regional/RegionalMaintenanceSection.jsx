@@ -588,7 +588,7 @@ const RegionalMaintenanceSection = ({ regionName = '', allowAllRegions = false, 
                                                   key={n}
                                                   type="button"
                                                   onClick={() => setLimit(n)}
-                                                  className={`rounded px-2 py-0.5 text-[10px] font-medium transition-colors ${historyLimit === n ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
+                                                  className={`rounded-md px-2 py-0.5 text-[10px] font-medium transition-colors ${historyLimit === n ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
                                                 >
                                                   {n}
                                                 </button>
@@ -596,7 +596,7 @@ const RegionalMaintenanceSection = ({ regionName = '', allowAllRegions = false, 
                                               <button
                                                 type="button"
                                                 onClick={() => setLimit(0)}
-                                                className={`rounded px-2 py-0.5 text-[10px] font-medium transition-colors ${historyLimit === 0 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
+                                                className={`rounded-md px-2 py-0.5 text-[10px] font-medium transition-colors ${historyLimit === 0 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
                                               >
                                                 Tout
                                               </button>

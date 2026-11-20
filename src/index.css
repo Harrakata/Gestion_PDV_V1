@@ -1251,7 +1251,7 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
 
   /* ── Personnalisation App Mobile : échelle de police de base ── */
   .app-space-main {
-    font-size: calc(0.875rem * var(--mobile-font-scale, 1));
+    font-size: 0.875rem;
   }
 }
 
@@ -1865,7 +1865,7 @@ html {
 
   /* ── Texte courant et descriptions ── */
   :is(#main-content, [role="dialog"]) {
-    font-size: calc(0.8125rem * var(--mobile-font-scale, 1));
+    font-size: 0.8125rem;
   }
 
   :is(#main-content, [role="dialog"]) .text-base {
@@ -2346,9 +2346,16 @@ html {
   }
 }
 
-/* Liseré bleu : réservé à l'en-tête d'écran. Masqué sur les cartes affichées
-   dans un onglet (ex. « Performance ») ou imbriquées dans une autre carte. */
-#main-content :is([role="tabpanel"] [data-card-rail], .text-card-foreground .text-card-foreground > [data-card-rail]) {
+/* Liseré bleu : réservé à l'en-tête d'écran (1re carte de l'écran). Masqué sur :
+   - toute carte qui n'est pas la première de son conteneur (ex. « Messages envoyés »
+     sous l'en-tête de la page Notifications) ;
+   - les cartes affichées dans un onglet (ex. « Performance ») ;
+   - les cartes imbriquées dans une autre carte. */
+#main-content :is(
+  .text-card-foreground:not(:first-child) > [data-card-rail],
+  [role="tabpanel"] [data-card-rail],
+  .text-card-foreground .text-card-foreground > [data-card-rail]
+) {
   display: none;
 }
 
@@ -2378,4 +2385,29 @@ html {
   background-color: hsl(var(--primary) / 0.05);
   color: hsl(var(--primary));
   font-weight: 600;
+}
+
+/* ── Personnalisation App Mobile (Paramètres) branchée sur le nouveau design ──
+   Variables posées au démarrage pour tous les utilisateurs (lib/mobileCustomization.js).
+   Valeurs par défaut = rendu actuel. */
+@media (max-width: 767px) {
+  .mobile-tabbar.mobile-tabbar {
+    border-radius: var(--mobile-card-radius, 1.5rem);
+    box-shadow: var(--mobile-tabbar-shadow, 0 14px 34px -18px rgba(15, 23, 42, 0.4));
+  }
+
+  /* Hauteur de la barre d'onglets : réglée sur les onglets eux-mêmes. */
+  .mobile-tabbar-item.mobile-tabbar-item {
+    min-height: calc(var(--mobile-tab-h, 4.5rem) - 1.5rem);
+  }
+
+  .app-space-mobile-header > .space-mobile-header-bar.space-mobile-header-bar {
+    border-radius: var(--mobile-header-radius, 2rem) !important;
+  }
+
+  /* Taille d'affichage du contenu : mise à l'échelle de toute la zone de contenu
+     (les tailles de texte étant fixées élément par élément). */
+  .app-space-main {
+    zoom: var(--mobile-font-scale, 1);
+  }
 }

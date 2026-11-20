@@ -1170,7 +1170,6 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
       {/* ===== DIALOG PIECE ===== */}
       <Dialog open={isPieceOpen} onOpenChange={(open) => { if (!open) resetPhotoState(); setIsPieceOpen(open); }}>
         <DialogContent className="sm:max-w-lg relative overflow-hidden">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
           <DialogHeader><DialogTitle className="text-primary">{editingPiece ? 'Modifier la pièce' : 'Ajouter une pièce'}</DialogTitle></DialogHeader>
           <div className="grid gap-3 py-4">
             {[
@@ -1287,7 +1286,6 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
       {/* ===== DIALOG AIDE REPARATION ===== */}
       <Dialog open={isHelpOpen} onOpenChange={setIsHelpOpen}>
         <DialogContent className="sm:max-w-2xl flex flex-col max-h-[88vh] relative overflow-hidden p-0">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary z-10" />
           <DialogHeader className="relative shrink-0 px-6 pt-6 pb-3 border-b">
             <DialogTitle className="flex items-center gap-2 text-primary">
               <HelpCircle className="h-5 w-5 text-primary" />
@@ -1456,7 +1454,6 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
       {/* ===== DIALOG MODELE ===== */}
       <Dialog open={isModeleOpen} onOpenChange={setIsModeleOpen}>
         <DialogContent className="sm:max-w-md relative overflow-hidden">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
           <DialogHeader><DialogTitle className="text-primary">{editingModele ? 'Modifier le modèle' : 'Créer un modèle'}</DialogTitle></DialogHeader>
           <div className="grid gap-3 py-4">
             <div className="grid grid-cols-4 items-center gap-3">
@@ -1492,7 +1489,6 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
       {/* ===== DIALOG COMPOSITION ===== */}
       <Dialog open={isCompoOpen} onOpenChange={setIsCompoOpen}>
         <DialogContent className="sm:max-w-2xl relative overflow-hidden p-0">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
           <div className="relative px-6 pt-5 pb-3">
             <DialogHeader>
               <DialogTitle className="text-primary flex items-center gap-2">
@@ -1583,7 +1579,6 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
       {/* ===== DIALOG STOCK MOUVEMENT ===== */}
       <Dialog open={isStockOpen} onOpenChange={setIsStockOpen}>
         <DialogContent className="sm:max-w-md relative overflow-hidden">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
           <DialogHeader><DialogTitle className="text-primary">Mouvement de stock</DialogTitle></DialogHeader>
           <div className="grid gap-3 py-4">
             <div className="grid grid-cols-4 items-center gap-3">
@@ -1628,7 +1623,6 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
       {/* ===== DIALOG IMPORT ===== */}
       <Dialog open={isImportOpen} onOpenChange={setIsImportOpen}>
         <DialogContent className="sm:max-w-2xl max-h-[88vh] overflow-y-auto relative overflow-hidden">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-primary" />
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-primary">
               <FileUp className="h-5 w-5 text-primary" /> Importer des pièces depuis CSV
