@@ -17,6 +17,9 @@
     <path d="M62 19 C59 22 56 24 52 25" stroke-width="2.6"/>
     <path d="M80 24 C76 26 73 27 71 28 C72 31 74 32 77 33" stroke-width="3.2"/>
   </g>
-  <path d="M52 25 C42 26 30 30 19 34" fill="none" stroke="#FFFFFF" stroke-width="0.7"/>
+  <!-- Tapis de selle aux initiales GPDV -->
+    <rect x="71" y="36.5" width="34" height="14" rx="2.5" fill="#F2A900"/>
+    <text x="88" y="47" text-anchor="middle" font-family="Poppins, 'Segoe UI', Arial, sans-serif" font-size="9.2" font-weight="800" letter-spacing="0.4" fill="#0F2A5C">GPDV</text>
+    <path d="M52 25 C42 26 30 30 19 34" fill="none" stroke="#FFFFFF" stroke-width="0.7"/>
   <circle cx="30" cy="21" r="1.2" fill="#FFFFFF"/>
 </svg>

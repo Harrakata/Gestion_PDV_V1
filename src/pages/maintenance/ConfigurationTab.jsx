@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useConfirm } from '@/components/ConfirmDialogProvider';
 import { describeError } from '@/lib/errors';
-import { ChevronDown, ChevronUp, Download, Edit, FileUp, MapPinned, PackageCheck, Search, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronUp, Download, Edit, FileUp, History, MapPinned, PackageCheck, Search, Trash2 } from 'lucide-react';
+import SousEnsemblesHistoryDialog from '@/components/maintenance/SousEnsemblesHistoryDialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -191,6 +192,14 @@ const ASSEMBLED_TERMINAL_FIELD_CONFIG = [
 ];
 
 const ASSEMBLED_TERMINAL_HEADERS = ASSEMBLED_TERMINAL_FIELD_CONFIG.map((field) => field.header);
+const SOUS_ENSEMBLE_FIELD_LABELS = {
+  ...EQUIPMENT_FIELD_CONFIG.reduce((accumulator, config) => {
+    accumulator[config.terminalKey] = config.label;
+    return accumulator;
+  }, {}),
+  carrosserie_reference: 'Carrosserie',
+};
+
 const ASSEMBLED_EQUIPMENT_FIELD_CONFIG = ASSEMBLED_TERMINAL_FIELD_CONFIG.filter((field) =>
   EQUIPMENT_FIELD_CONFIG.some((equipment) => equipment.terminalKey === field.dbKey)
 );
@@ -326,6 +335,9 @@ const ConfigurationTab = ({
   const [terminaux, setTerminaux] = useState([]);
   const [assembledTerminals, setAssembledTerminals] = useState([]);
   const [expandedAssembledTerminalId, setExpandedAssembledTerminalId] = useState(null);
+  const [stockSourceFilter, setStockSourceFilter] = useState('all');
+  const [showAllStockRows, setShowAllStockRows] = useState(false);
+  const [historyTerminalReference, setHistoryTerminalReference] = useState(null);
   const [formData, setFormData] = useState(DEFAULT_FORM_DATA);
   const [showValidationErrors, setShowValidationErrors] = useState(false);
   const [configurationMode, setConfigurationMode] = useState('manual');
@@ -543,6 +555,61 @@ const ConfigurationTab = ({
       }, {}),
     [agences]
   );
+
+  // Vue unifiée du stock : terminaux assemblés importés + terminaux configurés
+  // directement sur les agences (table `terminaux`) qui ne proviennent pas du stock.
+  const stockTableRows = useMemo(() => {
+    const linkedTerminalIds = new Set(
+      assembledTerminals.filter((terminal) => terminal.terminal_id).map((terminal) => String(terminal.terminal_id))
+    );
+    const assembledReferences = new Set(assembledTerminals.map((terminal) => normalizeText(terminal.reference)));
+
+    const assembledRows = assembledTerminals.map((terminal) => ({
+      ...terminal,
+      rowKey: `stock-${terminal.id}`,
+      source: 'stock',
+    }));
+
+    const agencyRows = terminaux
+      .filter(
+        (terminal) =>
+          !linkedTerminalIds.has(String(terminal.id)) &&
+          !assembledReferences.has(normalizeText(terminal.reference))
+      )
+      .map((terminal) => ({
+        ...terminal,
+        rowKey: `agence-${terminal.id}`,
+        source: 'agence',
+      }));
+
+    return [...assembledRows, ...agencyRows].sort((a, b) =>
+      String(a.reference ?? '').localeCompare(String(b.reference ?? ''), 'fr', { numeric: true })
+    );
+  }, [assembledTerminals, terminaux]);
+
+  const stockCounters = useMemo(() => {
+    const available = stockTableRows.filter(
+      (row) => row.source === 'stock' && normalizeText(row.statut) !== 'assigne'
+    ).length;
+    return {
+      total: stockTableRows.length,
+      available,
+      assigned: stockTableRows.length - available,
+      agencyOnly: stockTableRows.filter((row) => row.source === 'agence').length,
+    };
+  }, [stockTableRows]);
+
+  const filteredStockTableRows = useMemo(
+    () =>
+      stockSourceFilter === 'all'
+        ? stockTableRows
+        : stockTableRows.filter((row) => row.source === stockSourceFilter),
+    [stockSourceFilter, stockTableRows]
+  );
+
+  const visibleStockTableRows = showAllStockRows
+    ? filteredStockTableRows
+    : filteredStockTableRows.slice(0, 8);
 
   const resolvedLockedAgence = useMemo(() => {
     if (lockedAgenceId) {
@@ -1260,27 +1327,140 @@ const ConfigurationTab = ({
     }
   };
 
+  // Libère un terminal du stock importé : il est retiré de son agence (ligne `terminaux`
+  // supprimée) et redevient « Disponible » dans le stock.
   const handleReleaseAssembledTerminal = async (terminal) => {
     if (!canManage) {
       showReadOnlyToast();
       return;
     }
 
-    const { error } = await supabase
-      .from('terminaux_assembles')
-      .update({ statut: 'Disponible', agence_id: null, terminal_id: null, assigned_at: null })
-      .eq('id', terminal.id);
+    const agencyName = agenciesById[String(terminal.agence_id)]?.nom;
+    if (!(await confirm({
+      title: `Libérer ${terminal.reference} ?`,
+      description: `Le terminal sera retiré${agencyName ? ` de l’agence ${agencyName}` : ' de son agence'} et redeviendra disponible dans le stock.`,
+    }))) {
+      return;
+    }
 
-    if (error) {
+    setIsLoading(true);
+    try {
+      // Les sous-ensembles ont pu être remplacés en agence (maintenance) : le stock
+      // reprend la configuration réelle du terminal avant de le retirer de l'agence.
+      const parkTerminal = terminal.terminal_id
+        ? terminaux.find((item) => String(item.id) === String(terminal.terminal_id))
+        : null;
+      const syncedParts = parkTerminal
+        ? EQUIPMENT_FIELD_CONFIG.reduce((accumulator, config) => {
+          accumulator[config.terminalKey] = parkTerminal[config.terminalKey] || null;
+          return accumulator;
+        }, {})
+        : {};
+
+      const { error } = await supabase
+        .from('terminaux_assembles')
+        .update({ ...syncedParts, statut: 'Disponible', agence_id: null, terminal_id: null, assigned_at: null })
+        .eq('id', terminal.id);
+      if (error) throw error;
+
+      if (terminal.terminal_id) {
+        const { error: unlinkError } = await supabase.from('terminaux').delete().eq('id', terminal.terminal_id);
+        if (unlinkError) {
+          // Le terminal reste en agence : on restaure son affectation dans le stock.
+          await supabase
+            .from('terminaux_assembles')
+            .update({
+              statut: terminal.statut,
+              agence_id: terminal.agence_id,
+              terminal_id: terminal.terminal_id,
+              assigned_at: terminal.assigned_at,
+            })
+            .eq('id', terminal.id);
+          throw unlinkError;
+        }
+      }
+
+      toast({
+        title: 'Terminal libéré',
+        description: `${terminal.reference} est de nouveau disponible dans le stock.`,
+        className: 'bg-success text-success-foreground',
+      });
+      await loadData();
+    } catch (error) {
       toast({
         title: 'Erreur de libération',
         description: describeError(error, 'ConfigurationTab'),
         variant: 'destructive',
       });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Libère un terminal configuré directement en agence (hors stock importé) :
+  // il est versé dans le stock comme « Disponible » puis retiré de l'agence.
+  const handleReleaseAgencyTerminal = async (terminal) => {
+    if (!canManage) {
+      showReadOnlyToast();
       return;
     }
 
-    await loadData();
+    const agencyName = agenciesById[String(terminal.agence_id)]?.nom;
+    if (!(await confirm({
+      title: `Libérer ${terminal.reference} ?`,
+      description: `Le terminal sera retiré${agencyName ? ` de l’agence ${agencyName}` : ' de son agence'} et ajouté au stock comme disponible, avec ses sous-ensembles.`,
+    }))) {
+      return;
+    }
+
+    setIsLoading(true);
+    let createdStockId = null;
+    try {
+      const { data: stockRow, error: insertError } = await supabase
+        .from('terminaux_assembles')
+        .upsert(
+          {
+            reference: terminal.reference,
+            type_terminal: terminal.type_terminal || '2020',
+            statut: 'Disponible',
+            agence_id: null,
+            terminal_id: null,
+            assigned_at: null,
+            ...EQUIPMENT_FIELD_CONFIG.reduce((accumulator, config) => {
+              accumulator[config.terminalKey] = terminal[config.terminalKey] || null;
+              return accumulator;
+            }, {}),
+          },
+          { onConflict: 'reference' }
+        )
+        .select('id')
+        .single();
+      if (insertError) throw insertError;
+      createdStockId = stockRow?.id ?? null;
+
+      const { error: deleteError } = await supabase.from('terminaux').delete().eq('id', terminal.id);
+      if (deleteError) throw deleteError;
+      createdStockId = null;
+
+      toast({
+        title: 'Terminal libéré',
+        description: `${terminal.reference} a été retiré de l’agence et ajouté au stock.`,
+        className: 'bg-success text-success-foreground',
+      });
+      await loadData();
+    } catch (error) {
+      // Annule l'ajout au stock si le retrait de l'agence a échoué (évite un doublon).
+      if (createdStockId) {
+        await supabase.from('terminaux_assembles').delete().eq('id', createdStockId);
+      }
+      toast({
+        title: 'Erreur de libération',
+        description: describeError(error, 'ConfigurationTab'),
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleDeleteAssembledTerminal = async (terminal) => {
@@ -1289,30 +1469,43 @@ const ConfigurationTab = ({
       return;
     }
 
-    if (normalizeText(terminal.statut) === 'assigne') {
+    const isAssigned = normalizeText(terminal.statut) === 'assigne';
+    const agencyName = agenciesById[String(terminal.agence_id)]?.nom;
+    if (!(await confirm({
+      title: `Supprimer ${terminal.reference} ?`,
+      description: isAssigned
+        ? `Le terminal sera retiré${agencyName ? ` de l’agence ${agencyName}` : ' de son agence'} et supprimé du stock.`
+        : 'Le terminal assemblé sera supprimé du stock.',
+      destructive: true,
+    }))) {
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      if (terminal.terminal_id) {
+        const { error: unlinkError } = await supabase.from('terminaux').delete().eq('id', terminal.terminal_id);
+        if (unlinkError) throw unlinkError;
+      }
+
+      const { error } = await supabase.from('terminaux_assembles').delete().eq('id', terminal.id);
+      if (error) throw error;
+
       toast({
-        title: 'Terminal assemblé assigné',
-        description: 'Libérez le terminal assemblé avant de le supprimer du stock.',
-        variant: 'destructive',
+        title: 'Terminal supprimé',
+        description: `${terminal.reference} a été supprimé.`,
+        className: 'bg-destructive text-destructive-foreground',
       });
-      return;
-    }
-
-    if (!(await confirm({ title: `Retirer ${terminal.reference} du stock ?`, description: 'Le terminal assemblé sera supprimé du stock.', destructive: true }))) {
-      return;
-    }
-
-    const { error } = await supabase.from('terminaux_assembles').delete().eq('id', terminal.id);
-    if (error) {
+      await loadData();
+    } catch (error) {
       toast({
         title: 'Erreur de suppression',
         description: describeError(error, 'ConfigurationTab'),
         variant: 'destructive',
       });
-      return;
+    } finally {
+      setIsLoading(false);
     }
-
-    await loadData();
   };
 
   const filteredAgencesForPark = useMemo(
@@ -1844,20 +2037,42 @@ const ConfigurationTab = ({
           <div className="grid gap-3 md:grid-cols-3">
             <div className="rounded-xl border border-info/20 bg-card px-4 py-3">
               <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">Total</p>
-              <p className="text-2xl font-bold text-foreground">{assembledTerminals.length}</p>
+              <p className="text-2xl font-bold text-foreground">{stockCounters.total}</p>
             </div>
             <div className="rounded-xl border border-success/20 bg-card px-4 py-3">
               <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">Disponibles</p>
-              <p className="text-2xl font-bold text-success-muted-foreground">
-                {assembledTerminals.filter((terminal) => normalizeText(terminal.statut) !== 'assigne').length}
-              </p>
+              <p className="text-2xl font-bold text-success-muted-foreground">{stockCounters.available}</p>
             </div>
             <div className="rounded-xl border border-border bg-card px-4 py-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">Assignés</p>
-              <p className="text-2xl font-bold text-primary">
-                {assembledTerminals.filter((terminal) => normalizeText(terminal.statut) === 'assigne').length}
-              </p>
+              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">Assignés / en agence</p>
+              <p className="text-2xl font-bold text-primary">{stockCounters.assigned}</p>
+              {stockCounters.agencyOnly > 0 ? (
+                <p className="text-xs text-muted-foreground">
+                  dont {stockCounters.agencyOnly} configuré(s) directement en agence
+                </p>
+              ) : null}
             </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {[
+              { value: 'all', label: `Tous (${stockTableRows.length})` },
+              { value: 'stock', label: `Stock importé (${assembledTerminals.length})` },
+              { value: 'agence', label: `Configurés en agence (${stockCounters.agencyOnly})` },
+            ].map((option) => (
+              <Button
+                key={option.value}
+                type="button"
+                size="sm"
+                variant={stockSourceFilter === option.value ? 'default' : 'outline'}
+                onClick={() => {
+                  setStockSourceFilter(option.value);
+                  setShowAllStockRows(false);
+                }}
+              >
+                {option.label}
+              </Button>
+            ))}
           </div>
         </CardHeader>
         <CardContent>
@@ -1874,13 +2089,23 @@ const ConfigurationTab = ({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {assembledTerminals.slice(0, 8).map((terminal) => {
+              {visibleStockTableRows.map((terminal) => {
                 const assignedAgency = agenciesById[String(terminal.agence_id)];
                 const filledPartsCount = ASSEMBLED_EQUIPMENT_FIELD_CONFIG.filter((field) => terminal[field.dbKey]).length;
-                const isAssigned = normalizeText(terminal.statut) === 'assigne';
-                const isExpanded = String(expandedAssembledTerminalId) === String(terminal.id);
+                const isAgencyTerminal = terminal.source === 'agence';
+                const isAssigned = !isAgencyTerminal && normalizeText(terminal.statut) === 'assigne';
+                const isExpanded = String(expandedAssembledTerminalId) === String(terminal.rowKey);
+                let statusLabel = 'Disponible';
+                let statusClassName = 'border-success/25 bg-success-muted text-success-muted-foreground';
+                if (isAgencyTerminal) {
+                  statusLabel = assignedAgency?.nom ? `En agence : ${assignedAgency.nom}` : 'Configuré (agence inconnue)';
+                  statusClassName = 'border-warning/25 bg-warning-muted text-warning-muted-foreground';
+                } else if (isAssigned) {
+                  statusLabel = `Assigné${assignedAgency?.nom ? ` à ${assignedAgency.nom}` : ''}`;
+                  statusClassName = 'border-info/25 bg-info-muted text-info-muted-foreground';
+                }
                 return (
-                  <React.Fragment key={terminal.id}>
+                  <React.Fragment key={terminal.rowKey}>
                     <TableRow>
                       <TableCell className="font-semibold">{terminal.reference}</TableCell>
                       <TableCell>{terminal.mac_address || 'N/A'}</TableCell>
@@ -1892,9 +2117,7 @@ const ConfigurationTab = ({
                         </span>
                       </TableCell>
                       <TableCell>
-                        <Badge className={isAssigned ? 'border-info/25 bg-info-muted text-info-muted-foreground' : 'border-success/25 bg-success-muted text-success-muted-foreground'}>
-                          {isAssigned ? `Assigné${assignedAgency?.nom ? ` à ${assignedAgency.nom}` : ''}` : 'Disponible'}
-                        </Badge>
+                        <Badge className={statusClassName}>{statusLabel}</Badge>
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
@@ -1902,29 +2125,49 @@ const ConfigurationTab = ({
                             type="button"
                             size="icon"
                             variant="ghost"
-                            onClick={() => setExpandedAssembledTerminalId(isExpanded ? null : terminal.id)}
+                            onClick={() => setExpandedAssembledTerminalId(isExpanded ? null : terminal.rowKey)}
                             title={isExpanded ? 'Masquer les sous-ensembles' : 'Afficher tous les sous-ensembles'}
                           >
                             {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                           </Button>
-                          {isAssigned ? (
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleReleaseAssembledTerminal(terminal)}
-                              disabled={!canManage}
-                            >
-                              Libérer
-                            </Button>
-                          ) : null}
                           <Button
                             type="button"
                             size="icon"
                             variant="ghost"
-                            onClick={() => handleDeleteAssembledTerminal(terminal)}
-                            disabled={!canManage || isAssigned}
-                            title="Supprimer du stock"
+                            onClick={() => setHistoryTerminalReference(terminal.reference)}
+                            title="Historique des changements de sous-ensembles"
+                          >
+                            <History className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() =>
+                              isAgencyTerminal
+                                ? handleReleaseAgencyTerminal(terminal)
+                                : handleReleaseAssembledTerminal(terminal)
+                            }
+                            disabled={!canManage || isLoading || (!isAgencyTerminal && !isAssigned)}
+                            title={
+                              !isAgencyTerminal && !isAssigned
+                                ? 'Terminal déjà disponible'
+                                : 'Retirer de l’agence et remettre en stock'
+                            }
+                          >
+                            Libérer
+                          </Button>
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="ghost"
+                            onClick={() =>
+                              isAgencyTerminal
+                                ? handleDeleteTerminal(terminal)
+                                : handleDeleteAssembledTerminal(terminal)
+                            }
+                            disabled={!canManage || isLoading}
+                            title={isAgencyTerminal ? 'Supprimer le terminal du parc' : 'Supprimer du stock'}
                           >
                             <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
@@ -1952,18 +2195,40 @@ const ConfigurationTab = ({
                   </React.Fragment>
                 );
               })}
-              {assembledTerminals.length === 0 ? (
+              {filteredStockTableRows.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="py-8 text-center text-muted-foreground">
-                    Aucun terminal assemblé importé pour le moment.
+                    {stockSourceFilter === 'agence'
+                      ? 'Aucun terminal configuré directement en agence.'
+                      : 'Aucun terminal pour le moment.'}
                   </TableCell>
                 </TableRow>
               ) : null}
             </TableBody>
-            {assembledTerminals.length > 8 ? (
-              <TableCaption>{assembledTerminals.length - 8} terminal(aux) supplémentaire(s) disponible(s) dans l’export.</TableCaption>
-            ) : null}
           </Table>
+          {filteredStockTableRows.length > 8 ? (
+            <div className="mt-3 flex justify-center">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="gap-2"
+                onClick={() => setShowAllStockRows((previous) => !previous)}
+              >
+                {showAllStockRows ? (
+                  <>
+                    <ChevronUp className="h-4 w-4" />
+                    Réduire
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="h-4 w-4" />
+                    Afficher les {filteredStockTableRows.length - 8} terminal(aux) restant(s)
+                  </>
+                )}
+              </Button>
+            </div>
+          ) : null}
         </CardContent>
       </Card>
 
@@ -2324,12 +2589,23 @@ const ConfigurationTab = ({
     </Dialog>
   );
 
+  const historyDialog = (
+    <SousEnsemblesHistoryDialog
+      open={Boolean(historyTerminalReference)}
+      onOpenChange={(open) => { if (!open) setHistoryTerminalReference(null); }}
+      terminalReference={historyTerminalReference}
+      fieldLabels={SOUS_ENSEMBLE_FIELD_LABELS}
+      agenciesById={agenciesById}
+    />
+  );
+
   if (!showEquipmentManagement) {
     if (!showTerminalConfiguration) return null;
     return (
       <>
         {configurationContent}
         {editDialog}
+        {historyDialog}
       </>
     );
   }
@@ -2355,6 +2631,7 @@ const ConfigurationTab = ({
         </Tabs>
       </div>
       {editDialog}
+      {historyDialog}
     </>
   );
 };

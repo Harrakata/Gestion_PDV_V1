@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Gestion PDV">
   <!-- Gestion PDV — icône d'application (carré arrondi bleu de marque). -->
   <rect width="512" height="512" rx="112" fill="#2563EB"/>
-  <svg x="36" y="122" width="440" height="264" viewBox="10 0 150 90">
+  <svg x="46" y="60" width="420" height="252" viewBox="10 0 150 90">
     <g fill="#FFFFFF">
       <path d="M113 34 C122 30 134 30 146 34 C150 35 154 38 156 41 C150 39 144 38 138 39 C144 41 149 44 152 48 C145 45 137 43 129 42 C123 41 117 41 114 41 Z"/>
       <path d="M14 33 C13 30 14 28 16 27 L36 11 L39 3 L42 10 L44 11 C52 13 58 21 62 29 C64 32 68 33 72 34 C82 37 94 35 104 32 C110 31 114 35 115 41 C116 47 114 52 110 55 C104 58 98 58 92 58 C84 59 76 60 68 61 C62 61 56 60 52 56 C50 50 46 40 42 32 C38 34 33 35 28 36 C24 37 20 38 17 37 C15 36 14 35 14 33 Z"/>
@@ -19,7 +19,10 @@
       <path d="M62 19 C59 22 56 24 52 25" stroke-width="2.6"/>
       <path d="M80 24 C76 26 73 27 71 28 C72 31 74 32 77 33" stroke-width="3.2"/>
     </g>
+    <!-- Tapis de selle (initiales GPDV affichées en grand dessous) -->
+    <rect x="71" y="36.5" width="34" height="14" rx="2.5" fill="#F2A900"/>
     <path d="M52 25 C42 26 30 30 19 34" fill="none" stroke="#2563EB" stroke-width="0.7"/>
     <circle cx="30" cy="21" r="1.2" fill="#2563EB"/>
   </svg>
+  <text x="256" y="436" text-anchor="middle" font-family="Poppins, 'Segoe UI', Arial, sans-serif" font-size="118" font-weight="800" letter-spacing="6" fill="#FFFFFF">GPDV</text>
 </svg>
