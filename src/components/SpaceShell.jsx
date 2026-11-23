@@ -35,10 +35,15 @@ export function SpaceMenuItem({ label, icon, active, to, onClick, disabled }) {
     : <button type="button" onClick={onClick} disabled={disabled} {...props} />;
 }
 
-function SpaceSidebarBrand({ label }) {
+function SpaceSidebarBrand({ label, onNavigate }) {
   const client = useClient();
   return (
-    <Link to="/" className="space-sidebar-brand hidden min-w-0 items-center gap-3 px-3 md:flex" title={label}>
+    <Link
+      to="/"
+      onClick={onNavigate}
+      title={label}
+      className="space-sidebar-brand flex min-w-0 items-center gap-3 border-b border-border px-2 pb-2.5 pt-1 md:border-b-0 md:px-3 md:py-0"
+    >
       <img src={client.logoUrl || PRODUCT_LOGO_URL} alt="" className="h-14 w-14 shrink-0 object-contain" />
       <span className="min-w-0">
         <span className="block truncate text-xl font-extrabold leading-tight text-foreground">{PRODUCT_NAME}</span>
@@ -141,7 +146,7 @@ export default function SpaceShell({
       <aside id={menuId} className={cn('app-space-sidebar md:w-72 md:shrink-0', menuOpen && 'is-open')}>
         <div className="app-space-sidebar-scroll sticky top-20 max-h-[calc(100vh-5.5rem)] space-y-3 overflow-y-auto pb-4 pr-1 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
           <Card className="space-sidebar-card">
-            <SpaceSidebarBrand label={spaceLabel} />
+            <SpaceSidebarBrand label={spaceLabel} onNavigate={() => onMenuOpenChange(false)} />
             <CardContent className="p-3">
               <nav aria-label={`Menu · ${spaceLabel}`} className="space-y-1">
                 {navigation ?? menuItems.map(({ key, ...item }) => (

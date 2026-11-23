@@ -110,3 +110,26 @@ for (const width of [360, 1440]) {
     expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0);
   });
 }
+
+test('tiroir du téléphone : logo et nom du client en tête, entiers, et retour à l’accueil', async ({ page }) => {
+  await page.routeWebSocket(/supabase/, ws => { ws.close(); });
+  await page.route(/supabase\.(co|in)|\/rest\/v1\//, route => route.abort());
+  await page.addInitScript(() => localStorage.setItem('client_branding_cache', JSON.stringify({ displayName: 'SONAL', logoUrl: '/brand/gpdv-icon-192.png' })));
+  await page.setViewportSize({ width: 360, height: 740 });
+  await page.goto('/tests/fixtures/space-shell.html?many=1');
+  const brand = page.locator('.space-sidebar-brand');
+  await expect(brand).toBeHidden();
+  await page.locator('.mobile-tabbar').getByRole('button', { name: /Ouvrir le menu/ }).click();
+  await expect(brand).toBeVisible();
+  for (const text of ['SONAL', 'Espace Guichetière']) {
+    const line = brand.getByText(text, { exact: true });
+    await expect(line).toBeVisible();
+    expect(await line.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+  }
+  const image = (await brand.locator('img').boundingBox())!;
+  expect(image.height).toBeGreaterThanOrEqual(44);
+  const first = (await page.locator('.space-sidebar-card .space-menu-item').first().boundingBox())!;
+  expect(image.y + image.height).toBeLessThanOrEqual(first.y);
+  await brand.click();
+  await expect(page.locator('.app-space-sidebar.is-open')).toHaveCount(0);
+});
