@@ -2064,8 +2064,8 @@ html {
    l'échelle de titres compacte à 1rem). */
 @media (max-width: 767px) {
   #main-content .home-brand-client.home-brand-client {
-    font-size: 1.5rem !important;
-    line-height: 1.8rem !important;
+    font-size: 1.2rem !important;
+    line-height: 1.5rem !important;
     letter-spacing: 0.06em;
     text-transform: uppercase;
   }

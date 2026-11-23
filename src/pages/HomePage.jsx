@@ -52,18 +52,14 @@ const HomePage = () => {
         <Card variant="elevated" className="border-border">
           <CardContent className="flex flex-col items-center px-4 py-7 text-center sm:px-8 sm:py-10 md:px-12">
             {/* Logo détouré, sans fond : c'est le titre de la page. */}
-            <h1 className="mb-5 flex w-full justify-center sm:mb-7">
-              <ProductLogo shape="auto" imgClassName="w-40 sm:w-[21rem] md:w-[23rem]" />
+            <h1 className="mb-4 flex w-full justify-center sm:mb-5">
+              <ProductLogo shape="auto" imgClassName="w-28 sm:w-52" />
             </h1>
-            {(client.logoUrl || hasClientName) && (
-              <div className="home-client mb-5 flex max-w-full items-center justify-center gap-4 sm:mb-6 sm:gap-5">
-                {client.logoUrl && (
-                  <img src={client.logoUrl} alt={hasClientName ? '' : client.displayName || ''} className="h-16 w-auto max-w-[45%] shrink-0 object-contain sm:h-20" />
-                )}
-                {hasClientName && (
-                  <p className="home-brand-client min-w-0 break-words text-left text-2xl font-extrabold tracking-wide text-primary sm:text-4xl">{client.displayName}</p>
-                )}
-              </div>
+            {/* Le logo du client est déjà dans l'en-tête : ici, son nom suffit. */}
+            {hasClientName && (
+              <p className="home-brand-client mb-4 max-w-full break-words text-xl font-extrabold tracking-wide text-primary sm:mb-5 sm:text-2xl">
+                {client.displayName}
+              </p>
             )}
             <p className="home-brand-tagline mb-2 text-lg font-semibold text-foreground sm:text-xl md:text-2xl">
               Gestion de Planning & Pointage

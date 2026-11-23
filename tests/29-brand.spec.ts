@@ -47,7 +47,7 @@ test('le logo du client garde la priorité ; le logo du produit reste', async ({
   await open(page, '/carrus-logo.png');
   await expect(page.locator('.app-top-header img')).toHaveAttribute('src', '/carrus-logo.png');
   await expect(page.getByRole('heading', { level: 1 }).getByRole('img')).toHaveAttribute('src', /gpdv-home/);
-  await expect(page.locator('#main-content img[src="/carrus-logo.png"]')).toBeVisible();
+  await expect(page.locator('#main-content img:visible')).toHaveCount(1);
 });
 
 test('toutes les icônes déclarées existent à la bonne taille', async () => {
@@ -96,17 +96,15 @@ for (const [name, width] of [['ordinateur', 1280], ['tiroir du téléphone', 360
 }
 
 for (const width of [360, 1440]) {
-  test(`accueil : le bloc du client équilibre le logo GPDV (${width} px)`, async ({ page }) => {
+  test(`accueil : un seul logo, le nom du client en grand dessous (${width} px)`, async ({ page }) => {
     await page.setViewportSize({ width, height: 800 });
     await open(page, '/brand/gpdv-icon-192.png');
-    const client = page.locator('.home-client');
-    const logo = (await client.locator('img').boundingBox())!;
-    expect(logo.height).toBeGreaterThanOrEqual(width < 640 ? 55 : 78);
-    const name = client.getByText('Client test');
-    expect(await name.evaluate(el => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(width < 640 ? 20 : 30);
-    const box = (await client.boundingBox())!;
-    expect(box.x).toBeGreaterThanOrEqual(0);
-    expect(box.x + box.width).toBeLessThanOrEqual(width);
+    await expect(page.locator('#main-content img:visible')).toHaveCount(1);
+    const name = page.locator('.home-brand-client');
+    await expect(name).toHaveText('Client test');
+    expect(await name.evaluate(el => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(width < 640 ? 18 : 24);
+    const box = (await name.boundingBox())!;
+    expect(Math.abs(box.x + box.width / 2 - width / 2), 'centré').toBeLessThanOrEqual(10);
     expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0);
   });
 }
