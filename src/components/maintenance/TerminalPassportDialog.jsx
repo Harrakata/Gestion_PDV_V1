@@ -55,7 +55,7 @@ const scoreTone = (score) => {
 
 const Detail = ({ label, value }) => (
   <div className="min-w-0 border-b border-border/70 py-3 last:border-b-0">
-    <p className="text-[11px] font-semibold uppercase text-muted-foreground">{label}</p>
+    <p className="text-xs font-semibold uppercase text-muted-foreground">{label}</p>
     <p className="mt-1 break-words text-sm font-medium text-foreground" title={String(value || '')}>{value || 'N/A'}</p>
   </div>
 );

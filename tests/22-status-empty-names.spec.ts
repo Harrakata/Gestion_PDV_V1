@@ -64,6 +64,26 @@ test('les statuts du stock défectueux gardent leur sens, en clair comme en somb
   }
 });
 
+for (const [width, rootSize] of [[360, 16], [360, 14], [1440, 16], [1440, 14]]) {
+  test(`en-têtes de colonnes plus petits que les cellules et homogènes (${width} px, racine ${rootSize} px)`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 800 });
+    await mock(page, true);
+    const sizes = new Set<number>();
+    for (const url of ['/tests/fixtures/maintenance-forms.html?screen=stock', '/tests/fixtures/business-forms.html?screen=guichetieres', '/tests/fixtures/business-forms.html?screen=agences']) {
+      await page.goto(url);
+      await expect(page.locator('#main-content td').first()).toBeAttached();
+      await page.evaluate(value => { document.documentElement.style.fontSize = `${value}px`; }, rootSize);
+      const result = await page.evaluate(() => {
+        const visible = (selector: string) => [...document.querySelectorAll<HTMLElement>(selector)].filter(el => el.checkVisibility() && el.offsetWidth > 2 && el.textContent!.trim());
+        const size = (el: Element) => parseFloat(getComputedStyle(el).fontSize);
+        return { heads: visible('#main-content thead th, #main-content thead th *').map(size), cells: visible('#main-content tbody td').map(size) };
+      });
+      for (const head of result.heads) { sizes.add(head); expect(head).toBeGreaterThanOrEqual(10); for (const cell of result.cells) expect(head).toBeLessThan(cell); }
+    }
+    expect(sizes.size).toBeLessThanOrEqual(1);
+  });
+}
+
 test('un message vide n’ajoute pas de titre à la page', async ({ page }) => {
   await mock(page, false);
   await page.goto('/tests/fixtures/business-forms.html?screen=chefs_agence');

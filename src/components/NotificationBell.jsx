@@ -211,7 +211,7 @@ const NotificationBell = ({ notifications = [], totalCount = 0, onNavigate, stor
     >
       <Bell className="h-4 w-4" />
       {!!effectiveBadge && (
-        <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-destructive px-1 text-[0.6rem] font-bold leading-none text-destructive-foreground ring-2 ring-background">
+        <span className="absolute -right-1 -top-1 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-destructive px-1 text-xs font-bold leading-none text-destructive-foreground ring-2 ring-background">
           {effectiveBadge}
         </span>
       )}
@@ -227,7 +227,7 @@ const NotificationBell = ({ notifications = [], totalCount = 0, onNavigate, stor
             <Bell className="h-4 w-4 text-primary" /> Notifications
           </span>
           {!!effectiveBadge && (
-            <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-semibold text-destructive">{effectiveBadge}</span>
+            <span className="rounded-pill bg-destructive/10 px-2 py-0.5 text-xs font-semibold text-destructive">{effectiveBadge}</span>
           )}
         </div>
         <div className="mx-3 mb-1 h-px bg-primary/15" />
@@ -264,11 +264,11 @@ const NotificationBell = ({ notifications = [], totalCount = 0, onNavigate, stor
                           <span className="truncate text-sm font-semibold text-foreground">{n.title}</span>
                           {/* Badge count */}
                           {n.count > 0 && (
-                            <span className="shrink-0 rounded-full bg-primary/10 px-1.5 text-xs font-bold text-primary">{n.count}</span>
+                            <span className="shrink-0 rounded-pill bg-primary/10 px-1.5 text-xs font-bold text-primary">{n.count}</span>
                           )}
                           {/* Badge non-lus */}
                           {hasMessages && hasUnread && (
-                            <span className="shrink-0 rounded-full bg-primary px-1.5 text-[0.6rem] font-bold text-primary-foreground">
+                            <span className="shrink-0 rounded-pill bg-primary px-1.5 text-xs font-bold text-primary-foreground">
                               {unreadCount} non lu{unreadCount > 1 ? 's' : ''}
                             </span>
                           )}
@@ -307,15 +307,15 @@ const NotificationBell = ({ notifications = [], totalCount = 0, onNavigate, stor
                                   <p className="truncate text-xs font-bold text-foreground">{msg.titre}</p>
                                 </div>
                                 {unread ? (
-                                  <span className="shrink-0 rounded-full bg-primary px-1.5 py-0.5 text-[0.6rem] font-bold text-primary-foreground">Nouveau</span>
+                                  <span className="shrink-0 rounded-pill bg-primary px-1.5 py-0.5 text-xs font-bold text-primary-foreground">Nouveau</span>
                                 ) : (
-                                  <span className={`shrink-0 rounded-full border px-1.5 py-0.5 text-[0.6rem] font-semibold ${cat.color} ${cat.border} bg-card/60`}>
+                                  <span className={`shrink-0 rounded-pill border px-1.5 py-0.5 text-xs font-semibold ${cat.color} ${cat.border} bg-card/60`}>
                                     {cat.label}
                                   </span>
                                 )}
                               </div>
                               <p className="mb-1.5 whitespace-pre-wrap text-xs text-foreground/80">{msg.corps}</p>
-                              <div className="flex items-center gap-2 text-[0.6rem] text-muted-foreground">
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                 {msg.envoye_par_nom && <span>{msg.envoye_par_nom}</span>}
                                 {msg.envoye_par_nom && msg.created_at && <span>·</span>}
                                 {msg.created_at && <span>{relTime(msg.created_at)}</span>}

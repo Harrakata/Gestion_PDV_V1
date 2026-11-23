@@ -15,6 +15,8 @@ const block = (selector) => {
 };
 const LIGHT = block(':root');
 const DARK = { ...LIGHT, ...block('.dark') };
+const HIGH = { ...LIGHT, ...block('html[data-contrast="high"]:root') };
+const HIGH_DARK = { ...DARK, ...block('html[data-contrast="high"]:root.dark') };
 
 const assertPair = (tokens, text, surface, context) => {
   const ratio = contrastRatio(parseHsl(tokens[text]), parseHsl(tokens[surface]));
@@ -54,11 +56,24 @@ test('les jetons par défaut sont lisibles', () => {
     ['--success-muted-foreground', '--success-muted'],
     ['--warning-muted-foreground', '--warning-muted'],
     ['--info-muted-foreground', '--info-muted'],
+    ['--highlight-foreground', '--highlight'], ['--highlight', '--card'],
+    ['--highlight-muted-foreground', '--highlight-muted'], ['--highlight-muted-foreground', '--card'],
   ];
   for (const [text, surface] of pairs) {
     assertPair(LIGHT, text, surface, 'clair');
     assertPair(DARK, text, surface, 'sombre');
   }
+});
+
+test('le contraste renforcé atteint 7:1 pour les textes secondaires', () => {
+  for (const tokens of [HIGH, HIGH_DARK]) {
+    for (const surface of ['--background', '--muted']) {
+      const ratio = contrastRatio(parseHsl(tokens['--muted-foreground']), parseHsl(tokens[surface]));
+      assert.ok(ratio >= 7, `${surface} = ${ratio.toFixed(2)}`);
+    }
+  }
+  assert.ok(contrastRatio(parseHsl(HIGH['--border']), parseHsl(HIGH['--card'])) >= 3);
+  assert.ok(contrastRatio(parseHsl(HIGH_DARK['--border']), parseHsl(HIGH_DARK['--card'])) >= 2.5);
 });
 
 test('la teinte du client est conservée sur tous les jetons de marque', () => {

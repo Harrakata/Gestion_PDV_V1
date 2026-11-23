@@ -24,9 +24,9 @@ const GuichetierePointageItem = ({ guichetiere, pointages, creneauxPointageSetti
       <p className="text-xs text-muted-foreground">Matricule: {guichetiere.matricule}</p>
       <div className="mt-2">
         <Label className="text-xs">Progression ({pointagesEffectues}/{maxPointages})</Label>
-        <div className="w-full bg-background dark:bg-gray-700 rounded-full h-2.5 mt-0.5 overflow-hidden">
+        <div className="w-full bg-background rounded-full h-2.5 mt-0.5 overflow-hidden">
           <motion.div 
-            className={`h-2.5 rounded-full ${completionPercentage >= 100 ? 'bg-success' : 'bg-gradient-to-r from-yellow-400 to-orange-500'}`}
+            className={`h-2.5 rounded-full ${completionPercentage >= 100 ? 'bg-success' : 'bg-warning'}`}
             initial={{ width: 0 }}
             animate={{ width: `${Math.min(100, completionPercentage)}%`}}
             transition={{ duration: 0.5, ease: "circOut" }}
@@ -82,9 +82,9 @@ const AgencyDailySummary = ({ guichetieresPlanifiees, pointagesData, creneauxPoi
       {totalPointagesAttendus > 0 && (
         <div className="pt-1">
           <Label className="text-xs text-primary">Taux de complétion global</Label>
-          <div className="w-full bg-background dark:bg-gray-700 rounded-full h-3 mt-0.5 overflow-hidden">
+          <div className="w-full bg-background rounded-full h-3 mt-0.5 overflow-hidden">
             <motion.div 
-              className={`h-3 rounded-full ${completionGlobaleAgence >= 100 ? 'bg-success' : 'bg-gradient-to-r from-primary to-cyan-500'}`}
+              className={`h-3 rounded-full ${completionGlobaleAgence >= 100 ? 'bg-success' : 'bg-primary'}`}
               initial={{ width: 0 }}
               animate={{ width: `${Math.min(100, completionGlobaleAgence)}%`}}
               transition={{ duration: 0.5, ease: "circOut", delay: 0.3 }}

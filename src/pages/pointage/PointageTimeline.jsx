@@ -49,9 +49,9 @@ const PointageTimeline = ({ currentTime, creneaux, guichetieresPlanifiees, point
   const getRandomColor = (matricule) => {
     // Génère une couleur aléatoire mais consistante basée sur le matricule
     const colors = [
-      'bg-primary text-primary-foreground', 'bg-success text-success-foreground', 'bg-purple-700 text-white', 
-      'bg-pink-700 text-white', 'bg-indigo-700 text-white', 'bg-teal-700 text-white',
-      'bg-warning text-warning-foreground', 'bg-cyan-700 text-white', 'bg-warning text-warning-foreground'
+      'bg-primary text-primary-foreground', 'bg-success text-success-foreground', 
+      'bg-highlight text-highlight-foreground', 'bg-info text-info-foreground',
+      'bg-warning text-warning-foreground', 'bg-secondary text-secondary-foreground'
     ];
     
     // Hash simple du matricule pour avoir toujours la même couleur
@@ -109,7 +109,7 @@ const PointageTimeline = ({ currentTime, creneaux, guichetieresPlanifiees, point
       {/* Barre de progression avec l'heure actuelle */}
       <div className="relative h-6 sm:h-8 mb-6 sm:mb-8 bg-muted rounded-full overflow-hidden">
           <div 
-            className="absolute top-0 left-0 h-full bg-gradient-to-r from-primary to-cyan-500 transition-all duration-1000 ease-linear"
+            className="absolute top-0 left-0 h-full bg-primary transition-all duration-1000 ease-linear"
             style={{ width: `${progressPercent}%` }}
           />
         
@@ -150,7 +150,7 @@ const PointageTimeline = ({ currentTime, creneaux, guichetieresPlanifiees, point
         </div>
       
       {/* Échelle de temps - version responsive */}
-      <div className="flex justify-between text-[10px] sm:text-xs text-muted-foreground mb-6">
+      <div className="flex justify-between text-xs  text-muted-foreground mb-6">
           <span>09:00</span>
         {!isMobile && <span>11:00</span>}
           <span>13:00</span>
@@ -175,7 +175,7 @@ const PointageTimeline = ({ currentTime, creneaux, guichetieresPlanifiees, point
               </div>
               <div className="ml-2 sm:ml-3 flex-grow min-w-0">
                 <h3 className="font-medium text-xs sm:text-sm truncate">{guichetiere.prenom} {guichetiere.nom}</h3>
-                <div className="flex items-center text-[10px] sm:text-xs text-muted-foreground">
+                <div className="flex items-center text-xs  text-muted-foreground">
                   <span className="mr-1">{guichetiere.totalPointages}/{guichetiere.totalCreneaux}</span>
                   <div className="w-16 sm:w-24 h-1.5 rounded-full bg-muted overflow-hidden">
                     <div 
@@ -186,12 +186,12 @@ const PointageTimeline = ({ currentTime, creneaux, guichetieresPlanifiees, point
                 </div>
               </div>
               {guichetiere.isComplete ? (
-                <div className="ml-auto flex items-center text-success text-[10px] sm:text-xs font-medium">
+                <div className="ml-auto flex items-center text-success text-xs  font-medium">
                   <CheckCircle className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" /> 
                   {!isMobile && "Complet"}
                 </div>
               ) : (
-                <div className="ml-auto text-muted-foreground text-[10px] sm:text-xs">
+                <div className="ml-auto text-muted-foreground text-xs ">
                   {guichetiere.totalPointages > 0 ? 'En cours' : 'Attente'}
                 </div>
               )}
@@ -232,11 +232,11 @@ const PointageTimeline = ({ currentTime, creneaux, guichetieresPlanifiees, point
                               ) : detail.status === 'missed' ? (
                                 <XCircle className="h-3 w-3 sm:h-5 sm:w-5" />
                               ) : (
-                                <span className="text-[8px] sm:text-xs font-semibold">{idx + 1}</span>
+                                <span className="text-xs  font-semibold">{idx + 1}</span>
                               )}
                             </motion.div>
                             {detail.heurePointage && (
-                              <span className="text-[8px] sm:text-[10px] bg-card dark:bg-gray-800 px-1 mt-0.5 rounded font-medium">
+                              <span className="text-xs  bg-card px-1 mt-0.5 rounded font-medium">
                                 {detail.heurePointage}
                                         </span>
                                     )}
@@ -246,16 +246,16 @@ const PointageTimeline = ({ currentTime, creneaux, guichetieresPlanifiees, point
                           <div className="text-xs sm:text-sm">
                             <p className="font-semibold">Créneau {idx + 1}: {detail.debut} - {detail.fin}</p>
                             {detail.heurePointage ? (
-                              <p className="text-[10px] sm:text-xs text-success flex items-center">
+                              <p className="text-xs  text-success flex items-center">
                                 <CheckCircle className="h-3 w-3 mr-1" /> 
                                 Pointé à {detail.heurePointage}
                               </p>
                             ) : detail.status === 'active' ? (
-                              <p className="text-[10px] sm:text-xs text-warning-muted-foreground">En attente de pointage</p>
+                              <p className="text-xs  text-warning-muted-foreground">En attente de pointage</p>
                             ) : detail.status === 'missed' ? (
-                              <p className="text-[10px] sm:text-xs text-destructive">Pointage manqué</p>
+                              <p className="text-xs  text-destructive">Pointage manqué</p>
                             ) : (
-                              <p className="text-[10px] sm:text-xs text-muted-foreground">À venir</p>
+                              <p className="text-xs  text-muted-foreground">À venir</p>
                             )}
                           </div>
                         </TooltipContent>
@@ -301,7 +301,7 @@ const PointageTimeline = ({ currentTime, creneaux, guichetieresPlanifiees, point
               key={idx}
               variant={creneauToShow === idx ? "default" : "outline"}
               size={isMobile ? "xs" : "sm"}
-              className={`mr-2 flex-shrink-0 text-[10px] sm:text-xs ${
+              className={`mr-2 flex-shrink-0 text-xs  ${
                 idx === currentCreneauIndex ? "border-warning" : ""
               }`}
               onClick={() => setSelectedCreneau(idx)}
@@ -320,15 +320,15 @@ const PointageTimeline = ({ currentTime, creneaux, guichetieresPlanifiees, point
             <h3 className="font-semibold text-xs sm:text-sm">
               Créneau {creneauToShow + 1}: {creneaux[creneauToShow]?.debut} - {creneaux[creneauToShow]?.fin}
               {creneauToShow === currentCreneauIndex && (
-                <span className="ml-2 text-warning-muted-foreground text-[10px] sm:text-xs">(Actif)</span>
+                <span className="ml-2 text-warning-muted-foreground text-xs ">(Actif)</span>
               )}
             </h3>
-            <div className="text-[10px] sm:text-xs text-muted-foreground">
+            <div className="text-xs  text-muted-foreground">
               {sortedGuichetieres.filter(g => g.statusCreneau === 'pointed').length}/{sortedGuichetieres.length} pointés
             </div>
           </div>
           
-          <div className="h-1.5 sm:h-2 bg-muted dark:bg-gray-700 rounded-full overflow-hidden">
+          <div className="h-1.5 sm:h-2 bg-muted rounded-full overflow-hidden">
             <div 
               className="h-full bg-success"
               style={{ 
@@ -355,31 +355,31 @@ const PointageTimeline = ({ currentTime, creneaux, guichetieresPlanifiees, point
                 ${guichetiere.statusCreneau === 'pointed' ? 'bg-success-muted dark:bg-success/20 border-success/30 dark:border-success' : 
                   guichetiere.statusCreneau === 'active' ? 'bg-warning-muted dark:bg-warning/20 border-warning/30 dark:border-warning' :
                   guichetiere.statusCreneau === 'missed' ? 'bg-destructive/10 dark:bg-destructive/20 border-destructive/30 dark:border-destructive' :
-                  'bg-muted/50 dark:bg-gray-800/30 border-border dark:border-gray-700'}`}
+                  'bg-muted/50 border-border'}`}
             >
               <div className={`mx-auto w-10 h-10 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-base sm:text-lg font-medium mb-1 sm:mb-2 ${guichetiere.avatarColor}`}>
                 {guichetiere.initials}
               </div>
               
-              <p className="font-medium text-[10px] sm:text-sm truncate">{guichetiere.prenom} {guichetiere.nom}</p>
+              <p className="font-medium text-xs sm:text-sm truncate">{guichetiere.prenom} {guichetiere.nom}</p>
               
               {guichetiere.statusCreneau === 'pointed' ? (
-                <div className="mt-1 text-[8px] sm:text-xs text-success-muted-foreground dark:text-success flex items-center justify-center">
+                <div className="mt-1 text-xs  text-success-muted-foreground dark:text-success flex items-center justify-center">
                   <CheckCircle className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" /> 
                   {guichetiere.heurePointage}
                 </div>
               ) : guichetiere.statusCreneau === 'active' ? (
-                <div className="mt-1 text-[8px] sm:text-xs text-warning-muted-foreground dark:text-warning flex items-center justify-center">
+                <div className="mt-1 text-xs  text-warning-muted-foreground dark:text-warning flex items-center justify-center">
                   <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1 animate-pulse" /> 
                   En attente
                 </div>
               ) : guichetiere.statusCreneau === 'missed' ? (
-                <div className="mt-1 text-[8px] sm:text-xs text-destructive dark:text-destructive flex items-center justify-center">
+                <div className="mt-1 text-xs  text-destructive dark:text-destructive flex items-center justify-center">
                   <XCircle className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" /> 
                   Absence
                 </div>
               ) : (
-                <div className="mt-1 text-[8px] sm:text-xs text-foreground/80 dark:text-muted-foreground flex items-center justify-center">
+                <div className="mt-1 text-xs  text-foreground/80 dark:text-muted-foreground flex items-center justify-center">
                   À venir
                 </div>
               )}
@@ -405,7 +405,7 @@ const PointageTimeline = ({ currentTime, creneaux, guichetieresPlanifiees, point
                 {!isMobile && (showFilters ? "Masquer" : "Filtres")}
               </Button>
             )}
-            <div className="flex items-center text-[10px] sm:text-xs text-muted-foreground">
+            <div className="flex items-center text-xs  text-muted-foreground">
               {isMobile ? <Smartphone className="h-3 w-3 sm:h-4 sm:w-4" /> : <Laptop className="h-3 w-3 sm:h-4 sm:w-4" />}
             </div>
           </div>
@@ -425,20 +425,20 @@ const PointageTimeline = ({ currentTime, creneaux, guichetieresPlanifiees, point
               <div className="bg-muted/40 rounded-lg p-2 sm:p-3">
                 <Tabs defaultValue="time" className="w-full">
                   <TabsList className="grid grid-cols-2 mb-3 sm:mb-4">
-                    <TabsTrigger value="time" className="text-[10px] sm:text-xs">
+                    <TabsTrigger value="time" className="text-xs ">
                       <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                       Créneaux
                     </TabsTrigger>
-                    <TabsTrigger value="status" className="text-[10px] sm:text-xs">
+                    <TabsTrigger value="status" className="text-xs ">
                       <BarChart className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                       Statuts
                     </TabsTrigger>
                   </TabsList>
                   <TabsContent value="time">
                     <div className="flex flex-wrap gap-1 sm:gap-2">
-                      <Button variant="outline" size={isMobile ? "xs" : "sm"} className="text-[10px] sm:text-xs">Tous</Button>
+                      <Button variant="outline" size={isMobile ? "xs" : "sm"} className="text-xs ">Tous</Button>
                       {creneaux.map((creneau, idx) => (
-                        <Button key={idx} variant="outline" size={isMobile ? "xs" : "sm"} className="text-[10px] sm:text-xs">
+                        <Button key={idx} variant="outline" size={isMobile ? "xs" : "sm"} className="text-xs ">
                           C{idx + 1}
                         </Button>
                       ))}
@@ -446,16 +446,16 @@ const PointageTimeline = ({ currentTime, creneaux, guichetieresPlanifiees, point
                   </TabsContent>
                   <TabsContent value="status">
                     <div className="flex flex-wrap gap-1 sm:gap-2">
-                      <Button variant="outline" size={isMobile ? "xs" : "sm"} className="text-[10px] sm:text-xs">Tous</Button>
-                      <Button variant="outline" size={isMobile ? "xs" : "sm"} className="text-[10px] sm:text-xs text-success-muted-foreground border-success/30">
+                      <Button variant="outline" size={isMobile ? "xs" : "sm"} className="text-xs ">Tous</Button>
+                      <Button variant="outline" size={isMobile ? "xs" : "sm"} className="text-xs  text-success-muted-foreground border-success/30">
                         <CheckCircle className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
                         Pointé
                       </Button>
-                      <Button variant="outline" size={isMobile ? "xs" : "sm"} className="text-[10px] sm:text-xs text-warning-muted-foreground border-warning/30">
+                      <Button variant="outline" size={isMobile ? "xs" : "sm"} className="text-xs  text-warning-muted-foreground border-warning/30">
                         <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
                         En attente
                       </Button>
-                      <Button variant="outline" size={isMobile ? "xs" : "sm"} className="text-[10px] sm:text-xs text-destructive border-destructive/30">
+                      <Button variant="outline" size={isMobile ? "xs" : "sm"} className="text-xs  text-destructive border-destructive/30">
                         <XCircle className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
                         Absence
                       </Button>
@@ -472,7 +472,7 @@ const PointageTimeline = ({ currentTime, creneaux, guichetieresPlanifiees, point
           <div className="grid grid-cols-2 p-1 bg-muted rounded-lg">
             <Button 
               variant={viewMode === 'timeline' ? "default" : "ghost"} 
-              className="rounded-lg text-[10px] sm:text-xs py-1.5 px-2 sm:py-2 sm:px-3"
+              className="rounded-lg text-xs  py-1.5 px-2 sm:py-2 sm:px-3"
               onClick={() => setViewMode('timeline')}
             >
               <BarChart className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
@@ -480,7 +480,7 @@ const PointageTimeline = ({ currentTime, creneaux, guichetieresPlanifiees, point
             </Button>
             <Button 
               variant={viewMode === 'creneau' ? "default" : "ghost"} 
-              className="rounded-lg text-[10px] sm:text-xs py-1.5 px-2 sm:py-2 sm:px-3"
+              className="rounded-lg text-xs  py-1.5 px-2 sm:py-2 sm:px-3"
               onClick={() => setViewMode('creneau')}
             >
               <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
@@ -503,7 +503,7 @@ const PointageTimeline = ({ currentTime, creneaux, guichetieresPlanifiees, point
         </AnimatePresence>
         
         {/* Légende - adaptée pour mobile */}
-        <div className="flex flex-wrap justify-center items-center gap-2 sm:gap-3 mt-3 sm:mt-4 text-[8px] sm:text-xs text-muted-foreground">
+        <div className="flex flex-wrap justify-center items-center gap-2 sm:gap-3 mt-3 sm:mt-4 text-xs  text-muted-foreground">
           <div className="flex items-center">
             <div className="h-2.5 w-2.5 sm:h-3 sm:w-3 bg-success rounded-full mr-1"></div>
             <span>Pointé</span>
@@ -517,7 +517,7 @@ const PointageTimeline = ({ currentTime, creneaux, guichetieresPlanifiees, point
             <span>Absence</span>
           </div>
           <div className="flex items-center">
-            <div className="h-2.5 w-2.5 sm:h-3 sm:w-3 bg-gray-300 dark:bg-gray-600 rounded-full mr-1"></div>
+            <div className="h-2.5 w-2.5 sm:h-3 sm:w-3 bg-muted-foreground/40 rounded-full mr-1"></div>
             <span>À venir</span>
           </div>
         </div>

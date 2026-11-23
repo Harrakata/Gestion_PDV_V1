@@ -1,6 +1,8 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { describeError } from '@/lib/errors';
+import MobilePlanningCalendar from '@/components/planning/MobilePlanningCalendar';
+import { useIsPhone } from '@/hooks/useIsPhone';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Calendar, CalendarDays, ChevronLeft, ChevronRight, PlusCircle, Copy, Trash2, UserPlus, Repeat } from 'lucide-react';
@@ -202,9 +204,36 @@ const MonPlanningPage = () => {
   }, [currentMonth]);
 
 
+  // Jour affiché par le calendrier compact ; le sélecteur de date le pilote aussi.
+  const [focusedDay, setFocusedDay] = useState(null);
+  const pickerDate = (focusedDay && days.find((day) => isSameDay(day, focusedDay))) || currentMonth;
+  const goToDate = (value) => {
+    if (!value) return;
+    const date = parseISO(value);
+    setFocusedDay(date);
+    setCurrentMonth(date);
+  };
+  const isPhone = useIsPhone();
+  const getMobileItems = (day) => {
+    const isPast = isBefore(startOfDay(day), startOfDay(new Date()));
+    return (planning[format(day, 'yyyy-MM-dd')] || []).map((event) => {
+      const guichetiere = guichetieresAgence.find((g) => g.id === event.guichetiereId);
+      const linkedRequest = requestsByPlanningId[String(event.planningId)];
+      return {
+        key: event.planningId,
+        title: guichetiere ? `${guichetiere.prenom} ${guichetiere.nom}` : 'Inconnue',
+        subtitle: event.est_remplacante ? 'Remplaçante' : isPast ? 'Passé' : undefined,
+        badge: guichetiere ? `${guichetiere.prenom.charAt(0)}${guichetiere.nom.charAt(0)}`.toUpperCase() : '?',
+        badgeClass: event.est_remplacante ? 'bg-warning text-warning-foreground' : undefined,
+        dot: linkedRequest ? 'bg-destructive' : event.est_remplacante ? 'bg-warning' : 'bg-primary',
+        alert: linkedRequest ? 'Demande' : undefined,
+        onClick: () => openEditModal(event, day),
+      };
+    });
+  };
+
   const handlePrev = () => setCurrentMonth(prev => viewMode === 'month' ? subMonths(prev, 1) : subWeeks(prev, 1));
   const handleNext = () => setCurrentMonth(prev => viewMode === 'month' ? addMonths(prev, 1) : addWeeks(prev, 1));
-  const handleToday = () => setCurrentMonth(new Date());
 
   const openAddModal = (date) => {
     if (isBefore(startOfDay(date), startOfDay(new Date()))) {
@@ -545,7 +574,7 @@ const MonPlanningPage = () => {
       toast({
         title: nextStatus === REQUEST_STATUS.APPROVED ? 'Demande validée' : 'Demande refusée',
         description: `La demande de ${request.guichetiere_nom || request.guichetiere_matricule} a bien été traitée.`,
-        className: nextStatus === REQUEST_STATUS.APPROVED ? 'bg-success text-success-foreground' : 'bg-slate-700 text-white',
+        className: nextStatus === REQUEST_STATUS.APPROVED ? 'bg-success text-success-foreground' : 'bg-foreground text-background',
       });
 
       fetchPlanning();
@@ -616,7 +645,7 @@ const MonPlanningPage = () => {
           </div>
           {/* Barre d'outils compacte : navigation (gauche) + actions (droite), repli sur 2 lignes max en mobile */}
           <div className="planning-toolbar mt-2 flex flex-wrap items-center justify-between gap-1.5 md:mt-6 md:gap-4">
-            <div className="flex min-w-0 items-center gap-1 md:gap-2">
+            <div className="hidden min-w-0 items-center gap-2 md:flex">
               <Button variant="outline" size="icon" onClick={handlePrev} disabled={isLoading} className="h-8 w-8 md:h-9 md:w-9" aria-label="Période précédente"><ChevronLeft className="h-4 w-4" /></Button>
               <p className="min-w-0 truncate text-sm font-semibold capitalize text-foreground" aria-live="polite">
                 {format(currentMonth, viewMode === 'month' ? 'MMMM yyyy' : "'Semaine du' dd MMMM", { locale: fr })}
@@ -624,12 +653,11 @@ const MonPlanningPage = () => {
               <Button variant="outline" size="icon" onClick={handleNext} disabled={isLoading} className="h-8 w-8 md:h-9 md:w-9" aria-label="Période suivante"><ChevronRight className="h-4 w-4" /></Button>
             </div>
             <div className="flex flex-wrap items-center gap-1 md:gap-2">
-              <Button size="sm" variant="outline" onClick={handleToday} disabled={isLoading} className="text-xs md:text-sm">Aujourd'hui</Button>
               <input
                 type="date"
                 disabled={isLoading}
-                value={format(currentMonth, 'yyyy-MM-dd')}
-                onChange={(e) => { if (e.target.value) setCurrentMonth(parseISO(e.target.value)); }}
+                value={format(pickerDate, 'yyyy-MM-dd')}
+                onChange={(e) => goToDate(e.target.value)}
                 className="h-8 w-[7.5rem] rounded-md border border-input bg-card px-2 text-xs text-foreground shadow-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:w-auto md:text-sm"
                 title="Aller à une date"
                 aria-label="Aller à une date"
@@ -640,8 +668,23 @@ const MonPlanningPage = () => {
           </div>
         </CardHeader>
         <CardContent className="p-2 md:p-4">
-          {isLoading && Object.keys(planning).length === 0 ? (
+          {isLoading && !isPhone && Object.keys(planning).length === 0 ? (
             <p className="text-center text-muted-foreground py-8 text-sm md:text-base">Chargement du planning...</p>
+          ) : isPhone ? (
+            <MobilePlanningCalendar
+              days={days}
+              getItems={getMobileItems}
+              selectedDate={focusedDay}
+              onSelectDate={setFocusedDay}
+              periodLabel={format(currentMonth, viewMode === 'month' ? 'MMMM yyyy' : "'Semaine du' dd MMMM", { locale: fr })}
+              onPrev={handlePrev}
+              onNext={handleNext}
+              onAdd={openAddModal}
+              canAdd={(day) => !isLoading && !isBefore(startOfDay(day), startOfDay(new Date()))}
+              addLabel="Planifier"
+              emptyLabel={isLoading ? 'Chargement du planning…' : 'Aucune guichetière planifiée ce jour.'}
+              itemNoun="guichetière"
+            />
           ) : (
             <div className="planning-calendar overflow-hidden rounded-lg border border-border bg-card shadow-sm">
               {/* En-tête jours */}
@@ -650,7 +693,7 @@ const MonPlanningPage = () => {
                   ? days.map(d => format(d, 'EEE', { locale: fr }))
                   : ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
                 ).map((dayName, i) => (
-                  <div key={i} className="py-2 text-center text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">{dayName}</div>
+                  <div key={i} className="py-2 text-center text-xs font-bold uppercase tracking-widest text-muted-foreground">{dayName}</div>
                 ))}
               </div>
               {/* Grille compacte */}
@@ -679,7 +722,7 @@ const MonPlanningPage = () => {
                         </time>
                         <div className="flex items-center gap-0.5">
                           {dayRequests.length > 0 && (
-                            <span className={`flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold ${isToday ? 'bg-card text-primary' : 'bg-warning-muted text-warning-muted-foreground'}`}>
+                            <span className={`flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-xs font-bold ${isToday ? 'bg-card text-primary' : 'bg-warning-muted text-warning-muted-foreground'}`}>
                               {dayRequests.length}
                             </span>
                           )}
@@ -714,15 +757,15 @@ const MonPlanningPage = () => {
                                 className="flex cursor-pointer items-center gap-1 transition-opacity hover:opacity-70"
                                 onClick={() => openEditModal(event, day)}
                               >
-                                <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[0.5rem] font-bold
+                                <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold
                                   ${event.est_remplacante ? 'bg-warning/40 text-foreground' : isToday ? 'bg-card/90 text-primary' : 'bg-primary text-primary-foreground'}
                                 `}>
                                   {initials}
                                 </span>
-                                <span className={`truncate text-[0.6rem] font-medium leading-tight ${!isCurrentMonthDay ? 'text-muted-foreground/40' : 'text-foreground'}`}>
+                                <span className={`truncate text-xs font-medium leading-tight ${!isCurrentMonthDay ? 'text-muted-foreground/40' : 'text-foreground'}`}>
                                   {name}
                                 </span>
-                                {linkedRequest && <span className="ml-auto shrink-0 text-[0.5rem] text-warning-muted-foreground">!</span>}
+                                {linkedRequest && <span className="ml-auto shrink-0 text-xs text-warning-muted-foreground">!</span>}
                               </motion.div>
                             );
                           })}

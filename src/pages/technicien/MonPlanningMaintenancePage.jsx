@@ -33,6 +33,8 @@ import {
   Package,
   Wrench,
 } from 'lucide-react';
+import MobilePlanningCalendar from '@/components/planning/MobilePlanningCalendar';
+import { useIsPhone } from '@/hooks/useIsPhone';
 import { Badge } from '@/components/ui/badge';
 import StatusBadge from '@/components/ui/status-badge';
 import { Button } from '@/components/ui/button';
@@ -143,6 +145,50 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
     const end = viewMode === 'month' ? monthEnd : endOfWeek(currentMonth, { weekStartsOn: 1 });
     return eachDayOfInterval({ start, end });
   }, [currentMonth, viewMode, monthStart, monthEnd]);
+
+  // Jour affiché par le calendrier compact ; le sélecteur de date le pilote aussi.
+  const [focusedDay, setFocusedDay] = useState(null);
+  const pickerDate = (focusedDay && days.find((day) => isSameDay(day, focusedDay))) || currentMonth;
+  const goToDate = (value) => {
+    if (!value) return;
+    const date = parseISO(value);
+    setFocusedDay(date);
+    setCurrentMonth(date);
+  };
+  const isPhone = useIsPhone();
+  const getMobileItems = (day) => {
+    const dateStr = format(day, 'yyyy-MM-dd');
+    const planned = (planningByDate[dateStr] || []).map((entry) => {
+      const linkedRequest = requestByPlanningId[String(entry.id)];
+      const isPast = isPastPlanningDate(entry.date_planification);
+      const isPending = linkedRequest?.statut === MAINTENANCE_REQUEST_STATUSES.PENDING_CHEF
+        || linkedRequest?.statut === MAINTENANCE_REQUEST_STATUSES.PENDING_EXPLOITATION;
+      return {
+        key: `plan-${entry.id}`,
+        title: entry.agence_nom || 'Agence',
+        subtitle: getMaintenancePlanningShiftLabel(entry.creneau),
+        badge: <Wrench className="h-3 w-3" />,
+        badgeClass: isPast ? 'bg-muted text-muted-foreground' : undefined,
+        dot: linkedRequest ? 'bg-warning' : isPast ? 'bg-muted-foreground' : 'bg-primary',
+        alert: linkedRequest ? 'Demande' : undefined,
+        onClick: isPending || isPast ? undefined : () => openRequestDialog(entry),
+      };
+    });
+    const performed = (performedByDate[dateStr] || []).map((group) => {
+      const realized = group.interventions.filter((i) => i.geo_refused !== true).length;
+      const refused = group.interventions.length - realized;
+      return {
+        key: `fait-${group.agenceNom}`,
+        title: group.agenceNom,
+        subtitle: `${realized} réalisée(s)${refused ? ` · ${refused} refusée(s)` : ''}`,
+        badge: <CheckCircle2 className="h-3 w-3" />,
+        badgeClass: realized ? 'bg-success text-success-foreground' : 'bg-destructive text-destructive-foreground',
+        dot: realized ? 'bg-success' : 'bg-destructive',
+        onClick: () => setSelectedGroup(group),
+      };
+    });
+    return [...planned, ...performed];
+  };
 
   const colStartClasses = useMemo(() => {
     const firstDayOfWeek = getDay(monthStart);
@@ -671,37 +717,30 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
         <div className="relative flex flex-wrap items-center justify-between gap-2 border-b border-border px-3 py-2.5 sm:gap-3 sm:px-4 sm:py-3">
           <div className="flex items-center gap-1 sm:gap-1.5">
             <Button aria-label={viewMode === 'month' ? 'Mois précédent' : 'Semaine précédente'}
-              variant="ghost" size="icon" className="h-7 w-7 sm:h-8 sm:w-8"
+              variant="ghost" size="icon" className="hidden h-8 w-8 md:inline-flex"
               onClick={() => setCurrentMonth((prev) => viewMode === 'month' ? subMonths(prev, 1) : subWeeks(prev, 1))}
               disabled={isLoading}
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <span className="min-w-[84px] text-center text-xs font-semibold capitalize text-foreground whitespace-nowrap sm:min-w-[120px] sm:text-sm">
+            <span className="hidden min-w-[120px] text-center text-sm font-semibold capitalize text-foreground whitespace-nowrap md:inline">
               {format(currentMonth, viewMode === 'month' ? 'MMMM yyyy' : "'Sem.' dd MMM", { locale: fr })}
             </span>
             <Button aria-label={viewMode === 'month' ? 'Mois suivant' : 'Semaine suivante'}
-              variant="ghost" size="icon" className="h-7 w-7 sm:h-8 sm:w-8"
+              variant="ghost" size="icon" className="hidden h-8 w-8 md:inline-flex"
               onClick={() => setCurrentMonth((prev) => viewMode === 'month' ? addMonths(prev, 1) : addWeeks(prev, 1))}
               disabled={isLoading}
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
-            <Button
-              variant="outline" size="sm" className="h-7 px-2 text-[0.7rem] sm:px-2.5 sm:text-xs"
-              onClick={() => setCurrentMonth(new Date())}
-              disabled={isLoading}
-            >
-              Auj.
-            </Button>
-            {/* Sélecteur de date masqué sur mobile (redondant avec les flèches) */}
             <input
               type="date"
               disabled={isLoading}
-              value={format(currentMonth, 'yyyy-MM-dd')}
-              onChange={(e) => { if (e.target.value) setCurrentMonth(parseISO(e.target.value)); }}
-              className="hidden h-7 rounded-md border border-input bg-card px-2 text-xs text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 sm:block"
+              value={format(pickerDate, 'yyyy-MM-dd')}
+              onChange={(e) => goToDate(e.target.value)}
+              className="h-7 rounded-md border border-input bg-card px-2 text-xs text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
               title="Aller à une date"
+              aria-label="Aller à une date"
             />
           </div>
           <div className="flex items-center gap-0.5 rounded-lg border border-border bg-muted/40 p-0.5">
@@ -710,8 +749,20 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
           </div>
         </div>
         <CardContent className="relative p-2 md:p-4">
-          {isLoading && planningEntries.length === 0 ? (
+          {isLoading && !isPhone && planningEntries.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">Chargement du planning...</p>
+          ) : isPhone ? (
+            <MobilePlanningCalendar
+              days={days}
+              getItems={getMobileItems}
+              selectedDate={focusedDay}
+              onSelectDate={setFocusedDay}
+              periodLabel={format(currentMonth, viewMode === 'month' ? 'MMMM yyyy' : "'Semaine du' dd MMMM", { locale: fr })}
+              onPrev={() => setCurrentMonth((prev) => viewMode === 'month' ? subMonths(prev, 1) : subWeeks(prev, 1))}
+              onNext={() => setCurrentMonth((prev) => viewMode === 'month' ? addMonths(prev, 1) : addWeeks(prev, 1))}
+              emptyLabel={isLoading ? 'Chargement du planning…' : 'Aucune intervention ce jour.'}
+              itemNoun="intervention"
+            />
           ) : (
             <div className="planning-calendar overflow-hidden rounded-lg border border-border bg-card shadow-sm">
               {/* En-tête jours */}
@@ -720,7 +771,7 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
                   ? days.map((d) => format(d, 'EEE', { locale: fr }))
                   : ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
                 ).map((dayName, i) => (
-                  <div key={i} className="py-2 text-center text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">
+                  <div key={i} className="py-2 text-center text-xs font-bold uppercase tracking-widest text-muted-foreground">
                     {dayName}
                   </div>
                 ))}
@@ -752,7 +803,7 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
                           {format(day, 'd')}
                         </time>
                         {requestCount > 0 && (
-                          <span className={`flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold ${isToday ? 'bg-card text-primary' : 'bg-warning-muted text-warning-muted-foreground'}`}>
+                          <span className={`flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-xs font-bold ${isToday ? 'bg-card text-primary' : 'bg-warning-muted text-warning-muted-foreground'}`}>
                             {requestCount}
                           </span>
                         )}
@@ -776,20 +827,20 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
                                 className="flex cursor-pointer items-center gap-1 transition-opacity hover:opacity-70"
                                 onClick={() => !isPending && !isPast && openRequestDialog(entry)}
                               >
-                                <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[0.5rem] font-bold
+                                <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold
                                   ${isPast ? 'bg-muted-foreground/40 text-foreground' : isToday ? 'bg-card/90 text-primary' : 'bg-primary text-primary-foreground'}
                                 `}>
                                   <Wrench className="h-2.5 w-2.5" />
                                 </span>
                                 <div className="min-w-0 flex-1">
-                                  <p className={`truncate text-[0.6rem] font-medium leading-tight ${!isCurrentMonthDay ? 'text-muted-foreground/40' : 'text-foreground'}`}>
+                                  <p className={`truncate text-xs font-medium leading-tight ${!isCurrentMonthDay ? 'text-muted-foreground/40' : 'text-foreground'}`}>
                                     {entry.agence_nom || 'Agence'}
                                   </p>
-                                  <p className="text-[0.55rem] leading-tight text-muted-foreground/70">
+                                  <p className="text-xs leading-tight text-muted-foreground/70">
                                     {getMaintenancePlanningShiftLabel(entry.creneau)}
                                   </p>
                                 </div>
-                                {linkedRequest && <span className="ml-auto shrink-0 text-[0.5rem] text-warning-muted-foreground">!</span>}
+                                {linkedRequest && <span className="ml-auto shrink-0 text-xs text-warning-muted-foreground">!</span>}
                               </motion.div>
                             );
                           })}
@@ -809,8 +860,8 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
                                 <CheckCircle2 className="h-2.5 w-2.5" />
                               </span>
                               <div className="min-w-0 flex-1">
-                                <p className={`truncate text-[0.6rem] font-medium leading-tight ${!isCurrentMonthDay ? 'text-muted-foreground/40' : 'text-foreground'}`}>{grp.agenceNom}</p>
-                                <p className="truncate text-[0.55rem] font-semibold leading-tight text-success-muted-foreground">
+                                <p className={`truncate text-xs font-medium leading-tight ${!isCurrentMonthDay ? 'text-muted-foreground/40' : 'text-foreground'}`}>{grp.agenceNom}</p>
+                                <p className="truncate text-xs font-semibold leading-tight text-success-muted-foreground">
                                   {realizedCount} réalisée(s)
                                   {refusedCount ? <span className="text-destructive"> · {refusedCount} refusée(s)</span> : null}
                                 </p>
@@ -857,9 +908,9 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
                       <TableCell>{iv.type_intervention === 'curative' ? 'Curative' : 'Préventive'}</TableCell>
                       <TableCell>
                         {iv.geo_refused === true ? (
-                          <span className="inline-flex rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive">Refusée</span>
+                          <span className="inline-flex rounded-pill bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive">Refusée</span>
                         ) : (
-                          <span className="inline-flex rounded-full bg-success-muted px-2 py-0.5 text-xs font-medium text-success-muted-foreground">Validée</span>
+                          <span className="inline-flex rounded-pill bg-success-muted px-2 py-0.5 text-xs font-medium text-success-muted-foreground">Validée</span>
                         )}
                       </TableCell>
                     </TableRow>

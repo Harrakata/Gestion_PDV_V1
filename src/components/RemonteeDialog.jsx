@@ -111,7 +111,7 @@ const RemonteeDialog = ({ sender = {}, iconOnly = false, className = '' }) => {
                 <History className="h-4 w-4 text-muted-foreground" />
                 <Label className="m-0">Vos précédentes remontées</Label>
                 {!loadingHistory && history.length > 0 && (
-                  <Badge variant="outline" className="px-1.5 py-0 text-[0.6rem]">{history.length}</Badge>
+                  <Badge variant="outline" className="px-1.5 py-0 text-xs">{history.length}</Badge>
                 )}
               </div>
               <div className="max-h-52 space-y-1.5 overflow-y-auto rounded-lg border border-border/40 bg-muted/20 p-2">
@@ -125,17 +125,17 @@ const RemonteeDialog = ({ sender = {}, iconOnly = false, className = '' }) => {
                   <div key={r.id} className="rounded-md border border-border/40 bg-card p-2">
                     <div className="mb-0.5 flex flex-wrap items-center gap-1.5">
                       <span className="truncate text-xs font-semibold text-foreground">{r.titre}</span>
-                      <Badge variant="outline" className="px-1.5 py-0 text-[0.6rem]">{catLabel(r.categorie)}</Badge>
+                      <Badge variant="outline" className="px-1.5 py-0 text-xs">{catLabel(r.categorie)}</Badge>
                       {r.traite ? (
-                        <Badge variant="success" className="px-1.5 py-0 text-[0.6rem]">
+                        <Badge variant="success" className="px-1.5 py-0 text-xs">
                           <CheckCircle2 className="mr-0.5 h-2.5 w-2.5" /> Traité
                         </Badge>
                       ) : (
-                        <StatusBadge tone="warning" className="px-1.5 py-0 text-[0.6rem]">En attente</StatusBadge>
+                        <StatusBadge tone="warning" className="px-1.5 py-0 text-xs">En attente</StatusBadge>
                       )}
                     </div>
-                    {r.corps && <p className="line-clamp-2 text-[0.7rem] text-muted-foreground">{r.corps}</p>}
-                    <div className="mt-0.5 flex items-center gap-1 text-[0.6rem] text-muted-foreground">
+                    {r.corps && <p className="line-clamp-2 text-xs text-muted-foreground">{r.corps}</p>}
+                    <div className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
                       <Clock className="h-2.5 w-2.5" />{relTime(r.created_at)}
                     </div>
                   </div>

@@ -166,7 +166,7 @@ const ValidationSignatureField = ({
         <h4 className="font-medium text-primary">{title}</h4>
         <p className="text-sm text-muted-foreground">{signerName}</p>
       </div>
-      <span className={`inline-flex w-fit rounded-full px-3 py-1 text-xs font-medium ${signatureValue ? 'bg-success-muted text-success-muted-foreground' : 'bg-warning-muted text-warning-muted-foreground'}`}>
+      <span className={`inline-flex w-fit rounded-pill px-3 py-1 text-xs font-medium ${signatureValue ? 'bg-success-muted text-success-muted-foreground' : 'bg-warning-muted text-warning-muted-foreground'}`}>
         {statusLabel}
       </span>
     </div>
@@ -177,6 +177,7 @@ const ValidationSignatureField = ({
         penColor="#111827"
         canvasProps={{
           // Fond TOUJOURS blanc (encre foncée), y compris en mode sombre.
+          // eslint-disable-next-line no-restricted-syntax
           className: 'h-44 w-full rounded-lg bg-white',
         }}
       />
@@ -2383,16 +2384,16 @@ const MaintenanceTab = ({ technicien }) => {
             </div>
             {step > 1 && selectedAgence && selectedTerminal && (
               <div className="flex flex-wrap gap-2 text-xs">
-                <span className="inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 font-medium text-primary">
+                <span className="inline-flex items-center gap-1 rounded-pill border border-primary/20 bg-primary/5 px-3 py-1 font-medium text-primary">
                   <Building2 className="h-3 w-3" />
                   {selectedAgence.nom}
                 </span>
-                <span className="inline-flex items-center gap-1 rounded-full border border-info/30 bg-info-muted px-3 py-1 font-medium text-info-muted-foreground">
+                <span className="inline-flex items-center gap-1 rounded-pill border border-info/30 bg-info-muted px-3 py-1 font-medium text-info-muted-foreground">
                   <Wrench className="h-3 w-3" />
                   {selectedTerminal.reference}
                 </span>
                 {form.sousEnsemble && (
-                  <span className="inline-flex items-center gap-1 rounded-full border border-success/30 bg-success-muted px-3 py-1 font-medium text-success-muted-foreground">
+                  <span className="inline-flex items-center gap-1 rounded-pill border border-success/30 bg-success-muted px-3 py-1 font-medium text-success-muted-foreground">
                     <ClipboardList className="h-3 w-3" />
                     {form.sousEnsemble}
                   </span>
@@ -2579,7 +2580,7 @@ const MaintenanceTab = ({ technicien }) => {
                 {/* Type choisi à l'étape 1 — rappel en lecture seule */}
                 <div className="flex flex-wrap items-center gap-2 text-sm">
                   <span className="text-muted-foreground">Type d'intervention :</span>
-                  <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${form.typeIntervention === 'curative' ? 'bg-warning-muted text-warning-muted-foreground' : 'bg-success-muted text-success-muted-foreground'}`}>
+                  <span className={`inline-flex items-center rounded-pill px-3 py-1 text-xs font-medium ${form.typeIntervention === 'curative' ? 'bg-warning-muted text-warning-muted-foreground' : 'bg-success-muted text-success-muted-foreground'}`}>
                     {form.typeIntervention === 'curative' ? 'Curative (Réparation)' : 'Préventive (Maintenance)'}
                   </span>
                   <button type="button" onClick={() => setStep(1)} className="text-xs text-primary underline">Modifier</button>
@@ -2611,7 +2612,7 @@ const MaintenanceTab = ({ technicien }) => {
                       {sousEnsemblesOptions.length > 0 ? (
                         <div className="flex flex-wrap gap-2">
                           {sousEnsemblesOptions.map((opt) => (
-                            <span key={opt.value} className="inline-flex items-center gap-1 rounded-full border border-success/30 bg-card px-3 py-1 text-xs font-medium text-success-muted-foreground">
+                            <span key={opt.value} className="inline-flex items-center gap-1 rounded-pill border border-success/30 bg-card px-3 py-1 text-xs font-medium text-success-muted-foreground">
                               <ClipboardList className="h-3 w-3" />
                               {opt.label}
                             </span>
@@ -2800,10 +2801,10 @@ const MaintenanceTab = ({ technicien }) => {
 
           {step === 3 && (
             <div className="maintenance-validation-step space-y-8">
-              <div className="overflow-hidden rounded-xl border bg-gradient-to-r from-slate-50 via-white to-blue-50 shadow-sm">
+              <div className="overflow-hidden rounded-xl border bg-surface-subtle shadow-sm">
                 <div className="flex flex-wrap items-center gap-4 px-5 py-3">
                   <div className="flex items-center gap-2 flex-1 min-w-0">
-                    <span className="inline-flex shrink-0 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+                    <span className="inline-flex shrink-0 rounded-pill bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
                       Étape finale
                     </span>
                     <h3 className="text-base font-semibold tracking-tight text-primary truncate">Validation de l'intervention</h3>
@@ -2889,7 +2890,7 @@ const MaintenanceTab = ({ technicien }) => {
                   <div className="rounded-2xl border bg-card p-5 shadow-sm">
                     <div className="mb-4 flex items-center justify-between">
                       <h4 className="text-base font-semibold text-primary">Acteurs de validation</h4>
-                      <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${validationReadyCount === 2 ? 'bg-success-muted text-success-muted-foreground' : 'bg-warning-muted text-warning-muted-foreground'}`}>
+                      <span className={`inline-flex rounded-pill px-3 py-1 text-xs font-medium ${validationReadyCount === 2 ? 'bg-success-muted text-success-muted-foreground' : 'bg-warning-muted text-warning-muted-foreground'}`}>
                         {validationReadyCount}/2 signes
                       </span>
                     </div>
@@ -2969,7 +2970,7 @@ const MaintenanceTab = ({ technicien }) => {
                       Les deux signatures sont requises avant l'enregistrement definitif.
                     </p>
                   </div>
-                  <span className={`inline-flex w-fit rounded-full px-3 py-1 text-xs font-medium ${validationReadyCount === 2 ? 'bg-success-muted text-success-muted-foreground' : 'bg-warning-muted text-warning-muted-foreground'}`}>
+                  <span className={`inline-flex w-fit rounded-pill px-3 py-1 text-xs font-medium ${validationReadyCount === 2 ? 'bg-success-muted text-success-muted-foreground' : 'bg-warning-muted text-warning-muted-foreground'}`}>
                     {validationReadyCount === 2 ? 'Validation complete' : 'Validation en cours'}
                   </span>
                 </div>
@@ -3051,7 +3052,7 @@ const MaintenanceTab = ({ technicien }) => {
               <Button 
                 onClick={finish}
                 disabled={!technicienSignature || !chefAgenceSignature || !chefAgence || isLoading}
-                className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 sm:w-auto"
+                className="w-full bg-success text-success-foreground hover:bg-success/90 sm:w-auto"
               >
                 {isLoading ? 'Enregistrement...' : 'Enregistrer la validation'}
               </Button>

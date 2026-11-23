@@ -66,15 +66,6 @@ const Layout = () => {
         .catch(() => { /* best-effort */ });
     } catch { /* ignore */ }
   }, []);
-  // Le mode sombre se règle dans Paramètres → Thème (plus de bascule dans l'en-tête).
-  const [isDarkMode] = React.useState(() => {
-    // Lire le mode sombre depuis le cache thème pour éviter un flash au rechargement
-    try {
-      const cached = localStorage.getItem('app_theme_cache');
-      if (cached) return Boolean(JSON.parse(cached).darkMode);
-    } catch { /* ignore */ }
-    return document.documentElement.classList.contains('dark');
-  });
   const [spaceFunctionalities, setSpaceFunctionalities] = React.useState(() => {
     try {
       return normalizeAppSpaceFunctionalities(
@@ -85,15 +76,6 @@ const Layout = () => {
     }
   });
   const [hasLoadedSpaceFunctionalities, setHasLoadedSpaceFunctionalities] = React.useState(false);
-
-  React.useEffect(() => {
-    const root = window.document.documentElement;
-    if (isDarkMode) {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
-  }, [isDarkMode]);
 
   React.useEffect(() => {
     const loadSpaceFunctionalities = async () => {
@@ -259,7 +241,7 @@ const Layout = () => {
                     aria-current={isActive ? 'page' : undefined}
                     className={`relative inline-flex h-10 items-center gap-2 rounded-lg px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                       isActive
-                        ? 'text-primary after:absolute after:inset-x-3 after:top-0 after:h-1.5 after:rounded-full after:bg-primary'
+                        ? 'text-primary after:absolute after:inset-x-3 after:top-0 after:h-1.5 after:rounded-pill after:bg-primary'
                         : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
                     }`}
                   >
@@ -277,7 +259,7 @@ const Layout = () => {
                     aria-current={isSpaceRouteActive ? 'page' : undefined}
                     className={`relative inline-flex h-10 items-center gap-2 rounded-lg px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                       isSpaceRouteActive
-                        ? 'text-primary after:absolute after:inset-x-3 after:top-0 after:h-1.5 after:rounded-full after:bg-primary'
+                        ? 'text-primary after:absolute after:inset-x-3 after:top-0 after:h-1.5 after:rounded-pill after:bg-primary'
                         : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
                     }`}
                   >

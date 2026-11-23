@@ -13,7 +13,7 @@
   overflow: hidden !important;
   padding: 0 !important;
   gap: 0 !important;
-  border-radius: 18px !important;
+  border-radius: var(--radius-surface) !important;
   /* Fond blanc opaque, comme les autres fenêtres (Diagnostic, Profil…). */
   border-color: hsl(var(--border)) !important;
   background: hsl(var(--card)) !important;
@@ -46,7 +46,7 @@
   gap: 6px;
   white-space: normal;
   font-size: 12px;
-  border-radius: 10px !important;
+  border-radius: var(--radius-control) !important;
 }
 
 @media (min-width: 768px) {

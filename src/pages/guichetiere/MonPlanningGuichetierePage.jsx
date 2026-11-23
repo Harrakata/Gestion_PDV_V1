@@ -27,6 +27,8 @@ import {
   subWeeks,
 } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import MobilePlanningCalendar from '@/components/planning/MobilePlanningCalendar';
+import { useIsPhone } from '@/hooks/useIsPhone';
 import { Button } from '@/components/ui/button';
 import StatusBadge from '@/components/ui/status-badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -85,6 +87,29 @@ const MonPlanningGuichetierePage = () => {
     const end = viewMode === 'month' ? monthEnd : endOfWeek(currentMonth, { weekStartsOn: 1 });
     return eachDayOfInterval({ start, end });
   }, [currentMonth, viewMode, monthStart, monthEnd]);
+
+  // Jour affiché par le calendrier compact ; le sélecteur de date le pilote aussi.
+  const [focusedDay, setFocusedDay] = useState(null);
+  const pickerDate = (focusedDay && days.find((day) => isSameDay(day, focusedDay))) || currentMonth;
+  const goToDate = (value) => {
+    if (!value) return;
+    const date = parseISO(value);
+    setFocusedDay(date);
+    setCurrentMonth(date);
+  };
+  const isPhone = useIsPhone();
+  const getMobileItems = (day) => (planningByDate[format(day, 'yyyy-MM-dd')] || []).map((entry) => {
+    const pending = requestByPlanningId[String(entry.id)]?.statut === REQUEST_STATUS.PENDING;
+    return {
+      key: entry.id,
+      title: entry.agenceNom || nomAgence,
+      subtitle: pending ? 'Demande de modification en attente' : isPastPlanningDate(entry.date) ? 'Passé' : undefined,
+      badge: pending ? '!' : '✓',
+      badgeClass: pending ? 'bg-warning text-warning-foreground' : undefined,
+      dot: pending ? 'bg-warning' : 'bg-primary',
+      onClick: () => openRequestDialog(entry),
+    };
+  });
 
   const colStartClasses = useMemo(() => {
     const firstDayOfWeek = getDay(monthStart);
@@ -347,31 +372,29 @@ const MonPlanningGuichetierePage = () => {
             Calendrier du planning
           </CardTitle>
           <CardDescription>
-            Naviguez par mois ou par semaine. Cliquez sur une journée planifiée pour envoyer une demande de modification.
+            {isPhone ? 'Glissez le calendrier pour changer de période. Touchez' : 'Naviguez par mois ou par semaine. Cliquez sur'} une journée planifiée pour envoyer une demande de modification.
           </CardDescription>
         </CardHeader>
         {/* Barre de contrôle unifiée */}
         <div className="relative flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3">
           <div className="flex flex-wrap items-center gap-1.5">
-            <Button aria-label={viewMode === 'month' ? 'Mois précédent' : 'Semaine précédente'} variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCurrentMonth((prev) => viewMode === 'month' ? subMonths(prev, 1) : subWeeks(prev, 1))} disabled={isLoading}>
+            <Button aria-label={viewMode === 'month' ? 'Mois précédent' : 'Semaine précédente'} variant="ghost" size="icon" className="hidden h-8 w-8 md:inline-flex" onClick={() => setCurrentMonth((prev) => viewMode === 'month' ? subMonths(prev, 1) : subWeeks(prev, 1))} disabled={isLoading}>
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <span className="min-w-[120px] text-center text-sm font-semibold text-foreground whitespace-nowrap">
+            <span className="hidden min-w-[120px] text-center text-sm font-semibold text-foreground whitespace-nowrap md:inline">
               {format(currentMonth, viewMode === 'month' ? 'MMMM yyyy' : "'Sem.' dd MMM", { locale: fr })}
             </span>
-            <Button aria-label={viewMode === 'month' ? 'Mois suivant' : 'Semaine suivante'} variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCurrentMonth((prev) => viewMode === 'month' ? addMonths(prev, 1) : addWeeks(prev, 1))} disabled={isLoading}>
+            <Button aria-label={viewMode === 'month' ? 'Mois suivant' : 'Semaine suivante'} variant="ghost" size="icon" className="hidden h-8 w-8 md:inline-flex" onClick={() => setCurrentMonth((prev) => viewMode === 'month' ? addMonths(prev, 1) : addWeeks(prev, 1))} disabled={isLoading}>
               <ChevronRight className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" size="sm" className="h-7 px-2.5 text-xs" onClick={() => setCurrentMonth(new Date())} disabled={isLoading}>
-              Aujourd'hui
             </Button>
             <input
               type="date"
               disabled={isLoading}
-              value={format(currentMonth, 'yyyy-MM-dd')}
-              onChange={(e) => { if (e.target.value) setCurrentMonth(parseISO(e.target.value)); }}
+              value={format(pickerDate, 'yyyy-MM-dd')}
+              onChange={(e) => goToDate(e.target.value)}
               className="h-7 rounded-md border border-input bg-card px-2 text-xs text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
               title="Aller à une date"
+              aria-label="Aller à une date"
             />
           </div>
           <div className="flex items-center gap-0.5 rounded-lg border border-border bg-muted/40 p-0.5">
@@ -380,8 +403,20 @@ const MonPlanningGuichetierePage = () => {
           </div>
         </div>
         <CardContent className="relative p-2 md:p-4">
-          {isLoading && planningEntries.length === 0 ? (
+          {isLoading && !isPhone && planningEntries.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">Chargement du planning...</p>
+          ) : isPhone ? (
+            <MobilePlanningCalendar
+              days={days}
+              getItems={getMobileItems}
+              selectedDate={focusedDay}
+              onSelectDate={setFocusedDay}
+              periodLabel={format(currentMonth, viewMode === 'month' ? 'MMMM yyyy' : "'Semaine du' dd MMMM", { locale: fr })}
+              onPrev={() => setCurrentMonth((prev) => viewMode === 'month' ? subMonths(prev, 1) : subWeeks(prev, 1))}
+              onNext={() => setCurrentMonth((prev) => viewMode === 'month' ? addMonths(prev, 1) : addWeeks(prev, 1))}
+              emptyLabel={isLoading ? 'Chargement du planning…' : "Vous n'êtes pas planifiée ce jour."}
+              itemNoun="affectation"
+            />
           ) : (
             <div className="planning-calendar overflow-hidden rounded-lg border border-border bg-card shadow-sm">
               {/* En-tête jours */}
@@ -390,7 +425,7 @@ const MonPlanningGuichetierePage = () => {
                   ? days.map((d) => format(d, 'EEE', { locale: fr }))
                   : ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
                 ).map((dayName, i) => (
-                  <div key={i} className="py-2 text-center text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">{dayName}</div>
+                  <div key={i} className="py-2 text-center text-xs font-bold uppercase tracking-widest text-muted-foreground">{dayName}</div>
                 ))}
               </div>
               {/* Grille unifiée mois + semaine */}
@@ -431,12 +466,12 @@ const MonPlanningGuichetierePage = () => {
                                 className={`flex cursor-pointer items-center gap-1 transition-opacity hover:opacity-70 ${isPast ? 'opacity-50' : ''}`}
                                 onClick={() => openRequestDialog(entry)}
                               >
-                                <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[0.5rem] font-bold
+                                <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold
                                   ${linkedRequest?.statut === REQUEST_STATUS.PENDING ? 'bg-warning/40 text-foreground' : isToday ? 'bg-card/90 text-primary' : 'bg-primary text-primary-foreground'}
                                 `}>
                                   {linkedRequest?.statut === REQUEST_STATUS.PENDING ? '!' : '✓'}
                                 </span>
-                                <span className={`truncate text-[0.6rem] font-medium leading-tight ${!isCurrentMonthDay ? 'text-muted-foreground/40' : 'text-foreground'}`}>
+                                <span className={`truncate text-xs font-medium leading-tight ${!isCurrentMonthDay ? 'text-muted-foreground/40' : 'text-foreground'}`}>
                                   {entry.agenceNom || nomAgence}
                                 </span>
                               </motion.div>

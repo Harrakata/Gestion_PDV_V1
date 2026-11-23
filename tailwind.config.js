@@ -82,12 +82,22 @@ module.exports = {
 					muted: 'hsl(var(--warning-muted))',
 					'muted-foreground': 'hsl(var(--warning-muted-foreground))',
 				},
+				highlight: {
+					DEFAULT: 'hsl(var(--highlight))',
+					foreground: 'hsl(var(--highlight-foreground))',
+					muted: 'hsl(var(--highlight-muted))',
+					'muted-foreground': 'hsl(var(--highlight-muted-foreground))',
+				},
 				info: {
 					DEFAULT: 'hsl(var(--info))',
 					foreground: 'hsl(var(--info-foreground))',
 					muted: 'hsl(var(--info-muted))',
 					'muted-foreground': 'hsl(var(--info-muted-foreground))',
 				},
+			},
+			// Plancher de lisibilité : text-xs ne descend jamais sous 12 px.
+			fontSize: {
+				xs: ['var(--text-min)', { lineHeight: 'max(16px, 1rem)' }],
 			},
 			boxShadow: {
 				soft: 'var(--shadow-soft)',
@@ -98,6 +108,14 @@ module.exports = {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)',
+				// Suivent « Arrondi des coins » ; au réglage par défaut (14 px) : 12 et 16 px.
+				DEFAULT: 'calc(var(--radius) * 0.286)',
+				xl: 'var(--radius-control)',
+				'2xl': 'calc(var(--radius) * 1.143)',
+				surface: 'var(--radius-surface)',
+				// Badges, puces, boutons ronds. `rounded-full` : seulement ce qui est rond par
+				// nature (photo, point, jauge, interrupteur).
+				pill: 'var(--radius-pill)',
 			},
 			keyframes: {
 				'accordion-down': {

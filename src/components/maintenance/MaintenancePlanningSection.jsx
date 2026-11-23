@@ -4,6 +4,9 @@ import { motion } from 'framer-motion';
 import { addMonths, addWeeks, endOfMonth, endOfWeek, eachDayOfInterval, format, getDay, isSameDay, isSameMonth, parseISO, startOfMonth, startOfWeek, subMonths, subWeeks } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { CalendarClock, CheckCircle2, ChevronLeft, ChevronRight, ClipboardList, Copy, FileText, MapPinned, Pencil, PlusCircle, Search, ShieldAlert, TimerReset, Wrench } from 'lucide-react';
+import MobilePlanningCalendar from '@/components/planning/MobilePlanningCalendar';
+import MobileFilterBar, { filterLabels } from '@/components/ui/mobile-filter-bar';
+import { useIsPhone } from '@/hooks/useIsPhone';
 import { Badge } from '@/components/ui/badge';
 import StatusBadge from '@/components/ui/status-badge';
 import { Button } from '@/components/ui/button';
@@ -58,7 +61,7 @@ const CALENDAR_LEGEND = [
   { status: 'planifiee', label: 'Planifiée', dot: 'bg-primary' },
   { status: 'effectuee', label: 'Effectuée', dot: 'bg-success' },
   { status: 'non_effectuee', label: 'Non effectuée', dot: 'bg-destructive' },
-  { status: 'annulee', label: 'Annulée', dot: 'bg-slate-400' },
+  { status: 'annulee', label: 'Annulée', dot: 'bg-muted-foreground/60' },
 ];
 
 const buildDefaultFormData = ({
@@ -377,6 +380,42 @@ const MaintenancePlanningSection = ({
 
     return eachDayOfInterval({ start, end });
   }, [currentCalendarDate, viewMode]);
+
+  const isPhone = useIsPhone();
+  const getMobileItems = (day) => {
+    const dateKey = extractMaintenancePlanningDateKey(day);
+    const planned = (filteredRowsByDate[dateKey] || [])
+      .filter((row) => activeLegendStatuses.has(row.executionStatus))
+      .map((row) => ({
+        key: `plan-${row.id}`,
+        title: showAgenceColumn ? row.agenceNom : row.technicienNom,
+        subtitle: [row.creneauLabel, showAgenceColumn ? row.technicienNom : null, row.executionMeta.label].filter(Boolean).join(' • '),
+        badge: row.executionStatus === 'effectuee' ? <CheckCircle2 className="h-3 w-3" /> : <Wrench className="h-3 w-3" />,
+        badgeClass: EXECUTION_PIN_STYLES[row.executionStatus] || 'bg-success text-success-foreground',
+        dot: CALENDAR_LEGEND.find((item) => item.status === row.executionStatus)?.dot || 'bg-primary',
+        onClick: () => setSelectedPlanningId(row.id),
+        action: canManage ? {
+          label: `Modifier la planification de ${row.agenceNom}`,
+          icon: <Pencil className="h-4 w-4" />,
+          onClick: () => openDialog(row),
+          disabled: isLoading,
+        } : undefined,
+      }));
+    const realized = !activeLegendStatuses.has('effectuee') ? [] : (realizedByDate[dateKey] || []).map((item) => {
+      const done = item.interventions.filter((i) => i.geo_refused !== true).length;
+      const refused = item.interventions.length - done;
+      return {
+        key: `fait-${item.key}`,
+        title: showAgenceColumn ? item.agenceNom : 'Réalisée',
+        subtitle: `${done} réalisée(s)${refused ? ` · ${refused} refusée(s)` : ''}`,
+        badge: <CheckCircle2 className="h-3 w-3" />,
+        badgeClass: done ? 'bg-success text-success-foreground' : 'bg-destructive text-destructive-foreground',
+        dot: done ? 'bg-success' : 'bg-destructive',
+        onClick: () => setRealizedDetail(item),
+      };
+    });
+    return [...planned, ...realized];
+  };
 
   const colStartClass = useMemo(() => {
     const firstDayOfMonth = startOfMonth(currentCalendarDate);
@@ -700,21 +739,13 @@ const MaintenancePlanningSection = ({
     setIsLoading(false);
   };
 
-  const handlePrev = () => {
-    setCurrentCalendarDate((previousDate) =>
-      viewMode === 'month' ? subMonths(previousDate, 1) : subWeeks(previousDate, 1)
-    );
+  // Une seule date : elle pilote le calendrier, le jour affiché et la carte.
+  const goToDay = (date) => {
+    setPlanningMapDate(extractMaintenancePlanningDateKey(date));
+    setCurrentCalendarDate(date);
   };
-
-  const handleNext = () => {
-    setCurrentCalendarDate((previousDate) =>
-      viewMode === 'month' ? addMonths(previousDate, 1) : addWeeks(previousDate, 1)
-    );
-  };
-
-  const handleToday = () => {
-    setCurrentCalendarDate(new Date());
-  };
+  const handlePrev = () => goToDay(viewMode === 'month' ? subMonths(currentCalendarDate, 1) : subWeeks(currentCalendarDate, 1));
+  const handleNext = () => goToDay(viewMode === 'month' ? addMonths(currentCalendarDate, 1) : addWeeks(currentCalendarDate, 1));
 
   const handleCopyPrevious = async (period) => {
     if (!canManage) return;
@@ -817,6 +848,87 @@ const MaintenancePlanningSection = ({
   const showAgenceColumn = !resolvedLockedAgency;
   const showTechnicienColumn = !lockedTechnicienId;
 
+  const agenceFilterOptions = [{ value: ALL_FILTER_VALUE, label: 'Agences' }, ...visibleAgences.map((agence) => ({ value: String(agence.id), label: agence.nom }))];
+  const creneauFilterOptions = [{ value: ALL_FILTER_VALUE, label: 'Créneaux' }, ...MAINTENANCE_SHIFT_OPTIONS];
+  const statutFilterOptions = [
+    { value: ALL_FILTER_VALUE, label: 'Suivis' },
+    { value: 'planifiee', label: 'Planifiée' },
+    { value: 'effectuee', label: 'Effectuée' },
+    { value: 'non_effectuee', label: 'Non effectuée' },
+    { value: 'annulee', label: 'Annulée' },
+  ];
+  // Un périmètre verrouillé (région, agence, technicien) est une chaîne, pas un choix de l'utilisateur.
+  const activeFilterLabels = [
+    showRegionColumn && [filters.region, regionOptions],
+    showAgenceColumn && [filters.agenceId, agenceFilterOptions],
+    showTechnicienColumn && [filters.technicienId, technicienOptions],
+    [filters.creneau, creneauFilterOptions],
+    [filters.statut, statutFilterOptions],
+  ].map((entry) => entry && filterLabels(...entry));
+  const resetFilters = () => setFilters((previous) => Object.fromEntries(
+    Object.entries(previous).map(([key, value]) => [key, Array.isArray(value) ? [] : value])
+  ));
+  // Champs partagés par la barre du téléphone et celle de l'ordinateur.
+  const filterFields = (
+    <>
+      {showRegionColumn && (
+        <Combobox
+          multi
+          options={regionOptions}
+          value={filters.region}
+          onSelect={(arr) => setFilters((p) => ({ ...p, region: arr, agenceId: [] }))}
+          searchPlaceholder="Rechercher une région…"
+          emptyText="Aucune région."
+          disabled={isLoading}
+        />
+      )}
+
+      {showAgenceColumn && (
+        <Combobox
+          multi
+          options={agenceFilterOptions}
+          value={filters.agenceId}
+          onSelect={(arr) => setFilters((p) => ({ ...p, agenceId: arr }))}
+          searchPlaceholder="Rechercher une agence…"
+          emptyText="Aucune agence."
+          disabled={isLoading}
+        />
+      )}
+
+      {showTechnicienColumn && (
+        <Combobox
+          multi
+          options={technicienOptions}
+          value={filters.technicienId}
+          onSelect={(arr) => setFilters((p) => ({ ...p, technicienId: arr }))}
+          searchPlaceholder="Rechercher un technicien…"
+          emptyText="Aucun technicien."
+          disabled={isLoading}
+        />
+      )}
+
+      <Combobox
+        multi
+        options={creneauFilterOptions}
+        value={filters.creneau}
+        onSelect={(arr) => setFilters((p) => ({ ...p, creneau: arr }))}
+        searchPlaceholder="Rechercher…"
+        emptyText="Aucun créneau."
+        disabled={isLoading}
+      />
+
+      <Combobox
+        multi
+        options={statutFilterOptions}
+        value={filters.statut}
+        onSelect={(arr) => setFilters((p) => ({ ...p, statut: arr }))}
+        searchPlaceholder="Rechercher…"
+        emptyText="Aucun suivi."
+        disabled={isLoading}
+      />
+    </>
+  );
+
   return (
     <div className="space-y-6">
       <Card>
@@ -892,33 +1004,30 @@ const MaintenancePlanningSection = ({
               </div>
 
               {/* Navigation période — barre intégrée */}
-              <div className="flex flex-1 items-center gap-0.5 rounded-lg border border-border bg-muted/20 px-1 py-0.5">
-                <Button aria-label="Période précédente" variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={handlePrev} disabled={isLoading}>
+              <div className="flex items-center gap-0.5 md:flex-1 md:rounded-lg md:border md:border-border md:bg-muted/20 md:px-1 md:py-0.5">
+                <Button aria-label="Période précédente" variant="ghost" size="icon" className="hidden h-7 w-7 shrink-0 md:inline-flex" onClick={handlePrev} disabled={isLoading}>
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <p className="flex-1 px-1 text-center text-sm font-semibold capitalize text-foreground whitespace-nowrap" aria-live="polite">
+                <p className="hidden flex-1 px-1 text-center text-sm font-semibold capitalize text-foreground whitespace-nowrap md:block" aria-live="polite">
                   {format(currentCalendarDate, viewMode === 'month' ? 'MMMM yyyy' : "'Semaine du' dd MMMM", { locale: fr })}
                 </p>
-                <Button aria-label="Période suivante" variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={handleNext} disabled={isLoading}>
+                <Button aria-label="Période suivante" variant="ghost" size="icon" className="hidden h-7 w-7 shrink-0 md:inline-flex" onClick={handleNext} disabled={isLoading}>
                   <ChevronRight className="h-4 w-4" />
                 </Button>
-                <Button size="sm" variant="outline" className="h-7 shrink-0 px-2 text-xs" onClick={handleToday} disabled={isLoading}>
-                  <span className="sm:hidden">Auj.</span>
-                  <span className="sr-only sm:not-sr-only">Aujourd&apos;hui</span>
-                </Button>
+                <Input
+                  type="date"
+                  value={planningMapDate}
+                  onChange={(event) => { if (event.target.value) goToDay(parseISO(event.target.value)); }}
+                  className="h-7 w-[8.75rem] shrink-0 text-xs sm:w-[150px]"
+                  disabled={isLoading}
+                  title="Aller à une date (calendrier et carte)"
+                  aria-label="Aller à une date"
+                />
               </div>
             </div>
 
             {/* Actions — barre intégrée */}
             <div className="flex flex-wrap items-center gap-1.5 rounded-lg border border-border bg-muted/20 px-1 py-0.5">
-              <Input
-                type="date"
-                value={planningMapDate}
-                onChange={(event) => setPlanningMapDate(event.target.value || extractMaintenancePlanningDateKey(new Date()))}
-                className="h-7 w-[7.5rem] text-xs sm:w-[150px]"
-                disabled={isLoading}
-                title="Journée à visualiser sur la carte"
-              />
               <div className="inline-flex items-center divide-x divide-border overflow-hidden rounded-md border border-input">
                 <Button
                   size="sm"
@@ -950,83 +1059,36 @@ const MaintenancePlanningSection = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
-            {showRegionColumn && (
-              <Combobox
-                multi
-                options={regionOptions}
-                value={filters.region}
-                onSelect={(arr) => setFilters((p) => ({ ...p, region: arr, agenceId: [] }))}
-                searchPlaceholder="Rechercher une région…"
-                emptyText="Aucune région."
-                disabled={isLoading}
-              />
-            )}
-
-            {showAgenceColumn && (
-              <Combobox
-                multi
-                options={[{ value: ALL_FILTER_VALUE, label: 'Agences' }, ...visibleAgences.map((agence) => ({ value: String(agence.id), label: agence.nom }))]}
-                value={filters.agenceId}
-                onSelect={(arr) => setFilters((p) => ({ ...p, agenceId: arr }))}
-                searchPlaceholder="Rechercher une agence…"
-                emptyText="Aucune agence."
-                disabled={isLoading}
-              />
-            )}
-
-            {showTechnicienColumn && (
-              <Combobox
-                multi
-                options={technicienOptions}
-                value={filters.technicienId}
-                onSelect={(arr) => setFilters((p) => ({ ...p, technicienId: arr }))}
-                searchPlaceholder="Rechercher un technicien…"
-                emptyText="Aucun technicien."
-                disabled={isLoading}
-              />
-            )}
-
-            <Combobox
-              multi
-              options={[{ value: ALL_FILTER_VALUE, label: 'Créneaux' }, ...MAINTENANCE_SHIFT_OPTIONS]}
-              value={filters.creneau}
-              onSelect={(arr) => setFilters((p) => ({ ...p, creneau: arr }))}
-              searchPlaceholder="Rechercher…"
-              emptyText="Aucun créneau."
+          {isPhone ? (
+            <MobileFilterBar
+              search={searchTerm}
+              onSearchChange={setSearchTerm}
+              searchLabel="Rechercher une agence, un technicien, un créneau, un commentaire ou une intervention"
+              active={activeFilterLabels}
+              onReset={resetFilters}
               disabled={isLoading}
-            />
+            >
+              {filterFields}
+            </MobileFilterBar>
+          ) : (
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+              {filterFields}
 
-            <Combobox
-              multi
-              options={[
-                { value: ALL_FILTER_VALUE, label: 'Suivis' },
-                { value: 'planifiee', label: 'Planifiée' },
-                { value: 'effectuee', label: 'Effectuée' },
-                { value: 'non_effectuee', label: 'Non effectuée' },
-                { value: 'annulee', label: 'Annulée' },
-              ]}
-              value={filters.statut}
-              onSelect={(arr) => setFilters((p) => ({ ...p, statut: arr }))}
-              searchPlaceholder="Rechercher…"
-              emptyText="Aucun suivi."
-              disabled={isLoading}
-            />
-
-            <div className="space-y-2 col-span-2 md:col-span-3 xl:col-span-5">
-              <p className="text-sm font-medium">Recherche</p>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  value={searchTerm}
-                  onChange={(event) => setSearchTerm(event.target.value)}
-                  placeholder="Agence, technicien, créneau, commentaire, intervention..."
-                  className="pl-10"
-                  disabled={isLoading}
-                />
+              <div className="space-y-2 col-span-2 md:col-span-3 xl:col-span-5">
+                <p className="text-sm font-medium">Recherche</p>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    value={searchTerm}
+                    onChange={(event) => setSearchTerm(event.target.value)}
+                    placeholder="Agence, technicien, créneau, commentaire, intervention..."
+                    className="pl-10"
+                    disabled={isLoading}
+                  />
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </CardHeader>
 
         <CardContent>
@@ -1043,8 +1105,23 @@ const MaintenancePlanningSection = ({
             </div>
           )}
 
-          {isLoading && filteredRows.length === 0 ? (
+          {isLoading && !isPhone && filteredRows.length === 0 ? (
             <p className="py-8 text-center text-muted-foreground">Chargement du planning maintenance...</p>
+          ) : isPhone ? (
+            <MobilePlanningCalendar
+              days={calendarDays}
+              getItems={getMobileItems}
+              selectedDate={parseISO(planningMapDate)}
+              onSelectDate={goToDay}
+              periodLabel={format(currentCalendarDate, viewMode === 'month' ? 'MMMM yyyy' : "'Semaine du' dd MMMM", { locale: fr })}
+              onPrev={handlePrev}
+              onNext={handleNext}
+              onAdd={canManage ? openCreateDialogForDate : undefined}
+              canAdd={() => !isLoading}
+              addLabel="Planifier"
+              emptyLabel={isLoading ? 'Chargement du planning…' : 'Aucune maintenance ce jour.'}
+              itemNoun="maintenance"
+            />
           ) : (
             <div className="planning-calendar overflow-hidden rounded-lg border border-border shadow-sm">
               {/* En-tête jours */}
@@ -1053,7 +1130,7 @@ const MaintenancePlanningSection = ({
                   ? calendarDays.map(d => format(d, 'EEE', { locale: fr }))
                   : ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
                 ).map((dayName, i) => (
-                  <div key={i} className="py-2 text-center text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">
+                  <div key={i} className="py-2 text-center text-xs font-bold uppercase tracking-widest text-muted-foreground">
                     {dayName}
                   </div>
                 ))}
@@ -1112,7 +1189,7 @@ const MaintenancePlanningSection = ({
                             }}
                             className="flex cursor-pointer items-center gap-1 transition-opacity hover:opacity-70"
                           >
-                            <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[0.5rem] font-bold
+                            <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold
                               ${EXECUTION_PIN_STYLES[row.executionStatus] || 'bg-success text-success-foreground'}
                               ${String(selectedPlanningId) === String(row.id) ? 'ring-2 ring-offset-1 ring-primary/50' : ''}
                             `}>
@@ -1121,10 +1198,10 @@ const MaintenancePlanningSection = ({
                                 : <Wrench className="h-2.5 w-2.5" />}
                             </span>
                             <div className="min-w-0 flex-1">
-                              <p className={`truncate text-[0.6rem] font-medium leading-tight ${!isCurrentMonthDay ? 'text-muted-foreground/40' : 'text-foreground'}`}>
+                              <p className={`truncate text-xs font-medium leading-tight ${!isCurrentMonthDay ? 'text-muted-foreground/40' : 'text-foreground'}`}>
                                 {showAgenceColumn ? row.agenceNom : row.technicienNom}
                               </p>
-                              <p className="truncate text-[0.55rem] leading-tight text-muted-foreground/70">
+                              <p className="truncate text-xs leading-tight text-muted-foreground/70">
                                 {row.creneauLabel} • {row.executionMeta.label}
                               </p>
                             </div>
@@ -1165,14 +1242,14 @@ const MaintenancePlanningSection = ({
                               }}
                               className="flex cursor-pointer items-center gap-1 transition-opacity hover:opacity-70"
                             >
-                              <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[0.5rem] font-bold ${hasRealized ? 'bg-success text-success-foreground' : 'bg-destructive text-destructive-foreground'}`}>
+                              <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${hasRealized ? 'bg-success text-success-foreground' : 'bg-destructive text-destructive-foreground'}`}>
                                 <CheckCircle2 className="h-2.5 w-2.5" />
                               </span>
                               <div className="min-w-0 flex-1">
-                                <p className={`truncate text-[0.6rem] font-medium leading-tight ${!isCurrentMonthDay ? 'text-muted-foreground/40' : 'text-foreground'}`}>
+                                <p className={`truncate text-xs font-medium leading-tight ${!isCurrentMonthDay ? 'text-muted-foreground/40' : 'text-foreground'}`}>
                                   {showAgenceColumn ? item.agenceNom : 'Réalisée'}
                                 </p>
-                                <p className="truncate text-[0.55rem] leading-tight text-success-muted-foreground/80">
+                                <p className="truncate text-xs leading-tight text-success-muted-foreground/80">
                                   {realizedCount} réalisée(s)
                                   {refusedCount ? <span className="text-destructive"> · {refusedCount} refusée(s)</span> : null}
                                 </p>
@@ -1188,7 +1265,7 @@ const MaintenancePlanningSection = ({
             </div>
           )}
 
-          <div className="mt-3 flex flex-wrap items-center gap-2 text-[0.7rem] text-muted-foreground">
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
             <span className="font-semibold uppercase tracking-wide">Légende / filtre</span>
             {CALENDAR_LEGEND.map((item) => {
               const active = activeLegendStatuses.has(item.status);
@@ -1199,7 +1276,7 @@ const MaintenancePlanningSection = ({
                   onClick={() => toggleLegendStatus(item.status)}
                   aria-pressed={active}
                   title={active ? `Masquer « ${item.label} »` : `Afficher « ${item.label} »`}
-                  className={`flex items-center gap-1.5 rounded-full border px-2 py-0.5 transition-colors ${
+                  className={`flex items-center gap-1.5 rounded-pill border px-2 py-0.5 transition-colors ${
                     active
                       ? 'border-border bg-card text-foreground'
                       : 'border-transparent bg-transparent text-muted-foreground/40 line-through'

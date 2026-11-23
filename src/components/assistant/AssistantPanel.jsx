@@ -171,7 +171,7 @@ export default function AssistantPanel({ space, currentTab, authenticated, ident
   return <Dialog.Root open={open} onOpenChange={setOpen}>
     <Dialog.Trigger asChild>
       <button type="button" aria-label="Ouvrir l’assistant" title="Assistant GestionPDV"
-        className="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-4 z-40 flex h-12 w-12 items-center justify-center rounded-full border border-white/30 bg-primary text-primary-foreground shadow-lg transition-colors hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary md:bottom-6 md:right-6">
+        className="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-4 z-40 flex h-12 w-12 items-center justify-center rounded-pill border border-white/30 bg-primary text-primary-foreground shadow-lg transition-colors hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary md:bottom-6 md:right-6">
         <MessageCircle className="h-6 w-6" />
       </button>
     </Dialog.Trigger>
@@ -181,14 +181,14 @@ export default function AssistantPanel({ space, currentTab, authenticated, ident
         className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-3 z-50 flex h-[min(680px,85dvh)] w-[calc(100vw-1.5rem)] max-w-[440px] flex-col overflow-hidden rounded-2xl border text-foreground shadow-2xl outline-none md:right-6">
         <span className="pointer-events-none absolute inset-x-0 top-0 z-10 h-1.5 bg-primary" />
         <header className="flex shrink-0 items-center gap-3 px-4 pb-3 pt-5">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-primary/25 bg-card text-primary shadow-sm">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-pill border border-primary/25 bg-card text-primary shadow-sm">
             <Bot className="h-6 w-6" />
           </span>
           <div className="min-w-0 flex-1">
             <Dialog.Title className="text-base font-semibold text-primary">Assistant GestionPDV</Dialog.Title>
             <Dialog.Description className={aiConnectionEnabled ? 'truncate text-xs text-muted-foreground' : 'sr-only'}>{checking ? 'Connexion…' : effectiveMode === 'ai' ? 'IA · Consultation en lecture seule' : aiConnectionEnabled ? 'Guide intégré · Données locales' : 'Assistant en mode guide local'}</Dialog.Description>
           </div>
-          <Dialog.Close asChild><Button type="button" size="icon" variant="ghost" className="h-8 w-8 shrink-0 rounded-full bg-card shadow-sm" title="Fermer l’assistant" aria-label="Fermer l’assistant"><X className="h-4 w-4" /></Button></Dialog.Close>
+          <Dialog.Close asChild><Button type="button" size="icon" variant="ghost" className="h-8 w-8 shrink-0 rounded-pill bg-card shadow-sm" title="Fermer l’assistant" aria-label="Fermer l’assistant"><X className="h-4 w-4" /></Button></Dialog.Close>
         </header>
         {currentMenu && <p className="mx-4 mb-3 shrink-0 truncate rounded-lg border border-primary/15 bg-card px-3 py-2 text-xs text-muted-foreground" title={currentMenu.title}>Page : {currentMenu.title}</p>}
         <Tabs value={view} onValueChange={setView} className="flex min-h-0 flex-1 flex-col">
@@ -231,7 +231,7 @@ export default function AssistantPanel({ space, currentTab, authenticated, ident
             {busy ? <Button type="button" size="icon" variant="outline" className="h-10 w-10 shrink-0" title="Arrêter la réponse" aria-label="Arrêter la réponse" onClick={() => pending.current?.abort()}><Square className="h-4 w-4" /></Button>
               : <Button type="submit" size="icon" className="h-10 w-10 shrink-0" title="Envoyer la question" aria-label="Envoyer la question" disabled={!draft.trim() || checking}><ArrowUp className="h-4 w-4" /></Button>}
           </div>
-          {aiConnectionEnabled && <p className="text-[11px] text-muted-foreground">{effectiveMode === 'ai' ? 'Questions et données autorisées utiles traitées par le service IA.' : 'Guide métier, page courante, cache et synchronisation disponibles sans IA.'}</p>}
+          {aiConnectionEnabled && <p className="text-xs text-muted-foreground">{effectiveMode === 'ai' ? 'Questions et données autorisées utiles traitées par le service IA.' : 'Guide métier, page courante, cache et synchronisation disponibles sans IA.'}</p>}
         </form>
           </TabsContent>
         </Tabs>

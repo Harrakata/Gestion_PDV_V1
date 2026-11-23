@@ -98,7 +98,7 @@ const EnablePushButton = ({ reader = {}, className = '', iconOnly = false, asNav
         title={enabled ? 'Désactiver les notifications' : 'Activer les notifications'}
       >
         {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : enabled ? <BellRing className="h-5 w-5 text-primary" /> : <BellOff className="h-5 w-5" />}
-        <span className="text-[0.6rem] font-semibold">{enabled ? 'Notifs ✓' : 'Notifs'}</span>
+        <span className="text-xs font-semibold">{enabled ? 'Notifs ✓' : 'Notifs'}</span>
       </button>
     );
   }

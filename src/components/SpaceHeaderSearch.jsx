@@ -91,7 +91,7 @@ export default function SpaceHeaderSearch({ items, enableDataSearch = false, aut
 
   return (
     <div ref={rootRef} className="relative w-full max-w-md">
-      <label className="space-header-search flex h-11 w-full items-center gap-2.5 rounded-full px-4">
+      <label className="space-header-search flex h-11 w-full items-center gap-2.5 rounded-pill px-4">
         <Search className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
         <input
           ref={inputRef}
@@ -108,7 +108,7 @@ export default function SpaceHeaderSearch({ items, enableDataSearch = false, aut
           aria-activedescendant={open && highlightedIndex >= 0 ? `${listId}-${highlightedIndex}` : undefined}
           className="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground [&::-webkit-search-cancel-button]:hidden"
         />
-        <kbd className="hidden shrink-0 rounded-md border border-border px-1.5 py-0.5 text-[0.65rem] font-semibold text-muted-foreground lg:inline">Ctrl K</kbd>
+        <kbd className="hidden shrink-0 rounded-md border border-border px-1.5 py-0.5 text-xs font-semibold text-muted-foreground lg:inline">Ctrl K</kbd>
       </label>
 
       {open && (

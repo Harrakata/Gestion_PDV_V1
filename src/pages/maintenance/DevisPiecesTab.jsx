@@ -633,7 +633,7 @@ const DevisPiecesTab = () => {
                     <TableCell className="font-medium">
                       {line.nom}
                       {line.source === 'manual' && (
-                        <StatusBadge tone="success" className="ml-2 text-[0.6rem]">ajoutée</StatusBadge>
+                        <StatusBadge tone="success" className="ml-2 text-xs">ajoutée</StatusBadge>
                       )}
                     </TableCell>
                     <TableCell className="font-mono text-sm">{line.reference}</TableCell>

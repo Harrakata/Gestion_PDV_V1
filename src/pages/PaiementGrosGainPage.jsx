@@ -118,7 +118,7 @@ const notifyPaiementGainLoadError = (toast, error, title, description) => {
 
 const DetailField = ({ label, value }) => (
   <div className="min-w-0">
-    <p className="text-[10px] font-medium uppercase leading-3 text-muted-foreground">{label}</p>
+    <p className="text-xs font-medium uppercase leading-3 text-muted-foreground">{label}</p>
     <p className="truncate text-xs font-semibold leading-4 text-foreground" title={String(value ?? '')}>{value || 'N/A'}</p>
   </div>
 );
@@ -1120,21 +1120,21 @@ const PaiementGrosGainPage = () => {
     <div className="space-y-2">
       <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
         <div className="rounded-lg border bg-background/70 p-3 shadow-sm">
-          <p className="text-[10px] font-medium uppercase leading-3 text-muted-foreground">Montant</p>
+          <p className="text-xs font-medium uppercase leading-3 text-muted-foreground">Montant</p>
           <p className="mt-1 text-base font-bold text-primary">{formatCurrency(demande.montantGain)}</p>
         </div>
         <div className="rounded-lg border bg-background/70 p-3 shadow-sm">
-          <p className="text-[10px] font-medium uppercase leading-3 text-muted-foreground">Statut global</p>
+          <p className="text-xs font-medium uppercase leading-3 text-muted-foreground">Statut global</p>
           <StatusBadge tone={getStatusTone(getEffectiveDemandeStatus(demande))} className="mt-1">
             {getEffectiveDemandeStatus(demande)}
           </StatusBadge>
         </div>
         <div className="rounded-lg border bg-background/70 p-3 shadow-sm">
-          <p className="text-[10px] font-medium uppercase leading-3 text-muted-foreground">Étape en cours</p>
+          <p className="text-xs font-medium uppercase leading-3 text-muted-foreground">Étape en cours</p>
           <p className="mt-1 text-xs font-semibold">{getWorkflowStageLabel(getEffectiveWorkflowStage(demande))}</p>
         </div>
         <div className="rounded-lg border bg-background/70 p-3 shadow-sm">
-          <p className="text-[10px] font-medium uppercase leading-3 text-muted-foreground">Agence de paiement</p>
+          <p className="text-xs font-medium uppercase leading-3 text-muted-foreground">Agence de paiement</p>
           <p className="mt-1 text-xs font-semibold">{demande.agencePaiementNom || 'Non attribuée'}</p>
         </div>
       </div>

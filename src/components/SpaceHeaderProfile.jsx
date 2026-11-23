@@ -8,7 +8,7 @@ export default function SpaceHeaderProfile({ photoUrl, initials, name, role, act
   return (
     <div className="flex min-w-0 items-center gap-2">
       {actions && <div className="space-header-actions flex shrink-0 items-center gap-2">{actions}</div>}
-      <div className="space-header-profile flex min-w-0 items-center gap-2.5 rounded-full py-1 pl-1 pr-4">
+      <div className="space-header-profile flex min-w-0 items-center gap-2.5 rounded-pill py-1 pl-1 pr-4">
         {photoUrl ? (
           <img
             src={photoUrl}

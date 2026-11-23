@@ -52,7 +52,7 @@ const MiniSwitch = ({ label, checked, onClick, disabled, busy }) => (
     onClick={onClick}
     className={[
       'relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors',
-      checked ? 'bg-primary' : 'bg-slate-300',
+      checked ? 'bg-primary' : 'bg-muted-foreground/40',
       disabled ? 'cursor-not-allowed opacity-60' : '',
     ].join(' ')}
   >
@@ -90,7 +90,7 @@ const SpaceChip = ({ spaceKey, enabled, onToggle, disabled, busy, hint }) => (
       </span>
       <span className="flex flex-col leading-tight">
         {spaceLabel(spaceKey)}
-        {hint ? <span className="text-[10px] font-normal text-muted-foreground">{hint}</span> : null}
+        {hint ? <span className="text-xs font-normal text-muted-foreground">{hint}</span> : null}
       </span>
     </span>
     <MiniSwitch label={spaceLabel(spaceKey)} checked={enabled} onClick={onToggle} disabled={disabled} busy={busy} />
@@ -109,14 +109,14 @@ const ManageTabChip = ({ tabKey, label, enabled, onToggle, disabled, busy }) => 
           : 'border-border bg-background/60',
     ].join(' ')}
   >
-    <span className="text-[11px] font-medium text-foreground/80">{label || tabLabel(tabKey)}</span>
+    <span className="text-xs font-medium text-foreground/80">{label || tabLabel(tabKey)}</span>
     <MiniSwitch label={label || tabLabel(tabKey)} checked={enabled} onClick={onToggle} disabled={disabled} busy={busy} />
   </div>
 );
 
 // ── Contrôle segmenté (pilule) pour la structure ────────────────────────────
 const SegmentedToggle = ({ value, options, onChange, disabled, busy }) => (
-  <div className="inline-flex items-center rounded-full border border-primary/20 bg-background/80 p-0.5 shadow-sm">
+  <div className="inline-flex items-center rounded-pill border border-primary/20 bg-background/80 p-0.5 shadow-sm">
     {options.map((opt) => {
       const active = value === opt.value;
       return (
@@ -126,7 +126,7 @@ const SegmentedToggle = ({ value, options, onChange, disabled, busy }) => (
           disabled={disabled || busy}
           onClick={() => !active && onChange(opt.value)}
           className={[
-            'flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold transition-colors',
+            'flex items-center gap-1 rounded-pill px-2.5 py-1 text-xs font-semibold transition-colors',
             active ? 'bg-primary text-primary-foreground shadow' : 'text-muted-foreground hover:text-foreground',
             disabled || busy ? 'cursor-not-allowed opacity-60' : '',
           ].join(' ')}
@@ -183,7 +183,7 @@ const Connector = ({ dashed = false, muted = false, label }) => (
       ].join(' ')}
     />
     {label ? (
-      <span className="relative z-10 inline-flex items-center gap-1 rounded-full border border-primary/20 bg-background px-2 py-0.5 text-[10px] font-medium text-muted-foreground shadow-sm">
+      <span className="relative z-10 inline-flex items-center gap-1 rounded-pill border border-primary/20 bg-background px-2 py-0.5 text-xs font-medium text-muted-foreground shadow-sm">
         {label}
       </span>
     ) : null}
@@ -257,7 +257,7 @@ const OrgStructureCard = ({
   // Chaque item peut être une clé d'onglet (string) ou { key, label } pour un libellé dédié.
   const renderManage = (items, { disabled = false } = {}) => (
     <div className="rounded-xl border border-border bg-muted/50 p-2">
-      <p className="mb-1.5 flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+      <p className="mb-1.5 flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
         <Pencil className="h-3 w-3" /> Création &amp; gestion
       </p>
       <div className="flex flex-wrap gap-1.5">
@@ -384,7 +384,7 @@ const OrgStructureCard = ({
             }
           >
             <div className="flex items-center gap-2">
-              <span className="text-[11px] font-medium text-muted-foreground">Niveau&nbsp;:</span>
+              <span className="text-xs font-medium text-muted-foreground">Niveau&nbsp;:</span>
               <SegmentedToggle
                 value={secteurEnabled}
                 onChange={(v) => applyStructure('secteur', { secteur: { enabled: v } })}
@@ -456,7 +456,7 @@ const OrgStructureCard = ({
             badge={ALWAYS_ACTIVE_BADGE}
           >
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[11px] font-medium text-muted-foreground">Rattachement&nbsp;:</span>
+              <span className="text-xs font-medium text-muted-foreground">Rattachement&nbsp;:</span>
               <SegmentedToggle
                 value={agenceMode}
                 onChange={(v) => applyStructure('guichetiere', { guichetiere: { agenceMode: v } })}

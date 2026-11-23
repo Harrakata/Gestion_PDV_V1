@@ -47,10 +47,31 @@ rôle sémantique existe.
 | Attention | `warning`, `warning-muted` | Échéance proche, attente, surveillance |
 | Danger | `destructive` | Blocage, refus, retard critique |
 | Information | `info`, `info-muted` | En cours, assigné, information neutre |
+| Distinction | `highlight`, `highlight-muted` | Valeur calculée, niveau national, projection (sans jugement) |
 | Neutre | `muted`, `surface-subtle` | Archivé, inactif, arrière-plan secondaire |
 | Surfaces | `surface`, `surface-subtle`, `surface-elevated` | Conteneurs et panneaux |
 
 Ombres disponibles : `shadow-soft`, `shadow-elevated`, `shadow-floating`.
+
+### Personnalisation par client
+
+Paramètres → « Personnalisation » (`src/lib/theme.js`) et « Personnalisation App
+Mobile » (`src/lib/mobileCustomization.js`).
+
+- Une option = une entrée dans les valeurs par défaut, une liste de choix, sa
+  normalisation (`normalizeTheme` / `normalizeMobile`), et un rendu par variable CSS
+  ou attribut `data-*` sur `<html>` (fin d'`index.css`). La valeur par défaut ne
+  change rien à l'affichage.
+- Un changement est un aperçu (`persist: false`) ; seul « Enregistrer » écrit en base
+  et dans le cache. Les réglages se transfèrent d'un client à l'autre par
+  Exporter / Importer.
+- Fond de page : `var(--page-background)` et `var(--page-pattern)`. Arrondis : une
+  seule source, `--radius` (« Arrondi des coins », PC et téléphone). `rounded-*` en
+  dérive ; `rounded-surface` (barres, menus, fenêtres) et `rounded-pill` (badges,
+  puces, boutons ronds) aussi. `rounded-full` est réservé à ce qui est rond par nature
+  (photo, point, jauge, interrupteur). Jamais de rayon fixe en CSS. Hauteur mobile : `--mobile-control-h`
+  (36, 40 ou 44 px selon le client).
+- `tests/24-customization.spec.ts` vérifie que chaque option change l'affichage.
 
 ### Règles de couleur
 
@@ -64,6 +85,7 @@ Ombres disponibles : `shadow-soft`, `shadow-elevated`, `shadow-floating`.
   `src/lib/themeContrast.js`, qui garantit un contraste AA en clair et en sombre.
 - Ajouter un texte ou une icône au statut : la couleur seule ne suffit pas.
 - Le rouge est réservé aux erreurs, dangers et actions destructrices.
+- Une zone de signature (et son aperçu) reste blanche, y compris en thème sombre.
 - Les graphiques peuvent utiliser une palette plus large, mais leurs légendes
   doivent rester explicites et cohérentes entre les écrans.
 
@@ -73,7 +95,11 @@ Ombres disponibles : `shadow-soft`, `shadow-elevated`, `shadow-floating`.
 - Titre de section : `text-lg font-semibold`.
 - Corps : `text-sm` ou `text-base`, avec `leading-6` pour les descriptions.
 - Métadonnée : `text-xs text-muted-foreground`.
-- Ne pas descendre sous `text-xs` pour une information nécessaire à la tâche.
+- Ne pas descendre sous `text-xs`. Son plancher est de 12 px (`--text-min`), même
+  avec la taille « Compacte » et sur téléphone ; ESLint signale `text-[10px]` et
+  équivalents. Exceptions : les axes de
+  graphiques et les en-têtes de colonnes (majuscules, `--table-head-size` : 11 px sur
+  ordinateur, 10 px sur téléphone, style unique en fin d'`index.css`).
 - Les majuscules servent uniquement aux libellés courts, avec un espacement de
   lettres modéré.
 
@@ -207,6 +233,9 @@ import FormActions from '@/components/ui/form-actions';
 </FormActions>
 ```
 
+- Une fenêtre dont la barre d'actions (`DialogFooter` ou `FormActions`) contient
+  « Annuler » ou « Fermer » n'affiche pas la croix : c'est automatique. Ne placer dans
+  cette barre que le bouton qui ferme la fenêtre.
 - Les erreurs de validation attendues sont affichées sous le champ, pas seulement
   dans un toast.
 - L'ordre des actions reste « Annuler » puis action principale sur grand écran ;
@@ -250,8 +279,8 @@ Chaque écran alimenté par des données doit prévoir :
 ## Responsive et tactile
 
 - Sur téléphone, tous les contrôles (boutons, onglets, listes, champs, options de
-  menu, actions de tableau) mesurent **36 px** de haut : variable unique
-  `--mobile-control-h` d'`index.css`. Ne pas fixer de hauteur écran par écran.
+  menu, actions de tableau) mesurent **36 px** de haut par défaut (40 ou 44 px au choix
+  du client) : variable unique `--mobile-control-h` d'`index.css`. Ne pas fixer de hauteur écran par écran.
 - Le plancher de 36 px est en pixels : il tient aussi avec la taille d'affichage
   « Compacte » des Paramètres. Il augmente avec la taille « Grande ».
 - Les champs de saisie passent à 16 px de police sur iOS, pour éviter le zoom.
@@ -263,9 +292,16 @@ Chaque écran alimenté par des données doit prévoir :
   referme et rend le focus au contrôle d'origine.
 - Les gestes de navigation et de rafraîchissement ignorent les champs, les
   boutons, les signatures et les zones défilables.
+- Calendriers de planning : `MobilePlanningCalendar` sur téléphone (cases compactes,
+  points de couleur, détail du jour dessous, glisser pour changer de période), grille
+  complète sur ordinateur. Une
+  action ne doit jamais dépendre du seul survol.
 - Les tableaux larges utilisent un défilement explicite ou la classe opt-in
   `responsive-cards` avec des `data-label` sur les cellules.
-- Les filtres secondaires passent dans un panneau sur téléphone.
+- Les filtres secondaires passent dans un panneau sur téléphone : `MobileFilterBar`
+  (`src/components/ui/mobile-filter-bar.jsx`), une ligne « recherche + Filtres » (ou « Filtres » seul) qui
+  rappelle, repliée, la période et les filtres actifs. Déclarer les champs une seule
+  fois et les partager avec la barre de l'ordinateur.
 - L'action principale d'un long formulaire reste accessible sans remonter toute
   la page.
 - Tester au minimum à 360, 768, 1024 et 1440 px.
@@ -328,6 +364,8 @@ La migration ne doit pas modifier les règles métier ni les permissions.
   données simulées.
 - `tests/21-mobile-scale.spec.ts` mesure la hauteur des contrôles de douze écrans
   à 360 px, aux trois tailles d'affichage, dans la page et dans une fenêtre.
+- `tests/23-big-screens.spec.ts` mesure texte, contraste et débordement de douze
+  écrans denses (salaire, tableau de bord, Mobi, planning, réparation…).
 - `tests/unit/themeContrast.test.js` vérifie les contrastes des couleurs proposées.
 - `tests/20-space-shell.spec.ts` couvre l'alignement de la carte sur
   ordinateur, la navigation du tiroir sur mobile et l'isolation d'une erreur

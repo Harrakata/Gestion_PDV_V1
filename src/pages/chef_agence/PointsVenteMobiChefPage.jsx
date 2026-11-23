@@ -549,13 +549,13 @@ const PointsVenteMobiChefPage = () => {
                     const isStale = diffH >= 6;
 
                     return (
-                      <span className={`text-[10px] ${isStale ? 'font-medium text-warning-muted-foreground' : 'text-muted-foreground'}`}>
+                      <span className={`text-xs ${isStale ? 'font-medium text-warning-muted-foreground' : 'text-muted-foreground'}`}>
                         Données : {diffH === 0 ? '< 1 h' : `${diffH} h`}
                       </span>
                     );
                   })()}
                   {lastLoadedAt && (
-                    <span className="text-[10px] text-muted-foreground">
+                    <span className="text-xs text-muted-foreground">
                       Affiché : {lastLoadedAt.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   )}
@@ -603,11 +603,11 @@ const PointsVenteMobiChefPage = () => {
                         </p>
                         <p className="truncate text-xs text-muted-foreground">{pointVente.agenceNom || 'N/A'}</p>
                         <div className="mt-1 flex flex-wrap items-center gap-3">
-                          <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                          <span className="flex items-center gap-1 text-xs text-muted-foreground">
                             <Smartphone className="h-3 w-3 shrink-0" />
                             {pointVente.terminalReference || '-'}
                           </span>
-                          <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                          <span className="flex items-center gap-1 text-xs text-muted-foreground">
                             <CalendarDays className="h-3 w-3 shrink-0" />
                             {formatOptionalDate(suivi?.dernier_prepose)}
                           </span>
@@ -678,7 +678,7 @@ const PointsVenteMobiChefPage = () => {
                 </div>
 
                 <div>
-                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                     Affectation
                   </p>
                   <div className="grid gap-2 sm:grid-cols-2">
@@ -695,7 +695,7 @@ const PointsVenteMobiChefPage = () => {
                       <div key={label} className="flex items-start gap-2 rounded-md border bg-muted/30 px-3 py-2">
                         <Icon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                         <div className="min-w-0">
-                          <p className="text-[10px] text-muted-foreground">{label}</p>
+                          <p className="text-xs text-muted-foreground">{label}</p>
                           <p className="truncate text-xs font-semibold">{value}</p>
                         </div>
                       </div>
@@ -704,7 +704,7 @@ const PointsVenteMobiChefPage = () => {
                 </div>
 
                 <div>
-                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                     Données Terminal
                   </p>
                   {terminalSuivi ? (
@@ -719,8 +719,8 @@ const PointsVenteMobiChefPage = () => {
                         {
                           label: 'Dern. proposé',
                           value: formatDisplayDate(terminalSuivi.dernier_prepose),
-                          border: 'border-l-violet-400',
-                          text: 'text-violet-700',
+                          border: 'border-l-highlight',
+                          text: 'text-highlight-muted-foreground',
                         },
                         {
                           label: 'Hors service',
@@ -736,7 +736,7 @@ const PointsVenteMobiChefPage = () => {
                         },
                       ].map(({ label, value, border, text }) => (
                         <div key={label} className={`rounded-md border border-l-4 bg-muted/20 px-3 py-2 ${border}`}>
-                          <p className="text-[10px] text-muted-foreground">{label}</p>
+                          <p className="text-xs text-muted-foreground">{label}</p>
                           <p className={`text-xs font-bold ${text}`}>{value}</p>
                         </div>
                       ))}

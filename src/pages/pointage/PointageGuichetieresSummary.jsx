@@ -64,7 +64,7 @@ const PointageGuichetieresSummary = ({ guichetieresPlanifiees, pointagesData, cr
       case 'en-cours': return 'bg-primary text-primary-foreground';
       case 'retard': return 'bg-warning text-warning-foreground';
       case 'absent': return 'bg-destructive text-destructive-foreground';
-      default: return 'bg-gray-500 text-white';
+      default: return 'bg-muted text-muted-foreground';
     }
   };
 

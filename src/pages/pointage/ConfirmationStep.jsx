@@ -72,7 +72,9 @@ const ConfirmationStep = ({ onSubmit, onReset, isLoading, currentPointageStatus,
             <PenSquare className="h-5 w-5 mr-2 text-primary" />
             <h3 className="text-lg font-medium text-primary">Votre signature</h3>
           </div>
-          <div className="mx-auto bg-card dark:bg-gray-800 border border-border dark:border-gray-600 rounded-md p-2 w-64 h-auto">
+          {/* Fond TOUJOURS blanc (encre foncée), y compris en thème sombre. */}
+          {/* eslint-disable-next-line no-restricted-syntax */}
+          <div className="mx-auto bg-white border border-border rounded-md p-2 w-64 h-auto">
             <img 
               src={signature} 
               alt="Signature électronique" 
@@ -85,7 +87,7 @@ const ConfirmationStep = ({ onSubmit, onReset, isLoading, currentPointageStatus,
       {canPointe && !showSuccess && (
         <div className="mb-6 flex justify-center">
           <motion.div 
-            className="flex items-center rounded-full bg-primary/10 px-4 py-2"
+            className="flex items-center rounded-pill bg-primary/10 px-4 py-2"
             animate={{ opacity: [0.7, 1, 0.7] }}
             transition={{ repeat: Infinity, duration: 2 }}
           >

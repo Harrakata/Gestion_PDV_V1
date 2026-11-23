@@ -15,6 +15,8 @@ import PullToRefresh from '@/components/mobile/PullToRefresh';
 const options = Array.from({ length: 30 }, (_, index) => ({ value: String(index), label: `Agence ${index + 1}` }));
 function Fixture() {
   const [open, setOpen] = useState(false);
+  const [info, setInfo] = useState(false);
+  const [step, setStep] = useState(0);
   const [agency, setAgency] = useState('');
   const [tab, setTab] = useState('0');
   const [refreshes, setRefreshes] = useState(0);
@@ -56,6 +58,15 @@ function Fixture() {
         </form>
       </DialogContent>
     </Dialog>
+    <Dialog open={info} onOpenChange={setInfo}>
+      <DialogContent>
+        <DialogHeader><DialogTitle>Fiche</DialogTitle><DialogDescription>Fenêtre de consultation.</DialogDescription></DialogHeader>
+        <div><Button variant="outline">Annuler</Button> la ligne en cours</div>
+        <Button onClick={() => setStep(value => value + 1)}>Étape suivante</Button>
+        {step ? <DialogFooter><Button variant="outline" onClick={() => setInfo(false)}>{step === 1 ? 'Annuler' : 'Fermer'}</Button></DialogFooter> : null}
+      </DialogContent>
+    </Dialog>
+    <Button variant="outline" onClick={() => { setStep(0); setInfo(true); }}>Voir la fiche</Button>
   </div></main>;
 }
 createRoot(document.getElementById('root')).render(<Fixture />);

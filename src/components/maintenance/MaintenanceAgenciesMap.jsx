@@ -616,7 +616,7 @@ const MaintenanceAgenciesMap = ({
     'flex flex-col gap-3 border-b',
     isOperationalCard
       ? 'bg-transparent px-6 py-6'
-      : 'bg-gradient-to-br from-primary/5 via-white to-cyan-50/50 px-5 py-4'
+      : 'bg-surface-subtle px-5 py-4'
   );
 
   useEffect(() => {
@@ -776,7 +776,7 @@ const MaintenanceAgenciesMap = ({
                 </Button>
               </div>
 
-              <div className="absolute left-3 top-3 z-20 rounded-full border bg-card/95 px-3 py-1 text-xs font-semibold text-foreground/80 shadow">
+              <div className="absolute left-3 top-3 z-20 rounded-pill border bg-card/95 px-3 py-1 text-xs font-semibold text-foreground/80 shadow">
                 Zoom {viewport.zoom}
               </div>
 
@@ -801,7 +801,7 @@ const MaintenanceAgenciesMap = ({
                     >
                       <MapPin className="h-5 w-5" />
                     </span>
-                    <span className="mt-1 max-w-[150px] truncate rounded-full border bg-card/95 px-2 py-0.5 text-[10px] font-semibold text-foreground/80 shadow">
+                    <span className="mt-1 max-w-[150px] truncate rounded-pill border bg-card/95 px-2 py-0.5 text-xs font-semibold text-foreground/80 shadow">
                       {marker.nom}
                     </span>
                   </button>
@@ -887,7 +887,7 @@ const MaintenanceAgenciesMap = ({
                   <p className="font-semibold">{selectedAgency.upToDateCount}</p>
                   <p>{mode === 'planning' ? 'Matin' : 'À jour'}</p>
                 </div>
-                <div className={`rounded-lg border px-2 py-2 ${mode === 'planning' ? 'bg-violet-50 text-violet-700' : 'bg-destructive/10 text-destructive'}`}>
+                <div className={`rounded-lg border px-2 py-2 ${mode === 'planning' ? 'bg-highlight-muted text-highlight-muted-foreground' : 'bg-destructive/10 text-destructive'}`}>
                   <p className="font-semibold">{selectedAgency.preventiveCount}</p>
                   <p>{mode === 'planning' ? 'Après-midi' : 'À traiter'}</p>
                 </div>

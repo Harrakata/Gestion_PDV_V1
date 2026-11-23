@@ -555,7 +555,7 @@ const RegionalMaintenanceSection = ({ regionName = '', allowAllRegions = false, 
                                       >
                                         <div className="flex flex-1 flex-wrap items-center gap-2 min-w-0">
                                           <span className="font-semibold text-foreground">{row.sousEnsembleLabel}</span>
-                                          <span className={`rounded-full px-2 py-0.5 font-mono text-xs ${isGood ? 'bg-success-muted text-success-muted-foreground' : 'bg-destructive/10 text-destructive'}`}>
+                                          <span className={`rounded-pill px-2 py-0.5 font-mono text-xs ${isGood ? 'bg-success-muted text-success-muted-foreground' : 'bg-destructive/10 text-destructive'}`}>
                                             {row.sousEnsembleReference}
                                           </span>
                                           <span className={`text-xs ${isGood ? 'text-success-muted-foreground' : 'text-destructive'}`}>
@@ -567,7 +567,7 @@ const RegionalMaintenanceSection = ({ regionName = '', allowAllRegions = false, 
                                             {row.followUp.label}
                                           </StatusBadge>
                                           {rowInterventions.length > 0 && (
-                                            <span className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium transition-colors ${historyOpen ? 'border-border bg-card text-foreground/80' : 'border-border bg-card/70 text-muted-foreground'}`}>
+                                            <span className={`flex items-center gap-1 rounded-pill border px-2 py-0.5 text-xs font-medium transition-colors ${historyOpen ? 'border-border bg-card text-foreground/80' : 'border-border bg-card/70 text-muted-foreground'}`}>
                                               {rowInterventions.length} interv.
                                               {historyOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
                                             </span>
@@ -579,17 +579,17 @@ const RegionalMaintenanceSection = ({ regionName = '', allowAllRegions = false, 
                                       {historyOpen && rowInterventions.length > 0 && (
                                         <div className="border-t px-4 pb-3 pt-3">
                                           <div className="mb-3 flex items-center justify-between">
-                                            <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                                            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                                               Historique ({rowInterventions.length})
                                             </p>
                                             <div className="flex items-center gap-1">
-                                              <span className="mr-1 text-[10px] text-muted-foreground">Afficher :</span>
+                                              <span className="mr-1 text-xs text-muted-foreground">Afficher :</span>
                                               {[3, 5, 10].map((n) => (
                                                 <button
                                                   key={n}
                                                   type="button"
                                                   onClick={() => setLimit(n)}
-                                                  className={`rounded-md px-2 py-0.5 text-[10px] font-medium transition-colors ${historyLimit === n ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
+                                                  className={`rounded-md px-2 py-0.5 text-xs font-medium transition-colors ${historyLimit === n ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
                                                 >
                                                   {n}
                                                 </button>
@@ -597,7 +597,7 @@ const RegionalMaintenanceSection = ({ regionName = '', allowAllRegions = false, 
                                               <button
                                                 type="button"
                                                 onClick={() => setLimit(0)}
-                                                className={`rounded-md px-2 py-0.5 text-[10px] font-medium transition-colors ${historyLimit === 0 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
+                                                className={`rounded-md px-2 py-0.5 text-xs font-medium transition-colors ${historyLimit === 0 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
                                               >
                                                 Tout
                                               </button>
@@ -617,10 +617,10 @@ const RegionalMaintenanceSection = ({ regionName = '', allowAllRegions = false, 
                                                 >
                                                   <div className="flex flex-wrap items-center gap-2">
                                                     <span className="font-semibold text-foreground/80">{formatMaintenanceDateTime(i.date_intervention)}</span>
-                                                    <Badge variant={isCurative ? 'danger' : 'info'} className="text-[10px]">
+                                                    <Badge variant={isCurative ? 'danger' : 'info'} className="text-xs">
                                                       {getMaintenanceInterventionTypeLabel(i.type_intervention)}
                                                     </Badge>
-                                                    <StatusBadge tone={getMaintenanceInterventionStatusTone(i.statut)} className="text-[10px]">
+                                                    <StatusBadge tone={getMaintenanceInterventionStatusTone(i.statut)} className="text-xs">
                                                       {i.statut}
                                                     </StatusBadge>
                                                     {tech && (
@@ -637,13 +637,13 @@ const RegionalMaintenanceSection = ({ regionName = '', allowAllRegions = false, 
                                                     <div className="flex flex-wrap items-start gap-3 rounded border border-destructive/30 bg-destructive/10 px-2 py-1.5">
                                                       {codePanne && (
                                                         <div className="shrink-0">
-                                                          <span className="text-[10px] font-semibold uppercase text-destructive">Code panne</span>
+                                                          <span className="text-xs font-semibold uppercase text-destructive">Code panne</span>
                                                           <p className="font-mono font-bold text-destructive">{codePanne.code} — {codePanne.libelle}</p>
                                                         </div>
                                                       )}
                                                       {i.description_panne && (
                                                         <div className="min-w-0">
-                                                          <span className="text-[10px] font-semibold uppercase text-destructive">Descriptif</span>
+                                                          <span className="text-xs font-semibold uppercase text-destructive">Descriptif</span>
                                                           <p className="text-destructive">{i.description_panne}</p>
                                                         </div>
                                                       )}
@@ -657,7 +657,7 @@ const RegionalMaintenanceSection = ({ regionName = '', allowAllRegions = false, 
                                             })}
 
                                             {historyLimit > 0 && rowInterventions.length > historyLimit && (
-                                              <p className="text-center text-[10px] text-muted-foreground">
+                                              <p className="text-center text-xs text-muted-foreground">
                                                 {rowInterventions.length - historyLimit} intervention(s) masquée(s) — cliquez sur «Tout» pour tout afficher
                                               </p>
                                             )}

@@ -12,7 +12,7 @@ const STATUS_DOT = {
   [ABSENCE_STATUSES.PENDING]: 'bg-warning',
   [ABSENCE_STATUSES.APPROVED]: 'bg-success',
   [ABSENCE_STATUSES.REFUSED]: 'bg-destructive',
-  [ABSENCE_STATUSES.CANCELLED]: 'bg-gray-400',
+  [ABSENCE_STATUSES.CANCELLED]: 'bg-muted-foreground/60',
 };
 
 const WEEKDAYS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
@@ -76,10 +76,10 @@ const AbsenceCalendar = ({ rows = [], onDayClick }) => {
                   return (
                     <div
                       key={`${r.id}-${i}`}
-                      className="flex items-center gap-1 truncate text-[11px] leading-tight"
+                      className="flex items-center gap-1 truncate text-xs leading-tight"
                       title={`${r.demandeur_nom || 'Demande'} — ${getAbsenceTypeLabel(r.type_absence)} — ${getAbsenceCreneauLabel(r.creneau)} — ${r.statut}${r.motif ? `\nMotif : ${r.motif}` : ''}`}
                     >
-                      <span className={`h-2 w-2 shrink-0 rounded-full ${STATUS_DOT[r.statut] || 'bg-gray-400'}`} />
+                      <span className={`h-2 w-2 shrink-0 rounded-full ${STATUS_DOT[r.statut] || 'bg-muted-foreground/60'}`} />
                       <span className="truncate">
                         {r.demandeur_nom || getAbsenceTypeLabel(r.type_absence)}
                         {creneauShort ? <span className="text-muted-foreground"> · {creneauShort}</span> : null}
@@ -89,7 +89,7 @@ const AbsenceCalendar = ({ rows = [], onDayClick }) => {
                   );
                 })}
                 {dayAbsences.length > 3 && (
-                  <span className="text-[10px] text-muted-foreground">+{dayAbsences.length - 3} autre(s)</span>
+                  <span className="text-xs text-muted-foreground">+{dayAbsences.length - 3} autre(s)</span>
                 )}
               </div>
             </div>

@@ -169,8 +169,8 @@ const PowerBiEmbedPanel = ({ reportId, embedUrl, height = 580 }) => {
       {/* Authentification requise */}
       {status === 'need-auth' && (
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-5 bg-background/95 p-8">
-          <div className="rounded-2xl bg-[#0078D4]/10 p-5">
-            <BarChart2 className="h-10 w-10 text-[#0078D4]" />
+          <div className="rounded-2xl bg-primary/10 p-5">
+            <BarChart2 className="h-10 w-10 text-primary" />
           </div>
           <div className="text-center">
             <p className="text-base font-semibold text-foreground">Connexion Microsoft 365 requise</p>
@@ -181,7 +181,7 @@ const PowerBiEmbedPanel = ({ reportId, embedUrl, height = 580 }) => {
           </div>
           <button
             onClick={handleLogin}
-            className="inline-flex items-center gap-2 rounded-xl bg-[#0078D4] px-6 py-3 text-sm font-semibold text-white shadow-md hover:bg-[#006cbd] active:scale-95 transition-all"
+            className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-md hover:bg-primary/90 active:scale-95 transition-all"
           >
             <LogIn className="h-4 w-4" />
             Se connecter avec Microsoft 365
@@ -197,7 +197,7 @@ const PowerBiEmbedPanel = ({ reportId, embedUrl, height = 580 }) => {
           </div>
           <p className="text-sm font-semibold text-foreground">Le rapport n'a pas pu se charger</p>
           {errorMsg && (
-            <pre className="max-w-sm overflow-auto rounded-lg bg-muted px-3 py-2 text-[10px] text-muted-foreground">
+            <pre className="max-w-sm overflow-auto rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground">
               {errorMsg}
             </pre>
           )}
@@ -212,7 +212,7 @@ const PowerBiEmbedPanel = ({ reportId, embedUrl, height = 580 }) => {
               href={embedUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-lg bg-[#0078D4] px-4 py-2 text-xs font-semibold text-white hover:bg-[#006cbd] transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
             >
               <BarChart2 className="h-3.5 w-3.5" /> Ouvrir dans Power BI ↗
             </a>

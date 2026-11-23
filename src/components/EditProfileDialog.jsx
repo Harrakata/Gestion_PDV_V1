@@ -329,7 +329,7 @@ const EditProfileDialog = ({
               {withPhoto && photoUrl ? (
                 <img src={photoUrl} alt="" className="h-14 w-14 rounded-full border-2 border-primary object-cover" />
               ) : (
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 via-primary/10 to-white text-lg font-black text-primary ring-1 ring-primary/20">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-lg font-black text-primary ring-1 ring-primary/20">
                   {initials}
                 </div>
               )}
@@ -378,7 +378,7 @@ const EditProfileDialog = ({
                             <button
                               type="button"
                               onClick={() => { setPhotoFile(null); setPhotoUrl(null); }}
-                              className="absolute -right-1 -top-1 rounded-full bg-destructive p-1 text-destructive-foreground shadow hover:bg-destructive/90"
+                              className="absolute -right-1 -top-1 rounded-pill bg-destructive p-1 text-destructive-foreground shadow hover:bg-destructive/90"
                               disabled={busy}
                               aria-label="Retirer la photo"
                             >
@@ -487,7 +487,7 @@ const EditProfileDialog = ({
                 aria-label="Afficher l'assistant d'aide flottant"
                 disabled={!assistantUserId || isSavingAssistant}
                 onClick={toggleAssistantVisibility}
-                className={`relative mt-0.5 inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${assistantVisible ? 'bg-primary' : 'bg-slate-300'}`}
+                className={`relative mt-0.5 inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${assistantVisible ? 'bg-primary' : 'bg-muted-foreground/40'}`}
               >
                 <span className={`inline-flex h-5 w-5 items-center justify-center rounded-full bg-card shadow transition-transform ${assistantVisible ? 'translate-x-5' : 'translate-x-0.5'}`}>
                   {isSavingAssistant ? <Loader2 className="h-3 w-3 animate-spin text-primary" /> : null}

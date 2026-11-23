@@ -203,14 +203,14 @@ const Scd2HistoryDialog = ({
                     }`}>
                       {isCurrent
                         ? <CheckCircle2 className="h-3.5 w-3.5" />
-                        : <span className="text-[10px] font-bold">{rows.length - i}</span>}
+                        : <span className="text-xs font-bold">{rows.length - i}</span>}
                     </span>
 
                     {isEditing ? (
                       <div className="space-y-2">
                         <span className="font-semibold text-sm text-foreground">{primaryVal || '—'}</span>
                         {secondaryFields.length > 0 && (
-                          <div className="text-[11px] text-muted-foreground flex flex-wrap gap-x-3 gap-y-0.5">
+                          <div className="text-xs text-muted-foreground flex flex-wrap gap-x-3 gap-y-0.5">
                             {secondaryFields.map((f) => {
                               const val = f.format ? f.format(row[f.key], row) : row[f.key];
                               if (val == null || val === '') return null;
@@ -220,7 +220,7 @@ const Scd2HistoryDialog = ({
                         )}
                         <div className="flex flex-wrap items-end gap-2">
                           <div className="space-y-0.5">
-                            <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Début *</p>
+                            <p className="text-xs uppercase tracking-wide text-muted-foreground">Début *</p>
                             <input type="date" value={editingDates.valid_from}
                               onChange={(e) => setEditingDates(p => ({ ...p, valid_from: e.target.value }))}
                               className="rounded-md border bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
@@ -228,7 +228,7 @@ const Scd2HistoryDialog = ({
                           </div>
                           <ArrowRight className="h-3 w-3 shrink-0 text-muted-foreground mb-1.5" />
                           <div className="space-y-0.5">
-                            <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Fin <span className="normal-case">(vide = en cours)</span></p>
+                            <p className="text-xs uppercase tracking-wide text-muted-foreground">Fin <span className="normal-case">(vide = en cours)</span></p>
                             <input type="date" value={editingDates.valid_to} min={editingDates.valid_from || undefined}
                               onChange={(e) => setEditingDates(p => ({ ...p, valid_to: e.target.value }))}
                               className="rounded-md border bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
@@ -248,7 +248,7 @@ const Scd2HistoryDialog = ({
                           <div className="flex flex-wrap items-center gap-2">
                             <span className="font-semibold text-sm text-foreground">{primaryVal || '—'}</span>
                             {isCurrent && (
-                              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">Actuel</span>
+                              <span className="rounded-pill bg-primary/10 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-primary">Actuel</span>
                             )}
                           </div>
                           <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -258,7 +258,7 @@ const Scd2HistoryDialog = ({
                             )}
                           </div>
                           {secondaryFields.length > 0 && (
-                            <div className="mt-1 text-[11px] text-muted-foreground flex flex-wrap gap-x-3 gap-y-0.5">
+                            <div className="mt-1 text-xs text-muted-foreground flex flex-wrap gap-x-3 gap-y-0.5">
                               {secondaryFields.map((f) => {
                                 const val = f.format ? f.format(row[f.key], row) : row[f.key];
                                 if (val == null || val === '') return null;
@@ -286,7 +286,7 @@ const Scd2HistoryDialog = ({
         {/* ── Section "Changer l'affectation" ────────────────────────────── */}
         {changeSection && canEdit && (
           <div className="mt-2 rounded-xl border border-border bg-muted/30 p-4 space-y-3">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
               Changer l'affectation
             </p>
             <div className="grid grid-cols-2 gap-3">

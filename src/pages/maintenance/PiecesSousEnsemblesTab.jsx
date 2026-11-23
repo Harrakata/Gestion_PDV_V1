@@ -821,7 +821,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                                       <div className="flex items-center gap-1 shrink-0">
                                         <span className="text-xs text-muted-foreground">Poids</span>
                                         {[1,2,3,4,5].map(n => (
-                                          <button key={n} onClick={() => setEditingPannePoids(n)} className={`h-5 w-5 rounded text-[10px] font-bold border transition-colors ${editingPannePoids === n ? 'bg-warning border-warning text-warning-foreground' : 'border-warning/30 text-warning-muted-foreground hover:bg-warning-muted'}`}>{n}</button>
+                                          <button key={n} onClick={() => setEditingPannePoids(n)} className={`h-5 w-5 rounded text-xs font-bold border transition-colors ${editingPannePoids === n ? 'bg-warning border-warning text-warning-foreground' : 'border-warning/30 text-warning-muted-foreground hover:bg-warning-muted'}`}>{n}</button>
                                         ))}
                                       </div>
                                       <Button aria-label="Enregistrer la panne" variant="ghost" size="icon" className="h-5 w-5 shrink-0 text-success-muted-foreground" onClick={savePanneEdit} disabled={!editingPanneText.trim()}><Check className="h-3 w-3" /></Button>
@@ -831,13 +831,13 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                                     <>
                                       <div className="flex items-center gap-2 flex-1 min-w-0">
                                         <span className="flex-1 truncate">{p.description}</span>
-                                        <span title={`Poids : ${p.poids || 3}/5`} className={`shrink-0 h-5 w-5 rounded text-[10px] font-bold flex items-center justify-center ${(p.poids || 3) >= 4 ? 'bg-destructive/10 text-destructive' : (p.poids || 3) === 3 ? 'bg-warning-muted text-warning-muted-foreground' : 'bg-muted text-muted-foreground'}`}>{p.poids || 3}</span>
+                                        <span title={`Poids : ${p.poids || 3}/5`} className={`shrink-0 h-5 w-5 rounded text-xs font-bold flex items-center justify-center ${(p.poids || 3) >= 4 ? 'bg-destructive/10 text-destructive' : (p.poids || 3) === 3 ? 'bg-warning-muted text-warning-muted-foreground' : 'bg-muted text-muted-foreground'}`}>{p.poids || 3}</span>
                                       </div>
                                       <div className="flex items-center gap-0.5 ml-2 shrink-0">
                                         <button
                                           title="Étapes de vérification"
                                           onClick={() => setExpandedPanneCheckId(prev => prev === p.id ? null : p.id)}
-                                          className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-warning-muted-foreground hover:bg-warning-muted transition-colors"
+                                          className="flex items-center gap-1 rounded px-1.5 py-0.5 text-xs text-warning-muted-foreground hover:bg-warning-muted transition-colors"
                                         >
                                           <ListChecks className="h-3 w-3" />
                                           {(panneChecksMap[p.id] || []).length}
@@ -865,7 +865,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                                       {(panneChecksMap[p.id] || []).map(c => (
                                         <div key={c.id} className="flex items-center gap-2 rounded bg-card/80 border border-warning/30 px-2.5 py-1.5 text-xs">
                                           <span className="flex-1">{c.description_verification}</span>
-                                          {c.piece && <span className="shrink-0 rounded-full bg-warning-muted px-2 py-0.5 text-[10px] text-warning-muted-foreground">{c.piece.nom}</span>}
+                                          {c.piece && <span className="shrink-0 rounded-pill bg-warning-muted px-2 py-0.5 text-xs text-warning-muted-foreground">{c.piece.nom}</span>}
                                           {canManage && (
                                             <Button aria-label="Supprimer la vérification" variant="ghost" size="icon" className="h-4 w-4 shrink-0 text-destructive hover:text-destructive" onClick={() => delPanneCheck(c.id)}>
                                               <Trash2 className="h-2.5 w-2.5" />
@@ -905,7 +905,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                           </div>
                           {canManage && codesPannes.length > 0 && (
                             <div className="rounded-lg border border-warning/30 bg-warning-muted/50 px-3 py-2.5 space-y-1.5">
-                              <p className="text-[10px] font-semibold uppercase tracking-wide text-warning-muted-foreground">Ajouter un type de panne</p>
+                              <p className="text-xs font-semibold uppercase tracking-wide text-warning-muted-foreground">Ajouter un type de panne</p>
                               <div className="flex items-center gap-2">
                                 <Select key={panneSelectKey} onValueChange={addPanneFromCode}>
                                   <SelectTrigger className="flex-1 h-8 text-xs bg-card border-warning/30 hover:border-warning transition-colors">
@@ -925,7 +925,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                                   ))}
                                 </div>
                               </div>
-                              <p className="text-right text-[10px] text-warning-muted-foreground font-medium">
+                              <p className="text-right text-xs text-warning-muted-foreground font-medium">
                                 Priorité&nbsp;: {newPannePoids <= 2 ? 'Faible' : newPannePoids === 3 ? 'Moyenne' : newPannePoids === 4 ? 'Élevée' : 'Critique'}
                               </p>
                             </div>
@@ -963,7 +963,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                                     {(editingProcPreview || editingProcData.image_url) && (
                                       <div className="relative">
                                         <img src={editingProcPreview || editingProcData.image_url} alt="aperçu" className="max-h-36 w-full rounded border object-contain bg-muted/30" onError={e => { e.currentTarget.style.display = 'none'; }} />
-                                        <button aria-label="Retirer l’image" type="button" onClick={() => { setEditingProcData(d => ({ ...d, image_url: '' })); if (editingProcPreview) URL.revokeObjectURL(editingProcPreview); setEditingProcFile(null); setEditingProcPreview(null); }} className="absolute right-1 top-1 rounded-full bg-background/90 p-0.5 text-destructive hover:bg-destructive/10 border border-destructive/30 shadow-sm"><X className="h-3 w-3" /></button>
+                                        <button aria-label="Retirer l’image" type="button" onClick={() => { setEditingProcData(d => ({ ...d, image_url: '' })); if (editingProcPreview) URL.revokeObjectURL(editingProcPreview); setEditingProcFile(null); setEditingProcPreview(null); }} className="absolute right-1 top-1 rounded-pill bg-background/90 p-0.5 text-destructive hover:bg-destructive/10 border border-destructive/30 shadow-sm"><X className="h-3 w-3" /></button>
                                       </div>
                                     )}
                                     <Label htmlFor={`proc-edit-photo-${editingProcId}`} className="flex cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed border-primary/50 bg-primary/5 px-3 py-2 text-xs font-medium text-primary hover:bg-primary/10 transition-colors">
@@ -992,7 +992,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                               {(newProcPreview || newProc.image_url) && (
                                 <div className="relative">
                                   <img src={newProcPreview || newProc.image_url} alt="aperçu" className="max-h-36 w-full rounded border object-contain bg-muted/30" onError={e => { e.currentTarget.style.display = 'none'; }} />
-                                  <button aria-label="Retirer l’image" type="button" onClick={() => { setNewProc(p => ({ ...p, image_url: '' })); if (newProcPreview) URL.revokeObjectURL(newProcPreview); setNewProcFile(null); setNewProcPreview(null); }} className="absolute right-1 top-1 rounded-full bg-background/90 p-0.5 text-destructive hover:bg-destructive/10 border border-destructive/30 shadow-sm"><X className="h-3 w-3" /></button>
+                                  <button aria-label="Retirer l’image" type="button" onClick={() => { setNewProc(p => ({ ...p, image_url: '' })); if (newProcPreview) URL.revokeObjectURL(newProcPreview); setNewProcFile(null); setNewProcPreview(null); }} className="absolute right-1 top-1 rounded-pill bg-background/90 p-0.5 text-destructive hover:bg-destructive/10 border border-destructive/30 shadow-sm"><X className="h-3 w-3" /></button>
                                 </div>
                               )}
                               <Label htmlFor="proc-new-photo-tab" className="flex cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed border-primary/50 bg-primary/5 px-3 py-2 text-xs font-medium text-primary hover:bg-primary/10 transition-colors">
@@ -1250,7 +1250,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                     <button aria-label="Retirer la photo"
                       type="button"
                       onClick={() => { setPieceForm(f => ({ ...f, photo_url: '' })); resetPhotoState(); }}
-                      className="absolute right-1 top-1 rounded-full bg-background/90 p-0.5 text-destructive hover:bg-destructive/10 border border-destructive/30 shadow-sm"
+                      className="absolute right-1 top-1 rounded-pill bg-background/90 p-0.5 text-destructive hover:bg-destructive/10 border border-destructive/30 shadow-sm"
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -1372,7 +1372,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                           <div className="flex items-center gap-1 shrink-0">
                             <span className="text-xs text-muted-foreground">Poids</span>
                             {[1,2,3,4,5].map(n => (
-                              <button key={n} onClick={() => setEditingPannePoids(n)} className={`h-5 w-5 rounded text-[10px] font-bold border transition-colors ${editingPannePoids === n ? 'bg-warning border-warning text-warning-foreground' : 'border-warning/30 text-warning-muted-foreground hover:bg-warning-muted'}`}>{n}</button>
+                              <button key={n} onClick={() => setEditingPannePoids(n)} className={`h-5 w-5 rounded text-xs font-bold border transition-colors ${editingPannePoids === n ? 'bg-warning border-warning text-warning-foreground' : 'border-warning/30 text-warning-muted-foreground hover:bg-warning-muted'}`}>{n}</button>
                             ))}
                           </div>
                           <Button aria-label="Enregistrer la panne" variant="ghost" size="icon" className="h-5 w-5 shrink-0 text-success-muted-foreground" onClick={savePanneEdit} disabled={!editingPanneText.trim()}><Check className="h-3 w-3" /></Button>
@@ -1394,7 +1394,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                 </div>
                 {canManage && codesPannes.length > 0 && (
                   <div className="rounded-lg border border-warning/30 bg-warning-muted/50 px-3 py-2.5 space-y-1.5">
-                    <p className="text-[10px] font-semibold uppercase tracking-wide text-warning-muted-foreground">Ajouter un type de panne</p>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-warning-muted-foreground">Ajouter un type de panne</p>
                     <div className="flex items-center gap-2">
                       <Select key={panneSelectKey} onValueChange={addPanneFromCode}>
                         <SelectTrigger className="flex-1 h-8 text-xs bg-card border-warning/30 hover:border-warning transition-colors">
@@ -1414,7 +1414,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                         ))}
                       </div>
                     </div>
-                    <p className="text-right text-[10px] text-warning-muted-foreground font-medium">
+                    <p className="text-right text-xs text-warning-muted-foreground font-medium">
                       Priorité&nbsp;: {newPannePoids <= 2 ? 'Faible' : newPannePoids === 3 ? 'Moyenne' : newPannePoids === 4 ? 'Élevée' : 'Critique'}
                     </p>
                   </div>
@@ -1468,7 +1468,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                     {(newProcPreview || newProc.image_url) && (
                       <div className="relative">
                         <img src={newProcPreview || newProc.image_url} alt="aperçu" className="max-h-36 w-full rounded border object-contain bg-muted/30" onError={e => { e.currentTarget.style.display = 'none'; }} />
-                        <button aria-label="Retirer l’image" type="button" onClick={() => { setNewProc(p => ({ ...p, image_url: '' })); if (newProcPreview) URL.revokeObjectURL(newProcPreview); setNewProcFile(null); setNewProcPreview(null); }} className="absolute right-1 top-1 rounded-full bg-background/90 p-0.5 text-destructive hover:bg-destructive/10 border border-destructive/30 shadow-sm"><X className="h-3 w-3" /></button>
+                        <button aria-label="Retirer l’image" type="button" onClick={() => { setNewProc(p => ({ ...p, image_url: '' })); if (newProcPreview) URL.revokeObjectURL(newProcPreview); setNewProcFile(null); setNewProcPreview(null); }} className="absolute right-1 top-1 rounded-pill bg-background/90 p-0.5 text-destructive hover:bg-destructive/10 border border-destructive/30 shadow-sm"><X className="h-3 w-3" /></button>
                       </div>
                     )}
                     <Label htmlFor="proc-new-photo-dialog" className="flex cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed border-primary/50 bg-primary/5 px-3 py-2 text-xs font-medium text-primary hover:bg-primary/10 transition-colors">

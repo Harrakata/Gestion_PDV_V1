@@ -169,7 +169,7 @@ export const MaintenanceSecteurSection = ({ chef }) => {
                     <TableCell data-label="Agence">{agenceName[t.agence_id] || '—'}</TableCell>
                     <TableCell data-label="Position">{t.position || '—'}</TableCell>
                     <TableCell data-label="Statut">
-                      <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${
+                      <span className={`inline-block rounded-pill px-2 py-0.5 text-xs font-semibold ${
                         t.statut === 'En service' ? 'bg-success-muted text-success-muted-foreground'
                           : ['Hors service', 'En panne'].includes(t.statut) ? 'bg-destructive/10 text-destructive'
                           : t.statut === 'Maintenance' ? 'bg-warning-muted text-warning-muted-foreground' : 'bg-muted text-foreground/80'

@@ -75,7 +75,7 @@ const TicketsKanban = ({ rows = [], onCardClick, onStatusChange }) => {
               <div className="flex items-center gap-2 px-3 py-2.5">
                 <span className={`h-2.5 w-2.5 rounded-full ${col.dot}`} />
                 <span className={`text-sm font-semibold ${col.head}`}>{col.label}</span>
-                <span className="ml-auto rounded-full bg-background px-2 py-0.5 text-xs font-medium text-muted-foreground shadow-sm">
+                <span className="ml-auto rounded-pill bg-background px-2 py-0.5 text-xs font-medium text-muted-foreground shadow-sm">
                   {items.length}
                 </span>
               </div>
@@ -106,11 +106,11 @@ const TicketsKanban = ({ rows = [], onCardClick, onStatusChange }) => {
                     >
                       {/* Ligne haute : réf + priorité */}
                       <div className="flex items-center justify-between gap-2">
-                        <span className="flex items-center gap-1 font-mono text-[10px] text-muted-foreground">
+                        <span className="flex items-center gap-1 font-mono text-xs text-muted-foreground">
                           {draggable && <GripVertical className="h-3.5 w-3.5 opacity-30 transition group-hover:opacity-60" />}
                           {r.code || `#${r.id}`}
                         </span>
-                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${accent.pill}`}>
+                        <span className={`rounded-pill px-2 py-0.5 text-xs font-semibold ${accent.pill}`}>
                           {ticketLabel(r.priorite)}
                         </span>
                       </div>
@@ -119,7 +119,7 @@ const TicketsKanban = ({ rows = [], onCardClick, onStatusChange }) => {
                       <p className="mt-1.5 line-clamp-2 text-[13px] font-medium leading-snug text-foreground">{r.titre}</p>
 
                       {/* Métadonnées */}
-                      <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
+                      <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                         <span className="rounded bg-muted px-1.5 py-0.5">{ticketLabel(r.categorie)}</span>
                         {r.agence_nom && (
                           <span className="inline-flex items-center gap-0.5 truncate"><MapPin className="h-3 w-3" />{r.agence_nom}</span>
@@ -131,14 +131,14 @@ const TicketsKanban = ({ rows = [], onCardClick, onStatusChange }) => {
                         <div className="mt-2.5 flex items-center justify-between border-t pt-2">
                           {r.assigne_a_nom ? (
                             <span className="flex items-center gap-1.5">
-                              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-[9px] font-bold text-primary">
+                              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
                                 {initials(r.assigne_a_nom)}
                               </span>
-                              <span className="truncate text-[11px] text-muted-foreground">{r.assigne_a_nom}</span>
+                              <span className="truncate text-xs text-muted-foreground">{r.assigne_a_nom}</span>
                             </span>
                           ) : <span />}
                           {overdue && (
-                            <span className="inline-flex items-center gap-0.5 rounded-full bg-destructive/10 px-1.5 py-0.5 text-[10px] font-semibold text-destructive">
+                            <span className="inline-flex items-center gap-0.5 rounded-pill bg-destructive/10 px-1.5 py-0.5 text-xs font-semibold text-destructive">
                               <AlertTriangle className="h-3 w-3" /> Retard
                             </span>
                           )}

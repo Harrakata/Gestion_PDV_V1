@@ -67,7 +67,7 @@ const OfflineSyncIndicator = ({ enabled }) => {
       <button
         type="button"
         onClick={() => setDetailsOpen(true)}
-        className={`inline-flex max-w-full items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold transition-colors ${badgeClass}`}
+        className={`inline-flex max-w-full items-center gap-1.5 rounded-pill border px-2.5 py-1 text-xs font-semibold transition-colors ${badgeClass}`}
         title="Voir le détail de la synchronisation"
       >
         <Icon className={`h-3.5 w-3.5 shrink-0 ${syncing ? 'animate-spin' : ''}`} />

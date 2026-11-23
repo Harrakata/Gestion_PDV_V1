@@ -56,7 +56,7 @@ const PieChartGraphic = ({ data }) => {
           />
           <div className="absolute flex h-18 w-18 flex-col items-center justify-center rounded-full bg-background/95 shadow-lg ring-1 ring-border/60" style={{ width: '4.5rem', height: '4.5rem' }}>
             <span className="text-2xl font-bold text-foreground">{formatChartValue(total)}</span>
-            <span className="text-[9px] font-medium uppercase tracking-[0.15em] text-muted-foreground">Total</span>
+            <span className="text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground">Total</span>
           </div>
         </div>
       </div>
@@ -85,7 +85,7 @@ const PieChartGraphic = ({ data }) => {
           );
         })}
         {remaining > 0 ? (
-          <p className="text-[11px] text-muted-foreground">+ {remaining} autre(s) non affichée(s).</p>
+          <p className="text-xs text-muted-foreground">+ {remaining} autre(s) non affichée(s).</p>
         ) : null}
       </div>
     </div>
@@ -139,15 +139,15 @@ const LineChartGraphic = ({ data }) => {
     <div className="space-y-2">
       <div className="grid gap-2 grid-cols-3">
         <div className="rounded-xl border border-border/70 bg-card/70 px-3 py-2 shadow-sm">
-          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">Pic</p>
+          <p className="text-xs uppercase tracking-[0.15em] text-muted-foreground">Pic</p>
           <p className="mt-0.5 text-xl font-bold text-foreground">{formatChartValue(maxValue)}</p>
         </div>
         <div className="rounded-xl border border-border/70 bg-card/70 px-3 py-2 shadow-sm">
-          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">Dernière valeur</p>
+          <p className="text-xs uppercase tracking-[0.15em] text-muted-foreground">Dernière valeur</p>
           <p className="mt-0.5 text-xl font-bold text-foreground">{formatChartValue(latestValue)}</p>
         </div>
         <div className="rounded-xl border border-border/70 bg-card/70 px-3 py-2 shadow-sm">
-          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">Variation</p>
+          <p className="text-xs uppercase tracking-[0.15em] text-muted-foreground">Variation</p>
           <p className={`mt-0.5 text-xl font-bold ${delta > 0 ? 'text-destructive' : delta < 0 ? 'text-success-muted-foreground' : 'text-foreground'}`}>
             {deltaLabel}
           </p>
@@ -219,7 +219,7 @@ const BarChartGraphic = ({ data }) => {
           <div key={`${item.label}-${index}`} className="rounded-xl border border-border/70 bg-card/70 px-3 py-2 shadow-sm">
             <div className="mb-1.5 flex items-center justify-between gap-2">
               <div className="flex min-w-0 items-center gap-2">
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white shadow-sm" style={{ backgroundColor: getChartColor(index) }}>
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white shadow-sm" style={{ backgroundColor: getChartColor(index) }}>
                   {index + 1}
                 </span>
                 <span className="truncate text-xs font-medium text-foreground">{item.label}</span>
@@ -255,7 +255,7 @@ const ProgressChartGraphic = ({ data }) => {
       <div className="rounded-xl border border-border/70 bg-card/70 px-3 py-2 shadow-sm">
         <div className="mb-2 flex items-center justify-between gap-2">
           <div>
-            <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">Volume total</p>
+            <p className="text-xs uppercase tracking-[0.15em] text-muted-foreground">Volume total</p>
             <p className="text-xl font-bold text-foreground">{formatChartValue(total)}</p>
           </div>
           <div className="text-right text-xs text-muted-foreground">{visualData.length} segment(s)</div>

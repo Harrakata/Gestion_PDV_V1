@@ -26,6 +26,10 @@ const DESIGN_RULES = [
     message: 'Couleur en dur : utiliser un jeton du thème (text-destructive, bg-success-muted, text-muted-foreground, bg-card…).',
   },
   {
+    selector: String.raw`:matches(Literal[value=/\btext-\[(\d(\.\d+)?|1[01](\.\d+)?)px\]|\btext-\[0?\.[0-6]\d*rem\]|\btext-\[0?\.7[0-4]?\d*rem\]/], TemplateElement[value.raw=/\btext-\[(\d(\.\d+)?|1[01](\.\d+)?)px\]|\btext-\[0?\.[0-6]\d*rem\]/])`,
+    message: 'Texte sous 12 px : utiliser text-xs (plancher garanti).',
+  },
+  {
     selector: "JSXOpeningElement[name.name='Badge'] Literal[value=/(bg|border|text)-(success|warning|info|destructive)/]",
     message: 'Badge coloré à la main : utiliser <StatusBadge tone=…> (statut) ou <Badge variant="success|warning|danger|info|neutral">.',
   },

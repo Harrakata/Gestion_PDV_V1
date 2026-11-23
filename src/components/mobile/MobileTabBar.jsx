@@ -1,5 +1,6 @@
 import React from 'react';
 import { MoreHorizontal } from 'lucide-react';
+import { useMobileCustomization } from '@/lib/mobileCustomization';
 
 /**
  * Barre d'onglets mobile (bottom tab bar) — visible uniquement sur téléphone.
@@ -12,8 +13,9 @@ import { MoreHorizontal } from 'lucide-react';
  * @param {string} [moreLabel]
  */
 const MobileTabBar = ({ items = [], onMore, moreActive = false, moreLabel = 'Plus', menuId }) => {
-  // On limite à 4 onglets principaux pour laisser la place au bouton « Plus ».
-  const tabs = items.slice(0, 4);
+  // 3 ou 4 raccourcis (Paramètres → App Mobile), puis le bouton « Plus ».
+  const { tabCount } = useMobileCustomization();
+  const tabs = items.slice(0, tabCount);
 
   const renderIcon = (icon, active) =>
     React.isValidElement(icon)

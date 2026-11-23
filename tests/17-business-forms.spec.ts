@@ -26,7 +26,9 @@ for (const width of [360, 1440]) {
         await page.getByRole('button', { name: config.title, exact: true }).click();
         const dialog = page.locator('[data-app-dialog]');
         await expect(dialog.getByRole('heading', { name: config.title, exact: true })).toBeVisible();
-        await expect(dialog.getByRole('button', { name: 'Fermer', exact: true })).toBeInViewport();
+        // « Annuler » est présent : pas de croix en double.
+        await expect(dialog.getByRole('button', { name: 'Annuler', exact: true })).toHaveCount(1);
+        await expect(dialog.getByRole('button', { name: 'Fermer', exact: true })).toHaveCount(0);
         await dialog.getByRole('button', { name: 'Ajouter', exact: true }).click();
         await expect(dialog.locator('[aria-invalid="true"]')).toHaveCount(config.invalid);
         const first = dialog.getByLabel(new RegExp(`^${config.first}`));

@@ -2180,7 +2180,7 @@ const ConfigurationTab = ({
                           <div className="grid gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                             {ASSEMBLED_EQUIPMENT_FIELD_CONFIG.map((field) => (
                               <div key={field.dbKey} className="min-w-0">
-                                <p className="text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+                                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
                                   {field.header}
                                 </p>
                                 <p className="truncate text-sm font-medium text-foreground" title={terminal[field.dbKey] || 'Non renseigné'}>

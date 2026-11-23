@@ -103,7 +103,7 @@ const Combobox = ({ options, value, onSelect, placeholder, searchPlaceholder, em
             <span className="flex min-w-0 items-center gap-1">
               <span className="truncate">{isAllMode ? fieldLabel : <>{valuePrefix}{selectedLabels[0]}</>}</span>
               {values.length > 1 && (
-                <span className="shrink-0 rounded-full bg-primary/15 px-1.5 py-px text-[0.65rem] font-bold leading-4 text-primary" aria-hidden="true">
+                <span className="shrink-0 rounded-pill bg-primary/15 px-1.5 py-px text-xs font-bold leading-4 text-primary" aria-hidden="true">
                   +{values.length - 1}
                 </span>
               )}

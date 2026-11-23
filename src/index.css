@@ -34,7 +34,10 @@
   --input: 214 32% 91%;
   --ring: 174 84% 24%;
 
-  --radius: 0.875rem; /* Generous rounding (14px) */
+  --radius: 0.875rem; /* 14px. SEULE source des arrondis : tout le reste en dérive. */
+  --radius-control: calc(var(--radius) * 0.857);                  /* éléments internes (12px) */
+  --radius-surface: min(calc(var(--radius) * 1.714), 2rem);      /* barres, menus, fenêtres (24px) */
+  --radius-pill: calc(var(--radius) * 2.3);                      /* badges, boutons ronds (32px) */
 
   /* ── Design system : tokens sémantiques ────────────────────────────────
      Les composants doivent consommer ces rôles plutôt que des couleurs
@@ -60,6 +63,12 @@
   --info-muted: 214 95% 93%;
   --info-muted-foreground: 221 83% 35%;
 
+  /* Catégorie distincte sans jugement : valeur calculée, niveau national, projection. */
+  --highlight: 262 60% 48%;
+  --highlight-foreground: 0 0% 100%;
+  --highlight-muted: 262 80% 96%;
+  --highlight-muted-foreground: 263 65% 40%;
+
   --shadow-soft: 0 1px 2px rgb(15 23 42 / 0.06), 0 1px 3px rgb(15 23 42 / 0.08);
   --shadow-elevated: 0 18px 45px -28px rgb(15 23 42 / 0.28);
   --shadow-floating: 0 24px 60px -20px rgb(15 23 42 / 0.34);
@@ -72,6 +81,21 @@
      14px) ne doit pas réduire la zone tactile. */
   --mobile-control-h: max(36px, 2.25rem);
 
+  /* Fond de page (Paramètres → Personnalisation) : couleur + motif facultatif. */
+  --page-background: color-mix(in srgb, hsl(var(--primary)) 6%, hsl(var(--background)));
+  --page-pattern: none;
+  --page-pattern-size: auto;
+  --space-sidebar-size: 18rem;
+
+
+  /* Plus petit texte autorisé, toutes tailles d'affichage (text-xs de Tailwind). */
+  --text-min: max(12px, 0.75rem);
+
+  /* En-têtes de colonnes : seule exception au plancher. En MAJUSCULES, une taille
+     égale à celle des cellules paraît plus grande qu'elles. */
+  --table-head-size: max(11px, 0.6875rem);
+  --table-head-height: 2.5rem;
+
   /* Champs à libellé intégré : géométrie PC (le mobile la resserre plus bas). */
   --field-h: 2.75rem;
   --field-label-top: 0.3rem;
@@ -81,28 +105,29 @@
   --field-pad-bottom: 0.3rem;
 
   --mobile-tab-h: 4.5rem;           /* hauteur barre d'onglets          */
-  --mobile-card-radius: 1rem;       /* arrondi des cartes               */
   --mobile-tabbar-blur: 22px;       /* flou fond barre d'onglets        */
   --mobile-tabbar-opacity: 0.62;    /* opacité fond barre d'onglets     */
   --mobile-font-scale: 1;           /* échelle de police                */
   --mobile-header-accent-h: 3px;    /* épaisseur liseré en-tête mobile  */
   --mobile-tab-icon: 1.15rem;       /* taille icônes barre d'onglets    */
   --mobile-tabbar-shadow: 0 12px 34px -14px rgba(15, 23, 42, 0.40); /* ombre barre */
-  --mobile-header-radius: 1rem;     /* arrondi carte en-tête mobile     */
 }
 
 @media (max-width: 767px) {
   :root {
+    --table-head-size: max(10px, 0.625rem);
+    --table-head-height: 2rem;
     --field-h: var(--mobile-control-h);
     --field-label-top: 0.1rem;
-    --field-label-size: 0.6875rem;
-    --field-label-line: 0.8rem;
-    --field-pad-top: 0.9rem;
+    --field-label-size: var(--text-min);
+    --field-label-line: max(12.8px, 0.8rem);
+    --field-pad-top: max(14.4px, 0.9rem);
     --field-pad-bottom: 0.05rem;
   }
 }
 
 .dark {
+  color-scheme: dark; /* contrôles natifs (icône de date, listes, défilement) */
   --background: 222 47% 11%; /* Dark slate background */
   --foreground: 210 40% 98%; /* Light text */
 
@@ -150,6 +175,11 @@
   --info-foreground: 222 47% 11%;
   --info-muted: 221 48% 18%;
   --info-muted-foreground: 214 95% 78%;
+
+  --highlight: 262 85% 76%;
+  --highlight-foreground: 222 47% 11%;
+  --highlight-muted: 262 40% 20%;
+  --highlight-muted-foreground: 260 90% 85%;
 
   --shadow-soft: 0 1px 2px rgb(0 0 0 / 0.22), 0 1px 3px rgb(0 0 0 / 0.18);
   --shadow-elevated: 0 18px 45px -28px rgb(0 0 0 / 0.72);
@@ -249,6 +279,11 @@ aside,
 }
 
 /* La fermeture reste dans le coin de la fenêtre, même sur les anciennes surfaces. */
+/* Sans croix (bouton « Annuler » ou « Fermer » présent), l'en-tête reprend toute la largeur. */
+[data-app-dialog][data-no-close] [data-dialog-header].pr-8 {
+  padding-right: 0;
+}
+
 [data-app-dialog] > .app-dialog-close {
   position: absolute;
   z-index: 10;
@@ -387,7 +422,7 @@ aside,
   height: 3rem;
   background: hsl(var(--muted));
   color: hsl(var(--muted-foreground));
-  font-size: 0.78rem;
+  font-size: max(12px, 0.78rem);
   font-weight: 650;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -416,7 +451,7 @@ aside,
   min-width: 0;
   overflow: auto;
   border: 1px solid hsl(var(--border));
-  border-radius: 0.75rem;
+  border-radius: var(--radius-control);
   background: hsl(var(--card));
   box-shadow: 0 18px 45px -32px rgba(15, 23, 42, 0.22);
 }
@@ -514,9 +549,9 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
 /* Les DIALOGS gardent leur position fixed (centrage écran) même avec glassmorphism.
    IMPORTANT : on NE force PLUS la position des popovers/dropdowns/selects.
    Ils sont positionnés par Radix (wrapper + transform + collision) ; tout override
-   `position` cassait leur placement et les faisait déborder hors de l'écran. */
-[role="dialog"][data-state],
-[data-radix-dialog-content] {
+   `position` cassait leur placement et les faisait déborder hors de l'écran.
+   Ne pas cibler [role="dialog"] seul : un Popover Radix porte aussi ce rôle. */
+[data-app-dialog] {
   position: fixed !important;
 }
 
@@ -621,7 +656,7 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
   }
 
   .glassmorphism {
-    border-radius: 1rem;
+    border-radius: var(--radius-surface);
     box-shadow: 0 16px 42px -28px rgba(15, 23, 42, 0.32);
   }
 
@@ -648,7 +683,7 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
     margin: 0 !important;
     background: hsl(var(--background));
     border: 1px solid hsl(var(--primary) / 0.18);
-    border-radius: 1rem;
+    border-radius: var(--radius-surface);
     box-shadow: 0 18px 44px -16px rgba(15, 23, 42, 0.30);
     overflow-y: auto;
     overflow-x: hidden;
@@ -735,9 +770,9 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
     min-width: 0;
     min-height: 3rem;
     padding: 0.3rem 0.1rem;
-    border-radius: 0.7rem;
+    border-radius: var(--radius-control);
     color: hsl(var(--muted-foreground));
-    font-size: 0.75rem;
+    font-size: var(--text-min);
     font-weight: 600;
     line-height: 1;
     transition: color 0.15s ease, background 0.15s ease;
@@ -759,6 +794,7 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
   }
 
   .mobile-tabbar-label {
+    line-height: 1.3; /* sinon le bas des lettres (p, g) est rogné */
     max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -823,13 +859,13 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
   .mobile-inline-fields .space-y-2 > label {
     grid-column: 1;
     margin: 0;
-    font-size: 0.78rem;
+    font-size: max(12px, 0.78rem);
     line-height: 1.15;
   }
   /* Les textes d'aide / messages passent en pleine largeur sous le champ */
   .mobile-inline-fields .space-y-2 > p {
     grid-column: 1 / -1;
-    font-size: 0.7rem;
+    font-size: var(--text-min);
   }
   /* Les blocs contenant une zone de texte restent empilés (pleine largeur) */
   .mobile-inline-fields .space-y-2:has(textarea) {
@@ -849,7 +885,7 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
     align-items: center;
     justify-content: center;
     align-self: flex-start;
-    border-radius: 0.6rem !important;
+    border-radius: var(--radius-control) !important;
     border: 1px solid hsl(var(--primary) / 0.2) !important;
     background: hsl(var(--primary) / 0.06) !important;
     color: hsl(var(--primary)) !important;
@@ -886,7 +922,7 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
 
   /* Arrondi de la carte d'en-tête mobile (personnalisable) */
   .app-space-mobile-header > div {
-    border-radius: var(--mobile-header-radius, 1rem) !important;
+    border-radius: var(--radius-surface) !important;
   }
 
   /* Liseré accent : utilise la variable --mobile-header-accent-h */
@@ -951,7 +987,7 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
 
   .app-space-sidebar.is-open .app-space-sidebar-scroll > * {
     margin-bottom: 0.45rem !important;
-    border-radius: 0.85rem;
+    border-radius: var(--radius-control);
   }
 
   /* Carte utilisateur du tiroir : plus discrète */
@@ -977,8 +1013,8 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
   [role="listbox"],
   [data-radix-popper-content-wrapper] > * {
     max-width: min(84vw, 19rem) !important;
-    font-size: 0.82rem !important;
-    border-radius: 0.85rem !important;
+    font-size: max(12px, 0.82rem) !important;
+    border-radius: var(--radius-control) !important;
   }
 
   [role="menuitem"],
@@ -1054,7 +1090,7 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
     padding: 0.5rem 0.75rem !important;
     white-space: nowrap;
     scroll-snap-align: start;
-    font-size: 0.78rem;
+    font-size: max(12px, 0.78rem);
     line-height: 1rem;
   }
 
@@ -1064,7 +1100,7 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
   }
 
   table {
-    font-size: 0.72rem;
+    font-size: var(--text-min);
   }
 
   th,
@@ -1078,7 +1114,7 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
   select,
   textarea,
   [role="combobox"] {
-    font-size: 0.82rem;
+    font-size: max(12px, 0.82rem);
   }
 
   h1,
@@ -1103,7 +1139,7 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
     z-index: 100;
     gap: 0.55rem !important;
     padding: 0.8rem !important;
-    border-radius: 1.25rem !important;
+    border-radius: var(--radius-surface) !important;
     box-shadow: 0 24px 60px -12px rgba(15, 23, 42, 0.5) !important;
   }
 
@@ -1153,7 +1189,7 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
   }
 
   [role="dialog"] table {
-    font-size: 0.72rem;
+    font-size: var(--text-min);
   }
 
   [role="dialog"] th,
@@ -1182,16 +1218,6 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
     width: 100%;
   }
 
-  /* Calendrier de planification : défilement horizontal + colonnes lisibles */
-  .planning-calendar {
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .planning-calendar > .grid {
-    min-width: 640px;
-  }
-
   /* Barres de filtres : contrôles pleine largeur et empilés */
   .app-space-main [data-radix-select-trigger],
   .app-space-main button[role="combobox"] {
@@ -1214,10 +1240,10 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
   table.responsive-cards tr {
     margin-bottom: 0.4rem;
     border: 1px solid hsl(var(--border));
-    border-radius: 0.7rem;
+    border-radius: var(--radius-control);
     padding: 0.15rem 0.6rem;
     background: hsl(var(--card));
-    font-size: 0.78rem;
+    font-size: max(12px, 0.78rem);
   }
 
   table.responsive-cards td {
@@ -1235,7 +1261,7 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
   table.responsive-cards td::before {
     content: attr(data-label);
     flex: 0 0 auto;
-    font-size: 0.72rem;
+    font-size: var(--text-min);
     font-weight: 600;
     color: hsl(var(--muted-foreground));
     text-align: left;
@@ -1249,9 +1275,9 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
   /* ── Variante dense : cartes plus compactes (opt-in via .responsive-cards-dense) ── */
   table.responsive-cards.responsive-cards-dense tr {
     margin-bottom: 0.3rem;
-    border-radius: 0.55rem;
+    border-radius: var(--radius-control);
     padding: 0.05rem 0.55rem;
-    font-size: 0.72rem;
+    font-size: var(--text-min);
   }
 
   table.responsive-cards.responsive-cards-dense td {
@@ -1261,7 +1287,7 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
   }
 
   table.responsive-cards.responsive-cards-dense td::before {
-    font-size: 0.66rem;
+    font-size: var(--text-min);
   }
 
   /* ── Personnalisation App Mobile : désactivation des animations ── */
@@ -1341,12 +1367,13 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
   .app-table-scroll { overscroll-behavior-x: contain; }
 
   [data-app-dialog] > form { min-width: 0; }
-  [data-app-dialog] > div:has(> h2) { padding-right: 2.75rem; }
+  [data-app-dialog]:not([data-no-close]) > div:has(> h2) { padding-right: 2.75rem; }
 }
 /* Fond commun aux pages publiques et aux espaces connectés. */
 .app-page-theme-surface {
-  background-color: hsl(var(--background));
-  background-color: color-mix(in srgb, hsl(var(--primary)) 6%, hsl(var(--background)));
+  background-color: var(--page-background);
+  background-image: var(--page-pattern);
+  background-size: var(--page-pattern-size);
 }
 
 /* Les anciennes cartes translucides reprennent la surface du thème. */
@@ -1362,20 +1389,24 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
   .connected-space-shell {
     --space-shell-inset: 0.75rem;
     --space-shell-gap: 0.75rem;
-    --space-shell-radius: max(var(--radius), 1.5rem);
+    --space-shell-radius: var(--radius-surface);
     --space-header-height: 5rem;
-    --space-sidebar-width: 18rem;
-    --space-content-background: color-mix(in srgb, hsl(var(--primary)) 6%, hsl(var(--background)));
+    --space-sidebar-width: var(--space-sidebar-size);
+    --space-content-background: var(--page-background);
     min-height: calc(100dvh - 2 * var(--space-shell-inset));
     margin: var(--space-shell-inset);
     border: 0;
     border-radius: 0;
     background: var(--space-content-background);
+    background-image: var(--page-pattern);
+    background-size: var(--page-pattern-size);
     box-shadow: none;
   }
 
   body:has(.connected-space-shell) {
-    background: color-mix(in srgb, hsl(var(--primary)) 6%, hsl(var(--background)));
+    background: var(--page-background);
+    background-image: var(--page-pattern);
+    background-size: var(--page-pattern-size);
   }
 
   .connected-space-shell .app-top-header {
@@ -1420,7 +1451,7 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
   .connected-space-shell .space-header-actions button {
     width: 2.75rem;
     height: 2.75rem;
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     color: hsl(var(--muted-foreground));
   }
 
@@ -1470,7 +1501,8 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
     margin: 0 var(--space-shell-inset) var(--space-shell-inset) 0;
     padding: 1.5rem;
     border-radius: var(--space-shell-radius);
-    background: var(--space-content-background);
+    /* Transparent : laisse voir le fond de page et son motif. */
+    background: transparent;
   }
 
   .connected-space-shell > footer {
@@ -1505,13 +1537,15 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
    ════════════════════════════════════════════════════════════════════════════ */
 @media (max-width: 767px) {
   :root {
-    --mobile-page-bg: color-mix(in srgb, hsl(var(--primary)) 6%, hsl(var(--background)));
+    --mobile-page-bg: var(--page-background);
     --mobile-surface-shadow: 0 14px 34px -24px rgba(15, 23, 42, 0.35);
   }
 
   body:has(.app-space-layout),
   body:has(.app-page-theme-surface) {
     background: var(--mobile-page-bg);
+    background-image: var(--page-pattern);
+    background-size: var(--page-pattern-size);
   }
 
   /* ── En-tête commun des espaces (SpaceMobileHeader) ── */
@@ -1527,7 +1561,7 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
   .app-space-mobile-header > .space-mobile-header-bar {
     padding: 0.4rem 0.4rem 0.4rem 0.5rem;
     border: 1px solid hsl(var(--border));
-    border-radius: 999px !important;
+    border-radius: var(--radius-surface) !important;
     background: hsl(var(--card));
     box-shadow: var(--mobile-surface-shadow);
   }
@@ -1550,7 +1584,7 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
     min-height: var(--mobile-control-h);
     padding: 0;
     border: 1px solid transparent;
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     background: var(--mobile-page-bg);
     color: hsl(var(--muted-foreground));
     box-shadow: none;
@@ -1572,7 +1606,7 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
 
   .app-top-header .md\:hidden button {
     border-color: transparent;
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     background: var(--mobile-page-bg);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
@@ -1582,7 +1616,7 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
   .mobile-tabbar {
     padding: 0.35rem;
     border: 1px solid hsl(var(--border));
-    border-radius: 1.5rem;
+    border-radius: var(--radius-surface);
     background: hsl(var(--card));
     box-shadow: 0 14px 34px -18px rgba(15, 23, 42, 0.4);
     backdrop-filter: none;
@@ -1590,8 +1624,8 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
   }
 
   .mobile-tabbar-item {
-    border-radius: 1.1rem;
-    font-size: 0.7rem;
+    border-radius: var(--radius-control);
+    font-size: var(--text-min);
   }
 
   .mobile-tabbar-item.is-active {
@@ -1610,7 +1644,7 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
     width: min(86vw, 19rem) !important;
     padding: 0.5rem;
     border: 1px solid hsl(var(--border));
-    border-radius: 1.25rem;
+    border-radius: var(--radius-surface);
     background: hsl(var(--card));
     box-shadow: 0 24px 48px -20px rgba(15, 23, 42, 0.4);
     backdrop-filter: none;
@@ -1705,7 +1739,7 @@ html {
 
   /* ── Texte courant et descriptions ── */
   :is(#main-content, [role="dialog"]) {
-    font-size: 0.8125rem;
+    font-size: max(12px, 0.8125rem);
   }
 
   :is(#main-content, [role="dialog"]) .text-base {
@@ -1715,17 +1749,17 @@ html {
 
   :is(#main-content, [role="dialog"]) .text-sm,
   :is(#main-content, [role="dialog"]) .card-description {
-    font-size: 0.8125rem !important;
+    font-size: max(12px, 0.8125rem) !important;
     line-height: 1.2rem !important;
   }
 
   :is(#main-content, [role="dialog"]) .text-xs {
-    font-size: 0.6875rem !important;
+    font-size: var(--text-min) !important;
     line-height: 1rem !important;
   }
 
   :is(#main-content, [role="dialog"]) label {
-    font-size: 0.8125rem !important;
+    font-size: max(12px, 0.8125rem) !important;
     line-height: 1.25 !important;
   }
 
@@ -1738,7 +1772,7 @@ html {
   :is(#main-content, [role="dialog"]) [role="tablist"] [role="tab"] {
     min-height: var(--mobile-control-h) !important;
     padding: 0.3rem 0.625rem !important;
-    font-size: 0.75rem !important;
+    font-size: var(--text-min) !important;
     line-height: 1rem !important;
   }
 
@@ -1752,7 +1786,7 @@ html {
     min-height: var(--mobile-control-h) !important;
     height: auto;
     padding: 0.3rem 0.75rem;
-    font-size: 0.75rem !important;
+    font-size: var(--text-min) !important;
     line-height: 1rem !important;
   }
 
@@ -1770,13 +1804,13 @@ html {
   /* ── Filtres et champs ── */
   :is(#main-content, [role="dialog"]) :is(button[role="combobox"], [data-radix-select-trigger]) {
     min-height: var(--mobile-control-h) !important;
-    font-size: 0.75rem !important;
+    font-size: var(--text-min) !important;
     line-height: 1.2 !important;
   }
 
   :is(#main-content, [role="dialog"]) :is(input, textarea, select):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]) {
     min-height: var(--mobile-control-h);
-    font-size: 0.8125rem !important;
+    font-size: max(12px, 0.8125rem) !important;
   }
 
   :is(#main-content, [role="dialog"]) :is(input, select):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]) {
@@ -1810,7 +1844,7 @@ html {
    autre carte, ni dans un panneau d'onglet. */
 @media (max-width: 767px) {
   :is(#main-content, [role="dialog"]) .text-card-foreground :is(h2, h3) {
-    font-size: 0.8125rem !important;
+    font-size: max(12px, 0.8125rem) !important;
     line-height: 1.2rem !important;
     font-weight: 600 !important;
     letter-spacing: 0;
@@ -1822,12 +1856,12 @@ html {
   }
 
   :is(#main-content, [role="dialog"]) .text-card-foreground .card-description {
-    font-size: 0.6875rem !important;
+    font-size: var(--text-min) !important;
     line-height: 1rem !important;
   }
 
   :is(#main-content, [role="dialog"]) .text-card-foreground :is(.text-sm, .text-base, label) {
-    font-size: 0.75rem !important;
+    font-size: var(--text-min) !important;
     line-height: 1.1rem !important;
   }
 
@@ -1848,7 +1882,7 @@ html {
   }
 
   #main-content .text-card-foreground:first-child:not(.text-card-foreground *):not([role="tabpanel"] *) .card-description:not(.text-card-foreground .text-card-foreground *) {
-    font-size: 0.8125rem !important;
+    font-size: max(12px, 0.8125rem) !important;
     line-height: 1.2rem !important;
   }
 }
@@ -1861,7 +1895,7 @@ html {
   /* Filtres : déclencheurs et champs */
   :is(#main-content, [role="dialog"]) :is(button[role="combobox"], [data-radix-select-trigger]),
   :is(#main-content, [role="dialog"]) :is(input, textarea, select):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]) {
-    font-size: 0.75rem !important;
+    font-size: var(--text-min) !important;
     line-height: 1.1rem !important;
   }
 
@@ -1873,38 +1907,38 @@ html {
 
   /* Filtres : listes d'options ouvertes (Combobox / Select, portalisées) */
   :is([cmdk-item], [role="option"], [role="menuitem"], [cmdk-input]) {
-    font-size: 0.75rem !important;
+    font-size: var(--text-min) !important;
     line-height: 1.1rem !important;
   }
 
   [cmdk-group-heading],
   [cmdk-empty] {
-    font-size: 0.6875rem !important;
+    font-size: var(--text-min) !important;
   }
 
   /* Tableaux */
   :is(#main-content, [role="dialog"]) table,
   :is(#main-content, [role="dialog"]) table :is(td, .text-sm, .text-base) {
-    font-size: 0.75rem !important;
+    font-size: var(--text-min) !important;
     line-height: 1.1rem !important;
   }
 
   :is(#main-content, [role="dialog"]) table th {
-    font-size: 0.6875rem !important;
+    font-size: var(--text-min) !important;
     line-height: 1rem !important;
   }
 
   :is(#main-content, [role="dialog"]) table caption {
-    font-size: 0.6875rem !important;
+    font-size: var(--text-min) !important;
   }
 
   /* Tableaux en cartes empilées (.responsive-cards) : même échelle */
   :is(#main-content, [role="dialog"]) table.responsive-cards tr {
-    font-size: 0.75rem !important;
+    font-size: var(--text-min) !important;
   }
 
   :is(#main-content, [role="dialog"]) table.responsive-cards td::before {
-    font-size: 0.6875rem !important;
+    font-size: var(--text-min) !important;
   }
 }
 
@@ -1920,12 +1954,12 @@ html {
   }
 
   :is([role="dialog"], #dialog-scope) :is(p, label, .text-sm, .text-base) {
-    font-size: 0.75rem !important;
+    font-size: var(--text-min) !important;
     line-height: 1.1rem !important;
   }
 
   :is([role="dialog"], #dialog-scope) :is(.text-xs, .card-description) {
-    font-size: 0.6875rem !important;
+    font-size: var(--text-min) !important;
     line-height: 1rem !important;
   }
 
@@ -1967,7 +2001,7 @@ html {
     min-height: var(--mobile-control-h);
     padding-top: 0.25rem !important;
     padding-bottom: 0.25rem !important;
-    font-size: 0.8125rem !important;
+    font-size: max(12px, 0.8125rem) !important;
     line-height: 1.1rem !important;
   }
 
@@ -2008,7 +2042,7 @@ html {
   }
 
   .app-space-sidebar.is-open.is-open .border-t :is(a, button) span {
-    font-size: 0.625rem !important;
+    font-size: var(--text-min) !important;
   }
 }
 
@@ -2017,7 +2051,7 @@ html {
   #main-content .home-cta[data-ui-button] {
     min-height: var(--mobile-control-h) !important;
     padding: 0.25rem 0.875rem;
-    font-size: 0.75rem !important;
+    font-size: var(--text-min) !important;
   }
 
   #main-content .home-cta[data-ui-button] svg {
@@ -2054,7 +2088,7 @@ html {
   #main-content .planning-toolbar.planning-toolbar :is([data-ui-button], input) {
     min-height: var(--mobile-control-h) !important;
     padding-inline: 0.625rem;
-    font-size: 0.75rem !important;
+    font-size: var(--text-min) !important;
   }
 
   #main-content .planning-toolbar.planning-toolbar [data-ui-button][data-ui-button-size="icon"] {
@@ -2094,6 +2128,7 @@ html {
   max-width: calc(100% - 2.75rem);
   margin: 0 !important;
   overflow: hidden;
+  overflow: clip visible; /* coupe en largeur seulement : le bas des lettres (p, g, y) reste entier */
   color: hsl(var(--muted-foreground));
   /* Base de l'app = 14px → 0.75rem ≈ 10.5px. */
   font-size: var(--field-label-size) !important;
@@ -2182,7 +2217,7 @@ html {
 
 @media (max-width: 767px) {
   :is(#main-content, [role="dialog"]) :is(div, section, fieldset) > label:not(.sr-only):not(._s1):not(._s2):not(._s3):not(._s4):not(._s5):not(._s6):not(._s7):has(+ button[role="combobox"][data-all]) {
-    font-size: 0.75rem !important;
+    font-size: var(--text-min) !important;
   }
 }
 
@@ -2232,7 +2267,7 @@ html {
    Valeurs par défaut = rendu actuel. */
 @media (max-width: 767px) {
   .mobile-tabbar.mobile-tabbar {
-    border-radius: var(--mobile-card-radius, 1.5rem);
+    border-radius: var(--radius-surface);
     box-shadow: var(--mobile-tabbar-shadow, 0 14px 34px -18px rgba(15, 23, 42, 0.4));
   }
 
@@ -2242,7 +2277,7 @@ html {
   }
 
   .app-space-mobile-header > .space-mobile-header-bar.space-mobile-header-bar {
-    border-radius: var(--mobile-header-radius, 2rem) !important;
+    border-radius: var(--radius-surface) !important;
   }
 
   /* Taille d'affichage du contenu : mise à l'échelle de toute la zone de contenu
@@ -2274,6 +2309,7 @@ html {
   max-width: calc(100% - 2.75rem);
   margin: 0 !important;
   overflow: hidden;
+  overflow: clip visible; /* coupe en largeur seulement : le bas des lettres (p, g, y) reste entier */
   color: hsl(var(--muted-foreground));
   font-size: var(--field-label-size) !important;
   font-weight: 600 !important;
@@ -2343,7 +2379,7 @@ html {
     + .password-field > input:placeholder-shown:not(:focus),
     + textarea:placeholder-shown:not(:focus)
   ) {
-    font-size: 0.8125rem !important;
+    font-size: max(12px, 0.8125rem) !important;
   }
 }
 
@@ -2358,4 +2394,180 @@ html {
 #main-content .dashboard-solid-cards .text-card-foreground .text-card-foreground :is(h2, h3) > svg {
   width: 1rem !important;
   height: 1rem !important;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   Personnalisation (Paramètres) : options portées par des attributs data-* sur
+   <html>, posés par lib/theme.js et lib/mobileCustomization.js. Les valeurs par
+   défaut n'ajoutent aucune règle.
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* Contraste renforcé : textes secondaires et bordures plus marqués. */
+html[data-contrast="high"]:root {
+  --muted-foreground: 215 28% 27%;
+  --border: 215 18% 58%;
+  --input: 215 18% 52%;
+}
+
+html[data-contrast="high"]:root.dark {
+  --muted-foreground: 215 25% 84%;
+  --border: 217 18% 46%;
+  --input: 217 18% 52%;
+}
+
+/* Liseré de l'en-tête d'écran. */
+html[data-card-rail="off"] [data-card-rail] {
+  display: none !important;
+}
+
+@media (min-width: 768px) {
+  /* ── Densité (ordinateur) ── */
+  html[data-density="compact"] #main-content td.p-4:not([class*="py-"]) {
+    padding-block: 0.4rem;
+  }
+
+  html[data-density="compact"] {
+    --table-head-height: 2rem;
+  }
+
+  html[data-density="compact"] #main-content .text-card-foreground > .p-6 {
+    padding: 1rem;
+  }
+
+  html[data-density="compact"] #main-content .text-card-foreground > .p-6.pt-0 {
+    padding-top: 0;
+  }
+
+  html[data-density="compact"] #main-content :is(.space-y-6, .space-y-5) > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 0.875rem;
+  }
+
+  html[data-density="compact"] .space-sidebar-card .space-menu-item {
+    min-height: 2.25rem;
+  }
+
+  html[data-density="comfort"] #main-content td.p-4:not([class*="py-"]) {
+    padding-block: 1.35rem;
+  }
+
+  html[data-density="comfort"] {
+    --table-head-height: 3.25rem;
+  }
+
+  html[data-density="comfort"] #main-content .text-card-foreground > .p-6 {
+    padding: 2rem;
+  }
+
+  html[data-density="comfort"] #main-content .text-card-foreground > .p-6.pt-0 {
+    padding-top: 0;
+  }
+
+  html[data-density="comfort"] .space-sidebar-card .space-menu-item {
+    min-height: 3.375rem;
+  }
+
+  /* ── Menu latéral ── */
+  html[data-sidebar="tinted"] .space-sidebar-card {
+    background-color: color-mix(in srgb, hsl(var(--primary)) 8%, hsl(var(--card)));
+    border-color: hsl(var(--primary) / 0.25);
+  }
+
+  html[data-sidebar="brand"] .space-sidebar-card {
+    background-color: hsl(var(--primary));
+    border-color: hsl(var(--primary));
+  }
+
+  html[data-sidebar="brand"] .space-sidebar-card :is(a, button, span, p, svg) {
+    color: hsl(var(--primary-foreground));
+  }
+
+  html[data-sidebar="brand"] .space-sidebar-card :is(a, button):hover {
+    background-color: hsl(var(--primary-foreground) / 0.12);
+  }
+
+  html[data-sidebar="brand"] .space-sidebar-card .space-menu-item[aria-current="page"],
+  html[data-sidebar="brand"] .space-sidebar-card .space-menu-item[aria-current="page"]:hover {
+    background-color: hsl(var(--primary-foreground));
+  }
+
+  html[data-sidebar="brand"] .space-sidebar-card .space-menu-item[aria-current="page"],
+  html[data-sidebar="brand"] .space-sidebar-card .space-menu-item[aria-current="page"] :is(svg, span) {
+    color: hsl(var(--primary));
+  }
+
+  html[data-sidebar="brand"] .space-sidebar-card .border-t {
+    border-color: hsl(var(--primary-foreground) / 0.25);
+  }
+
+  /* Logo lisible quelle que soit la couleur du client. */
+  html[data-sidebar="brand"] .space-sidebar-brand img {
+    padding: 0.25rem;
+    border-radius: var(--radius-control);
+    background-color: hsl(0 0% 100%);
+  }
+}
+
+@media (max-width: 767px) {
+  /* ── Barre d'onglets pleine largeur ── */
+  html[data-mobile-tab-style="full"] .mobile-tabbar.mobile-tabbar {
+    right: 0;
+    bottom: 0;
+    left: 0;
+    padding-bottom: calc(0.35rem + env(safe-area-inset-bottom, 0px));
+    border-width: 1px 0 0;
+    border-radius: var(--radius-surface) var(--radius-surface) 0 0;
+  }
+
+  /* ── Onglet actif plein ── */
+  html[data-mobile-tab-active="solid"] .mobile-tabbar .mobile-tabbar-item.is-active {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
+
+  /* ── Libellés : masqués à l'écran, toujours lus par les lecteurs d'écran ── */
+  html[data-mobile-tab-labels="none"] .mobile-tabbar-label,
+  html[data-mobile-tab-labels="active"] .mobile-tabbar-item:not(.is-active) .mobile-tabbar-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  /* ── Cartes aérées ── */
+  html[data-mobile-cards="comfort"] :is(#main-content, [role="dialog"]) .text-card-foreground > .p-6:not(.pt-0) {
+    padding: 1.125rem !important;
+  }
+
+  html[data-mobile-cards="comfort"] :is(#main-content, [role="dialog"]) .text-card-foreground > .p-6.pt-0 {
+    padding: 0 1.125rem 1.125rem !important;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   En-têtes de colonnes : un seul style pour toutes les tables (composant Table et
+   <table> natives), page comme fenêtre. Ne pas coder de taille dans un TableHead.
+   ════════════════════════════════════════════════════════════════════════════ */
+:is(#main-content, [role="dialog"]) table thead th:not([scope="row"]) {
+  font-size: var(--table-head-size) !important;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase;
+}
+
+/* Hauteur standard ; une table dense garde la sienne. */
+:is(#main-content, [role="dialog"]) table thead th.h-12 {
+  height: var(--table-head-height);
+}
+
+/* Tri, infobulle, texte enveloppé : même taille que l'en-tête. */
+:is(#main-content, [role="dialog"]) table thead th:not([scope="row"]) :is(button, span, div, p, label) {
+  font-size: inherit !important;
+  letter-spacing: inherit;
+}
+
+:is(#main-content, [role="dialog"]) table thead th:not([scope="row"]) svg {
+  width: 0.8125rem !important;
+  height: 0.8125rem !important;
 }

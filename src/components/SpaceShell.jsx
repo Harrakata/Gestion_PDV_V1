@@ -56,11 +56,11 @@ function SpaceSidebarActions({ onHome, onProfile, reader, onLogout }) {
     <div className="mt-2 flex items-center border-t border-border pt-1">
       <button type="button" onClick={onHome} className={sidebarActionClass}>
         <Home className="h-5 w-5" aria-hidden="true" />
-        <span className="text-[0.6rem] font-semibold">Accueil</span>
+        <span className="text-xs font-semibold">Accueil</span>
       </button>
       <button type="button" onClick={onProfile} className={sidebarActionClass}>
         <UserCog className="h-5 w-5" aria-hidden="true" />
-        <span className="text-[0.6rem] font-semibold">Profil</span>
+        <span className="text-xs font-semibold">Profil</span>
       </button>
       {reader && <EnablePushButton reader={reader} asNavButton />}
       <button
@@ -70,7 +70,7 @@ function SpaceSidebarActions({ onHome, onProfile, reader, onLogout }) {
         className={cn(sidebarActionClass, 'text-destructive hover:bg-destructive/10 hover:text-destructive')}
       >
         <LogOut className="h-5 w-5" aria-hidden="true" />
-        <span className="text-[0.6rem] font-semibold">Déconn.</span>
+        <span className="text-xs font-semibold">Déconn.</span>
       </button>
     </div>
   );

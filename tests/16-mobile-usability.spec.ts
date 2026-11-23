@@ -129,3 +129,31 @@ test('l’onglet sélectionné est révélé sans déplacer la page et le tablea
   await expect(page.getByTestId('active')).toHaveText('7');
   await page.screenshot({ path: 'test-results/mobile-usability.png', fullPage: true });
 });
+
+test('la croix disparaît quand la barre d’actions propose « Annuler » ou « Fermer », et seulement dans ce cas', async ({ page }) => {
+  const dialog = page.locator('[data-app-dialog]');
+  const cross = dialog.locator('.app-dialog-close');
+  await page.getByRole('button', { name: 'Ouvrir le formulaire' }).click();
+  await expect(dialog.getByRole('button', { name: 'Annuler', exact: true })).toBeVisible();
+  await expect(cross).toHaveCount(0);
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+  await page.getByRole('button', { name: 'Ouvrir le formulaire' }).click();
+  await dialog.getByRole('button', { name: 'Annuler', exact: true }).click();
+  await expect(dialog).toHaveCount(0);
+
+  // « Annuler » hors barre d'actions : la croix reste.
+  await page.getByRole('button', { name: 'Voir la fiche' }).click();
+  await expect(cross).toBeVisible();
+  await dialog.getByRole('button', { name: 'Étape suivante' }).click();
+  await expect(cross).toHaveCount(0);
+  await dialog.getByRole('button', { name: 'Étape suivante' }).click();
+  await expect(dialog.getByRole('button', { name: 'Fermer', exact: true })).toHaveCount(1);
+  await expect(cross).toHaveCount(0);
+  await dialog.locator('[data-dialog-actions]').getByRole('button', { name: 'Fermer' }).click();
+  await expect(dialog).toHaveCount(0);
+  await page.getByRole('button', { name: 'Voir la fiche' }).click();
+  await expect(cross).toBeVisible();
+  await cross.click();
+  await expect(dialog).toHaveCount(0);
+});

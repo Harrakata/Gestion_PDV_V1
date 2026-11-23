@@ -31,7 +31,7 @@ const PointageFeedback = ({ onClose, onSubmit }) => {
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 50 }}
-      className="fixed bottom-0 left-0 right-0 bg-card dark:bg-gray-900 rounded-t-2xl shadow-lg p-6 z-50"
+      className="fixed bottom-0 left-0 right-0 bg-card rounded-t-2xl shadow-lg p-6 z-50"
     >
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-xl font-bold">Votre avis nous intéresse</h3>

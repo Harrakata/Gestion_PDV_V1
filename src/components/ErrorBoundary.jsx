@@ -38,7 +38,7 @@ class ErrorBoundary extends React.Component {
           </p>
         </div>
         {import.meta.env.DEV && this.state.error && (
-          <pre className="max-w-2xl overflow-auto rounded-lg bg-muted px-4 py-3 text-[11px] text-muted-foreground">
+          <pre className="max-w-2xl overflow-auto rounded-lg bg-muted px-4 py-3 text-xs text-muted-foreground">
             {this.state.error?.message ?? String(this.state.error)}
             {this.state.errorInfo?.componentStack && '\n' + this.state.errorInfo.componentStack}
           </pre>
