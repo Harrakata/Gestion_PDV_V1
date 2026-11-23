@@ -45,4 +45,4 @@ Ainsi `schema.sql` reste le reflet exact et complet de la base à tout instant.
 - `multi-client/` — provisioning et migrations multi-tenants (un projet Supabase
   par client). Voir `multi-client/README.md`.
 - `*.sql` — correctifs / vues / index ponctuels (déjà appliqués en base).
-- `gen-icons.mjs` — génération des icônes PWA.
+- `gen-icons.mjs` — déclinaisons du logo GPDV (icônes PWA, onglet, notifications, bannière) depuis `docs/brand/`.

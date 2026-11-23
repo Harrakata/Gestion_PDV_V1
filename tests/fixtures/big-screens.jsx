@@ -36,6 +36,9 @@ const SCREENS = {
   guichetiere: () => import('@/pages/guichetiere/MonPlanningGuichetierePage').then(({ default: C }) => <C />),
   general: () => import('@/pages/exploitation/EtatPlanningGeneralPage').then(({ default: C }) => <C />),
   ccope: () => import('@/pages/exploitation/CcopePage').then(({ default: C }) => <C />),
+  ccopeglob: () => import('@/pages/exploitation/CcopeGlobPage').then(({ default: C }) => <C />),
+  performance: () => import('@/pages/exploitation/PerformancePage').then(({ default: C }) => <C />),
+  regional: () => import('@/components/directeur_regional/RegionalMaintenanceSection').then(({ default: C }) => <C regionName="Kinshasa" />),
   planification: () => import('@/components/maintenance/MaintenancePlanningSection').then(({ default: C }) => <C title="Planification de Maintenance" canManage />),
   maintenance: () => {
     try { localStorage.setItem('ps:maintenance-terminaux:outerTab', '"suivi"'); } catch { /* stockage indisponible */ }

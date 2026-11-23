@@ -1552,7 +1552,7 @@ const MaintenanceTab = ({ technicien }) => {
     <div class="page">
       <div class="hero">
         <div class="hero-top">
-          <div class="brand">GestionPDV</div>
+          <div class="brand">GPDV</div>
           <div class="status-badge">${escapeHtml(validationState)}</div>
         </div>
 
@@ -1703,7 +1703,7 @@ const MaintenanceTab = ({ technicien }) => {
         </div>
 
         <div class="footer">
-          <span>GestionPDV - Maintenance Terminaux</span>
+          <span>GPDV - Maintenance Terminaux</span>
           <span>Fiche de validation generee automatiquement</span>
         </div>
       </div>

@@ -47,6 +47,8 @@ const MonPlanningMaintenancePage = lazy(() => import('@/pages/technicien/MonPlan
 const AbsenceRequestsPanel = lazy(() => import('@/components/absences/AbsenceRequestsPanel'));
 const TicketsPanel = lazy(() => import('@/components/tickets/TicketsPanel'));
 const ABSENCE_ROLE_TECHNICIEN = 'technicien';
+// Noms courts de la barre d'onglets du téléphone.
+const TECHNICIEN_TAB_LABELS = { maintenance: 'Maint.', 'demandes-absence': 'Absences' };
 
 const SectionLoader = () => (
   <div className="flex items-center justify-center py-24">
@@ -363,6 +365,7 @@ const EspaceMaintenancePage = () => {
   const navigationItems = menuItems.map((item) => ({
     key: item.key,
     label: item.label,
+    mobileLabel: TECHNICIEN_TAB_LABELS[item.key] || item.label,
     icon: item.icon,
     active: activeSection === item.key,
     onClick: () => setActiveSection(item.key),

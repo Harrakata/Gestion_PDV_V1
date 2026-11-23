@@ -5,7 +5,8 @@ import { useMobileCustomization } from '@/lib/mobileCustomization';
 /**
  * Barre d'onglets mobile (bottom tab bar) — visible uniquement sur téléphone.
  * Modèle hybride : 3-4 sections principales en onglets + un onglet « Plus »
- * qui ouvre le tiroir (profil, déconnexion, onglets secondaires).
+ * qui ouvre le tiroir (profil, déconnexion, onglets secondaires). Si la page ouverte
+ * vient du tiroir, elle prend la dernière place : la barre montre toujours où l'on est.
  *
  * @param {Array} items  [{ key, label, icon, active, onClick }]  (icon = élément lucide)
  * @param {Function} onMore  ouvre le tiroir
@@ -16,6 +17,8 @@ const MobileTabBar = ({ items = [], onMore, moreActive = false, moreLabel = 'Plu
   // 3 ou 4 raccourcis (Paramètres → App Mobile), puis le bouton « Plus ».
   const { tabCount } = useMobileCustomization();
   const tabs = items.slice(0, tabCount);
+  const current = items.find((item) => item.active);
+  if (current && !tabs.includes(current)) tabs[tabs.length - 1] = current;
 
   const renderIcon = (icon, active) =>
     React.isValidElement(icon)

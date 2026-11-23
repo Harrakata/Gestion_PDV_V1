@@ -22,8 +22,9 @@ export const filterLabels = (values, options) => Array.isArray(values)
  * @param {Array<string|null|false>} [p.active]  libellés des filtres actifs
  * @param {string} [p.context]       rappel toujours affiché (période…), non compté
  * @param {() => void} [p.onReset]
+ * @param {React.ReactNode} [p.actions]  boutons-icônes en bout de ligne (colonnes…)
  */
-const MobileFilterBar = ({ search, onSearchChange, searchLabel = 'Rechercher', searchPlaceholder = 'Rechercher…', active = [], context, onReset, disabled, className, children }) => {
+const MobileFilterBar = ({ search, onSearchChange, searchLabel = 'Rechercher', searchPlaceholder = 'Rechercher…', active = [], context, onReset, actions, disabled, className, children }) => {
   const [open, setOpen] = useState(false);
   const panelId = useId();
   const labels = active.filter(Boolean);
@@ -52,7 +53,7 @@ const MobileFilterBar = ({ search, onSearchChange, searchLabel = 'Rechercher', s
           aria-controls={panelId}
           aria-label={onSearchChange || !summary ? name : `${name} : ${summary}`}
           onClick={() => setOpen((value) => !value)}
-          className={cn('gap-1.5 px-3', onSearchChange ? 'shrink-0' : 'w-full min-w-0 justify-start', (open || labels.length > 0) && 'border-primary/50 bg-primary/5 text-primary')}
+          className={cn('gap-1.5 px-3', onSearchChange ? 'shrink-0' : 'min-w-0 flex-1 justify-start', (open || labels.length > 0) && 'border-primary/50 bg-primary/5 text-primary')}
         >
           <SlidersHorizontal className="h-4 w-4" />
           Filtres
@@ -66,6 +67,7 @@ const MobileFilterBar = ({ search, onSearchChange, searchLabel = 'Rechercher', s
             </>
           )}
         </Button>
+        {actions}
       </div>
 
       {onSearchChange && !open && summary && <p className="truncate px-1 text-xs text-muted-foreground" title={summary}>{summary}</p>}

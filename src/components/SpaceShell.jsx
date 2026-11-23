@@ -6,10 +6,12 @@ import SpaceHeaderProfile from '@/components/SpaceHeaderProfile';
 import SpaceMobileHeader from '@/components/SpaceMobileHeader';
 import EnablePushButton from '@/components/EnablePushButton';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import ProductLogo from '@/components/ProductLogo';
 import MobileTabBar from '@/components/mobile/MobileTabBar';
 import SwipeTabs from '@/components/mobile/SwipeTabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { useClient } from '@/hooks/useFeatureFlags';
+import { PRODUCT_LOGO_URL, PRODUCT_NAME, isProductName } from '@/lib/clientConfig';
 import { cn } from '@/lib/utils';
 
 export function SpaceMenuItem({ label, icon, active, to, onClick, disabled }) {
@@ -37,12 +39,14 @@ function SpaceSidebarBrand({ label }) {
   const client = useClient();
   return (
     <Link to="/" className="space-sidebar-brand hidden min-w-0 items-center gap-3 px-3 md:flex" title={label}>
-      <img src={client.logoUrl || '/carrus-logo.png'} alt="" className="h-14 w-14 shrink-0 object-contain" />
+      <img src={client.logoUrl || PRODUCT_LOGO_URL} alt="" className="h-14 w-14 shrink-0 object-contain" />
       <span className="min-w-0">
-        <span className="block truncate text-xl font-extrabold leading-tight text-foreground">Gestion PDV</span>
-        <span className="mt-0.5 block truncate text-sm font-bold uppercase tracking-widest text-primary">
-          {client.displayName || 'GestionPDV'}
-        </span>
+        <span className="block truncate text-xl font-extrabold leading-tight text-foreground">{PRODUCT_NAME}</span>
+        {client.displayName && !isProductName(client.displayName) && (
+          <span className="mt-0.5 block truncate text-sm font-bold uppercase tracking-widest text-primary">
+            {client.displayName}
+          </span>
+        )}
         <span className="mt-0.5 block truncate text-xs font-semibold text-muted-foreground">{label}</span>
       </span>
     </Link>
@@ -53,6 +57,8 @@ const sidebarActionClass = 'flex flex-1 flex-col items-center gap-1 rounded-xl p
 
 function SpaceSidebarActions({ onHome, onProfile, reader, onLogout }) {
   return (
+    <>
+    <ProductLogo decorative className="space-sidebar-logo mt-3 px-3 pb-1" imgClassName="w-40" />
     <div className="mt-2 flex items-center border-t border-border pt-1">
       <button type="button" onClick={onHome} className={sidebarActionClass}>
         <Home className="h-5 w-5" aria-hidden="true" />
@@ -73,6 +79,7 @@ function SpaceSidebarActions({ onHome, onProfile, reader, onLogout }) {
         <span className="text-xs font-semibold">Déconn.</span>
       </button>
     </div>
+    </>
   );
 }
 

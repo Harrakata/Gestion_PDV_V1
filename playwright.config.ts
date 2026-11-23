@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 // ════════════════════════════════════════════════════════════════════════════
-//  Config Playwright — tests E2E « Gestion PDV »
+//  Config Playwright — tests E2E « GPDV »
 //
 //  • BASE_URL : URL de l'app à tester (défaut : serveur de dev local 5173).
 //      BASE_URL=https://sonal.exemple.com npx playwright test

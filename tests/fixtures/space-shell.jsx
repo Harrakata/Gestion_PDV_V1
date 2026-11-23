@@ -14,6 +14,15 @@ const sections = [
   { key: 'agenda', label: 'Agenda', icon: <Calendar />, to: '/espace-guichetiere/agenda' },
 ];
 
+// ?many : plus de pages que de raccourcis dans la barre du téléphone.
+if (new URLSearchParams(window.location.search).has('many')) {
+  sections.push(
+    { key: 'pointage', label: 'Suivi Pointage', mobileLabel: 'Pointage', icon: <Clipboard /> },
+    { key: 'gains', label: 'Autorisation Paiement Gain', mobileLabel: 'Paiements', icon: <Wrench /> },
+    { key: 'direction', label: 'Direction Générale', icon: <Calendar /> },
+  );
+}
+
 function Page({ activeKey }) {
   if (activeKey === 'rapports') throw new Error('Erreur simulée du rapport');
   return <PageHeader title={activeKey === 'agenda' ? 'Agenda' : 'Mon planning'} icon={<Calendar />} />;

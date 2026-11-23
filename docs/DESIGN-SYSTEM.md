@@ -1,4 +1,4 @@
-# Design system GestionPDV
+# Design system GPDV
 
 Ce document est la source de vérité visuelle et ergonomique de l'application.
 Le design system se construit progressivement : les composants existants restent

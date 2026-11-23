@@ -18,6 +18,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { TablePagination } from '@/components/ui/table-pagination';
 import EmptyState from '@/components/ui/empty-state';
 import { usePagination } from '@/hooks/usePagination';
+import { useIsPhone } from '@/hooks/useIsPhone';
 import {
   AlertTriangle, AlertOctagon, BookOpen, Check, CheckCircle2, ChevronDown, ChevronRight, Download, Edit, FileUp, HelpCircle,
   ImagePlus, Layers, ListChecks, Package, Plus, Search, Trash2, ArrowUpCircle, ArrowDownCircle, Wrench, X,
@@ -55,6 +56,14 @@ const formatPrice = (value) => Number(value || 0).toLocaleString('fr-FR', {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
 });
+
+const CompoPiecePhoto = ({ piece }) => (piece?.photo_url ? (
+  <img src={piece.photo_url} alt={piece.nom} className="mx-auto max-h-44 max-w-full rounded border bg-card object-contain p-2" />
+) : (
+  <div className="flex h-24 w-full flex-col items-center justify-center gap-1 rounded border bg-muted/30 text-xs text-muted-foreground md:h-32">
+    <Package className="h-8 w-8 text-muted-foreground/40" /> Aucune photo
+  </div>
+));
 
 const PiecesSousEnsemblesTab = ({ canManage = true }) => {
   const { toast } = useToast();
@@ -109,6 +118,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
   const [editingModele, setEditingModele] = useState(null);
   const [modeleForm, setModeleForm] = useState(DEFAULT_MODELE);
 
+  const isPhone = useIsPhone();
   const [isCompoOpen, setIsCompoOpen] = useState(false);
   const [selectedModele, setSelectedModele] = useState(null);
   const [addToModele, setAddToModele] = useState({ piece_id: '', quantite: 1 });
@@ -433,7 +443,12 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
     setAddToModele({ piece_id: '', quantite: 1 }); loadCompo(selectedModele.id);
   };
 
-  const removePieceModele = async (id) => { await supabase.from('modeles_pieces').delete().eq('id', id); loadCompo(selectedModele.id); };
+  const removePieceModele = async (id) => {
+    const { error } = await supabase.from('modeles_pieces').delete().eq('id', id);
+    if (error) { showErr(describeError(error, 'PiecesSousEnsemblesTab')); return; }
+    setSelectedCompoPiece((current) => (current?.id === id ? null : current));
+    loadCompo(selectedModele.id);
+  };
 
   // --- STOCK ---
   const saveMouvement = async () => {
@@ -1526,71 +1541,73 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
 
       {/* ===== DIALOG COMPOSITION ===== */}
       <Dialog open={isCompoOpen} onOpenChange={setIsCompoOpen}>
-        <DialogContent className="sm:max-w-2xl relative overflow-hidden p-0">
-          <div className="relative px-6 pt-5 pb-3">
-            <DialogHeader>
-              <DialogTitle className="text-primary flex items-center gap-2">
-                <Layers className="h-5 w-5" /> Composition : {selectedModele?.nom}
+        <DialogContent className="flex flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl">
+          <div className="flex min-h-[60px] shrink-0 items-center px-4 py-2 md:px-6">
+            <DialogHeader className="min-w-0 flex-1">
+              <DialogTitle className="flex min-w-0 items-center gap-2 text-primary">
+                <Layers className="h-5 w-5 shrink-0" />
+                <span className="min-w-0 truncate py-1 leading-normal" title={selectedModele?.nom}>Composition : {selectedModele?.nom}</span>
               </DialogTitle>
             </DialogHeader>
           </div>
-          <div className="flex border-t" style={{ minHeight: 300, maxHeight: 420 }}>
-            {/* Liste gauche */}
-            <div className="w-1/2 border-r overflow-y-auto">
+          <div className="flex min-h-0 flex-1 border-t md:min-h-[300px] md:max-h-[420px]">
+            {/* Liste ; sur téléphone, l'aperçu s'ouvre sous la pièce choisie */}
+            <ul className="w-full overflow-y-auto overscroll-contain md:w-1/2 md:border-r" aria-label="Pièces du modèle">
               {modelePieces.length === 0 ? (
-                <EmptyState compact title="Aucune pièce" />
-              ) : modelePieces.map(mp => (
-                <button
-                  key={mp.id}
-                  className={`w-full text-left px-4 py-2.5 border-b transition-colors hover:bg-muted/40 ${selectedCompoPiece?.id === mp.id ? 'bg-primary/10 border-l-4 border-l-primary' : ''}`}
-                  onClick={() => setSelectedCompoPiece(mp)}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium truncate">{mp.piece?.nom}</p>
-                      <p className="text-xs text-muted-foreground font-mono">{mp.piece?.reference}</p>
-                    </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <Badge variant="outline" className="text-xs">×{mp.quantite}</Badge>
+                <li><EmptyState compact title="Aucune pièce" /></li>
+              ) : modelePieces.map(mp => {
+                const selected = selectedCompoPiece?.id === mp.id;
+                return (
+                  <li key={mp.id} className={`border-b ${selected ? 'border-l-4 border-l-primary bg-primary/10' : ''}`}>
+                    <div className="flex items-center gap-2 pr-2">
+                      <button
+                        type="button"
+                        aria-expanded={isPhone ? selected : undefined}
+                        aria-pressed={isPhone ? undefined : selected}
+                        className="flex min-w-0 flex-1 items-center justify-between gap-2 py-2 pl-4 text-left transition-colors hover:bg-muted/40"
+                        onClick={() => setSelectedCompoPiece(isPhone && selected ? null : mp)}
+                      >
+                        <span className="min-w-0">
+                          <span className="block break-words text-sm font-medium">{mp.piece?.nom}</span>
+                          <span className="block truncate font-mono text-xs text-muted-foreground">{mp.piece?.reference}</span>
+                        </span>
+                        <Badge variant="outline" className="shrink-0 text-xs">×{mp.quantite}</Badge>
+                      </button>
                       {canManage && (
-                        <Button aria-label={`Retirer ${mp.piece?.nom || 'la pièce'}`} variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:text-destructive"
-                          onClick={e => { e.stopPropagation(); removePieceModele(mp.id); }}>
-                          <Trash2 className="h-3 w-3" />
+                        <Button aria-label={`Retirer ${mp.piece?.nom || 'la pièce'}`} variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-destructive hover:text-destructive"
+                          onClick={() => removePieceModele(mp.id)}>
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       )}
                     </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-            {/* Aperçu droite */}
-            <div className="w-1/2 flex flex-col items-center justify-center p-4 bg-muted/10">
-              {!selectedCompoPiece ? (
-                <EmptyState compact plain icon={Package} title="Sélectionnez une pièce" />
-              ) : (
-                <div className="text-center space-y-3 w-full">
-                  {selectedCompoPiece.piece?.photo_url ? (
-                    <img src={selectedCompoPiece.piece.photo_url} alt={selectedCompoPiece.piece.nom}
-                      className="max-h-44 object-contain mx-auto rounded border bg-card p-2" />
-                  ) : (
-                    <div className="h-32 w-full rounded border bg-muted/30 flex items-center justify-center">
-                      <Package className="h-12 w-12 text-muted-foreground/30" />
+                    {isPhone && selected && <div className="px-4 pb-3"><CompoPiecePhoto piece={mp.piece} /></div>}
+                  </li>
+                );
+              })}
+            </ul>
+            {/* Aperçu (ordinateur) */}
+            {!isPhone && (
+              <div className="flex w-1/2 flex-col items-center justify-center overflow-y-auto bg-muted/10 p-4">
+                {!selectedCompoPiece ? (
+                  <EmptyState compact plain icon={Package} title="Sélectionnez une pièce" />
+                ) : (
+                  <div className="w-full space-y-3 text-center">
+                    <CompoPiecePhoto piece={selectedCompoPiece.piece} />
+                    <div>
+                      <p className="text-sm font-semibold">{selectedCompoPiece.piece?.nom}</p>
+                      <p className="font-mono text-xs text-muted-foreground">{selectedCompoPiece.piece?.reference}</p>
+                      <Badge variant="outline" className="mt-1 text-xs">Qté : {selectedCompoPiece.quantite}</Badge>
                     </div>
-                  )}
-                  <div>
-                    <p className="font-semibold text-sm">{selectedCompoPiece.piece?.nom}</p>
-                    <p className="text-xs text-muted-foreground font-mono">{selectedCompoPiece.piece?.reference}</p>
-                    <Badge variant="outline" className="mt-1 text-xs">Qté : {selectedCompoPiece.quantite}</Badge>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
           </div>
           {canManage && (
-            <div className="border-t px-4 py-3 space-y-2 relative">
-              <Label className="font-semibold text-xs uppercase tracking-wide text-muted-foreground">Ajouter une pièce</Label>
-              <div className="flex items-center gap-2">
-                <div className="flex-1 min-w-0">
+            <div className="shrink-0 space-y-2 border-t px-4 py-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Ajouter une pièce</p>
+              <div className="flex flex-wrap items-center gap-2 md:flex-nowrap">
+                <div className="min-w-0 flex-1 max-md:basis-full">
                   <Combobox
                     options={pieces
                       .filter(p => !selectedModele || p.sous_ensemble === selectedModele.sous_ensemble || p.type_terminal === 'tous')
@@ -1602,9 +1619,12 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                     emptyText="Aucune pièce trouvée."
                   />
                 </div>
-                <Input type="number" min={1} className="w-20" value={addToModele.quantite}
-                  onChange={e => setAddToModele(a => ({ ...a, quantite: e.target.value }))} />
-                <Button size="sm" onClick={addPieceModele}><Plus className="mr-1 h-4 w-4" /> Ajouter</Button>
+                <div className="max-md:flex-1 md:w-20">
+                  <Label htmlFor="compo-quantite">Qté</Label>
+                  <Input id="compo-quantite" type="number" inputMode="numeric" min={1} value={addToModele.quantite}
+                    onChange={e => setAddToModele(a => ({ ...a, quantite: e.target.value }))} />
+                </div>
+                <Button size="sm" className="shrink-0 max-md:flex-1" onClick={addPieceModele} disabled={!addToModele.piece_id}><Plus className="mr-1 h-4 w-4" /> Ajouter</Button>
               </div>
             </div>
           )}

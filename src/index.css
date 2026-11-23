@@ -2063,17 +2063,10 @@ html {
 /* Page d'accueil : la marque garde une vraie présence sur mobile (exemptée de
    l'échelle de titres compacte à 1rem). */
 @media (max-width: 767px) {
-  /* Classe répétée : doit primer sur la règle « en-tête de page » (1,4,1). */
-  #main-content .home-brand-title.home-brand-title.home-brand-title.home-brand-title.home-brand-title {
-    font-size: 2rem !important;
-    line-height: 2.35rem !important;
-    letter-spacing: -0.02em;
-  }
-
   #main-content .home-brand-client.home-brand-client {
-    font-size: 1rem !important;
-    line-height: 1.35rem !important;
-    letter-spacing: 0.12em;
+    font-size: 1.5rem !important;
+    line-height: 1.8rem !important;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
   }
 
@@ -2499,7 +2492,18 @@ html[data-card-rail="off"] [data-card-rail] {
     border-color: hsl(var(--primary-foreground) / 0.25);
   }
 
-  /* Logo lisible quelle que soit la couleur du client. */
+  /* Logo lisible quelle que soit la couleur du client : version claire sur fond blanc. */
+  html[data-sidebar="brand"] .space-sidebar-logo [data-logo-theme="light"] {
+    display: block;
+    padding: 0.4rem 0.6rem;
+    border-radius: var(--radius-control);
+    background-color: hsl(0 0% 100%);
+  }
+
+  html[data-sidebar="brand"] .space-sidebar-logo [data-logo-theme="dark"] {
+    display: none;
+  }
+
   html[data-sidebar="brand"] .space-sidebar-brand img {
     padding: 0.25rem;
     border-radius: var(--radius-control);
@@ -2570,4 +2574,10 @@ html[data-card-rail="off"] [data-card-rail] {
 :is(#main-content, [role="dialog"]) table thead th:not([scope="row"]) svg {
   width: 0.8125rem !important;
   height: 0.8125rem !important;
+}
+
+/* Cases de calendrier (react-day-picker) : ce ne sont pas des cellules de tableau.
+   Avec la marge des cellules sur téléphone, le jour sort de sa case. */
+:is([role="dialog"], #main-content, body) .rdp :is(th, td) {
+  padding: 0 !important;
 }

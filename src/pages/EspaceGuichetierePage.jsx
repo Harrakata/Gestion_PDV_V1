@@ -16,6 +16,7 @@ const GUICHETIERE_TAB_LABELS = {
   'mes-pointages': 'Pointages',
   'mes-points-vente-mobi': 'PDV',
   'etat-caisse': 'Caisse',
+  'demandes-absence': 'Absences',
 };
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

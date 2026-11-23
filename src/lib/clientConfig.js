@@ -22,6 +22,15 @@ import { DEFAULT_CLIENT_CURRENCY, normalizeClientCurrency } from './currency';
 // ── Identité du client (déploiement) ───────────────────────────────────────────
 export const CLIENT_ID = import.meta.env.VITE_CLIENT_ID || 'default';
 export const CLIENT_NAME = import.meta.env.VITE_CLIENT_NAME || 'PMU';
+export const PRODUCT_NAME = 'GPDV';
+/** « GPDV » ou son ancien nom : le client n'a pas de nom propre. */
+export const isProductName = (name) => /^(gpdv|gestion ?pdv)$/i.test((name || '').trim());
+/** « GPDV <client> », ou « GPDV » seul. */
+export const productTitle = (clientName) => (clientName && !isProductName(clientName) ? `${PRODUCT_NAME} ${clientName.trim()}` : PRODUCT_NAME);
+// Logo du produit : affiché quand le client n'a pas défini le sien.
+export const PRODUCT_LOGO_URL = '/brand/gpdv-logo.webp';
+/** Logo détouré de l'accueil : format (tall = téléphone) × thème. */
+export const productHomeLogo = (shape, theme) => `/brand/gpdv-home-${shape}-${theme}.webp`;
 const ENV_LOGO_URL = import.meta.env.VITE_CLIENT_LOGO_URL || '';
 const ENV_CURRENCY = normalizeClientCurrency(import.meta.env.VITE_CLIENT_CURRENCY || DEFAULT_CLIENT_CURRENCY);
 

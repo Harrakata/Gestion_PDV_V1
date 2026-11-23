@@ -4,11 +4,11 @@ import { createLogger, defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 // Titre de l'app pour l'onglet, le meta iOS et le manifeste PWA.
-// Format : "GestionPDV <client>" (ex. "GestionPDV SONAL", "GestionPDV PMU Mali").
+// Format : "GPDV <client>" (ex. "GPDV SONAL", "GPDV PMU Mali").
 // Sur Vercel, VITE_CLIENT_NAME est présent dans process.env au moment du build.
-const PRODUCT_NAME = 'GestionPDV';
+const PRODUCT_NAME = 'GPDV';
 const CLIENT_NAME = (process.env.VITE_CLIENT_NAME || '').trim();
-const APP_TITLE = CLIENT_NAME && CLIENT_NAME !== PRODUCT_NAME
+const APP_TITLE = CLIENT_NAME && !/^(gpdv|gestion ?pdv)$/i.test(CLIENT_NAME)
 	? `${PRODUCT_NAME} ${CLIENT_NAME}`
 	: PRODUCT_NAME;
 
@@ -205,7 +205,7 @@ export default defineConfig({
 		addTransformIndexHtml,
 		VitePWA({
 			registerType: 'autoUpdate',
-			includeAssets: ['carrus-logo.png', 'pwa-icon.svg', 'apple-touch-icon.png'],
+			includeAssets: ['apple-touch-icon.png'],
 			manifest: {
 				name: APP_TITLE,
 				short_name: APP_TITLE,
@@ -218,17 +218,16 @@ export default defineConfig({
 				start_url: '/',
 				scope: '/',
 				icons: [
-					{ src: '/pwa-192x192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
-					{ src: '/pwa-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
-					{ src: '/pwa-maskable-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
-					{ src: '/pwa-icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
+					{ src: '/brand/gpdv-icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+					{ src: '/brand/gpdv-icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+					{ src: '/brand/gpdv-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
 				],
 			},
 			workbox: {
 				navigateFallback: 'index.html',
 				// Ne pas intercepter le viewer Power BI ni les appels d'API
 				navigateFallbackDenylist: [/^\/pbi-viewer/],
-				globPatterns: ['**/*.{js,css,html,svg,png,woff,woff2}'],
+				globPatterns: ['**/*.{js,css,html,svg,png,webp,woff,woff2}'],
 				maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
 				// Le nouveau SW prend la main immédiatement (sinon l'ancien reste actif tant
 				// que des onglets/PWA sont ouverts → ancien comportement de clic conservé).
@@ -237,7 +236,7 @@ export default defineConfig({
 				// Handlers Web Push (push / notificationclick) injectés dans le SW généré.
 				// ⚠ Le suffixe ?v=N contourne le cache HTTP d'importScripts : À INCRÉMENTER
 				//    à chaque modification de public/push-sw.js pour forcer sa prise en compte.
-				importScripts: ['push-sw.js?v=5'],
+				importScripts: ['push-sw.js?v=6'],
 			},
 		}),
 	],

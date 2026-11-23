@@ -18,6 +18,8 @@ const CHEF_AGENCE_TAB_LABELS = {
   'suivi-pointage': 'Pointage',
   'points-vente-mobi': 'PDV',
   'paiement-gros-gain': 'Gains',
+  absences: 'Absences',
+  tickets: 'Tickets',
 };
 import { motion } from 'framer-motion';
 import { Input } from '@/components/ui/input';

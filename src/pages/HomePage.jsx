@@ -7,6 +7,8 @@ import { motion } from 'framer-motion';
 import { LogIn, Wallet } from 'lucide-react';
 import InstallAppButton from '@/components/InstallAppButton';
 import { useClient } from '@/hooks/useFeatureFlags';
+import { isProductName } from '@/lib/clientConfig';
+import ProductLogo from '@/components/ProductLogo';
 import {
   APP_SPACE_SETTINGS_KEY,
   buildDefaultAppSpaceFunctionalities,
@@ -34,6 +36,7 @@ const HomePage = () => {
     return () => window.removeEventListener('app-functionalities-updated', handleFunctionalitiesUpdated);
   }, []);
 
+  const hasClientName = Boolean(client.displayName) && client.displayName !== 'PMU' && !isProductName(client.displayName);
   const isPointageEnabled = isAppSpaceFunctionalityEnabled(spaceFunctionalities, 'pointage');
   const isPaiementGrosGainEnabled = isAppSpaceFunctionalityEnabled(spaceFunctionalities, 'paiement-gros-gain');
 
@@ -47,21 +50,20 @@ const HomePage = () => {
         className="mb-8 w-full max-w-3xl md:mb-10"
       >
         <Card variant="elevated" className="border-border">
-          <CardContent className="flex flex-col items-center px-4 py-7 text-center sm:px-8 sm:py-9 md:px-12">
-            <img
-              src={client.logoUrl || "/carrus-logo.png"}
-              alt={client.displayName || "CARRUS Betting Solutions & Services"}
-              className="mx-auto mb-4 h-16 w-auto object-contain sm:h-20 md:h-28"
-            />
-            <h1 className="home-brand-title mb-2 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
-              <span className="text-primary">
-                GestionPDV
-              </span>
+          <CardContent className="flex flex-col items-center px-4 py-7 text-center sm:px-8 sm:py-10 md:px-12">
+            {/* Logo détouré, sans fond : c'est le titre de la page. */}
+            <h1 className="mb-5 flex w-full justify-center sm:mb-7">
+              <ProductLogo shape="auto" imgClassName="w-40 sm:w-[21rem] md:w-[23rem]" />
             </h1>
-            {client.displayName && client.displayName !== 'PMU' && (
-              <p className="home-brand-client mb-2 text-sm font-semibold text-primary sm:text-base">
-                {client.displayName}
-              </p>
+            {(client.logoUrl || hasClientName) && (
+              <div className="home-client mb-5 flex max-w-full items-center justify-center gap-4 sm:mb-6 sm:gap-5">
+                {client.logoUrl && (
+                  <img src={client.logoUrl} alt={hasClientName ? '' : client.displayName || ''} className="h-16 w-auto max-w-[45%] shrink-0 object-contain sm:h-20" />
+                )}
+                {hasClientName && (
+                  <p className="home-brand-client min-w-0 break-words text-left text-2xl font-extrabold tracking-wide text-primary sm:text-4xl">{client.displayName}</p>
+                )}
+              </div>
             )}
             <p className="home-brand-tagline mb-2 text-lg font-semibold text-foreground sm:text-xl md:text-2xl">
               Gestion de Planning & Pointage

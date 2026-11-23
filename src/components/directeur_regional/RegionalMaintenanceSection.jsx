@@ -7,6 +7,9 @@ import StatusBadge from '@/components/ui/status-badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import MobileFilterBar from '@/components/ui/mobile-filter-bar';
+import { useIsPhone } from '@/hooks/useIsPhone';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -37,6 +40,7 @@ const RegionalMaintenanceSection = ({ regionName = '', allowAllRegions = false, 
   const [interventions, setInterventions] = useState([]);
   const [codesPannes, setCodesPannes] = useState([]);
   const [techniciens, setTechniciens] = useState([]);
+  const isPhone = useIsPhone();
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [expandedTerminalIds, setExpandedTerminalIds] = useState({});
@@ -279,6 +283,82 @@ const RegionalMaintenanceSection = ({ regionName = '', allowAllRegions = false, 
     ? `les agences de la région ${effectiveRegionName}`
     : 'toutes les agences';
 
+  // Champs partagés par la barre du téléphone (titre dans le champ) et celle de l'ordinateur (titre au-dessus).
+  const FieldLabel = isPhone ? Label : 'p';
+  const filterFields = (
+    <>
+      <div className="space-y-2">
+        <FieldLabel className="text-sm font-medium">Agence</FieldLabel>
+        <Select
+          value={filters.agenceId}
+          onValueChange={(value) =>
+            setFilters((previousState) => ({
+              ...previousState,
+              agenceId: value,
+              terminalId: ALL_FILTER_VALUE,
+            }))
+          }
+          disabled={isLoading}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Toutes les agences" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL_FILTER_VALUE}>Toutes les agences</SelectItem>
+            {regionalAgences.map((agence) => (
+              <SelectItem key={agence.id} value={String(agence.id)}>
+                {agence.nom}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
+        <FieldLabel className="text-sm font-medium">Terminal</FieldLabel>
+        <Select
+          value={filters.terminalId}
+          onValueChange={(value) => setFilters((previousState) => ({ ...previousState, terminalId: value }))}
+          disabled={isLoading}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Tous les terminaux" />
+          </SelectTrigger>
+          <SelectContent>
+            {terminalOptions.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
+        <FieldLabel className="text-sm font-medium">Suivi maintenance</FieldLabel>
+        <Select
+          value={filters.suivi}
+          onValueChange={(value) => setFilters((previousState) => ({ ...previousState, suivi: value }))}
+          disabled={isLoading}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Tous les suivis" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL_FILTER_VALUE}>Tous les suivis</SelectItem>
+            <SelectItem value="a_jour">Maintenance à jour</SelectItem>
+            <SelectItem value="preventive">Faire maintenance préventive</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+    </>
+  );
+  const activeFilterLabels = [
+    regionalAgences.find((agence) => String(agence.id) === filters.agenceId)?.nom,
+    filters.terminalId !== ALL_FILTER_VALUE && terminalOptions.find((option) => option.value === filters.terminalId)?.label,
+    { a_jour: 'Maintenance à jour', preventive: 'Faire maintenance préventive' }[filters.suivi],
+  ];
+
   return (
     <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
       <Card>
@@ -359,86 +439,36 @@ const RegionalMaintenanceSection = ({ regionName = '', allowAllRegions = false, 
                 </Button>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">Agence</p>
-                  <Select
-                    value={filters.agenceId}
-                    onValueChange={(value) =>
-                      setFilters((previousState) => ({
-                        ...previousState,
-                        agenceId: value,
-                        terminalId: ALL_FILTER_VALUE,
-                      }))
-                    }
-                    disabled={isLoading}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Toutes les agences" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={ALL_FILTER_VALUE}>Toutes les agences</SelectItem>
-                      {regionalAgences.map((agence) => (
-                        <SelectItem key={agence.id} value={String(agence.id)}>
-                          {agence.nom}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+              {isPhone ? (
+                <MobileFilterBar
+                  search={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  searchLabel="Rechercher un terminal, une agence ou un sous-ensemble"
+                  active={activeFilterLabels}
+                  onReset={() => setFilters({ agenceId: ALL_FILTER_VALUE, terminalId: ALL_FILTER_VALUE, suivi: ALL_FILTER_VALUE })}
+                  disabled={isLoading}
+                >
+                  {filterFields}
+                </MobileFilterBar>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                  {filterFields}
 
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">Terminal</p>
-                  <Select
-                    value={filters.terminalId}
-                    onValueChange={(value) => setFilters((previousState) => ({ ...previousState, terminalId: value }))}
-                    disabled={isLoading}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Tous les terminaux" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {terminalOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">Suivi maintenance</p>
-                  <Select
-                    value={filters.suivi}
-                    onValueChange={(value) => setFilters((previousState) => ({ ...previousState, suivi: value }))}
-                    disabled={isLoading}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Tous les suivis" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={ALL_FILTER_VALUE}>Tous les suivis</SelectItem>
-                      <SelectItem value="a_jour">Maintenance à jour</SelectItem>
-                      <SelectItem value="preventive">Faire maintenance préventive</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">Recherche</p>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                      value={searchTerm}
-                      onChange={(event) => setSearchTerm(event.target.value)}
-                      placeholder="Terminal, agence, sous-ensemble..."
-                      className="pl-10"
-                      disabled={isLoading}
-                    />
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium">Recherche</p>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        value={searchTerm}
+                        onChange={(event) => setSearchTerm(event.target.value)}
+                        placeholder="Terminal, agence, sous-ensemble..."
+                        className="pl-10"
+                        disabled={isLoading}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </CardHeader>
             <CardContent>
               {showMaintenanceMap && (

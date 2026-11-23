@@ -6,7 +6,7 @@
 // ════════════════════════════════════════════════════════════════════════════
 
 // Version du handler — vérifiable depuis la page (message 'get-push-sw-version').
-self.__PUSH_SW_VERSION = 'v5';
+self.__PUSH_SW_VERSION = 'v6';
 
 // Répond à la page qui demande la version active (diagnostic « quel SW tourne »).
 self.addEventListener('message', (event) => {
@@ -22,8 +22,8 @@ self.addEventListener('push', (event) => {
   const title = data.title || 'Notification';
   const options = {
     body: data.body || '',
-    icon: data.icon || '/pwa-192x192.png',
-    badge: data.badge || '/pwa-192x192.png',
+    icon: data.icon || '/brand/gpdv-icon-192.png',
+    badge: data.badge || '/brand/gpdv-badge-96.png',
     tag: data.tag || undefined,
     // ⚠ On propage url ET openBell (sinon le clic d'une notif PUSH perd le contexte
     //    et retombe sur l'accueil).

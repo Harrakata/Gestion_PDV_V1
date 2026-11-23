@@ -9,7 +9,8 @@ const open = async (page: Page, screen: string) => {
     // Seules lectures passant par POST : fonctions SQL de suivi.
     if (/\/rpc\//.test(url)) return route.fulfill({ json: [{ id_trm_mobi: 'MOBI-1', hors_service: 40, date_suivi: '2026-11-22' }] });
     if (route.request().method() !== 'GET') return route.abort();
-    const rows = /\/cln_fnir_ccope\?/.test(url)
+    const rows = /\/cln_fnir_ccopeglob\?/.test(url) ? [{ id: 1, id_ccopeglob: 1, date_op: '2026-11-12', prepose: '101', pari: 'COUPLE', nombre_trans: 2 }]
+      : /\/cln_fnir_ccope\?/.test(url)
       ? [
         { id: 1, date_op: '2026-11-12', operateur: '101', mt_enr: 1000, nt_enr: 3 },
         { id: 2, date_op: '2026-11-13', operateur: '102', mt_enr: 2000, nt_enr: 5 },
@@ -33,6 +34,7 @@ const overflow = (page: Page) => page.evaluate(() => document.documentElement.sc
 const screens = [
   { screen: 'ccope', search: 'Rechercher une opération', filters: ['Région', 'Agences', 'Guichetière', 'Préposé'] },
   { screen: 'planification', search: /Rechercher une agence/, filters: ['Régions', 'Agences', 'Techniciens', 'Créneaux', 'Suivis'] },
+  { screen: 'ccopeglob', search: 'Rechercher une opération détaillée', filters: ['Région', 'Agences', 'Guichetière', 'Tous les paris', 'Préposé'] },
   { screen: 'mobi', search: 'Rechercher une agence', filters: ['Région', 'Conformité'] },
   { screen: 'maintenance', search: /Rechercher un terminal/, filters: ['Régions', 'Agences', 'Terminaux', 'Suivi'] },
 ];
@@ -40,6 +42,9 @@ const screens = [
 const forms = [
   { screen: 'general', search: 'Agence en charge', fields: ["Chef d'Agence", 'Période'], context: 'Ce mois-ci' },
   { screen: 'rapports', fields: ['Du', 'Au', 'Région', 'Secteur', 'Agence'], context: 'Ce mois' },
+  { screen: 'performance', fields: ['Mois', 'Région', 'Secteur', 'Agence'], context: 'novembre 2026' },
+  { screen: 'salaire', fields: ['Mois', 'Sans groupement', 'Région', 'Agences', 'Guichetière', 'Préposé'], context: 'novembre 2026' },
+  { screen: 'regional', search: /Rechercher un terminal/, fields: ['Agence', 'Terminal', 'Suivi maintenance'], context: 'Filtres' },
   { screen: 'enjeux', fields: ['Région', 'Secteur', 'Agence', 'Point de vente', 'Guichetière', 'Terminal Mobi', 'Du', 'Au', 'Regroupement temporel'], context: 'Jusqu’au 23/11/2026 · par mois' },
 ];
 
@@ -124,6 +129,13 @@ test.describe('téléphone', () => {
     expect(box.x).toBeGreaterThanOrEqual(0);
     expect(box.x + box.width).toBeLessThanOrEqual(360);
     expect(await panel.evaluate(el => el.scrollWidth <= el.clientWidth + 1), 'calendrier entier').toBe(true);
+    const offsets = await panel.locator('td:has(button)').evaluateAll(list => list.map(td => { const a = td.getBoundingClientRect(), b = td.querySelector('button')!.getBoundingClientRect(); return Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y), Math.abs(a.width - b.width), Math.abs(a.height - b.height)); }));
+    expect(offsets.length).toBeGreaterThanOrEqual(30);
+    expect(Math.max(...offsets), 'jour centré dans sa case').toBeLessThanOrEqual(1);
+    await expect(panel.getByRole('button', { name: 'Mois suivant' })).toBeVisible();
+    // Les titres de jours restent alignés sur les colonnes.
+    const centers = await panel.evaluate(el => { const c = (e: Element) => { const r = e.getBoundingClientRect(); return r.x + r.width / 2; }; return [[...el.querySelectorAll('thead th')].map(c), [...el.querySelectorAll('tbody tr')[1].querySelectorAll('td')].map(c)]; });
+    centers[0].forEach((x, i) => expect(Math.abs(x - centers[1][i])).toBeLessThanOrEqual(2));
   });
 
   test('ccope : un filtre replié reste signalé, puis s’efface', async ({ page }) => {
@@ -166,6 +178,84 @@ test.describe('téléphone', () => {
       const option = page.locator('[data-radix-popper-content-wrapper]').getByRole('button', { name });
       expect(await option.evaluate(el => el.scrollWidth <= el.clientWidth && el.getBoundingClientRect().right <= innerWidth)).toBe(true);
     }
+  });
+
+  test('ccopeglob : période, filtre, groupement et colonnes', async ({ page }) => {
+    await open(page, 'ccopeglob');
+    const bar = page.locator('[data-mobile-filters]');
+    await expect(bar).toContainText('Toutes les dates');
+    await bar.getByRole('button', { name: 'Filtres' }).tap();
+    for (const mode of ['Semaine', 'Période', 'Mois']) {
+      await bar.getByRole('button', { name: mode, exact: true }).tap();
+      expect(await overflow(page)).toBeLessThanOrEqual(0);
+    }
+    await bar.getByRole('combobox').filter({ hasText: 'Tous les paris' }).tap();
+    await page.getByRole('option', { name: 'COUPLE' }).tap();
+    await bar.getByRole('button', { name: 'Filtres, 1 actif(s)' }).tap();
+    await expect(bar).toContainText('novembre 2026 · COUPLE');
+    const title = (await page.getByRole('heading', { name: 'Données', exact: true }).boundingBox())!;
+    const group = page.getByRole('button', { name: 'Grouper : Aucun groupement' });
+    const columns = page.getByRole('button', { name: 'Colonnes' });
+    for (const button of [group, columns]) expect((await button.boundingBox())!.y).toBeLessThan(title.y + title.height);
+    await group.tap();
+    const panel = page.locator('[data-radix-popper-content-wrapper] > *');
+    await page.waitForTimeout(400);
+    const box = (await panel.boundingBox())!;
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(360);
+    await panel.getByRole('button', { name: 'Agence', exact: true }).tap();
+    await expect(page.getByRole('button', { name: 'Grouper : Agence' })).toBeVisible();
+    expect(await overflow(page)).toBeLessThanOrEqual(0);
+  });
+
+  test('salaire : filtre et groupement rappelés, colonnes sur la même ligne', async ({ page }) => {
+    await open(page, 'salaire');
+    const bar = page.locator('[data-mobile-filters]');
+    const toggle = bar.getByRole('button', { name: /^Filtres/ });
+    const columns = bar.getByRole('button', { name: 'Colonnes affichées' });
+    const [a, b] = [(await toggle.boundingBox())!, (await columns.boundingBox())!];
+    expect(Math.abs(a.y + a.height / 2 - b.y - b.height / 2)).toBeLessThanOrEqual(2);
+    expect(b.x + b.width).toBeLessThanOrEqual(360);
+    await columns.tap();
+    const menu = (await page.locator('.anchored-popover').boundingBox())!;
+    expect(menu.x).toBeGreaterThanOrEqual(0);
+    expect(menu.x + menu.width).toBeLessThanOrEqual(360);
+    await page.keyboard.press('Escape');
+    await toggle.tap();
+    await bar.getByRole('combobox', { name: 'Groupement' }).tap();
+    await page.getByRole('option', { name: 'Grouper par Agence' }).tap();
+    await bar.getByRole('combobox').filter({ hasText: 'Agences' }).tap();
+    await page.getByRole('option', { name: 'Gombe' }).tap();
+    await page.keyboard.press('Escape');
+    await expect(bar.getByRole('button', { name: /^Filtres, 1 actif/ })).toHaveAttribute('aria-label', /novembre 2026 · par Agence · Gombe/);
+    expect(await toggle.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
+    await bar.getByRole('button', { name: 'Effacer les filtres' }).tap();
+    await expect(bar.getByRole('button', { name: 'Filtres : novembre 2026 · par Agence' })).toBeVisible();
+    expect(await overflow(page)).toBeLessThanOrEqual(0);
+  });
+
+  test('regional : agence rappelée repliée, puis effacée', async ({ page }) => {
+    await open(page, 'regional');
+    const bar = page.locator('[data-mobile-filters]');
+    await bar.getByRole('button', { name: 'Filtres' }).tap();
+    await bar.getByRole('combobox').first().tap();
+    await page.getByRole('option', { name: 'Gombe' }).tap();
+    await bar.getByRole('button', { name: 'Filtres, 1 actif(s)' }).tap();
+    await expect(bar).toContainText('Gombe');
+    await bar.getByRole('button', { name: 'Filtres, 1 actif(s)' }).tap();
+    await bar.getByRole('button', { name: 'Effacer les filtres' }).tap();
+    await expect(bar.getByRole('button', { name: 'Filtres', exact: true })).toBeVisible();
+  });
+
+  test('performance : région rappelée repliée, puis effacée', async ({ page }) => {
+    await open(page, 'performance');
+    const bar = page.locator('[data-mobile-filters]');
+    await bar.getByRole('button', { name: /^Filtres/ }).tap();
+    await bar.getByRole('combobox').first().tap();
+    await page.getByRole('option', { name: 'Kinshasa' }).tap();
+    await expect(bar.getByRole('button', { name: /^Filtres, 1 actif/ })).toContainText('novembre 2026 · Kinshasa');
+    await bar.getByRole('button', { name: 'Effacer les filtres' }).tap();
+    await expect(bar.getByRole('button', { name: 'Filtres : novembre 2026' })).toBeVisible();
   });
 
   test('planification : choix multiples signalés puis effacés', async ({ page }) => {
@@ -218,6 +308,6 @@ for (const { screen, fields } of forms) {
     await page.setViewportSize({ width: 1440, height: 900 });
     await open(page, screen);
     await expect(page.locator('[data-mobile-filters]')).toHaveCount(0);
-    for (const field of fields) await expect(page.getByText(field, { exact: true }).first()).toBeVisible();
+    for (const field of fields.filter(name => !(screen === 'salaire' && name === 'Mois'))) await expect(page.getByText(field, { exact: true }).first()).toBeVisible();
   });
 }

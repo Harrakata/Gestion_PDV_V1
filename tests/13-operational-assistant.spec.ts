@@ -4,7 +4,8 @@ const fixture = '/tests/fixtures/operational-assistant.html';
 async function open(page) {
   await page.getByRole('button', { name: 'Ouvrir l’assistant', exact: true }).click();
   await expect(page.getByRole('dialog')).toBeVisible();
-  await expect(page.getByLabel('Votre question')).toBeFocused();
+  // Le panneau reçoit le focus, jamais la saisie (clavier du téléphone).
+  await expect(page.getByRole('dialog')).toBeFocused();
 }
 async function ask(page, question = 'État du terminal TERM01 ?') {
   await page.getByLabel('Votre question').fill(question);
@@ -20,6 +21,21 @@ test('guest guide answers rules without requesting data and restores focus on cl
   await page.keyboard.press('Escape');
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Ouvrir l’assistant' })).toBeFocused();
+});
+
+test('opening and returning home show suggestions from the top, without focusing the composer', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 640 });
+  await page.goto(`${fixture}?guest`);
+  await open(page);
+  const log = page.getByRole('log');
+  await expect(page.getByLabel('Votre question')).not.toBeFocused();
+  expect(await log.evaluate(el => el.scrollTop)).toBe(0);
+  await ask(page, 'Comment fonctionne le rapprochement salaire caisse ?');
+  await page.getByRole('button', { name: 'Accueil' }).click();
+  await expect(page.getByRole('dialog')).toBeFocused();
+  expect(await log.evaluate(el => el.scrollTop)).toBe(0);
+  await page.keyboard.press('Tab');
+  expect(await page.evaluate(() => document.activeElement!.closest('[role="dialog"]') !== null)).toBe(true);
 });
 
 test('AI response exposes dated internal sources only', async ({ page }) => {

@@ -69,7 +69,7 @@ export default function AssistantPanel({ space, currentTab, authenticated, ident
   const [view, setView] = useState('conversation');
   const pending = useRef(null);
   const scrollRef = useRef(null);
-  const inputRef = useRef(null);
+  const contentRef = useRef(null);
   const effectiveMode = online && aiConnectionEnabled ? capabilities.mode : 'guide';
   const menus = capabilities.menus || [];
   const currentMenu = menus.find((menu) => menu.key === currentTab);
@@ -120,7 +120,7 @@ export default function AssistantPanel({ space, currentTab, authenticated, ident
     return () => { clearTimeout(timer); controller.signal.removeEventListener('abort', abortListener); controller.abort(); };
   }, [open, authenticated, identity, space, online, aiConnectionEnabled, request, revision]);
 
-  useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight; }, [messages, busy, open, view]);
+  useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = messages.length ? scrollRef.current.scrollHeight : 0; }, [messages, busy, open, view]);
 
   const readGuide = (guide) => {
     if (busy) return;
@@ -165,19 +165,21 @@ export default function AssistantPanel({ space, currentTab, authenticated, ident
     }
   };
 
-  const reset = () => { pending.current?.abort(); pending.current = null; setBusy(false); setMessages([]); setDraft(''); setView('conversation'); inputRef.current?.focus(); };
+  // Le panneau, pas la saisie : sur téléphone, elle ouvrirait le clavier sur les suggestions.
+  const focusPanel = () => contentRef.current?.focus({ preventScroll: true });
+  const reset = () => { pending.current?.abort(); pending.current = null; setBusy(false); setMessages([]); setDraft(''); setView('conversation'); focusPanel(); };
   const suggestions = assistantSuggestions(currentTab);
 
   return <Dialog.Root open={open} onOpenChange={setOpen}>
     <Dialog.Trigger asChild>
-      <button type="button" aria-label="Ouvrir l’assistant" title="Assistant GestionPDV"
+      <button type="button" aria-label="Ouvrir l’assistant" title="Assistant GPDV"
         className="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-4 z-40 flex h-12 w-12 items-center justify-center rounded-pill border border-white/30 bg-primary text-primary-foreground shadow-lg transition-colors hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary md:bottom-6 md:right-6">
         <MessageCircle className="h-6 w-6" />
       </button>
     </Dialog.Trigger>
     <Dialog.Portal>
       <Dialog.Overlay data-operational-assistant-overlay className="fixed inset-0 z-50 bg-black/10 backdrop-blur-none" />
-      <Dialog.Content data-operational-assistant onOpenAutoFocus={(event) => { if (inputRef.current) { event.preventDefault(); inputRef.current.focus(); } }}
+      <Dialog.Content data-operational-assistant ref={contentRef} onOpenAutoFocus={(event) => { event.preventDefault(); focusPanel(); }}
         className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-3 z-50 flex h-[min(680px,85dvh)] w-[calc(100vw-1.5rem)] max-w-[440px] flex-col overflow-hidden rounded-2xl border text-foreground shadow-2xl outline-none md:right-6">
         <span className="pointer-events-none absolute inset-x-0 top-0 z-10 h-1.5 bg-primary" />
         <header className="flex shrink-0 items-center gap-3 px-4 pb-3 pt-5">
@@ -185,7 +187,7 @@ export default function AssistantPanel({ space, currentTab, authenticated, ident
             <Bot className="h-6 w-6" />
           </span>
           <div className="min-w-0 flex-1">
-            <Dialog.Title className="text-base font-semibold text-primary">Assistant GestionPDV</Dialog.Title>
+            <Dialog.Title className="text-base font-semibold text-primary">Assistant GPDV</Dialog.Title>
             <Dialog.Description className={aiConnectionEnabled ? 'truncate text-xs text-muted-foreground' : 'sr-only'}>{checking ? 'Connexion…' : effectiveMode === 'ai' ? 'IA · Consultation en lecture seule' : aiConnectionEnabled ? 'Guide intégré · Données locales' : 'Assistant en mode guide local'}</Dialog.Description>
           </div>
           <Dialog.Close asChild><Button type="button" size="icon" variant="ghost" className="h-8 w-8 shrink-0 rounded-pill bg-card shadow-sm" title="Fermer l’assistant" aria-label="Fermer l’assistant"><X className="h-4 w-4" /></Button></Dialog.Close>
@@ -225,7 +227,7 @@ export default function AssistantPanel({ space, currentTab, authenticated, ident
         <form className="shrink-0 space-y-2 border-t border-primary/15 bg-transparent px-4 py-3" onSubmit={(event) => { event.preventDefault(); send(); }}>
           <label htmlFor="assistant-question" className="sr-only">Votre question</label>
           <div className="flex items-end gap-2">
-            <Textarea ref={inputRef} id="assistant-question" rows={2} maxLength={4000} value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="Votre question…" className="max-h-28 min-h-[64px] min-w-0 resize-none bg-card shadow-sm" onKeyDown={(event) => {
+            <Textarea id="assistant-question" rows={2} maxLength={4000} value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="Votre question…" className="max-h-28 min-h-[64px] min-w-0 resize-none bg-card shadow-sm" onKeyDown={(event) => {
               if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); send(); }
             }} />
             {busy ? <Button type="button" size="icon" variant="outline" className="h-10 w-10 shrink-0" title="Arrêter la réponse" aria-label="Arrêter la réponse" onClick={() => pending.current?.abort()}><Square className="h-4 w-4" /></Button>

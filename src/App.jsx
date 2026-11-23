@@ -7,6 +7,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { ConfirmDialogProvider } from '@/components/ConfirmDialogProvider';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { FeatureFlagsProvider, useClient } from '@/hooks/useFeatureFlags';
+import { productTitle } from '@/lib/clientConfig';
 import { loadAndApplyTheme, applyThemeFromCache } from '@/lib/theme';
 
 // Application synchrone immédiate depuis le cache (évite le flash au rechargement)
@@ -23,9 +24,7 @@ const ThemeLoader = () => {
 const ClientTitle = () => {
   const client = useClient();
   useEffect(() => {
-    const PRODUCT = 'GestionPDV';
-    const name = (client?.displayName || '').trim();
-    document.title = name && name !== PRODUCT ? `${PRODUCT} ${name}` : PRODUCT;
+    document.title = productTitle(client?.displayName);
   }, [client?.displayName]);
   return null;
 };

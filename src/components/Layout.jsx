@@ -24,6 +24,7 @@ import {
   getAppSpaceFeatureForPathname,
   normalizeAppSpaceFunctionalities,
 } from '@/lib/exploitationProfiles';
+import { PRODUCT_LOGO_URL, PRODUCT_NAME, productTitle } from '@/lib/clientConfig';
 import { buildBreadcrumbs } from '@/lib/navigationConfig';
 
 const Layout = () => {
@@ -165,8 +166,8 @@ const Layout = () => {
     const crumbs = buildBreadcrumbs(location.pathname);
     const currentLabel = crumbs.at(-1)?.label;
     document.title = currentLabel && currentLabel !== 'Accueil'
-      ? `${currentLabel} · ${client.displayName || 'GestionPDV'}`
-      : client.displayName || 'GestionPDV';
+      ? `${currentLabel} · ${productTitle(client.displayName)}`
+      : productTitle(client.displayName);
   }, [client.displayName, location.pathname]);
 
   React.useEffect(() => {
@@ -208,8 +209,8 @@ const Layout = () => {
             <Link to="/" className="flex min-w-0 items-center gap-3">
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 <img
-                  src={client.logoUrl || '/carrus-logo.png'}
-                  alt={client.displayName || 'CARRUS Betting Solutions & Services'}
+                  src={client.logoUrl || PRODUCT_LOGO_URL}
+                  alt={client.displayName || PRODUCT_NAME}
                   className="h-10 w-auto object-contain drop-shadow-sm sm:h-12"
                 />
               </motion.div>
@@ -364,7 +365,7 @@ const Layout = () => {
       <footer className="border-t border-border py-5 md:px-8">
         <div className="container flex items-center justify-center">
           <p className="text-center text-sm leading-loose text-muted-foreground md:text-left">
-            © {new Date().getFullYear()} {client.displayName || 'GestionPDV'}. Tous droits réservés.
+            © {new Date().getFullYear()} {client.displayName || PRODUCT_NAME}. Tous droits réservés.
           </p>
         </div>
       </footer>
