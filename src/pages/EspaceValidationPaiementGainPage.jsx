@@ -1,8 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { describeError } from '@/lib/errors';
-import SpaceHeaderIdentity from '@/components/SpaceHeaderIdentity';
-import SpaceHeaderProfile from '@/components/SpaceHeaderProfile';
-import SpaceMobileHeader from '@/components/SpaceMobileHeader';
+import SpaceShell from '@/components/SpaceShell';
+import PageHeader from '@/components/ui/page-header';
 import { useNavigate } from 'react-router-dom';
 import { usePageState } from '@/hooks/usePageState';
 import { motion } from 'framer-motion';
@@ -12,18 +11,13 @@ import {
   Clock3,
   FileText,
   Loader2,
-  LogOut,
-  UserCog,
   BarChart2,
   Search,
   ShieldCheck,
   Wrench,
   XCircle,
-  Menu,
-  X,
-  Home,
 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import StatusBadge from '@/components/ui/status-badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -32,16 +26,14 @@ import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, Tabl
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
+import EmptyState from '@/components/ui/empty-state';
 import KpiStatCard from '@/components/analytics/KpiStatCard';
 import { useActivityTracker } from '@/hooks/useActivityTracker';
 import { useSessionTimeout } from '@/hooks/useSessionTimeout';
 import EditProfileDialog from '@/components/EditProfileDialog';
 import ForgotPasswordDialog from '@/components/ForgotPasswordDialog';
 import SpaceLoginCard from '@/components/SpaceLoginCard';
-import MobileTabBar from '@/components/mobile/MobileTabBar';
-import SwipeTabs from '@/components/mobile/SwipeTabs';
 import NotificationBell from '@/components/NotificationBell';
-import EnablePushButton from '@/components/EnablePushButton';
 import NotifEnableBanner from '@/components/NotifEnableBanner';
 import { useSpaceNotifications, clearNotifWatch } from '@/hooks/useSpaceNotifications';
 import { logAudit, AUDIT_ACTIONS, AUDIT_ENTITIES } from '@/lib/auditLog';
@@ -58,7 +50,7 @@ import {
   formatDisplayDateTime,
   getEffectiveDemandeStatus,
   getEffectiveWorkflowStage,
-  getStatusBadgeClass,
+  getStatusTone,
   getWorkflowStageLabel,
   isValidatorAssignedToDemande,
   VALIDATOR_FUNCTIONS,
@@ -171,7 +163,7 @@ const LoginPage = ({ onLogin, spaceConfig }) => {
     toast({
       title: 'Connexion réussie',
       description: `Bienvenue ${data.prenom} ${data.nom}.`,
-      className: 'bg-success text-white',
+      className: 'bg-success text-success-foreground',
     });
     setIsLoading(false);
   };
@@ -540,7 +532,7 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
         decision === 'approve'
           ? `La demande a été transmise au ${nextStepLabel}.`
           : 'La demande a été refusée et clôturée.',
-      className: decision === 'approve' ? 'bg-success text-white' : 'bg-destructive text-white',
+      className: decision === 'approve' ? 'bg-success text-success-foreground' : 'bg-destructive text-destructive-foreground',
     });
 
     setActionComment('');
@@ -690,13 +682,11 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
     <div className="space-y-6">
       <Card variant="accent">
         <CardHeader>
-          <CardTitle className="flex items-center text-3xl font-bold text-primary">
-            <ShieldCheck className="mr-3 h-8 w-8" />
-            {spaceConfig.spaceTitle}
-          </CardTitle>
-          <CardDescription>
-            Validez les demandes d’autorisation de paiement selon votre niveau hiérarchique.
-          </CardDescription>
+          <PageHeader
+            icon={<ShieldCheck />}
+            title={spaceConfig.spaceTitle}
+            description="Validez les demandes d’autorisation de paiement selon votre niveau hiérarchique."
+          />
         </CardHeader>
       </Card>
 
@@ -791,9 +781,9 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
                         <TableCell>{formatCurrency(demande.montantGain)}</TableCell>
                         <TableCell>{demande.agenceOrigineNom || 'N/A'}</TableCell>
                         <TableCell>
-                          <Badge variant="outline" className={getStatusBadgeClass(getEffectiveDemandeStatus(demande))}>
+                          <StatusBadge tone={getStatusTone(getEffectiveDemandeStatus(demande))}>
                             {getEffectiveDemandeStatus(demande)}
-                          </Badge>
+                          </StatusBadge>
                         </TableCell>
                         <TableCell className="text-right">
                           <Button
@@ -842,7 +832,7 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
                   <Button
                     onClick={() => handleDecision('approve')}
                     disabled={isActionLoading}
-                    className="bg-success text-white hover:bg-success/90"
+                    className="bg-success text-success-foreground hover:bg-success/90"
                   >
                     {isActionLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
                     Valider la demande
@@ -926,9 +916,9 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
                       <TableCell>{formatCurrency(demande.montantGain)}</TableCell>
                       <TableCell>{getWorkflowStageLabel(getEffectiveWorkflowStage(demande))}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={getStatusBadgeClass(getEffectiveDemandeStatus(demande))}>
+                        <StatusBadge tone={getStatusTone(getEffectiveDemandeStatus(demande))}>
                           {getEffectiveDemandeStatus(demande)}
-                        </Badge>
+                        </StatusBadge>
                       </TableCell>
                       <TableCell>{formatDisplayDateTime(demande.updated_at)}</TableCell>
                     </motion.tr>
@@ -1078,16 +1068,24 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
     return <LoginPage onLogin={handleLogin} spaceConfig={spaceConfig} />;
   }
 
-  return (
-    <div className="app-space-layout has-mobile-header flex flex-col gap-4 md:flex-row lg:gap-8">
+  const navigationItems = menuItems.map((item) => ({
+    key: item.key,
+    label: item.label,
+    mobileLabel: VALIDATION_TAB_LABELS[item.key] || item.label,
+    icon: item.icon,
+    active: activeSection === item.key,
+    disabled: item.disabled,
+    onClick: () => setActiveSection(item.key),
+  }));
 
-      {/* En-tête mobile/PWA commun : profil + recherche + actions + menu */}
-      <SpaceMobileHeader
-        photoUrl={validator.photo_url}
-        initials={[validator.prenom?.[0], validator.nom?.[0]].filter(Boolean).join('') || spaceConfig.fallbackInitials}
-        name={`${validator.prenom || ''} ${validator.nom || ''}`.trim()}
-        role={spaceConfig.roleLabel}
-        actions={(
+  return (
+    <SpaceShell
+      profile={{
+        photoUrl: validator.photo_url,
+        initials: [validator.prenom?.[0], validator.nom?.[0]].filter(Boolean).join('') || spaceConfig.fallbackInitials,
+        name: `${validator.prenom || ''} ${validator.nom || ''}`.trim(),
+        role: spaceConfig.roleLabel,
+        actions: (
           <NotificationBell
             notifications={spaceNotifications}
             totalCount={spaceNotifCount}
@@ -1095,154 +1093,53 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
             onNavigate={() => setIsMobileMenuOpen(false)}
             reader={notifReader}
           />
-        )}
-        menuOpen={isMobileMenuOpen}
-        onToggleMenu={() => setIsMobileMenuOpen((open) => !open)}
-      />
-
-      {isMobileMenuOpen && (
-        <div className="app-space-backdrop md:hidden" onClick={() => setIsMobileMenuOpen(false)} aria-hidden="true" />
-      )}
-      <motion.aside
-        initial={{ x: -100, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className={`app-space-sidebar md:w-72 md:shrink-0 ${isMobileMenuOpen ? 'is-open' : ''}`}
-      >
-        <div className="app-space-sidebar-scroll sticky top-20 space-y-3 max-h-[calc(100vh-5.5rem)] overflow-y-auto pb-4 pr-1 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
-          <SpaceHeaderIdentity>
-            <SpaceHeaderProfile
-              photoUrl={validator.photo_url}
-              initials={[validator.prenom?.[0], validator.nom?.[0]].filter(Boolean).join('') || spaceConfig.fallbackInitials}
-              name={`${validator.prenom || ''} ${validator.nom || ''}`.trim()}
-              role={spaceConfig.roleLabel}
-              actions={(
-                <NotificationBell
-                  notifications={spaceNotifications}
-                  totalCount={spaceNotifCount}
-                  onRefresh={refreshSpaceNotifs}
-                  onNavigate={() => setIsMobileMenuOpen(false)}
-                  reader={notifReader}
-                />
-              )}
-            />
-          </SpaceHeaderIdentity>
-
-          <Card className="relative overflow-hidden">
-            <CardContent className="relative p-3">
-              <nav className="space-y-0.5">
-                {menuItems.map((item) => {
-                  const isActive = activeSection === item.key;
-                  return (
-                    <button
-                      key={item.key}
-                      type="button"
-                      onClick={() => !item.disabled && setActiveSection(item.key)}
-                      disabled={item.disabled}
-                      aria-current={isActive ? 'page' : undefined}
-                      className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all ${
-                        isActive
-                          ? 'bg-primary/10 text-primary shadow-none'
-                          : item.disabled
-                            ? 'cursor-not-allowed text-muted-foreground/40'
-                            : 'text-muted-foreground hover:bg-black/5 hover:text-foreground'
-                      }`}
-                    >
-                      {React.cloneElement(item.icon, { className: 'h-4 w-4 shrink-0' })}
-                      {item.label}
-                    </button>
-                  );
-                })}
-              </nav>
-              <div className="mt-1 border-t pt-1">
-                <div className="flex items-center">
-                  <button
-                    type="button"
-                    onClick={() => { navigate('/'); setIsMobileMenuOpen(false); }}
-                    className="flex flex-1 flex-col items-center gap-1 rounded-2xl py-2.5 text-muted-foreground/70 transition-colors hover:bg-primary/8 hover:text-primary"
-                  >
-                    <Home className="h-5 w-5" />
-                    <span className="text-[0.6rem] font-semibold">Accueil</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setIsProfileDialogOpen(true); setIsMobileMenuOpen(false); }}
-                    className="flex flex-1 flex-col items-center gap-1 rounded-2xl py-2.5 text-muted-foreground/70 transition-colors hover:bg-primary/8 hover:text-primary"
-                  >
-                    <UserCog className="h-5 w-5" />
-                    <span className="text-[0.6rem] font-semibold">Profil</span>
-                  </button>
-                  <EnablePushButton reader={notifReader} asNavButton />
-                  <button
-                    type="button"
-                    onClick={handleLogout}
-                    className="flex flex-1 flex-col items-center gap-1 rounded-2xl py-2.5 text-destructive transition-colors hover:bg-destructive/10 hover:text-destructive"
-                  >
-                    <LogOut className="h-5 w-5" />
-                    <span className="text-[0.6rem] font-semibold">Déconn.</span>
-                  </button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {spaceConfig.expectedFunction === VALIDATOR_FUNCTIONS.REGIONAL && !isRegionalProfile && (
-            <div className="rounded-xl border border-warning/30 bg-warning-muted px-3 py-2 text-xs text-warning-muted-foreground">
-              Les onglets Maintenance et Suivi Pointage sont disponibles uniquement pour un directeur régional avec région assignée.
-            </div>
-          )}
+        ),
+      }}
+      menuOpen={isMobileMenuOpen}
+      onMenuOpenChange={setIsMobileMenuOpen}
+      menuItems={navigationItems}
+      reader={notifReader}
+      onProfile={() => setIsProfileDialogOpen(true)}
+      onLogout={handleLogout}
+      contentClassName="md:overflow-x-hidden"
+      sidebarNote={spaceConfig.expectedFunction === VALIDATOR_FUNCTIONS.REGIONAL && !isRegionalProfile && (
+        <div className="rounded-xl border border-warning/30 bg-warning-muted px-3 py-2 text-xs text-warning-muted-foreground">
+          Les onglets Maintenance et Suivi Pointage sont disponibles uniquement pour un directeur régional avec région assignée.
         </div>
-      </motion.aside>
-
-      <EditProfileDialog
-        open={isProfileDialogOpen}
-        onOpenChange={setIsProfileDialogOpen}
-        table="validateurs_paiement_gain"
-        recordId={validator?.id}
-        initialData={{ nom: validator?.nom, prenom: validator?.prenom, telephone: validator?.telephone, email: validator?.email }}
-        onSaved={(fields) => {
-          const updated = { ...(validator || {}), ...fields };
-          setValidator(updated);
-          try {
-            localStorage.setItem(spaceConfig.storageKey, JSON.stringify({ isAuthenticated: true, userData: updated }));
-          } catch {}
-        }}
-      />
-
-      <main className="app-space-main has-tabbar flex-1 min-w-0 overflow-visible md:overflow-x-hidden">
-        <NotifEnableBanner reader={notifReader} className="mb-4" />
-        <SwipeTabs items={menuItems.map((item) => ({ key: item.key, active: activeSection === item.key, onClick: () => !item.disabled && setActiveSection(item.key) }))}>
-        <motion.div
-          key={activeSection}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          {menuItems.length === 0 ? (
-            <Card>
-              <CardContent className="p-6 text-center text-muted-foreground">
-                Aucun onglet n’est actuellement activé pour cet espace.
-              </CardContent>
-            </Card>
-          ) : (
-            renderCurrentSection()
-          )}
-        </motion.div>
-        </SwipeTabs>
-      </main>
-
-      <MobileTabBar
-        items={menuItems.map((item) => ({
-          key: item.key,
-          label: VALIDATION_TAB_LABELS[item.key] || item.label,
-          icon: item.icon,
-          active: activeSection === item.key,
-          onClick: () => !item.disabled && setActiveSection(item.key),
-        }))}
-        onMore={() => setIsMobileMenuOpen(true)}
-        moreActive={isMobileMenuOpen}
-      />
-    </div>
+      )}
+      overlays={(
+        <EditProfileDialog
+          open={isProfileDialogOpen}
+          onOpenChange={setIsProfileDialogOpen}
+          table="validateurs_paiement_gain"
+          recordId={validator?.id}
+          initialData={{ nom: validator?.nom, prenom: validator?.prenom, telephone: validator?.telephone, email: validator?.email }}
+          onSaved={(fields) => {
+            const updated = { ...(validator || {}), ...fields };
+            setValidator(updated);
+            try {
+              localStorage.setItem(spaceConfig.storageKey, JSON.stringify({ isAuthenticated: true, userData: updated }));
+            } catch {}
+          }}
+        />
+      )}
+    >
+      <NotifEnableBanner reader={notifReader} className="mb-4" />
+      <motion.div
+        key={activeSection}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        {menuItems.length === 0 ? (
+          <Card>
+            <CardContent className="p-6"><EmptyState compact title="Aucun onglet n’est actuellement activé pour cet espace" /></CardContent>
+          </Card>
+        ) : (
+          renderCurrentSection()
+        )}
+      </motion.div>
+    </SpaceShell>
   );
 };
 

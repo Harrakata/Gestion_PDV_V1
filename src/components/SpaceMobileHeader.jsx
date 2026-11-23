@@ -10,7 +10,7 @@ import SpaceHeaderSearch from '@/components/SpaceHeaderSearch';
  * recherche, actions (cloche, remontée…) et bouton menu en pastilles rondes.
  * La recherche se déplie sous la carte et réutilise celle du PC.
  */
-export default function SpaceMobileHeader({ photoUrl, initials, name, role, actions, menuOpen, onToggleMenu }) {
+export default function SpaceMobileHeader({ photoUrl, initials, name, role, actions, menuId, menuOpen, onToggleMenu }) {
   const context = useContext(SpaceHeaderContext);
   const location = useLocation();
   const [searchOpen, setSearchOpen] = React.useState(false);
@@ -48,6 +48,7 @@ export default function SpaceMobileHeader({ photoUrl, initials, name, role, acti
             onClick={onToggleMenu}
             aria-label={menuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
             aria-expanded={menuOpen}
+            aria-controls={menuId}
             className="app-space-header-toggle inline-flex items-center justify-center"
           >
             {menuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}

@@ -20,6 +20,7 @@ import {
   User,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import StatusBadge from '@/components/ui/status-badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -36,12 +37,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
+import EmptyState from '@/components/ui/empty-state';
 import KpiStatCard from '@/components/analytics/KpiStatCard';
 import { publicSupabase, supabase } from '@/lib/supabaseClient';
 import {
   REQUEST_STATUS,
   formatDisplayDateTime,
-  getRequestStatusBadgeClass,
+  getRequestStatusTone,
   isMissingSupabaseTableError,
   isSupabaseAuthError,
 } from '@/lib/guichetiereSpace';
@@ -74,10 +76,10 @@ const formatDisplayDate = (value) => {
 
 const formatOptionalDate = (value) => (value ? formatDisplayDate(value) : 'N/A');
 
-const getStatusBadgeClass = (status) =>
+const getStatusTone = (status) =>
   status === 'Actif'
-    ? 'border-success/30 bg-success-muted text-success-muted-foreground'
-    : 'border-border bg-muted text-foreground/80';
+    ? 'success'
+    : 'neutral';
 
 const getPointRequestScope = (pointVente) =>
   [
@@ -437,7 +439,7 @@ const PointsVenteMobiChefPage = () => {
       toast({
         title: 'Demande envoyée',
         description: `La modification du point de vente ${selectedPointVente.codePointVente} a été transmise à l’exploitation.`,
-        className: 'bg-success text-white',
+        className: 'bg-success text-success-foreground',
       });
       setIsEditDialogOpen(false);
       setSelectedPointVente(null);
@@ -459,7 +461,7 @@ const PointsVenteMobiChefPage = () => {
       toast({
         title: 'Suivi Mobi actualisé',
         description: `${data?.upserted ?? 0} ligne(s) quotidienne(s) synchronisée(s).`,
-        className: 'bg-success text-white',
+        className: 'bg-success text-success-foreground',
       });
     } catch (cause) {
       await loadSuiviData();
@@ -577,7 +579,7 @@ const PointsVenteMobiChefPage = () => {
             {isLoading && filteredActivePoints.length === 0 ? (
               <p className="py-8 text-center text-sm text-muted-foreground">Chargement...</p>
             ) : filteredActivePoints.length === 0 ? (
-              <p className="py-8 text-center text-sm text-muted-foreground">Aucun point de vente actif.</p>
+              <EmptyState compact title="Aucun point de vente actif" />
             ) : (
               <div className="max-h-[620px] divide-y overflow-y-auto">
                 {filteredActivePoints.map((pointVente, index) => {
@@ -643,9 +645,9 @@ const PointsVenteMobiChefPage = () => {
                 </CardDescription>
               </div>
               {selectedActivePoint && (
-                <Badge variant="outline" className={getStatusBadgeClass(selectedActivePoint.statut)}>
+                <StatusBadge tone={getStatusTone(selectedActivePoint.statut)}>
                   {selectedActivePoint.statut}
-                </Badge>
+                </StatusBadge>
               )}
             </div>
           </CardHeader>
@@ -771,10 +773,7 @@ const PointsVenteMobiChefPage = () => {
                 </div>
               </div>
             ) : (
-              <div className="flex h-52 flex-col items-center justify-center gap-3 text-muted-foreground">
-                <MapPin className="h-10 w-10 opacity-25" />
-                <p className="text-sm">Sélectionnez un point de vente dans la liste.</p>
-              </div>
+              <EmptyState plain icon={MapPin} title="Sélectionnez un point de vente dans la liste" />
             )}
           </CardContent>
         </Card>
@@ -866,9 +865,9 @@ const PointsVenteMobiChefPage = () => {
                     </TableCell>
                     <TableCell>{formatDisplayDate(pointVente.dateDebutValidite)}</TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={getStatusBadgeClass(pointVente.statut)}>
+                      <StatusBadge tone={getStatusTone(pointVente.statut)}>
                         {pointVente.statut}
-                      </Badge>
+                      </StatusBadge>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
@@ -913,7 +912,7 @@ const PointsVenteMobiChefPage = () => {
                 Suivi des demandes envoyées à l’exploitation pour les points de vente de votre agence.
               </CardDescription>
             </div>
-            <Badge variant="outline" className="border-warning/30 bg-warning-muted text-warning-muted-foreground">
+            <Badge variant="warning">
               En attente : {pendingRequestsCount}
             </Badge>
           </div>
@@ -957,7 +956,7 @@ const PointsVenteMobiChefPage = () => {
                       {request.commentaire || 'Aucun commentaire'}
                     </TableCell>
                     <TableCell>
-                      <Badge className={getRequestStatusBadgeClass(request.statut)}>{request.statut}</Badge>
+                      <StatusBadge tone={getRequestStatusTone(request.statut)}>{request.statut}</StatusBadge>
                     </TableCell>
                     <TableCell className="max-w-[260px] whitespace-normal text-xs text-muted-foreground">
                       {request.commentaire_traitement || 'En attente de traitement'}
@@ -1019,9 +1018,7 @@ const PointsVenteMobiChefPage = () => {
                 <TableBody>
                   {dialogHistory.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="py-8 text-center text-sm text-muted-foreground">
-                        Aucun historique pour ce point de vente.
-                      </TableCell>
+                      <TableCell colSpan={6} className="p-2"><EmptyState compact plain title="Aucun historique pour ce point de vente" /></TableCell>
                     </TableRow>
                   ) : (
                     dialogHistory.map((pointVente) => (
@@ -1044,9 +1041,9 @@ const PointsVenteMobiChefPage = () => {
                         <TableCell>{formatDisplayDate(pointVente.dateDebutValidite)}</TableCell>
                         <TableCell>{formatDisplayDate(pointVente.dateFinValidite)}</TableCell>
                         <TableCell>
-                          <Badge variant="outline" className={getStatusBadgeClass(mobiPointDisplayStatus(pointVente, mobiToday()))}>
+                          <StatusBadge tone={getStatusTone(mobiPointDisplayStatus(pointVente, mobiToday()))}>
                             {mobiPointDisplayStatus(pointVente, mobiToday())}
-                          </Badge>
+                          </StatusBadge>
                         </TableCell>
                       </TableRow>
                     ))

@@ -4,6 +4,7 @@ import {
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import EmptyState from '@/components/ui/empty-state';
 import { supabase } from '@/lib/supabaseClient';
 import KpiStatCard from '@/components/analytics/KpiStatCard';
 
@@ -47,7 +48,7 @@ const SectionShell = ({ icon: Icon, title, secteurName, children }) => (
 );
 
 const EmptyAgences = () => (
-  <p className="py-8 text-center text-sm text-muted-foreground">Aucune agence rattachée à ce secteur. Affectez des agences au secteur dans Exploitation.</p>
+  <EmptyState compact title="Aucune agence rattachée à ce secteur" description="Affectez des agences au secteur dans Exploitation." />
 );
 
 const formatDate = (d) => {

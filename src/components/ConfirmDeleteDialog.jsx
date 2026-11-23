@@ -42,14 +42,14 @@ const ConfirmDeleteDialog = ({
   <Dialog open={open} onOpenChange={(o) => { if (!o) onCancel(); }}>
     <DialogContent className="sm:max-w-md p-0 overflow-hidden">
       {/* Bandeau d'alerte */}
-      <div className="bg-gradient-to-br from-red-500 to-red-600 px-6 py-5 text-white">
+      <div className="bg-destructive px-6 py-5 text-destructive-foreground">
         <div className="flex items-center gap-4">
-          <div className="rounded-2xl bg-card/20 p-3 backdrop-blur-sm">
-            <AlertTriangle className="h-7 w-7 text-white" />
+          <div className="rounded-2xl bg-card/20 p-3">
+            <AlertTriangle className="h-7 w-7" />
           </div>
           <div>
-            <DialogTitle className="text-xl font-bold text-white">{title}</DialogTitle>
-            <DialogDescription className="text-destructive-foreground/90 text-sm mt-0.5">
+            <DialogTitle className="text-xl font-bold">{title}</DialogTitle>
+            <DialogDescription className="text-destructive-foreground text-sm mt-0.5">
               {subtitle}
             </DialogDescription>
           </div>
@@ -117,7 +117,7 @@ const ConfirmDeleteDialog = ({
           variant="destructive"
           onClick={onConfirm}
           disabled={isLoading}
-          className="gap-2 bg-destructive hover:bg-destructive/90 text-white"
+          className="gap-2 bg-destructive hover:bg-destructive/90 text-destructive-foreground"
         >
           <Trash2 className="h-4 w-4" />
           {isLoading ? 'Suppression…' : 'Supprimer définitivement'}

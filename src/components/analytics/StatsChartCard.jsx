@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Activity, BarChart3, Gauge, PieChart } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import EmptyState from '@/components/ui/empty-state';
 
 const CHART_COLORS = ['#0d9488', '#0ea5e9', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#22c55e', '#f97316'];
 const CHART_SOFT_BACKGROUNDS = [
@@ -24,9 +25,7 @@ const getChartColor = (index) => CHART_COLORS[index % CHART_COLORS.length];
 const getChartSoftBackground = (index) => CHART_SOFT_BACKGROUNDS[index % CHART_SOFT_BACKGROUNDS.length];
 
 const EmptyChartState = ({ message }) => (
-  <div className="flex min-h-[220px] items-center justify-center rounded-2xl border border-dashed border-border/70 bg-muted/20 px-6 py-10 text-center text-sm text-muted-foreground">
-    {message}
-  </div>
+  <EmptyState compact title={String(message).replace(/\.$/, '')} className="min-h-[220px]" />
 );
 
 const PieChartGraphic = ({ data }) => {
@@ -176,7 +175,7 @@ const LineChartGraphic = ({ data }) => {
                   stroke="rgba(148, 163, 184, 0.18)"
                   strokeDasharray="4 6"
                 />
-                <text x={6} y={y + 4} className="fill-slate-400 text-[11px] font-medium">
+                <text x={6} y={y + 4} className="fill-muted-foreground text-[11px] font-medium">
                   {formatChartValue(labelValue)}
                 </text>
               </g>
@@ -190,7 +189,7 @@ const LineChartGraphic = ({ data }) => {
             <g key={`${point.label}-${index}`}>
               <circle cx={point.x} cy={point.y} r="5.5" fill="#ffffff" stroke="#22c55e" strokeWidth="3" />
               {(index % xLabelStep === 0 || index === points.length - 1) && (
-                <text x={point.x} y={chartHeight - 14} textAnchor="middle" className="fill-slate-500 text-[11px] font-medium">
+                <text x={point.x} y={chartHeight - 14} textAnchor="middle" className="fill-muted-foreground text-[11px] font-medium">
                   {point.label}
                 </text>
               )}

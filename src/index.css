@@ -13,24 +13,26 @@
   --popover: 0 0% 100%;
   --popover-foreground: 222 47% 11%;
 
-  --primary: 174 84% 32%; /* Teal #0D9488 */
+  /* Marque par défaut. Le thème client remplace ces jetons (lib/themeContrast.js),
+     qui garantit un contraste AA ; les valeurs ci-dessous en sont le résultat. */
+  --primary: 174 84% 24%;
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 166 76% 96%; /* Light teal tint */
-  --secondary-foreground: 174 84% 22%;
+  --secondary: 174 76% 96%;
+  --secondary-foreground: 174 84% 24%;
 
   --muted: 210 40% 96%;
-  --muted-foreground: 215 16% 47%;
+  --muted-foreground: 215 16% 43%;
 
-  --accent: 166 76% 95%;
-  --accent-foreground: 174 84% 26%;
+  --accent: 174 76% 95%;
+  --accent-foreground: 174 84% 24%;
 
-  --destructive: 350 89% 60%; /* Rose */
+  --destructive: 350 89% 41%;
   --destructive-foreground: 0 0% 100%;
 
   --border: 214 32% 91%;
   --input: 214 32% 91%;
-  --ring: 174 84% 32%; /* Ring matches primary (Teal) */
+  --ring: 174 84% 24%;
 
   --radius: 0.875rem; /* Generous rounding (14px) */
 
@@ -43,7 +45,7 @@
   --surface-subtle: 210 40% 98%;
   --surface-elevated: 0 0% 100%;
 
-  --success: 160 84% 32%;
+  --success: 160 84% 25%;
   --success-foreground: 0 0% 100%;
   --success-muted: 152 76% 95%;
   --success-muted-foreground: 161 94% 24%;
@@ -53,7 +55,7 @@
   --warning-muted: 48 96% 89%;
   --warning-muted-foreground: 32 95% 26%;
 
-  --info: 217 91% 60%;
+  --info: 217 91% 46%;
   --info-foreground: 0 0% 100%;
   --info-muted: 214 95% 93%;
   --info-muted-foreground: 221 83% 35%;
@@ -65,6 +67,19 @@
   /* ── Variables de personnalisation App Mobile ──────────────────────────────
      Modifiables via Paramètres > Personnalisation App Mobile.
      Elles n'ont d'effet qu'à travers les règles @media (max-width: 767px) ci-dessous. */
+  /* Hauteur UNIQUE des contrôles sur téléphone (boutons, onglets, listes, champs,
+     options de menu). Plancher en px : le réglage « taille Compacte » (racine à
+     14px) ne doit pas réduire la zone tactile. */
+  --mobile-control-h: max(36px, 2.25rem);
+
+  /* Champs à libellé intégré : géométrie PC (le mobile la resserre plus bas). */
+  --field-h: 2.75rem;
+  --field-label-top: 0.3rem;
+  --field-label-size: 0.75rem;
+  --field-label-line: 0.9rem;
+  --field-pad-top: 1.05rem;
+  --field-pad-bottom: 0.3rem;
+
   --mobile-tab-h: 4.5rem;           /* hauteur barre d'onglets          */
   --mobile-card-radius: 1rem;       /* arrondi des cartes               */
   --mobile-tabbar-blur: 22px;       /* flou fond barre d'onglets        */
@@ -74,6 +89,17 @@
   --mobile-tab-icon: 1.15rem;       /* taille icônes barre d'onglets    */
   --mobile-tabbar-shadow: 0 12px 34px -14px rgba(15, 23, 42, 0.40); /* ombre barre */
   --mobile-header-radius: 1rem;     /* arrondi carte en-tête mobile     */
+}
+
+@media (max-width: 767px) {
+  :root {
+    --field-h: var(--mobile-control-h);
+    --field-label-top: 0.1rem;
+    --field-label-size: 0.6875rem;
+    --field-label-line: 0.8rem;
+    --field-pad-top: 0.9rem;
+    --field-pad-bottom: 0.05rem;
+  }
 }
 
 .dark {
@@ -86,7 +112,7 @@
   --popover: 222 47% 11%;
   --popover-foreground: 210 40% 98%;
 
-  --primary: 174 80% 42%; /* Teal (lighter for dark) */
+  --primary: 174 84% 35%;
   --primary-foreground: 222 47% 11%;
 
   --secondary: 217 33% 17%; /* Dark slate */
@@ -96,14 +122,14 @@
   --muted-foreground: 215 20% 65%;
 
   --accent: 217 33% 20%;
-  --accent-foreground: 174 80% 55%;
+  --accent-foreground: 174 84% 36%;
 
-  --destructive: 350 70% 45%; /* Darker rose */
-  --destructive-foreground: 210 40% 98%;
+  --destructive: 350 89% 65%;
+  --destructive-foreground: 222 47% 11%;
 
   --border: 217 33% 17%;
   --input: 217 33% 17%;
-  --ring: 174 80% 42%; /* Ring matches primary (Teal) */
+  --ring: 174 84% 35%;
 
   --surface: 222 47% 11%;
   --surface-foreground: 210 40% 98%;
@@ -957,7 +983,7 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
 
   [role="menuitem"],
   [role="option"] {
-    min-height: 2.75rem;
+    min-height: var(--mobile-control-h);
     padding-top: 0.4rem !important;
     padding-bottom: 0.4rem !important;
   }
@@ -971,7 +997,7 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
   /* Déclencheurs de liste déroulante un peu plus bas */
   button[role="combobox"],
   [data-radix-select-trigger] {
-    min-height: 2.75rem;
+    min-height: var(--mobile-control-h);
     height: auto;
     font-size: 1rem;
   }
@@ -1024,7 +1050,7 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
     flex: 0 0 auto !important;
     min-width: max-content;
     max-width: 82vw;
-    min-height: 2.75rem;
+    min-height: var(--mobile-control-h);
     padding: 0.5rem 0.75rem !important;
     white-space: nowrap;
     scroll-snap-align: start;
@@ -1061,12 +1087,14 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
     overflow-wrap: anywhere;
   }
 
-  /* Les modales utilisent la hauteur réellement visible avec le clavier ouvert.
+  /* Les modales sont CENTRÉES dans la zone réellement visible (viewport visuel :
+     suit le clavier virtuel, contrairement à 100vh). La hauteur max garantit
+     qu'une fenêtre haute reste entièrement dans l'écran.
      Le marqueur distingue les modales des popovers Radix, aussi role="dialog". */
   [role="dialog"][data-app-dialog] {
-    top: calc(var(--dialog-viewport-top, 0px) + 0.75rem + env(safe-area-inset-top, 0px)) !important;
+    top: calc(var(--dialog-viewport-top, 0px) + var(--dialog-viewport-height, 100dvh) / 2 + (env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) / 2) !important;
     bottom: auto !important;
-    transform: translateX(-50%) !important;
+    transform: translate(-50%, -50%) !important;
     width: calc(100vw - 1.5rem) !important;
     max-width: calc(100vw - 1.5rem);
     max-height: calc(var(--dialog-viewport-height, 100dvh) - 1.5rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
@@ -1263,7 +1291,7 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
 /* Confort tactile commun à tous les espaces, sans réduire les champs de saisie. */
 @media (max-width: 767px) {
   :is(input, textarea, select, button[role="combobox"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]) {
-    min-height: 2.75rem;
+    min-height: var(--mobile-control-h);
     font-size: 1rem !important;
     line-height: 1.4 !important;
     scroll-margin-block: 5rem;
@@ -1275,7 +1303,7 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
   .app-top-header button,
   .app-space-mobile-header button,
   .app-space-sidebar.is-open .app-space-sidebar-scroll :is(a, button) {
-    min-height: 2.75rem;
+    min-height: var(--mobile-control-h);
     touch-action: manipulation;
   }
 
@@ -1283,8 +1311,8 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
   .app-top-header button,
   .app-space-mobile-header button,
   table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data-ui-button-size="icon"] {
-    min-width: 2.75rem;
-    min-height: 2.75rem;
+    min-width: var(--mobile-control-h);
+    min-height: var(--mobile-control-h);
     flex-shrink: 0;
   }
 
@@ -1315,130 +1343,18 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
   [data-app-dialog] > form { min-width: 0; }
   [data-app-dialog] > div:has(> h2) { padding-right: 2.75rem; }
 }
-/* Fond uniforme de l'espace Exploitation : une seule teinte opaque du thème,
-   sans dégradé ni superposition translucide. */
-.exploitation-theme-surface {
+/* Fond commun aux pages publiques et aux espaces connectés. */
+.app-page-theme-surface {
   background-color: hsl(var(--background));
   background-color: color-mix(in srgb, hsl(var(--primary)) 6%, hsl(var(--background)));
 }
 
-/* Les espaces terrain et direction partagent le même fond légèrement teinté
-   que l'espace Exploitation, sans dégradé ni transparence. Les pages hors
-   espace (accueil, pointage, paiement…) reprennent ce même fond. */
-.app-page-theme-surface,
-.other-spaces-theme-surface {
-  background-color: hsl(var(--background));
-  background-color: color-mix(in srgb, hsl(var(--primary)) 6%, hsl(var(--background)));
-}
-
-/* Contenu des espaces hors Exploitation (Chef d'agence, Chef de secteur…) :
-   les cartes « blanc translucide + flou » laissaient transparaître le fond
-   teinté de la page. On les rend blanc opaque. Les cartes colorées
-   volontairement (alertes, statuts : bg-red-50, etc.) ne sont pas ciblées. */
-.other-spaces-theme-surface .app-space-main .text-card-foreground:is([class*="bg-white/"], [class*="bg-card/"], [class*="backdrop-blur"]) {
+/* Les anciennes cartes translucides reprennent la surface du thème. */
+.connected-space-shell .app-space-main .text-card-foreground:is([class*="bg-white/"], [class*="bg-card/"]) {
   background-color: hsl(var(--card)) !important;
   background-image: none !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-}
-
-/* Menu latéral unifié des espaces hors Exploitation : la navigation reprend
-   la même carte blanche que le menu de l'espace Exploitation. */
-@media (min-width: 768px) {
-  .other-spaces-theme-surface .app-space-sidebar-scroll {
-    position: sticky;
-    isolation: isolate;
-    padding: 0.75rem;
-    overflow-x: hidden;
-    border: 1px solid hsl(var(--border));
-    border-radius: var(--radius);
-    background-color: #fff;
-    box-shadow: 0 14px 34px -26px rgba(15, 23, 42, 0.35);
-  }
-
-  .other-spaces-theme-surface .app-space-sidebar-scroll::before {
-    content: '';
-    position: absolute;
-    inset: 0 0 auto;
-    z-index: 2;
-    height: 0.375rem;
-    background-color: hsl(var(--primary));
-  }
-
-  .other-spaces-theme-surface .app-space-sidebar .text-card-foreground {
-    overflow: hidden !important;
-    border-color: hsl(var(--border)) !important;
-    background-color: hsl(var(--card)) !important;
-    background-image: none !important;
-    box-shadow: 0 14px 34px -26px rgba(15, 23, 42, 0.35) !important;
-    backdrop-filter: none !important;
-  }
-
-  .other-spaces-theme-surface .app-space-sidebar .text-card-foreground > .pointer-events-none.absolute.inset-x-0.top-0 {
-    display: none;
-  }
-
-  .other-spaces-theme-surface .app-space-sidebar nav > a,
-  .other-spaces-theme-surface .app-space-sidebar nav > button {
-    min-height: 3rem;
-    gap: 0.75rem !important;
-    padding: 0.375rem 0.25rem !important;
-    border-color: transparent !important;
-    border-radius: var(--radius) !important;
-    background-color: transparent !important;
-    box-shadow: none !important;
-    color: hsl(var(--foreground) / 0.82);
-    font-size: 0.875rem;
-    font-weight: 600;
-  }
-
-  .other-spaces-theme-surface .app-space-sidebar nav > a:hover,
-  .other-spaces-theme-surface .app-space-sidebar nav > button:hover {
-    background-color: hsl(var(--primary) / 0.08) !important;
-    color: hsl(var(--primary));
-  }
-
-  .other-spaces-theme-surface .app-space-sidebar nav > a > svg,
-  .other-spaces-theme-surface .app-space-sidebar nav > button > svg {
-    width: 1rem;
-    height: 1rem;
-    margin-left: 0.75rem;
-    flex: 0 0 auto;
-    color: hsl(var(--primary));
-  }
-
-  .other-spaces-theme-surface .app-space-sidebar nav > [aria-current='page'] {
-    background-color: transparent !important;
-    color: hsl(var(--primary)) !important;
-    font-weight: 700;
-  }
-
-  .other-spaces-theme-surface .app-space-sidebar nav + div {
-    margin-top: 0.5rem !important;
-    padding-top: 0 !important;
-    border-top: 0 !important;
-  }
-
-  .other-spaces-theme-surface .app-space-sidebar nav [aria-current='page'] {
-    position: relative;
-    overflow: visible;
-  }
-
-  .other-spaces-theme-surface .app-space-sidebar nav [aria-current='page']::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    right: calc(-1.5rem - 2px);
-    z-index: 3;
-    width: 2rem;
-    height: 2.75rem;
-    pointer-events: none;
-    transform: translateY(-50%);
-    border-radius: 999px 0 0 999px;
-    background:
-      radial-gradient(circle at 1.5rem 50%, hsl(var(--primary)) 0 0.25rem, transparent 0.3rem),
-      hsl(var(--primary) / 0.1);
-  }
 }
 
 /* Navigation connectée : barre supérieure arrondie sur le fond du thème. */
@@ -1494,7 +1410,6 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
   /* Éléments posés sur la barre (recherche, profil, icônes rondes) :
      couleur du fond de la page. */
   .connected-space-shell .space-header-search,
-  .connected-space-shell .space-header-profile,
   .connected-space-shell .space-header-actions button {
     border: 1px solid transparent;
     background: var(--space-content-background);
@@ -1519,58 +1434,6 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
     box-shadow: 0 0 0 3px hsl(var(--primary) / 0.12);
   }
 
-  .connected-space-shell .app-top-header .space-brand-anchor {
-    position: absolute;
-    top: 0;
-    right: calc(100% + var(--space-shell-gap));
-    width: var(--space-sidebar-width);
-    height: var(--space-header-height);
-    z-index: 2;
-    padding: 0 1.5rem;
-    border-radius: var(--space-shell-radius);
-    background: transparent;
-  }
-
-  .connected-space-shell .app-top-header .space-brand-anchor img {
-    width: 3.5rem;
-    height: 3.5rem;
-    flex: 0 0 auto;
-    object-fit: contain;
-    filter: none;
-  }
-
-  /* Le bloc marque reste DANS la carte du menu (marge latérale de la carte :
-     0.75rem) : logo + écart + texte doivent tenir dans la largeur intérieure. */
-  .connected-space-shell .app-top-header .space-brand-anchor {
-    gap: 0.75rem;
-    padding: 0 1.5rem 0 1.5rem;
-  }
-
-  .connected-space-shell .app-top-header .space-brand-copy {
-    min-width: 0;
-    max-width: calc(var(--space-sidebar-width) - 7.25rem);
-  }
-
-  .connected-space-shell .app-top-header .space-brand-copy > span:first-child {
-    font-size: 1.4rem;
-    line-height: 1.15;
-    letter-spacing: -0.01em;
-  }
-
-  .connected-space-shell .app-top-header .space-brand-copy > span:nth-child(2) {
-    margin-top: 0.25rem;
-    font-size: 0.95rem;
-    letter-spacing: 0.1em;
-  }
-
-  /* 3e ligne : nom de l'espace connecté (ex. « Espace Directeur régional »). */
-  .connected-space-shell .app-top-header .space-brand-copy > .space-brand-space {
-    margin-top: 0.2rem;
-    font-size: 0.78rem;
-    line-height: 1.2;
-    letter-spacing: 0;
-  }
-
   .connected-space-shell #main-content {
     width: 100%;
     max-width: none;
@@ -1586,8 +1449,6 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
   .connected-space-shell .app-space-sidebar {
     width: var(--space-sidebar-width);
     margin-top: calc(-1 * (var(--space-header-height) + var(--space-shell-gap)));
-    border-radius: 0 0 0 var(--space-shell-radius);
-    background: transparent;
   }
 
   .connected-space-shell .app-space-sidebar-scroll {
@@ -1598,29 +1459,10 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
     padding: 0 0.75rem 1rem;
     overflow-x: hidden;
     overflow-y: auto;
-    border: 0;
-    border-radius: 0 0 0 var(--space-shell-radius);
-    background: transparent;
-    box-shadow: none;
   }
 
-  .connected-space-shell .app-space-sidebar-scroll::before,
-  .connected-space-shell .app-space-sidebar .text-card-foreground > .pointer-events-none.absolute.inset-x-0.top-0 {
-    display: none;
-  }
-
-  .connected-space-shell .app-space-sidebar .text-card-foreground {
-    overflow: visible;
-    border-color: hsl(var(--border));
-    background: hsl(var(--card));
-    box-shadow: 0 14px 34px -26px rgba(15, 23, 42, 0.35);
-    backdrop-filter: none;
-  }
-
-  /* La marque vit dans le haut de la carte latérale. La réserve supérieure
-     évite que les premiers liens passent sous le logo et le nom de l'espace. */
-  .connected-space-shell .app-space-sidebar-scroll > .text-card-foreground:first-of-type {
-    padding-top: calc(var(--space-header-height) + 0.5rem);
+  .space-sidebar-brand {
+    min-height: var(--space-header-height, 5rem);
   }
 
   .connected-space-shell .app-space-main {
@@ -1646,10 +1488,9 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
   }
 }
 
-/* Le Tableau de bord conserve ses rails et indicateurs colorés, mais toutes
-   ses cartes utilisent une surface blanche opaque et uniforme. */
-.dashboard-white-cards .text-card-foreground {
-  background-color: #fff !important;
+/* Les cartes du Tableau de bord sont opaques dans les deux thèmes. */
+.dashboard-solid-cards .text-card-foreground {
+  background-color: hsl(var(--card)) !important;
   background-image: none !important;
 }
 
@@ -1703,10 +1544,10 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
   }
 
   .app-space-mobile-header .space-header-actions button {
-    width: 2.5rem;
-    min-width: 2.5rem;
-    height: 2.5rem;
-    min-height: 2.5rem;
+    width: var(--mobile-control-h);
+    min-width: var(--mobile-control-h);
+    height: var(--mobile-control-h);
+    min-height: var(--mobile-control-h);
     padding: 0;
     border: 1px solid transparent;
     border-radius: 999px;
@@ -1776,17 +1617,13 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
     -webkit-backdrop-filter: none;
   }
 
-  .app-space-sidebar.is-open .text-card-foreground {
+  .app-space-sidebar.is-open .space-sidebar-card {
     border: 0 !important;
     background: transparent !important;
     background-image: none !important;
     box-shadow: none !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
-  }
-
-  .app-space-sidebar.is-open .text-card-foreground > .pointer-events-none.absolute {
-    display: none;
   }
 
   /* ── Contenu : cartes blanches opaques (plus de translucide / flou) ── */
@@ -1813,7 +1650,7 @@ table:has(th[data-table-actions]) tbody td:last-child:not([colspan]) button[data
    !important : plusieurs anciennes règles en posent déjà). Une seule échelle :
      titres (page, carte, section) 1rem (text-lg : 0.9375rem)
      texte courant .............. 0.8125rem (13px)
-     onglets, boutons, filtres .. 0.75rem, hauteur 2.25rem (onglets 2rem)
+     onglets, boutons, filtres .. 0.75rem, hauteur --mobile-control-h (36px)
      descriptions, aides ........ 0.75–0.8125rem
    ════════════════════════════════════════════════════════════════════════════ */
 html {
@@ -1831,11 +1668,11 @@ html {
     display: none !important;
   }
 
-  :is(#main-content, [role="dialog"]) .dashboard-white-cards .kpi-stat-card {
+  :is(#main-content, [role="dialog"]) .dashboard-solid-cards .kpi-stat-card {
     display: block !important;
   }
 
-  :is(#main-content, [role="dialog"]) .dashboard-white-cards .grid:has(> .kpi-stat-card) {
+  :is(#main-content, [role="dialog"]) .dashboard-solid-cards .grid:has(> .kpi-stat-card) {
     display: grid !important;
   }
 
@@ -1899,7 +1736,7 @@ html {
   }
 
   :is(#main-content, [role="dialog"]) [role="tablist"] [role="tab"] {
-    min-height: 2rem !important;
+    min-height: var(--mobile-control-h) !important;
     padding: 0.3rem 0.625rem !important;
     font-size: 0.75rem !important;
     line-height: 1rem !important;
@@ -1912,7 +1749,7 @@ html {
 
   /* ── Boutons ── */
   :is(#main-content, [role="dialog"]) [data-ui-button] {
-    min-height: 2.25rem !important;
+    min-height: var(--mobile-control-h) !important;
     height: auto;
     padding: 0.3rem 0.75rem;
     font-size: 0.75rem !important;
@@ -1925,21 +1762,26 @@ html {
   }
 
   :is(#main-content, [role="dialog"]) [data-ui-button][data-ui-button-size="icon"] {
-    width: 2.25rem;
-    min-width: 2.25rem !important;
+    width: var(--mobile-control-h);
+    min-width: var(--mobile-control-h) !important;
     padding: 0;
   }
 
   /* ── Filtres et champs ── */
   :is(#main-content, [role="dialog"]) :is(button[role="combobox"], [data-radix-select-trigger]) {
-    min-height: 2.25rem !important;
+    min-height: var(--mobile-control-h) !important;
     font-size: 0.75rem !important;
     line-height: 1.2 !important;
   }
 
   :is(#main-content, [role="dialog"]) :is(input, textarea, select):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]) {
-    min-height: 2.25rem;
+    min-height: var(--mobile-control-h);
     font-size: 0.8125rem !important;
+  }
+
+  :is(#main-content, [role="dialog"]) :is(input, select):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]) {
+    height: auto;
+    line-height: 1.2 !important;
   }
 
   /* iOS zoome sur un champ < 16px au focus : on y garde 16px. */
@@ -2112,9 +1954,8 @@ html {
 }
 
 /* ── Mobile / PWA : tiroir de menu ajusté à son contenu ─────────────────────
-   Largeur réduite, lignes compactes (2.25rem au lieu de 2.75rem minimum),
-   textes 0.8125rem, espacements resserrés. Le sélecteur répète la classe
-   pour primer sur la règle tactile générique (min-height 2.75rem). */
+   Largeur réduite, lignes à --mobile-control-h, textes 0.8125rem, espacements
+   resserrés. Le sélecteur répète la classe pour primer sur la règle générique. */
 @media (max-width: 767px) {
   .app-space-sidebar.is-open.is-open,
   .has-mobile-header .app-space-sidebar.is-open.is-open {
@@ -2123,7 +1964,7 @@ html {
   }
 
   .app-space-sidebar.is-open.is-open .app-space-sidebar-scroll :is(a, button) {
-    min-height: 2.25rem;
+    min-height: var(--mobile-control-h);
     padding-top: 0.25rem !important;
     padding-bottom: 0.25rem !important;
     font-size: 0.8125rem !important;
@@ -2171,12 +2012,10 @@ html {
   }
 }
 
-/* Page d'accueil : boutons d'action compacts (passent sous la hauteur
-   minimale générique des boutons mobiles, 2.25rem). */
+/* Page d'accueil : boutons d'action compacts. */
 @media (max-width: 767px) {
   #main-content .home-cta[data-ui-button] {
-    min-height: 2rem !important;
-    height: 2rem;
+    min-height: var(--mobile-control-h) !important;
     padding: 0.25rem 0.875rem;
     font-size: 0.75rem !important;
   }
@@ -2210,19 +2049,17 @@ html {
   }
 }
 
-/* Planning (chef d'agence) : barre d'outils compacte sur mobile — contrôles
-   à 2rem (sous la hauteur générique 2.25rem des boutons mobiles). */
+/* Planning (chef d'agence) : barre d'outils compacte sur mobile. */
 @media (max-width: 767px) {
   #main-content .planning-toolbar.planning-toolbar :is([data-ui-button], input) {
-    min-height: 2rem !important;
-    height: 2rem;
+    min-height: var(--mobile-control-h) !important;
     padding-inline: 0.625rem;
     font-size: 0.75rem !important;
   }
 
   #main-content .planning-toolbar.planning-toolbar [data-ui-button][data-ui-button-size="icon"] {
-    width: 2rem;
-    min-width: 2rem !important;
+    width: var(--mobile-control-h);
+    min-width: var(--mobile-control-h) !important;
     padding: 0;
   }
 
@@ -2251,7 +2088,7 @@ html {
 
 :is(#main-content, [role="dialog"]) :is(div, section, fieldset) > label:not(.sr-only):has(+ :is(button[role="combobox"], input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]), select, textarea, .password-field)) {
   position: absolute;
-  top: 0.3rem;
+  top: var(--field-label-top);
   left: 0.75rem;
   z-index: 1;
   max-width: calc(100% - 2.75rem);
@@ -2259,9 +2096,9 @@ html {
   overflow: hidden;
   color: hsl(var(--muted-foreground));
   /* Base de l'app = 14px → 0.75rem ≈ 10.5px. */
-  font-size: 0.75rem !important;
+  font-size: var(--field-label-size) !important;
   font-weight: 600 !important;
-  line-height: 0.9rem !important;
+  line-height: var(--field-label-line) !important;
   letter-spacing: 0.02em;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -2271,10 +2108,10 @@ html {
 :is(#main-content, [role="dialog"]) :is(div, section, fieldset) > label:not(.sr-only) + :is(button[role="combobox"], input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]), select),
 :is(#main-content, [role="dialog"]) :is(div, section, fieldset) > label:not(.sr-only) + .password-field > input {
   height: auto !important;
-  min-height: 2.75rem !important;
+  min-height: var(--field-h) !important;
   margin-top: 0 !important;
-  padding-top: 1.05rem !important;
-  padding-bottom: 0.3rem !important;
+  padding-top: var(--field-pad-top) !important;
+  padding-bottom: var(--field-pad-bottom) !important;
 }
 
 :is(#main-content, [role="dialog"]) :is(div, section, fieldset) > label:not(.sr-only) + .password-field {
@@ -2329,7 +2166,7 @@ html {
    Les :not(._sN) inutiles ne servent qu'à dépasser la spécificité de la règle
    générale des libellés (dont le :has() compte comme input:not()×5). */
 :is(#main-content, [role="dialog"]) :is(div, section, fieldset) > label:not(.sr-only):not(._s1):not(._s2):not(._s3):not(._s4):not(._s5):not(._s6):has(+ button[role="combobox"][data-all]) {
-  top: 1.375rem; /* milieu du champ (2.75rem), pas du bloc : le bloc peut être étiré par la grille */
+  top: calc(var(--field-h) / 2); /* milieu du champ, pas du bloc : le bloc peut être étiré par la grille */
   transform: translateY(-50%);
   max-width: calc(100% - 2.5rem);
   color: hsl(var(--foreground));
@@ -2431,16 +2268,16 @@ html {
 
 :is(#main-content, [role="dialog"]) :is(div, section, fieldset) > label:not(.sr-only):has(+ .anchored-trigger > button[role="combobox"]) {
   position: absolute;
-  top: 0.3rem;
+  top: var(--field-label-top);
   left: 0.75rem;
   z-index: 1;
   max-width: calc(100% - 2.75rem);
   margin: 0 !important;
   overflow: hidden;
   color: hsl(var(--muted-foreground));
-  font-size: 0.75rem !important;
+  font-size: var(--field-label-size) !important;
   font-weight: 600 !important;
-  line-height: 0.9rem !important;
+  line-height: var(--field-label-line) !important;
   letter-spacing: 0.02em;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -2449,10 +2286,10 @@ html {
 
 :is(#main-content, [role="dialog"]) :is(div, section, fieldset) > label:not(.sr-only) + .anchored-trigger > button[role="combobox"] {
   height: auto !important;
-  min-height: 2.75rem !important;
+  min-height: var(--field-h) !important;
   margin-top: 0 !important;
-  padding-top: 1.05rem !important;
-  padding-bottom: 0.3rem !important;
+  padding-top: var(--field-pad-top) !important;
+  padding-bottom: var(--field-pad-bottom) !important;
 }
 
 /* Libellé centré, taille normale, quand le champ est vide. */
@@ -2462,7 +2299,7 @@ html {
   + input:placeholder-shown:not(:focus),
   + .password-field > input:placeholder-shown:not(:focus)
 ) {
-  top: 1.375rem; /* milieu du champ (2.75rem), pas du bloc étiré par la grille */
+  top: calc(var(--field-h) / 2); /* milieu du champ, pas du bloc étiré par la grille */
   transform: translateY(-50%);
   max-width: calc(100% - 2.5rem);
   color: hsl(var(--muted-foreground));
@@ -2513,12 +2350,12 @@ html {
 /* Tableau de bord : la carte d'en-tête englobe tout l'écran ; les cartes internes
    (Radar, Jauges KPI, Tendances…) gardent des titres compacts, comme leurs
    indicateurs — pas la taille standard des titres de carte (1.125rem). */
-#main-content .dashboard-white-cards .text-card-foreground .text-card-foreground :is(h2, h3) {
+#main-content .dashboard-solid-cards .text-card-foreground .text-card-foreground :is(h2, h3) {
   font-size: 0.875rem !important;
   line-height: 1.25rem !important;
 }
 
-#main-content .dashboard-white-cards .text-card-foreground .text-card-foreground :is(h2, h3) > svg {
+#main-content .dashboard-solid-cards .text-card-foreground .text-card-foreground :is(h2, h3) > svg {
   width: 1rem !important;
   height: 1rem !important;
 }

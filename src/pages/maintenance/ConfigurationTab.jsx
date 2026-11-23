@@ -3,7 +3,7 @@ import { useConfirm } from '@/components/ConfirmDialogProvider';
 import { describeError } from '@/lib/errors';
 import { ChevronDown, ChevronUp, Download, Edit, FileUp, History, MapPinned, PackageCheck, Search, Trash2 } from 'lucide-react';
 import SousEnsemblesHistoryDialog from '@/components/maintenance/SousEnsemblesHistoryDialog';
-import { Badge } from '@/components/ui/badge';
+import StatusBadge from '@/components/ui/status-badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Combobox } from '@/components/ui/Combobox';
@@ -283,22 +283,22 @@ const mapAssembledTerminalToFormData = (terminal, previousState = DEFAULT_FORM_D
   }, {}),
 });
 
-const getTerminalStatusBadgeClass = (status) => {
+const getTerminalStatusTone = (status) => {
   const normalizedStatus = normalizeText(status);
 
   if (normalizedStatus === 'actif') {
-    return 'border-success/25 bg-success-muted text-success-muted-foreground';
+    return 'success';
   }
 
   if (normalizedStatus === 'en maintenance') {
-    return 'border-warning/25 bg-warning-muted text-warning-muted-foreground';
+    return 'warning';
   }
 
   if (normalizedStatus === 'hors service') {
-    return 'border-destructive/25 bg-destructive/10 text-destructive';
+    return 'danger';
   }
 
-  return 'border-border bg-muted text-foreground';
+  return 'neutral';
 };
 
 const ConfigurationTab = ({
@@ -2096,13 +2096,13 @@ const ConfigurationTab = ({
                 const isAssigned = !isAgencyTerminal && normalizeText(terminal.statut) === 'assigne';
                 const isExpanded = String(expandedAssembledTerminalId) === String(terminal.rowKey);
                 let statusLabel = 'Disponible';
-                let statusClassName = 'border-success/25 bg-success-muted text-success-muted-foreground';
+                let statusTone = 'success';
                 if (isAgencyTerminal) {
                   statusLabel = assignedAgency?.nom ? `En agence : ${assignedAgency.nom}` : 'Configuré (agence inconnue)';
-                  statusClassName = 'border-warning/25 bg-warning-muted text-warning-muted-foreground';
+                  statusTone = 'warning';
                 } else if (isAssigned) {
                   statusLabel = `Assigné${assignedAgency?.nom ? ` à ${assignedAgency.nom}` : ''}`;
-                  statusClassName = 'border-info/25 bg-info-muted text-info-muted-foreground';
+                  statusTone = 'info';
                 }
                 return (
                   <React.Fragment key={terminal.rowKey}>
@@ -2117,7 +2117,7 @@ const ConfigurationTab = ({
                         </span>
                       </TableCell>
                       <TableCell>
-                        <Badge className={statusClassName}>{statusLabel}</Badge>
+                        <StatusBadge tone={statusTone}>{statusLabel}</StatusBadge>
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
@@ -2418,9 +2418,9 @@ const ConfigurationTab = ({
                     <TableCell>{terminal.carte_mere_bac_uc_reference || 'Non affectée'}</TableCell>
                     <TableCell>{terminal.ssd_reference || 'Non affecté'}</TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={getTerminalStatusBadgeClass(terminal.statut)}>
+                      <StatusBadge tone={getTerminalStatusTone(terminal.statut)}>
                         {terminal.statut || 'N/A'}
-                      </Badge>
+                      </StatusBadge>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">

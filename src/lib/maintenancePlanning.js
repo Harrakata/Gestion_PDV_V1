@@ -8,19 +8,19 @@ export const MAINTENANCE_SHIFT_OPTIONS = [
 export const MAINTENANCE_EXECUTION_STATUSES = {
   planifiee: {
     label: 'Planifiée',
-    className: 'border-info/30 bg-info-muted text-info-muted-foreground',
+    tone: 'info',
   },
   effectuee: {
     label: 'Effectuée',
-    className: 'border-success/30 bg-success-muted text-success-muted-foreground',
+    tone: 'success',
   },
   non_effectuee: {
     label: 'Non effectuée',
-    className: 'border-destructive/30 bg-destructive/10 text-destructive',
+    tone: 'danger',
   },
   annulee: {
     label: 'Annulée',
-    className: 'border-border bg-muted text-foreground/80',
+    tone: 'neutral',
   },
 };
 

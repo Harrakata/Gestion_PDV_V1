@@ -8,16 +8,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
+import StatusBadge from '@/components/ui/status-badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/components/ui/use-toast';
+import EmptyState from '@/components/ui/empty-state';
 import KpiStatCard from '@/components/analytics/KpiStatCard';
 import {
   fetchAbsences, createAbsence, cancelAbsence,
   ABSENCE_TYPE_OPTIONS, ABSENCE_TYPES, ABSENCE_STATUSES, ABSENCE_CRENEAUX, ABSENCE_CRENEAU_OPTIONS,
-  getAbsenceTypeLabel, getAbsenceCreneauLabel, getAbsenceStatusBadgeClass, absenceDaysCount,
+  getAbsenceTypeLabel, getAbsenceCreneauLabel, getAbsenceStatusTone, absenceDaysCount,
 } from '@/lib/absences';
 
 const ALL = '__all__';
@@ -162,7 +163,7 @@ const AbsenceRequestsPanel = ({ demandeur }) => {
           ) : view === 'calendrier' ? (
             <AbsenceCalendar rows={rows} onDayClick={openNewRequest} />
           ) : filtered.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-6 text-center">Aucune demande.</p>
+            <EmptyState compact title="Aucune demande" />
           ) : (
             <div className="overflow-x-auto">
               <Table>
@@ -188,7 +189,7 @@ const AbsenceRequestsPanel = ({ demandeur }) => {
                       <TableCell>{absenceDaysCount(r.date_debut, r.date_fin)}</TableCell>
                       <TableCell className="max-w-[200px] truncate" title={r.motif || ''}>{r.motif || '—'}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={getAbsenceStatusBadgeClass(r.statut)}>{r.statut}</Badge>
+                        <StatusBadge tone={getAbsenceStatusTone(r.statut)}>{r.statut}</StatusBadge>
                         {r.statut === ABSENCE_STATUSES.REFUSED && r.commentaire_traitement && (
                           <p className="text-xs text-destructive mt-1">{r.commentaire_traitement}</p>
                         )}

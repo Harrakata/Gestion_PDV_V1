@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { describeError } from '@/lib/errors';
 import { supabase } from '@/lib/supabaseClient';
 import { Badge } from '@/components/ui/badge';
+import StatusBadge from '@/components/ui/status-badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -9,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/components/ui/use-toast';
+import EmptyState from '@/components/ui/empty-state';
 import { getStockDefectueuxRecordIds, regrouperStockDefectueuxActif } from '@/lib/stockDefectueux';
 import { AlertTriangle, CheckCircle2, HelpCircle, Package2, Wrench, ArrowRight, FlaskConical, ChevronDown, ChevronRight, ChevronLeft, Sparkles, CheckCheck, Search, X, Check, ListChecks, Stethoscope, MessageSquare, CalendarDays } from 'lucide-react';
 
@@ -29,10 +31,10 @@ const SOUS_ENSEMBLE_LABELS = {
 };
 
 const STATUT_CONFIG = {
-  defectueux: { label: 'Défectueux', cls: 'bg-destructive/10 text-destructive' },
-  assigne: { label: 'Assigné', cls: 'bg-info-muted text-info-muted-foreground' },
-  a_tester: { label: 'À tester', cls: 'bg-warning-muted text-warning-muted-foreground' },
-  repare: { label: 'Réparé', cls: 'bg-success-muted text-success-muted-foreground' },
+  defectueux: { label: 'Défectueux', tone: 'danger' },
+  assigne: { label: 'Assigné', tone: 'info' },
+  a_tester: { label: 'À tester', tone: 'warning' },
+  repare: { label: 'Réparé', tone: 'success' },
 };
 
 /** État de stock d'une pièce (pastille) — même rendu dans la liste et dans la fiche. */
@@ -44,11 +46,18 @@ const getStockState = (sp) => {
 };
 
 const StatutBadge = ({ statut }) => {
-  const cfg = STATUT_CONFIG[statut] || { label: statut, cls: 'bg-muted text-foreground' };
-  return <Badge className={cfg.cls}>{cfg.label}</Badge>;
+  const cfg = STATUT_CONFIG[statut] || { label: statut, tone: 'neutral' };
+  return <StatusBadge tone={cfg.tone}>{cfg.label}</StatusBadge>;
 };
 
-const ReparationTerminauxTab = ({ canManage = true }) => {
+/**
+ * @param {object} props
+ * @param {boolean} [props.canManage]
+ * @param {boolean} [props.assignedOnly]  Espace technicien : ne montrer QUE les
+ *   sous-ensembles assignés à `technicienId` (aucun si l'identifiant est inconnu).
+ * @param {string|number} [props.technicienId]
+ */
+const ReparationTerminauxTab = ({ canManage = true, assignedOnly = false, technicienId = null }) => {
   const { toast } = useToast();
   const [stock, setStock] = useState([]);
   const [pieces, setPieces] = useState([]);
@@ -114,8 +123,22 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
 
   const load = useCallback(async () => {
     setIsLoading(true);
+    let stockQuery = supabase
+      .from('stock_defectueux')
+      .select('*, agence:agences(nom), intervention:interventions_maintenance(id, type_intervention, commentaire, description_panne, code_panne:codes_pannes(code, libelle), code_intervention:codes_interventions(code, libelle))')
+      .neq('statut', 'repare')
+      .order('date_entree', { ascending: false });
+
+    if (assignedOnly) {
+      // Technicien : uniquement ses sous-ensembles assignés. Sans identifiant
+      // (profil non encore chargé), on n'affiche rien plutôt que tout le stock.
+      stockQuery = technicienId
+        ? stockQuery.eq('technicien_id', String(technicienId))
+        : Promise.resolve({ data: [], error: null });
+    }
+
     const [sRes, pRes, spRes] = await Promise.all([
-      supabase.from('stock_defectueux').select('*, agence:agences(nom), intervention:interventions_maintenance(id, type_intervention, commentaire, description_panne, code_panne:codes_pannes(code, libelle), code_intervention:codes_interventions(code, libelle))').neq('statut', 'repare').order('date_entree', { ascending: false }),
+      stockQuery,
       supabase.from('pieces_sous_ensembles').select('*').order('nom'),
       supabase.from('stock_pieces').select('*, piece:pieces_sous_ensembles(nom, reference)'),
     ]);
@@ -162,7 +185,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
     if (!pRes.error) setPieces(pRes.data || []);
     if (!spRes.error) setStockPieces(spRes.data || []);
     setIsLoading(false);
-  }, []);
+  }, [assignedOnly, technicienId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => { load(); }, [load]);
 
@@ -286,7 +309,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
     setIsHelpOpen(true);
   }, []);
 
-  const showOk = (msg) => toast({ title: msg, className: 'bg-success text-white' });
+  const showOk = (msg) => toast({ title: msg, className: 'bg-success text-success-foreground' });
   const showErr = (msg) => toast({ title: 'Erreur', description: msg, variant: 'destructive' });
   const formatDate = (d) => d ? new Date(d).toLocaleDateString('fr-FR') : '—';
 
@@ -533,7 +556,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                   className="pl-8 pr-7 h-8 text-xs"
                 />
                 {pieceSearch && (
-                  <button
+                  <button aria-label="Effacer la recherche"
                     className="absolute right-2 top-[calc(0.25rem+0.5rem)] text-muted-foreground hover:text-foreground"
                     onClick={() => setPieceSearch('')}
                   >
@@ -544,9 +567,15 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
             </CardHeader>
             <CardContent className="p-0">
               {filteredStock.length === 0 ? (
-                <p className="py-8 text-center text-sm text-muted-foreground">
-                  {isLoading ? 'Chargement...' : 'Aucun sous-ensemble à traiter.'}
-                </p>
+                isLoading ? (
+                  <p className="py-8 text-center text-sm text-muted-foreground">Chargement...</p>
+                ) : (
+                  <EmptyState
+                    compact
+                    plain
+                    title={assignedOnly ? 'Aucun sous-ensemble défectueux ne vous est assigné' : 'Aucun sous-ensemble à traiter'}
+                  />
+                )
               ) : (
                 <div className="divide-y max-h-[32rem] overflow-y-auto">
                   {filteredStock.map(item => {
@@ -578,7 +607,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                             title="Lancer le diagnostic guidé"
                           >
                             <Stethoscope className="h-3.5 w-3.5 shrink-0" />
-                            <span className="hidden xs:inline">Diagnostiquer</span>
+                            <span className="sr-only xs:not-sr-only">Diagnostiquer</span>
                           </button>
                           <button
                             className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted"
@@ -651,10 +680,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
         <div className="lg:col-span-3 space-y-4">
           {!selectedItem ? (
             <Card variant="accent" className="flex items-center justify-center py-20">
-              <div className="text-center text-muted-foreground">
-                <Package2 className="mx-auto h-12 w-12 mb-3 opacity-30" />
-                <p>Sélectionnez un sous-ensemble pour commencer.</p>
-              </div>
+              <EmptyState plain icon={Package2} title="Sélectionnez un sous-ensemble pour commencer" />
             </Card>
           ) : (
             <>
@@ -780,7 +806,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                       <Button
                         size="sm"
                         variant="outline"
-                        className={Object.keys(treatedPieces[selectedItem.id] || {}).length > 0 ? 'bg-warning text-white border-warning hover:bg-warning/90' : 'text-warning-muted-foreground border-warning/30'}
+                        className={Object.keys(treatedPieces[selectedItem.id] || {}).length > 0 ? 'bg-warning text-warning-foreground border-warning hover:bg-warning/90' : 'text-warning-muted-foreground border-warning/30'}
                         onClick={() => markATester(selectedItem)}
                       >
                         <FlaskConical className="mr-2 h-4 w-4" />
@@ -793,7 +819,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                       </Button>
                     )}
                     {canManage && selectedItem.statut === 'a_tester' && (
-                      <Button size="sm" className="bg-success hover:bg-success/90 text-white" onClick={() => markRepare(selectedItem)}>
+                      <Button size="sm" className="bg-success hover:bg-success/90 text-success-foreground" onClick={() => markRepare(selectedItem)}>
                         <CheckCircle2 className="mr-2 h-4 w-4" /> Marquer Réparé
                       </Button>
                     )}
@@ -923,7 +949,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
 
                         <section className="border-b pb-4">
                           <h4 className="flex items-center gap-2 text-sm font-semibold">
-                            <AlertTriangle className="h-4 w-4 text-warning" /> Pannes connues
+                            <AlertTriangle className="h-4 w-4 text-warning-muted-foreground" /> Pannes connues
                           </h4>
                           <div className="mt-2 divide-y rounded-md border bg-background">
                             {seHelpPannes
@@ -936,7 +962,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                                   className={`flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm hover:bg-muted/40 ${panne.id === seDiagnosticPanne?.id ? 'bg-warning-muted text-warning-muted-foreground' : ''}`}
                                 >
                                   <span className="min-w-0 flex-1">{panne.description}</span>
-                                  {panne.id === seDiagnosticPanne?.id && <Badge className="bg-warning-muted text-warning-muted-foreground">En cours</Badge>}
+                                  {panne.id === seDiagnosticPanne?.id && <StatusBadge tone="warning">En cours</StatusBadge>}
                                   <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
                                 </button>
                               ))}
@@ -975,9 +1001,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                         Aucun modèle n'est associé à ce sous-ensemble.
                       </div>
                     ) : seHelpPannes.length === 0 ? (
-                      <div className="rounded-md border px-4 py-6 text-center text-sm text-muted-foreground">
-                        Aucun diagnostic n'est configuré pour ce modèle.
-                      </div>
+                      <EmptyState compact title="Aucun diagnostic n'est configuré pour ce modèle" />
                     ) : !seDiagnosticPanne ? (
                       <>
                         {(() => {
@@ -1064,7 +1088,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                                 })}
                                 className={`flex w-full items-start gap-3 rounded-md border px-3 py-2.5 text-left transition-colors ${checked ? 'border-success/30 bg-success-muted' : 'bg-background hover:bg-muted/30'}`}
                               >
-                                <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border ${checked ? 'border-success bg-success text-white' : 'border-muted-foreground/30'}`}>
+                                <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border ${checked ? 'border-success bg-success text-success-foreground' : 'border-muted-foreground/30'}`}>
                                   {checked && <Check className="h-3 w-3" />}
                                 </span>
                                 <span className="min-w-0 flex-1">
@@ -1091,7 +1115,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                                 <div key={piece.id} className="flex flex-wrap items-center gap-2 border-t border-success/30 pt-2 first:border-t-0 first:pt-0">
                                   <span className="min-w-0 flex-1 truncate text-sm font-medium">{piece.nom}</span>
                                   {action ? (
-                                    <Badge className="bg-success-muted text-success-muted-foreground">{action === 'nettoyage' ? 'Nettoyée' : 'Remplacée'}</Badge>
+                                    <Badge variant="success">{action === 'nettoyage' ? 'Nettoyée' : 'Remplacée'}</Badge>
                                   ) : canManage ? (
                                     <>
                                       <Button size="sm" variant="outline" className="h-7 text-xs text-success-muted-foreground" onClick={() => markNettoye(piece, selectedItem)}>
@@ -1220,9 +1244,9 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
             {/* Filtre actif */}
             {wizardFilter && (
               <div className="mb-3 flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-amber-50 to-orange-50 border border-warning/30 px-2.5 py-1.5">
-                <AlertTriangle className="h-3 w-3 shrink-0 text-warning" />
+                <AlertTriangle className="h-3 w-3 shrink-0 text-warning-muted-foreground" />
                 <span className="text-[11px] text-warning-muted-foreground">Filtré sur&nbsp;: <span className="font-semibold">{wizardFilter}</span></span>
-                <button onClick={() => setWizardFilter(null)} className="ml-auto text-warning hover:text-warning-muted-foreground transition-colors"><X className="h-3 w-3" /></button>
+                <button aria-label="Retirer le filtre de diagnostic" onClick={() => setWizardFilter(null)} className="ml-auto text-warning-muted-foreground hover:text-warning-muted-foreground transition-colors"><X className="h-3 w-3" /></button>
               </div>
             )}
 
@@ -1251,14 +1275,12 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
             {selectedPieceHelp && helpTab === 'guide' && (
               <div className="space-y-4">
                 {pannes.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground gap-3">
-                    <ListChecks className="h-10 w-10 opacity-25" />
-                    <div>
-                      <p className="text-sm font-medium">Aucun guide de diagnostic configuré.</p>
-                      <p className="text-xs mt-1">Ajoutez des types de pannes avec leurs vérifications dans Exploitation → Aide à la Réparation.</p>
-                    </div>
-                    <button onClick={() => setHelpTab('docs')} className="text-xs text-primary underline">Voir la documentation</button>
-                  </div>
+                  <EmptyState
+                    icon={ListChecks}
+                    title="Aucun guide de diagnostic configuré"
+                    description="Ajoutez des types de pannes avec leurs vérifications dans Exploitation → Aide à la Réparation."
+                    action={<Button type="button" variant="outline" size="sm" onClick={() => setHelpTab('docs')}>Voir la documentation</Button>}
+                  />
                 ) : wizardStep === 0 ? (
                   <>
                     {(() => {
@@ -1280,7 +1302,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                               <div className="absolute inset-y-0 left-0 w-1/4 rounded-full bg-gradient-to-r from-amber-400 to-primary" />
                             </div>
                             <div className="flex justify-between text-[10px] text-muted-foreground font-medium">
-                              <span className="text-warning">● Étape 1</span>
+                              <span className="text-warning-muted-foreground">● Étape 1</span>
                               <span>Vérifications ○</span>
                             </div>
                           </div>
@@ -1358,7 +1380,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                       </div>
                       {/* Symptôme sélectionné */}
                       <div className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/15 px-3 py-2">
-                        <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-warning" />
+                        <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-warning-muted-foreground" />
                         <span className="text-xs text-muted-foreground">Symptôme&nbsp;:&nbsp;</span>
                         <span className="text-xs font-semibold text-foreground truncate">{wizardPanne?.description}</span>
                       </div>
@@ -1384,10 +1406,10 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                           >
                             <div className={`mt-0.5 h-5 w-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
                               isChecked
-                                ? 'bg-gradient-to-br from-green-400 to-emerald-500 border-success'
+                                ? 'bg-success border-success'
                                 : 'border-muted-foreground/30'
                             }`}>
-                              {isChecked && <Check className="h-2.5 w-2.5 text-white" />}
+                              {isChecked && <Check className="h-2.5 w-2.5 text-success-foreground" />}
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className={`text-sm leading-snug ${isChecked ? 'line-through text-muted-foreground' : ''}`}>
@@ -1411,8 +1433,8 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                     {wizardCheckedIds.size > 0 && (
                       <div className="rounded-xl border border-success/30 bg-gradient-to-br from-green-50 to-emerald-50/40 p-4 space-y-3">
                         <div className="flex items-center gap-2">
-                          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-green-400 to-emerald-500">
-                            <CheckCheck className="h-3.5 w-3.5 text-white" />
+                          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-success">
+                            <CheckCheck className="h-3.5 w-3.5 text-success-foreground" />
                           </div>
                           <p className="text-xs font-semibold text-success-muted-foreground">
                             {wizardCheckedIds.size === wizardChecks.length
@@ -1461,7 +1483,7 @@ const ReparationTerminauxTab = ({ canManage = true }) => {
                 {/* Types de pannes : liste unique à séparateurs */}
                 <section className="space-y-1.5">
                   <h4 className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                    <AlertTriangle className="h-4 w-4 text-warning" aria-hidden="true" /> Types de pannes
+                    <AlertTriangle className="h-4 w-4 text-warning-muted-foreground" aria-hidden="true" /> Types de pannes
                     {pannes.length > 0 && <span className="rounded-full bg-muted px-2 py-px text-[10px] font-semibold text-muted-foreground">{pannes.length}</span>}
                   </h4>
                   {pannes.length === 0 ? (

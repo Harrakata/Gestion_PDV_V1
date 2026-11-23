@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import PageHeader from '@/components/ui/page-header';
 import { describeError } from '@/lib/errors';
 import { useOutletContext } from 'react-router-dom';
 import { usePageState } from '@/hooks/usePageState';
@@ -9,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import StatusBadge from '@/components/ui/status-badge';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -24,13 +26,13 @@ import { formatDisplayDate, formatDisplayDateTime, isSupabaseAuthError } from '@
 import {
   isMissingMaintenancePlanningRequestTableError,
   MAINTENANCE_REQUEST_STATUSES,
-  getMaintenancePlanningRequestStatusBadgeClass,
+  getMaintenancePlanningRequestStatusTone,
   getMaintenancePlanningRequestTypeLabel,
 } from '@/lib/maintenancePlanningRequests';
 import {
   buildTerminalMonitoringGroups,
   formatMaintenanceDateTime,
-  getMaintenanceInterventionStatusClass,
+  getMaintenanceInterventionStatusTone,
   getMaintenanceInterventionTypeLabel,
   normalizeMaintenanceText,
 } from '@/lib/maintenanceMonitoring';
@@ -436,13 +438,11 @@ const MaintenanceTerminauxPage = () => {
     <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
       <Card variant="accent">
         <CardHeader>
-          <CardTitle className="flex items-center text-3xl font-bold text-primary">
-            <Wrench className="mr-3 h-8 w-8" />
-            Maintenance Terminaux
-          </CardTitle>
-          <CardDescription>
-            Suivez les terminaux de {agenceRecord?.nom || nomAgence}, leur état de maintenance et la planification des passages techniques.
-          </CardDescription>
+          <PageHeader
+            icon={<Wrench />}
+            title="Maintenance Terminaux"
+            description={`Suivez les terminaux de ${agenceRecord?.nom || nomAgence}, leur état de maintenance et la planification des passages techniques.`}
+          />
         </CardHeader>
       </Card>
 
@@ -639,9 +639,9 @@ const MaintenanceTerminauxPage = () => {
                           <TableCell>{formatMaintenanceDateTime(group.latestIntervention?.date_intervention)}</TableCell>
                           <TableCell>
                             <div className="space-y-2">
-                              <Badge variant="outline" className={group.followUp.className}>
+                              <StatusBadge tone={group.followUp.tone}>
                                 {group.followUp.label}
-                              </Badge>
+                              </StatusBadge>
                               <p className="text-xs text-muted-foreground">{group.followUp.detail}</p>
                             </div>
                           </TableCell>
@@ -722,9 +722,9 @@ const MaintenanceTerminauxPage = () => {
                                           </span>
                                         </div>
                                         <div className="flex shrink-0 items-center gap-2">
-                                          <Badge variant="outline" className={`text-xs ${row.followUp.className}`}>
+                                          <StatusBadge tone={row.followUp.tone} className="text-xs">
                                             {row.followUp.label}
-                                          </Badge>
+                                          </StatusBadge>
                                           {rowInterventions.length > 0 && (
                                             <span className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium transition-colors ${historyOpen ? 'border-border bg-card text-foreground' : 'border-border bg-card/70 text-muted-foreground'}`}>
                                               {rowInterventions.length} interv.
@@ -783,12 +783,12 @@ const MaintenanceTerminauxPage = () => {
                                                 >
                                                   <div className="flex flex-wrap items-center gap-2">
                                                     <span className="font-semibold text-foreground">{formatMaintenanceDateTime(i.date_intervention)}</span>
-                                                    <Badge variant="outline" className={`text-[10px] ${isCurative ? 'border-destructive/25 bg-destructive/10 text-destructive' : 'border-info/25 bg-info-muted text-info-muted-foreground'}`}>
+                                                    <Badge variant={isCurative ? 'danger' : 'info'} className="text-[10px]">
                                                       {getMaintenanceInterventionTypeLabel(i.type_intervention)}
                                                     </Badge>
-                                                    <Badge variant="outline" className={`text-[10px] ${getMaintenanceInterventionStatusClass(i.statut)}`}>
+                                                    <StatusBadge tone={getMaintenanceInterventionStatusTone(i.statut)} className="text-[10px]">
                                                       {i.statut}
-                                                    </Badge>
+                                                    </StatusBadge>
                                                     {i.technicienLabel && i.technicienLabel !== 'Non renseigné' && (
                                                       <span className="text-muted-foreground">{i.technicienLabel}</span>
                                                     )}
@@ -998,9 +998,9 @@ const MaintenanceTerminauxPage = () => {
                         <TableCell>{intervention.codeLabel}</TableCell>
                         <TableCell>{intervention.technicienLabel}</TableCell>
                         <TableCell>
-                          <Badge variant="outline" className={getMaintenanceInterventionStatusClass(intervention.statut)}>
+                          <StatusBadge tone={getMaintenanceInterventionStatusTone(intervention.statut)}>
                             {intervention.statut}
-                          </Badge>
+                          </StatusBadge>
                         </TableCell>
                       </motion.tr>
                     ))}
@@ -1037,9 +1037,9 @@ const MaintenanceTerminauxPage = () => {
                   <div className="rounded-xl border bg-background/70 p-4">
                     <p className="text-xs uppercase tracking-wide text-muted-foreground">Statut</p>
                     <div className="mt-2">
-                      <Badge variant="outline" className={getMaintenanceInterventionStatusClass(selectedIntervention.statut)}>
+                      <StatusBadge tone={getMaintenanceInterventionStatusTone(selectedIntervention.statut)}>
                         {selectedIntervention.statut}
-                      </Badge>
+                      </StatusBadge>
                     </div>
                   </div>
                 </div>
@@ -1110,7 +1110,7 @@ const MaintenanceTerminauxPage = () => {
                         Validez d’abord les demandes de vos techniciens avant leur transmission à l’Exploitation.
                       </CardDescription>
                     </div>
-                    <Badge variant="outline" className="border-warning/25 bg-warning-muted text-warning-muted-foreground">
+                    <Badge variant="warning">
                       En attente chef : {pendingPlanningRequestsCount}
                     </Badge>
                   </div>
@@ -1143,9 +1143,9 @@ const MaintenanceTerminauxPage = () => {
                           <TableCell>{getMaintenancePlanningRequestTypeLabel(request.type_demande)}</TableCell>
                           <TableCell>{formatDisplayDate(request.date_souhaitee)}</TableCell>
                           <TableCell>
-                            <Badge className={getMaintenancePlanningRequestStatusBadgeClass(request.statut)}>
+                            <StatusBadge tone={getMaintenancePlanningRequestStatusTone(request.statut)}>
                               {request.statut}
-                            </Badge>
+                            </StatusBadge>
                           </TableCell>
                           <TableCell className="max-w-[260px] whitespace-normal text-sm text-muted-foreground">
                             {request.commentaire_chef || request.commentaire_exploitation || request.motif || 'Aucun commentaire'}

@@ -2,7 +2,8 @@ import React from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Wallet } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardHeader } from '@/components/ui/card';
+import PageHeader from '@/components/ui/page-header';
 import SalaireGuichetiereTab from '@/pages/exploitation/SalaireGuichetiereTab';
 
 const EtatCaissePage = () => {
@@ -19,17 +20,14 @@ const EtatCaissePage = () => {
     >
       <Card variant="accent">
         <CardHeader>
-          <CardTitle className="flex items-center text-2xl font-bold text-primary">
-            <Wallet className="mr-3 h-7 w-7" /> État de Caisse
-          </CardTitle>
-          <CardDescription>
-            Consultez votre état de caisse mensuel.
-            {fixedPrepose && (
-              <span className="ml-2 text-xs text-muted-foreground/70">
-                Code préposé : <span className="font-mono font-semibold text-primary">{fixedPrepose}</span>
-              </span>
+          <PageHeader
+            icon={<Wallet />}
+            title="État de Caisse"
+            description="Consultez votre état de caisse mensuel."
+            meta={fixedPrepose && (
+              <span>Code préposé : <span className="font-mono font-semibold text-primary">{fixedPrepose}</span></span>
             )}
-          </CardDescription>
+          />
         </CardHeader>
       </Card>
 

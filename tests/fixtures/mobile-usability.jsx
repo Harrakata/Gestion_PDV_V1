@@ -20,7 +20,7 @@ function Fixture() {
   const [refreshes, setRefreshes] = useState(0);
   const [submits, setSubmits] = useState(0);
   const items = options.slice(0, 8).map(({ value }) => ({ key: value, active: tab === value, onClick: () => setTab(value) }));
-  return <main className="app-space-main mx-auto max-w-5xl space-y-4 p-3">
+  return <main id="main-content" className="container px-3 py-4"><div className="app-space-main mx-auto max-w-5xl space-y-4">
     <h1 className="text-xl text-primary">Ergonomie mobile</h1>
     <Button onClick={() => setOpen(true)}>Ouvrir le formulaire</Button>
     <Button variant="outline" onClick={() => setTab('7')}>Dernier onglet</Button>
@@ -56,6 +56,6 @@ function Fixture() {
         </form>
       </DialogContent>
     </Dialog>
-  </main>;
+  </div></main>;
 }
 createRoot(document.getElementById('root')).render(<Fixture />);

@@ -104,7 +104,7 @@ const ConfirmationStep = ({ onSubmit, onReset, isLoading, currentPointageStatus,
         <Button 
           onClick={handleManualSubmit} 
           disabled={isLoading || !canPointe || showSuccess} 
-          className="text-lg px-8 py-6 bg-gradient-to-r from-green-500 to-primary hover:from-green-600 hover:to-primary/90 text-white"
+          className="text-lg px-8 py-6 bg-success text-success-foreground hover:bg-success/90"
         >
           {isLoading ? 'Validation...' : showSuccess ? 'Validé!' : 'Valider le Pointage'}
         </Button>

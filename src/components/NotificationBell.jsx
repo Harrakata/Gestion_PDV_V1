@@ -10,6 +10,7 @@ import { markMessagesRead } from '@/lib/messaging';
 import { isRoleNotifEnabled } from '@/lib/notificationSettings';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import EmptyState from '@/components/ui/empty-state';
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 const SEVERITY_DOT = {
@@ -210,7 +211,7 @@ const NotificationBell = ({ notifications = [], totalCount = 0, onNavigate, stor
     >
       <Bell className="h-4 w-4" />
       {!!effectiveBadge && (
-        <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-destructive px-1 text-[0.6rem] font-bold leading-none text-white ring-2 ring-background">
+        <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-destructive px-1 text-[0.6rem] font-bold leading-none text-destructive-foreground ring-2 ring-background">
           {effectiveBadge}
         </span>
       )}
@@ -232,10 +233,7 @@ const NotificationBell = ({ notifications = [], totalCount = 0, onNavigate, stor
         <div className="mx-3 mb-1 h-px bg-primary/15" />
 
         {notifications.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 px-4 py-8 text-center text-muted-foreground">
-            <CheckCircle2 className="h-7 w-7 text-success/70" />
-            <p className="text-sm">Aucune alerte en attente.</p>
-          </div>
+          <EmptyState compact plain icon={CheckCircle2} title="Aucune alerte en attente" />
         ) : (
           <div className="max-h-[70vh] overflow-y-auto">
             <div className="space-y-0.5 px-2 pb-2">
@@ -270,7 +268,7 @@ const NotificationBell = ({ notifications = [], totalCount = 0, onNavigate, stor
                           )}
                           {/* Badge non-lus */}
                           {hasMessages && hasUnread && (
-                            <span className="shrink-0 rounded-full bg-primary px-1.5 text-[0.6rem] font-bold text-white">
+                            <span className="shrink-0 rounded-full bg-primary px-1.5 text-[0.6rem] font-bold text-primary-foreground">
                               {unreadCount} non lu{unreadCount > 1 ? 's' : ''}
                             </span>
                           )}
@@ -309,7 +307,7 @@ const NotificationBell = ({ notifications = [], totalCount = 0, onNavigate, stor
                                   <p className="truncate text-xs font-bold text-foreground">{msg.titre}</p>
                                 </div>
                                 {unread ? (
-                                  <span className="shrink-0 rounded-full bg-primary px-1.5 py-0.5 text-[0.6rem] font-bold text-white">Nouveau</span>
+                                  <span className="shrink-0 rounded-full bg-primary px-1.5 py-0.5 text-[0.6rem] font-bold text-primary-foreground">Nouveau</span>
                                 ) : (
                                   <span className={`shrink-0 rounded-full border px-1.5 py-0.5 text-[0.6rem] font-semibold ${cat.color} ${cat.border} bg-card/60`}>
                                     {cat.label}

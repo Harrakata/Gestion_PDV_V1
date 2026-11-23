@@ -67,13 +67,13 @@ export const ABSENCE_TYPE_OPTIONS = [
   { value: ABSENCE_TYPES.AUTRE, label: 'Autre' },
 ];
 
-export const getAbsenceStatusBadgeClass = (statut) => {
+export const getAbsenceStatusTone = (statut) => {
   switch (statut) {
-    case ABSENCE_STATUSES.APPROVED: return 'bg-success-muted text-success-muted-foreground border-success/30';
-    case ABSENCE_STATUSES.REFUSED: return 'bg-destructive/10 text-destructive border-destructive/30';
-    case ABSENCE_STATUSES.CANCELLED: return 'bg-muted text-foreground/80 border-border';
+    case ABSENCE_STATUSES.APPROVED: return 'success';
+    case ABSENCE_STATUSES.REFUSED: return 'danger';
+    case ABSENCE_STATUSES.CANCELLED: return 'neutral';
     case ABSENCE_STATUSES.PENDING:
-    default: return 'bg-warning-muted text-warning-muted-foreground border-warning/30';
+    default: return 'warning';
   }
 };
 

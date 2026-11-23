@@ -102,7 +102,7 @@ const PointageNotification = ({
                 </button>
               )}
             </div>
-            <button 
+            <button aria-label="Fermer" 
               className="absolute top-2 right-2 text-muted-foreground hover:text-foreground/80 dark:hover:text-muted-foreground"
               onClick={handleClose}
             >

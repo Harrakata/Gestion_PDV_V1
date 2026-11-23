@@ -14,7 +14,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { isGuichetiereAgenceVisible } from '@/lib/orgStructureConfig';
 import { Combobox } from '@/components/ui/Combobox';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
+import StatusBadge from '@/components/ui/status-badge';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import KpiStatCard from '@/components/analytics/KpiStatCard';
 import { fetchApprovedAbsencesInRange, findBlockingAbsence } from '@/lib/absences';
@@ -24,7 +24,7 @@ import {
   formatDisplayDate,
   formatDisplayDateTime,
   getPlanningRequestTypeLabel,
-  getRequestStatusBadgeClass,
+  getRequestStatusTone,
   isMissingSupabaseTableError,
   isSupabaseAuthError,
 } from '@/lib/guichetiereSpace';
@@ -310,7 +310,7 @@ const MonPlanningPage = () => {
     if (error) {
       toast({ title: 'Erreur d\'ajout', description: error.message.includes('duplicate key') ? 'Cette guichetière est déjà planifiée.' : error.message, variant: 'destructive' });
     } else {
-      toast({ title: 'Succès', description: 'Guichetière ajoutée au planning.', className: "bg-success text-white" });
+      toast({ title: 'Succès', description: 'Guichetière ajoutée au planning.', className: "bg-success text-success-foreground" });
       fetchPlanning(); 
       setIsAddModalOpen(false);
     }
@@ -323,7 +323,7 @@ const MonPlanningPage = () => {
     if (error) {
       toast({ title: 'Erreur de suppression', description: describeError(error, 'MonPlanningPage'), variant: 'destructive' });
     } else {
-      toast({ title: 'Succès', description: 'Guichetière retirée du planning.', className: "bg-destructive text-white" });
+      toast({ title: 'Succès', description: 'Guichetière retirée du planning.', className: "bg-destructive text-destructive-foreground" });
       fetchPlanning(); 
       setIsEditModalOpen(false);
     }
@@ -365,7 +365,7 @@ const MonPlanningPage = () => {
     if (error) {
         toast({ title: 'Erreur de remplacement', description: describeError(error, 'MonPlanningPage'), variant: 'destructive' });
     } else {
-        toast({ title: 'Succès', description: 'Guichetière remplacée avec succès.', className: "bg-success text-white" });
+        toast({ title: 'Succès', description: 'Guichetière remplacée avec succès.', className: "bg-success text-success-foreground" });
         fetchPlanning();
         setIsEditModalOpen(false);
     }
@@ -426,7 +426,7 @@ const MonPlanningPage = () => {
       toast({
         title: 'Dates passées ignorées',
         description: `${skippedPast} affectation(s) sur des dates antérieures à aujourd'hui n'ont pas été copiées.`,
-        className: 'bg-warning text-white',
+        className: 'bg-warning text-warning-foreground',
       });
     }
 
@@ -435,7 +435,7 @@ const MonPlanningPage = () => {
       if (insertError) {
         toast({ title: 'Erreur de copie', description: insertError.message.includes('duplicate key') ? 'Certaines affectations existaient déjà.' : insertError.message, variant: insertError.message.includes('duplicate key') ? 'warning' : 'destructive' });
       } else {
-        toast({ title: 'Succès', description: `Planning ${period === 'month' ? 'mensuel' : 'hebdomadaire'} précédent copié.`, className: "bg-success text-white" });
+        toast({ title: 'Succès', description: `Planning ${period === 'month' ? 'mensuel' : 'hebdomadaire'} précédent copié.`, className: "bg-success text-success-foreground" });
       }
       fetchPlanning();
     } else {
@@ -545,7 +545,7 @@ const MonPlanningPage = () => {
       toast({
         title: nextStatus === REQUEST_STATUS.APPROVED ? 'Demande validée' : 'Demande refusée',
         description: `La demande de ${request.guichetiere_nom || request.guichetiere_matricule} a bien été traitée.`,
-        className: nextStatus === REQUEST_STATUS.APPROVED ? 'bg-success text-white' : 'bg-slate-700 text-white',
+        className: nextStatus === REQUEST_STATUS.APPROVED ? 'bg-success text-success-foreground' : 'bg-slate-700 text-white',
       });
 
       fetchPlanning();
@@ -634,8 +634,8 @@ const MonPlanningPage = () => {
                 title="Aller à une date"
                 aria-label="Aller à une date"
               />
-              <Button size="sm" variant="outline" onClick={() => handleCopyPrevious('week')} disabled={isLoading} className="text-xs md:text-sm" title="Copier la semaine précédente"><Copy className="mr-1 h-3 w-3 md:mr-2 md:h-4 md:w-4" /><span className="hidden sm:inline">Copier&nbsp;</span>Sem.</Button>
-              <Button size="sm" variant="outline" onClick={() => handleCopyPrevious('month')} disabled={isLoading} className="text-xs md:text-sm" title="Copier le mois précédent"><Copy className="mr-1 h-3 w-3 md:mr-2 md:h-4 md:w-4" /><span className="hidden sm:inline">Copier&nbsp;</span>Mois</Button>
+              <Button size="sm" variant="outline" onClick={() => handleCopyPrevious('week')} disabled={isLoading} className="text-xs md:text-sm" title="Copier la semaine précédente"><Copy className="mr-1 h-3 w-3 md:mr-2 md:h-4 md:w-4" /><span className="sr-only sm:not-sr-only">Copier&nbsp;</span>Sem.</Button>
+              <Button size="sm" variant="outline" onClick={() => handleCopyPrevious('month')} disabled={isLoading} className="text-xs md:text-sm" title="Copier le mois précédent"><Copy className="mr-1 h-3 w-3 md:mr-2 md:h-4 md:w-4" /><span className="sr-only sm:not-sr-only">Copier&nbsp;</span>Mois</Button>
             </div>
           </div>
         </CardHeader>
@@ -673,19 +673,19 @@ const MonPlanningPage = () => {
                       `}
                     >
                       {/* Header compact */}
-                      <div className={`flex items-center justify-between px-1.5 py-1 ${isToday ? 'bg-primary text-white' : !isCurrentMonthDay ? '' : isWeekend ? 'bg-muted/20' : ''}`}>
-                        <time dateTime={dateStr} className={`text-xs font-bold ${isToday ? 'text-white' : !isCurrentMonthDay ? 'text-muted-foreground/30' : 'text-foreground'}`}>
+                      <div className={`flex items-center justify-between px-1.5 py-1 ${isToday ? 'bg-primary text-primary-foreground' : !isCurrentMonthDay ? '' : isWeekend ? 'bg-muted/20' : ''}`}>
+                        <time dateTime={dateStr} className={`text-xs font-bold ${isToday ? 'text-primary-foreground' : !isCurrentMonthDay ? 'text-muted-foreground/30' : 'text-foreground'}`}>
                           {format(day, 'd')}
                         </time>
                         <div className="flex items-center gap-0.5">
                           {dayRequests.length > 0 && (
-                            <span className={`flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold ${isToday ? 'bg-card/20 text-white' : 'bg-warning-muted text-warning-muted-foreground'}`}>
+                            <span className={`flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold ${isToday ? 'bg-card text-primary' : 'bg-warning-muted text-warning-muted-foreground'}`}>
                               {dayRequests.length}
                             </span>
                           )}
                           {isCurrentMonthDay && !isPast && (
-                            <button
-                              className={`flex h-4 w-4 items-center justify-center rounded opacity-0 transition-all group-hover:opacity-100 ${isToday ? 'text-white/70 hover:bg-card/20' : 'text-muted-foreground/30 hover:bg-primary/10 hover:text-primary'}`}
+                            <button aria-label={`Ajouter une planification le ${format(day, 'dd/MM/yyyy')}`}
+                              className={`flex h-4 w-4 items-center justify-center rounded opacity-0 transition-all group-hover:opacity-100 ${isToday ? 'text-primary-foreground hover:bg-card/20' : 'text-muted-foreground/30 hover:bg-primary/10 hover:text-primary'}`}
                               onClick={() => openAddModal(day)}
                               disabled={isLoading}
                             >
@@ -714,8 +714,8 @@ const MonPlanningPage = () => {
                                 className="flex cursor-pointer items-center gap-1 transition-opacity hover:opacity-70"
                                 onClick={() => openEditModal(event, day)}
                               >
-                                <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[0.5rem] font-bold text-white
-                                  ${event.est_remplacante ? 'bg-warning/40' : isToday ? 'bg-card/90 !text-primary' : 'bg-primary'}
+                                <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[0.5rem] font-bold
+                                  ${event.est_remplacante ? 'bg-warning/40 text-foreground' : isToday ? 'bg-card/90 text-primary' : 'bg-primary text-primary-foreground'}
                                 `}>
                                   {initials}
                                 </span>
@@ -773,7 +773,7 @@ const MonPlanningPage = () => {
                     {request.motif || 'Aucun motif'}
                   </TableCell>
                   <TableCell>
-                    <Badge className={getRequestStatusBadgeClass(request.statut)}>{request.statut}</Badge>
+                    <StatusBadge tone={getRequestStatusTone(request.statut)}>{request.statut}</StatusBadge>
                     {request.commentaire_traitement ? (
                       <p className="mt-1 text-xs text-muted-foreground">
                         {request.commentaire_traitement}

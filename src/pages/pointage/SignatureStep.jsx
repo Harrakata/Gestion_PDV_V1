@@ -147,7 +147,7 @@ const SignatureStep = ({ onSubmit, onReset, isLoading }) => {
         
         <Button 
           onClick={validateSignature} 
-          className="flex-1 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white"
+          className="flex-1 bg-warning text-warning-foreground hover:bg-warning/90"
           disabled={isLoading || !hasSignature}
         >
           {isLoading ? 'Validation...' : 'Valider la signature'} <Save className="ml-2 h-5 w-5" />

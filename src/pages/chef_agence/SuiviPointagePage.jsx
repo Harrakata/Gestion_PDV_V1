@@ -4,12 +4,13 @@ import { useOutletContext } from 'react-router-dom';
 import { usePageState } from '@/hooks/usePageState';
 import { motion } from 'framer-motion';
 import { BarChart3, ClipboardCheck, Clock3, Search, Users } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import StatusBadge from '@/components/ui/status-badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/components/ui/use-toast';
+import EmptyState from '@/components/ui/empty-state';
 import StatsChartCard from '@/components/analytics/StatsChartCard';
 import KpiStatCard from '@/components/analytics/KpiStatCard';
 import { ANALYTICS_GRANULARITY_OPTIONS } from '@/lib/analytics';
@@ -434,9 +435,9 @@ const SuiviPointagePage = () => {
                   <TableCell>{row.expectedCount}</TableCell>
                   <TableCell>
                     <div className="space-y-2">
-                      <Badge variant="outline" className={row.statusMeta.className}>
+                      <StatusBadge tone={row.statusMeta.tone}>
                         {row.statusMeta.label}
-                      </Badge>
+                      </StatusBadge>
                       <p className="text-xs text-muted-foreground">{row.completionRate}%</p>
                     </div>
                   </TableCell>
@@ -490,9 +491,7 @@ const SuiviPointagePage = () => {
                 <tbody>
                   {selectedGuichetiereRow.pointages.length === 0 ? (
                     <tr className="border-t bg-card">
-                      <td colSpan={3} className="px-4 py-6 text-center text-muted-foreground">
-                        Aucun pointage enregistré sur cette date.
-                      </td>
+                      <td colSpan={3} className="p-2"><EmptyState compact plain title="Aucun pointage enregistré sur cette date" /></td>
                     </tr>
                   ) : (
                     selectedGuichetiereRow.pointages.map((pointage) => (

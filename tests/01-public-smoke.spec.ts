@@ -57,14 +57,22 @@ test.describe('Accueil & navigation publique', () => {
     await assertNoCrash(page);
   });
 
-  test('le basculement de thème ne casse pas la page', async ({ page }) => {
+  test('le thème enregistré (couleur + mode sombre) s’applique sans bouton de bascule', async ({ page }) => {
+    // Réglage propre au test : la base n'est ni lue ni écrite.
+    await page.route('**/rest/v1/**', route => route.fulfill({ json: [] }));
+    await page.addInitScript(() => localStorage.setItem(
+      'app_theme_cache', JSON.stringify({ primaryHsl: '217 91% 60%', darkMode: true }),
+    ));
     await page.goto('/');
     await settle(page);
-    // Bouton de thème (icône lune/soleil) — sélection tolérante.
-    const themeBtn = page.locator('header button').last();
-    await themeBtn.click().catch(() => {});
-    await page.waitForTimeout(300);
     await assertNoCrash(page);
+    await expect(page.locator('html')).toHaveClass(/(^|\s)dark(\s|$)/);
+    const token = (name: string) => page.evaluate(
+      key => getComputedStyle(document.documentElement).getPropertyValue(key).trim(), name,
+    );
+    expect(await token('--primary')).toMatch(/^217 /);
+    expect(await token('--accent-foreground')).toMatch(/^217 /);
+    await expect(page.getByRole('button', { name: /th[eè]me/i })).toHaveCount(0);
   });
 
   test('chaque route d’espace répond (login ou contenu, sans crash)', async ({ page }) => {

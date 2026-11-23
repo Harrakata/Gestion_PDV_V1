@@ -28,9 +28,9 @@ export const ACTIVITY_STATUS = {
 };
 
 export const ACTIVITY_STATUS_META = {
-  [ACTIVITY_STATUS.ONLINE]: { label: 'En ligne', className: 'bg-success-muted text-success-muted-foreground border-success/30' },
-  [ACTIVITY_STATUS.IDLE]: { label: 'Inactif', className: 'bg-warning-muted text-warning-muted-foreground border-warning/30' },
-  [ACTIVITY_STATUS.OFFLINE]: { label: 'Hors ligne', className: 'bg-muted text-foreground/80 border-border' },
+  [ACTIVITY_STATUS.ONLINE]: { label: 'En ligne', tone: 'success' },
+  [ACTIVITY_STATUS.IDLE]: { label: 'Inactif', tone: 'warning' },
+  [ACTIVITY_STATUS.OFFLINE]: { label: 'Hors ligne', tone: 'neutral' },
 };
 
 export const EVENT_TYPE_META = {

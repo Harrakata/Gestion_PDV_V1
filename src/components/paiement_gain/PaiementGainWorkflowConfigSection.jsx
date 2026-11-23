@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { describeError } from '@/lib/errors';
-import { Badge } from '@/components/ui/badge';
+import StatusBadge from '@/components/ui/status-badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -38,9 +38,9 @@ const BOOLEAN_OPTIONS = [
   { value: 'false', label: 'Non' },
 ];
 
-const STATUS_BADGE_CLASS = {
-  [WORKFLOW_CONFIG_STATUSES.ACTIVE]: 'border-success/30 bg-success-muted text-success-muted-foreground',
-  [WORKFLOW_CONFIG_STATUSES.INACTIVE]: 'border-border bg-muted text-foreground/80',
+const WORKFLOW_STATUS_TONES = {
+  [WORKFLOW_CONFIG_STATUSES.ACTIVE]: 'success',
+  [WORKFLOW_CONFIG_STATUSES.INACTIVE]: 'neutral',
 };
 
 const DEFAULT_FORM_DATA = {
@@ -134,7 +134,7 @@ const PaiementGainWorkflowConfigSection = ({
   };
 
   const addButtonClassName = canWriteCurrentPage
-    ? 'bg-primary text-white hover:bg-primary/90'
+    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
     : 'bg-muted text-muted-foreground hover:bg-muted hover:text-muted-foreground cursor-not-allowed';
 
   const editButtonClassName = canWriteCurrentPage && !isLoading && !isMissingTable
@@ -243,7 +243,7 @@ const PaiementGainWorkflowConfigSection = ({
     toast({
       title: currentWorkflowConfig?.persisted ? 'Workflow mis à jour' : 'Workflow ajouté',
       description: `La configuration ${payload.codeWorkflow} a bien été enregistrée.`,
-      className: 'bg-success text-white',
+      className: 'bg-success text-success-foreground',
     });
 
     setIsDialogOpen(false);
@@ -295,7 +295,7 @@ const PaiementGainWorkflowConfigSection = ({
     toast({
       title: 'Statut mis à jour',
       description: `${config.libelle} est maintenant ${nextStatus.toLowerCase()}.`,
-      className: 'bg-primary text-white',
+      className: 'bg-primary text-primary-foreground',
     });
 
     await loadData();
@@ -330,7 +330,7 @@ const PaiementGainWorkflowConfigSection = ({
     toast({
       title: 'Workflows initialisés',
       description: 'Les règles par défaut ont été enregistrées en base.',
-      className: 'bg-success text-white',
+      className: 'bg-success text-success-foreground',
     });
 
     await loadData();
@@ -678,9 +678,9 @@ const PaiementGainWorkflowConfigSection = ({
                     <TableCell>{buildWorkflowApprovalsLabel(config)}</TableCell>
                     <TableCell>{procedure.circuit.join(' > ')}</TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={STATUS_BADGE_CLASS[config.statut] || STATUS_BADGE_CLASS[WORKFLOW_CONFIG_STATUSES.INACTIVE]}>
+                      <StatusBadge tone={WORKFLOW_STATUS_TONES[config.statut] || WORKFLOW_STATUS_TONES[WORKFLOW_CONFIG_STATUSES.INACTIVE]}>
                         {config.statut}
-                      </Badge>
+                      </StatusBadge>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1.5">

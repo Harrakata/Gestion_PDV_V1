@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { describeError } from '@/lib/errors';
 import { supabase } from '@/lib/supabaseClient';
 import { Badge } from '@/components/ui/badge';
+import StatusBadge from '@/components/ui/status-badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -35,15 +36,15 @@ const SOUS_ENSEMBLE_LABELS = {
 };
 
 const STATUT_CONFIG = {
-  defectueux: { label: 'Défectueux', cls: 'bg-destructive/10 text-destructive' },
-  assigne: { label: 'Assigné', cls: 'bg-info-muted text-info-muted-foreground' },
-  a_tester: { label: 'À tester', cls: 'bg-warning-muted text-warning-muted-foreground' },
-  repare: { label: 'Réparé', cls: 'bg-success-muted text-success-muted-foreground' },
+  defectueux: { label: 'Défectueux', tone: 'danger' },
+  assigne: { label: 'Assigné', tone: 'info' },
+  a_tester: { label: 'À tester', tone: 'warning' },
+  repare: { label: 'Réparé', tone: 'success' },
 };
 
 const StatutBadge = ({ statut }) => {
-  const cfg = STATUT_CONFIG[statut] || { label: statut, cls: 'bg-muted text-foreground' };
-  return <Badge className={cfg.cls}>{cfg.label}</Badge>;
+  const cfg = STATUT_CONFIG[statut] || { label: statut, tone: 'neutral' };
+  return <StatusBadge tone={cfg.tone}>{cfg.label}</StatusBadge>;
 };
 
 const StockDefectueuxTab = ({ canManage = true, technicienId = null }) => {
@@ -121,7 +122,7 @@ const StockDefectueuxTab = ({ canManage = true, technicienId = null }) => {
     };
   }), [techniciens]);
 
-  const showOk = (msg) => toast({ title: msg, className: 'bg-success text-white' });
+  const showOk = (msg) => toast({ title: msg, className: 'bg-success text-success-foreground' });
   const showErr = (msg) => toast({ title: 'Erreur', description: msg, variant: 'destructive' });
 
   const openAssignDialog = useCallback((item) => {
@@ -435,9 +436,9 @@ const StockDefectueuxTab = ({ canManage = true, technicienId = null }) => {
                       <div key={m.id} className="flex items-center gap-2 rounded-md border bg-muted/30 px-3 py-1.5 text-xs">
                         <span className="flex-1 font-medium">{m.piece?.nom || '—'}</span>
                         <span className="font-mono text-muted-foreground">{m.piece?.reference}</span>
-                        <Badge className={m.type === 'nettoyage' ? 'bg-success-muted text-success-muted-foreground' : 'bg-info-muted text-info-muted-foreground'}>
+                        <StatusBadge tone={m.type === 'nettoyage' ? 'success' : 'info'}>
                           {m.type === 'nettoyage' ? 'Nettoyée' : 'Remplacée'}
-                        </Badge>
+                        </StatusBadge>
                       </div>
                     ))}
                   </div>
@@ -461,7 +462,7 @@ const StockDefectueuxTab = ({ canManage = true, technicienId = null }) => {
                     </>
                   )}
                   {detailItem.statut === 'a_tester' && (
-                    <Button size="sm" className="bg-success text-white hover:bg-success/90" onClick={() => { updateStatut(detailItem, 'repare'); setIsDetailOpen(false); }}>
+                    <Button size="sm" className="bg-success text-success-foreground hover:bg-success/90" onClick={() => { updateStatut(detailItem, 'repare'); setIsDetailOpen(false); }}>
                       Marquer Réparé
                     </Button>
                   )}

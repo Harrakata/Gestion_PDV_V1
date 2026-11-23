@@ -12,6 +12,7 @@ import {
   Plus,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import StatusBadge from '@/components/ui/status-badge';
 import { Button } from '@/components/ui/button';
 import { normalizeMaintenanceText } from '@/lib/maintenanceMonitoring';
 import { supabase } from '@/lib/supabaseClient';
@@ -379,11 +380,11 @@ const centerViewportOnMarker = (viewport, marker) => {
   };
 };
 
-const getStatusBadgeClassName = (status, mode = 'maintenance') => {
-  if (mode === 'planning' && status === 'planned') return 'border-info/30 bg-info-muted text-info-muted-foreground';
-  if (status === 'ok') return 'border-success/30 bg-success-muted text-success-muted-foreground';
-  if (status === 'empty') return 'border-warning/30 bg-warning-muted text-warning-muted-foreground';
-  return 'border-destructive/30 bg-destructive/10 text-destructive';
+const getAgencyStatusTone = (status, mode = 'maintenance') => {
+  if (mode === 'planning' && status === 'planned') return 'info';
+  if (status === 'ok') return 'success';
+  if (status === 'empty') return 'warning';
+  return 'danger';
 };
 
 const getStatusLabel = (row, mode = 'maintenance') => {
@@ -409,10 +410,10 @@ const getShortStatusLabel = (status, mode = 'maintenance') => {
 };
 
 const getMarkerClassName = (status, mode = 'maintenance') => {
-  if (mode === 'planning' && status === 'planned') return 'bg-primary text-white';
-  if (status === 'ok') return 'bg-success text-white';
-  if (status === 'empty') return 'bg-warning text-white';
-  return 'bg-destructive text-white';
+  if (mode === 'planning' && status === 'planned') return 'bg-primary text-primary-foreground';
+  if (status === 'ok') return 'bg-success text-success-foreground';
+  if (status === 'empty') return 'bg-warning text-warning-foreground';
+  return 'bg-destructive text-destructive-foreground';
 };
 
 const MaintenanceAgenciesMap = ({
@@ -664,10 +665,10 @@ const MaintenanceAgenciesMap = ({
               </p>
             </div>
             <div className="flex flex-wrap gap-2 text-xs">
-              <Badge variant="outline" className="border-success/30 bg-success-muted text-success-muted-foreground">
+              <Badge variant="success">
                 Localisées : 0/0
               </Badge>
-              <Badge variant="outline" className="border-warning/30 bg-warning-muted text-warning-muted-foreground">
+              <Badge variant="warning">
                 À préciser : 0
               </Badge>
             </div>
@@ -702,10 +703,10 @@ const MaintenanceAgenciesMap = ({
             </p>
           </div>
           <div className="flex flex-wrap gap-2 text-xs">
-            <Badge variant="outline" className="border-success/30 bg-success-muted text-success-muted-foreground">
+            <Badge variant="success">
               Localisées : {markers.length}/{agencyRows.length}
             </Badge>
-            <Badge variant="outline" className="border-warning/30 bg-warning-muted text-warning-muted-foreground">
+            <Badge variant="warning">
               À préciser : {unresolvedCount}
             </Badge>
           </div>
@@ -867,7 +868,7 @@ const MaintenanceAgenciesMap = ({
                   <p className="truncate font-semibold text-foreground">{selectedAgency.nom}</p>
                   <p className="text-xs text-muted-foreground">{selectedAgency.region}</p>
                 </div>
-                <Badge variant="outline" className={getStatusBadgeClassName(selectedAgency.status, mode)}>
+                <Badge variant={getAgencyStatusTone(selectedAgency.status, mode)}>
                   {selectedAgency.status === 'ok' ? (
                     <CheckCircle2 className="mr-1 h-3 w-3" />
                   ) : (
@@ -947,18 +948,18 @@ const MaintenanceAgenciesMap = ({
                               : row.status === 'ok'
                               ? 'text-success'
                               : row.status === 'empty'
-                                ? 'text-warning'
+                                ? 'text-warning-muted-foreground'
                                 : 'text-destructive'
                           }`}
                         />
                       ) : (
-                        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
+                        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warning-muted-foreground" />
                       )}
                     </div>
                     <div className="mt-2 flex flex-wrap gap-1">
-                      <Badge variant="outline" className={getStatusBadgeClassName(row.status, mode)}>
+                      <StatusBadge tone={getAgencyStatusTone(row.status, mode)}>
                         {getStatusLabel(row, mode)}
-                      </Badge>
+                      </StatusBadge>
                     </div>
                   </button>
                 );

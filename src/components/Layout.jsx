@@ -5,15 +5,13 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import OfflineSyncIndicator from '@/components/OfflineSyncIndicator';
 import { SpaceHeaderContext } from '@/components/SpaceHeaderIdentity';
 import SpaceHeaderSearch from '@/components/SpaceHeaderSearch';
 const FloatingAssistant = React.lazy(() => import('@/components/assistant/FloatingAssistant'));
-import { Home, Briefcase, Users, Settings, BarChart3, LogIn, Sun, Moon, Menu, Wrench, ShieldCheck, Wallet, User } from 'lucide-react';
+import { Home, Briefcase, Users, LogIn, Menu, Wrench, ShieldCheck, Wallet, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useToast } from '@/components/ui/use-toast';
 import { useClient, useSecteurEnabled } from '@/hooks/useFeatureFlags';
@@ -39,10 +37,6 @@ const Layout = () => {
   const registerSpace = React.useCallback((delta) => setConnectedSpaceCount(count => count + delta), []);
   const connectedSpace = connectedSpaceCount > 0 && location.pathname.startsWith('/espace-');
   const [spaceSearchItems, setSpaceSearchItems] = React.useState(null);
-  const headerContext = React.useMemo(
-    () => ({ target: profileTarget, register: registerSpace, searchItems: spaceSearchItems, setSearchItems: setSpaceSearchItems }),
-    [profileTarget, registerSpace, spaceSearchItems]
-  );
   // Surveillance globale des notifications : continue de déclencher les notifs OS même
   // hors de l'espace concerné (accueil, autre espace, onglet en arrière-plan) tant que
   // l'app tourne. App totalement fermée = Web Push requis (VITE_VAPID_PUBLIC_KEY).
@@ -72,7 +66,8 @@ const Layout = () => {
         .catch(() => { /* best-effort */ });
     } catch { /* ignore */ }
   }, []);
-  const [isDarkMode, setIsDarkMode] = React.useState(() => {
+  // Le mode sombre se règle dans Paramètres → Thème (plus de bascule dans l'en-tête).
+  const [isDarkMode] = React.useState(() => {
     // Lire le mode sombre depuis le cache thème pour éviter un flash au rechargement
     try {
       const cached = localStorage.getItem('app_theme_cache');
@@ -99,10 +94,6 @@ const Layout = () => {
       root.classList.remove('dark');
     }
   }, [isDarkMode]);
-
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
-  };
 
   React.useEffect(() => {
     const loadSpaceFunctionalities = async () => {
@@ -177,6 +168,16 @@ const Layout = () => {
 
   const isSpaceRouteActive = availableDropdownLinks.some((link) => location.pathname.startsWith(link.to));
   const activeSpaceLabel = dropdownLinks.find((link) => location.pathname.startsWith(link.to))?.label || 'Mon espace';
+  const headerContext = React.useMemo(
+    () => ({
+      target: profileTarget,
+      register: registerSpace,
+      spaceLabel: activeSpaceLabel,
+      searchItems: spaceSearchItems,
+      setSearchItems: setSpaceSearchItems,
+    }),
+    [profileTarget, registerSpace, activeSpaceLabel, spaceSearchItems],
+  );
 
   React.useEffect(() => {
     const crumbs = buildBreadcrumbs(location.pathname);
@@ -211,13 +212,7 @@ const Layout = () => {
   return (
     <SpaceHeaderContext.Provider value={headerContext}>
     <div
-      className={`flex min-h-screen flex-col transition-colors ${connectedSpace ? 'connected-space-shell' : ''} ${
-        location.pathname.startsWith('/espace-exploitation')
-          ? 'exploitation-theme-surface'
-          : location.pathname.startsWith('/espace-')
-            ? 'other-spaces-theme-surface'
-          : 'app-page-theme-surface'
-      }`}
+      className={`app-page-theme-surface flex min-h-screen flex-col transition-colors ${connectedSpace ? 'connected-space-shell' : ''}`}
     >
       <a
         href="#main-content"
@@ -227,28 +222,17 @@ const Layout = () => {
       </a>
       <header className="app-top-header sticky top-0 z-40 w-full border-b border-border bg-background/95 shadow-soft backdrop-blur supports-[backdrop-filter]:bg-background/90">
         <div className="flex h-14 w-full items-center justify-between px-4 sm:h-16 sm:px-6 lg:px-10">
-          <Link to="/" className="space-brand-anchor flex min-w-0 items-center gap-3 group">
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <img
-                src={client.logoUrl || "/carrus-logo.png"}
-                alt={client.displayName || "CARRUS Betting Solutions & Services"}
-                className="h-10 w-auto object-contain drop-shadow-sm sm:h-12"
-              />
-            </motion.div>
-            {connectedSpace && (
-              <span className="space-brand-copy hidden min-w-0 md:block" title={activeSpaceLabel}>
-                <span className="block truncate text-base font-extrabold leading-tight text-foreground">
-                  Gestion PDV
-                </span>
-                <span className="mt-0.5 block truncate text-[0.7rem] font-bold uppercase tracking-[0.12em] text-primary">
-                  {client.displayName || 'GestionPDV'}
-                </span>
-                <span className="space-brand-space mt-0.5 block truncate text-xs font-semibold text-muted-foreground">
-                  {activeSpaceLabel}
-                </span>
-              </span>
-            )}
-          </Link>
+          {!connectedSpace && (
+            <Link to="/" className="flex min-w-0 items-center gap-3">
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <img
+                  src={client.logoUrl || '/carrus-logo.png'}
+                  alt={client.displayName || 'CARRUS Betting Solutions & Services'}
+                  className="h-10 w-auto object-contain drop-shadow-sm sm:h-12"
+                />
+              </motion.div>
+            </Link>
+          )}
 
           <div className={connectedSpace ? 'space-header-bar hidden min-w-0 flex-1 items-center gap-4 md:flex' : 'hidden'}>
             {connectedSpace && (
@@ -336,28 +320,11 @@ const Layout = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
               <OfflineSyncIndicator enabled={spaceFunctionalities.offline_mode === true} />
-              <span className="mx-2 h-5 w-px bg-border" aria-hidden="true" />
-              <button
-                type="button"
-                onClick={toggleTheme}
-                aria-label={isDarkMode ? 'Activer le thème clair' : 'Activer le thème sombre'}
-                title={isDarkMode ? 'Thème clair' : 'Thème sombre'}
-                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-              >
-                {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-              </button>
             </div>
           </nav>}
           
           <div className="md:hidden flex items-center gap-2">
             <OfflineSyncIndicator enabled={spaceFunctionalities.offline_mode === true} />
-            <button
-              onClick={toggleTheme}
-              aria-label="Changer de thème"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            >
-              {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button aria-label="Ouvrir le menu" className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">

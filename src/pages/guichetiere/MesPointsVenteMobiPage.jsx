@@ -4,7 +4,7 @@ import { useOutletContext } from 'react-router-dom';
 import { isMobiPointCurrent, mobiPointDisplayStatus, mobiToday } from '@/lib/mobiPointValidity';
 import { motion } from 'framer-motion';
 import { Building2, History, MapPin, Send } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import StatusBadge from '@/components/ui/status-badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -21,13 +21,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
+import EmptyState from '@/components/ui/empty-state';
 import { supabase } from '@/lib/supabaseClient';
 import KpiStatCard from '@/components/analytics/KpiStatCard';
 import {
   REQUEST_STATUS,
   formatDisplayDate,
   formatDisplayDateTime,
-  getRequestStatusBadgeClass,
+  getRequestStatusTone,
   isMissingSupabaseTableError,
   isSupabaseAuthError,
   normalizeText,
@@ -253,7 +254,7 @@ const MesPointsVenteMobiPage = () => {
       toast({
         title: 'Demande envoyée',
         description: 'La demande de modification a été transmise à l’exploitation.',
-        className: 'bg-success text-white',
+        className: 'bg-success text-success-foreground',
       });
       setIsDialogOpen(false);
       setSelectedPointVente(null);
@@ -376,7 +377,7 @@ const MesPointsVenteMobiPage = () => {
                   <TableCell>{request.requested_agence_nom || 'Aucune'}</TableCell>
                   <TableCell>{request.requested_terminal_reference || 'Aucun'}</TableCell>
                   <TableCell>
-                    <Badge className={getRequestStatusBadgeClass(request.statut)}>{request.statut}</Badge>
+                    <StatusBadge tone={getRequestStatusTone(request.statut)}>{request.statut}</StatusBadge>
                   </TableCell>
                   <TableCell className="max-w-[260px] whitespace-normal text-xs text-muted-foreground">
                     {request.commentaire_traitement || request.commentaire || 'En attente de traitement'}
@@ -431,9 +432,7 @@ const MesPointsVenteMobiPage = () => {
                 <TableBody>
                   {dialogHistory.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="py-8 text-center text-sm text-muted-foreground">
-                        Aucun historique pour ce point de vente.
-                      </TableCell>
+                      <TableCell colSpan={6} className="p-2"><EmptyState compact plain title="Aucun historique pour ce point de vente" /></TableCell>
                     </TableRow>
                   ) : (
                     dialogHistory.map((p) => (
@@ -444,9 +443,9 @@ const MesPointsVenteMobiPage = () => {
                         <TableCell>{formatDisplayDate(p.dateDebutValidite)}</TableCell>
                         <TableCell>{formatDisplayDate(p.dateFinValidite)}</TableCell>
                         <TableCell>
-                          <Badge className={mobiPointDisplayStatus(p, mobiToday()) === 'Actif' ? 'border-success/30 bg-success-muted text-success-muted-foreground' : 'border-border bg-muted text-foreground/80'}>
+                          <StatusBadge tone={mobiPointDisplayStatus(p, mobiToday()) === 'Actif' ? 'success' : 'neutral'}>
                             {mobiPointDisplayStatus(p, mobiToday())}
-                          </Badge>
+                          </StatusBadge>
                         </TableCell>
                       </TableRow>
                     ))

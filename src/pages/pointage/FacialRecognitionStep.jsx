@@ -69,7 +69,7 @@ const FacialRecognitionStep = ({ guichetiereInfo, onSubmit, onReset, isLoading: 
         setComparisonResult(simulatedMatch ? 'match' : 'no_match');
         setLocalIsLoading(false);
         if (simulatedMatch) {
-            toast({ title: "Correspondance !", description: "La reconnaissance faciale a réussi.", className: "bg-success text-white"});
+            toast({ title: "Correspondance !", description: "La reconnaissance faciale a réussi.", className: "bg-success text-success-foreground"});
         } else {
             toast({ title: "Échec de la reconnaissance", description: "Les visages ne semblent pas correspondre. Veuillez réessayer ou annuler.", variant: "destructive", duration: 5000});
         }
@@ -165,7 +165,7 @@ const FacialRecognitionStep = ({ guichetiereInfo, onSubmit, onReset, isLoading: 
       {!isCameraActive && !capturedImage && (
         <Button 
           onClick={startRecognitionProcess} 
-          className="w-full text-base md:text-lg py-3 md:py-6 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white"
+          className="w-full text-base md:text-lg py-3 md:py-6 bg-primary text-primary-foreground hover:bg-primary/90"
           disabled={isLoading || !guichetierePhotoUrl}
         >
           {isLoading ? 'Chargement...' : 'Lancer la Reconnaissance'} <Camera className="ml-2 h-4 w-4 md:h-5 md:w-5" />
@@ -174,7 +174,7 @@ const FacialRecognitionStep = ({ guichetiereInfo, onSubmit, onReset, isLoading: 
       {isCameraActive && (
         <Button 
           onClick={takePhotoAndCompare} 
-          className="w-full text-base md:text-lg py-3 md:py-6 bg-success hover:bg-success/90 text-white"
+          className="w-full text-base md:text-lg py-3 md:py-6 bg-success hover:bg-success/90 text-success-foreground"
           disabled={isLoading}
         >
           {isLoading ? 'Capture...' : 'Prendre la Photo & Comparer'} <Fingerprint className="ml-2 h-4 w-4 md:h-5 md:w-5" />
@@ -184,7 +184,7 @@ const FacialRecognitionStep = ({ guichetiereInfo, onSubmit, onReset, isLoading: 
       {comparisonResult === 'match' && (
          <Button 
           onClick={handleProceed} 
-          className="w-full text-base md:text-lg py-3 md:py-6 bg-primary hover:bg-primary/90 text-white"
+          className="w-full text-base md:text-lg py-3 md:py-6 bg-primary hover:bg-primary/90 text-primary-foreground"
           disabled={isLoading}
         >
           {isLoading ? 'Chargement...' : 'Passer à la Signature'}

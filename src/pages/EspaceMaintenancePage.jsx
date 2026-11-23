@@ -1,30 +1,27 @@
 import React, { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import { describeError } from '@/lib/errors';
-import SpaceHeaderIdentity from '@/components/SpaceHeaderIdentity';
-import SpaceHeaderProfile from '@/components/SpaceHeaderProfile';
-import SpaceMobileHeader from '@/components/SpaceMobileHeader';
+import SpaceShell from '@/components/SpaceShell';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import PageHeader from '@/components/ui/page-header';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Wrench, Loader2, LogOut, CalendarDays, AtSign, UserCog, Menu, X, Home, CalendarOff, Ticket } from 'lucide-react';
+import { Wrench, Loader2, CalendarDays, AtSign, CalendarOff, Ticket } from 'lucide-react';
 import EditProfileDialog from '@/components/EditProfileDialog';
 import ForgotPasswordDialog from '@/components/ForgotPasswordDialog';
 import SpaceLoginCard from '@/components/SpaceLoginCard';
 import NotificationBell from '@/components/NotificationBell';
 import { useSpaceNotifications, clearNotifWatch } from '@/hooks/useSpaceNotifications';
-import MobileTabBar from '@/components/mobile/MobileTabBar';
 import PullToRefresh from '@/components/mobile/PullToRefresh';
-import SwipeTabs from '@/components/mobile/SwipeTabs';
 import { useFeature } from '@/hooks/useFeatureFlags';
 import { useSyncHealthHeartbeat } from '@/hooks/useSyncHealthHeartbeat';
 import RemonteeDialog from '@/components/RemonteeDialog';
-import EnablePushButton from '@/components/EnablePushButton';
 import NotifEnableBanner from '@/components/NotifEnableBanner';
 import { supabase } from '@/lib/supabaseClient';
 import { useToast } from '@/components/ui/use-toast';
+import EmptyState from '@/components/ui/empty-state';
 import { motion } from 'framer-motion';
 import {
   APP_SPACE_TAB_SETTINGS_KEY,
@@ -138,7 +135,7 @@ const LoginPage = ({ onLogin }) => {
     toast({
       title: 'Connexion réussie',
       description: `Bienvenue ${profile.prenom} ${profile.nom}`,
-      className: 'bg-success text-white',
+      className: 'bg-success text-success-foreground',
     });
     setIsLoading(false);
   };
@@ -363,16 +360,22 @@ const EspaceMaintenancePage = () => {
     return <LoginPage onLogin={handleLogin} />;
   }
 
-  return (
-    <div className="app-space-layout has-mobile-header flex flex-col gap-4 md:flex-row lg:gap-8">
+  const navigationItems = menuItems.map((item) => ({
+    key: item.key,
+    label: item.label,
+    icon: item.icon,
+    active: activeSection === item.key,
+    onClick: () => setActiveSection(item.key),
+  }));
 
-      {/* En-tête mobile/PWA commun : profil + recherche + actions + menu */}
-      <SpaceMobileHeader
-        photoUrl={userData?.photo_url}
-        initials={[userData?.prenom?.[0], userData?.nom?.[0]].filter(Boolean).join('') || 'TM'}
-        name={`${userData?.prenom || ''} ${userData?.nom || ''}`.trim()}
-        role="Technicien maintenance"
-        actions={(
+  return (
+    <SpaceShell
+      profile={{
+        photoUrl: userData?.photo_url,
+        initials: [userData?.prenom?.[0], userData?.nom?.[0]].filter(Boolean).join('') || 'TM',
+        name: `${userData?.prenom || ''} ${userData?.nom || ''}`.trim(),
+        role: 'Technicien maintenance',
+        actions: (
           <>
             <NotificationBell
               notifications={technicienNotifications}
@@ -383,203 +386,101 @@ const EspaceMaintenancePage = () => {
             />
             <RemonteeDialog sender={notifReader} iconOnly />
           </>
-        )}
-        menuOpen={isMobileMenuOpen}
-        onToggleMenu={() => setIsMobileMenuOpen((open) => !open)}
-      />
-
-      {isMobileMenuOpen && (
-        <div className="app-space-backdrop md:hidden" onClick={() => setIsMobileMenuOpen(false)} aria-hidden="true" />
+        ),
+      }}
+      menuOpen={isMobileMenuOpen}
+      onMenuOpenChange={setIsMobileMenuOpen}
+      menuItems={navigationItems}
+      reader={notifReader}
+      onProfile={() => setIsProfileDialogOpen(true)}
+      onLogout={handleLogout}
+      overlays={(
+        <EditProfileDialog
+          open={isProfileDialogOpen}
+          onOpenChange={setIsProfileDialogOpen}
+          table="techniciens"
+          recordId={userData?.id}
+          withPhoto
+          photoPrefix="photos_techniciens"
+          currentPhotoUrl={userData?.photo_url || null}
+          initialData={{ nom: userData?.nom, prenom: userData?.prenom, telephone: userData?.telephone, email: userData?.email }}
+          onSaved={(fields) => setUserData((prev) => ({ ...(prev || {}), ...fields }))}
+        />
       )}
-      <motion.aside
-        initial={{ x: -100, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className={`app-space-sidebar md:w-72 md:shrink-0 ${isMobileMenuOpen ? 'is-open' : ''}`}
+    >
+      <NotifEnableBanner reader={notifReader} className="mb-4" />
+      <PullToRefresh onRefresh={handlePullRefresh}>
+      <motion.div
+        key={`${activeSection}:${refreshKey}`}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
       >
-        <div className="app-space-sidebar-scroll sticky top-20 space-y-3 max-h-[calc(100vh-5.5rem)] overflow-y-auto pb-4 pr-1 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
-
-          {/* Carte de profil : masquée sur mobile (déplacée dans l'en-tête mobile), visible en desktop */}
-          <SpaceHeaderIdentity>
-            <SpaceHeaderProfile
-              photoUrl={userData?.photo_url}
-              initials={[userData?.prenom?.[0], userData?.nom?.[0]].filter(Boolean).join('') || 'TM'}
-              name={`${userData?.prenom || ''} ${userData?.nom || ''}`.trim()}
-              role="Technicien maintenance"
-              actions={(
-                <>
-                  <NotificationBell
-                    notifications={technicienNotifications}
-                    totalCount={technicienNotifCount}
-                    onNavigate={() => setIsMobileMenuOpen(false)}
-                    reader={notifReader}
-                    storageKey={userData?.id ? `t_${userData.id}` : null}
-                  />
-                  <RemonteeDialog sender={notifReader} iconOnly />
-                </>
-              )}
-            />
-          </SpaceHeaderIdentity>
-
-          <Card className="relative overflow-hidden">
-            <CardContent className="relative p-3">
-              <nav className="space-y-1">
-                {menuItems.map((item) => {
-                  const isActive = activeSection === item.key;
-                  return (
-                    <button
-                      key={item.key}
-                      type="button"
-                      onClick={() => setActiveSection(item.key)}
-                      aria-current={isActive ? 'page' : undefined}
-                      className={`flex w-full items-center gap-2.5 rounded-2xl border px-3 py-2.5 text-sm font-semibold transition-all ${
-                        isActive
-                          ? 'border-primary/20 bg-primary/10 text-primary shadow-none'
-                          : 'border-transparent text-foreground/80 hover:bg-primary/10 hover:text-primary'
-                      }`}
-                    >
-                      {React.cloneElement(item.icon, { className: 'h-4 w-4 shrink-0' })}
-                      {item.label}
-                    </button>
-                  );
-                })}
-              </nav>
-              <div className="mt-2 border-t pt-1">
-                <div className="flex items-center">
-                  <button
-                    type="button"
-                    onClick={() => { navigate('/'); setIsMobileMenuOpen(false); }}
-                    className="flex flex-1 flex-col items-center gap-1 rounded-2xl py-2.5 text-muted-foreground/70 transition-colors hover:bg-primary/8 hover:text-primary"
-                  >
-                    <Home className="h-5 w-5" />
-                    <span className="text-[0.6rem] font-semibold">Accueil</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setIsProfileDialogOpen(true); setIsMobileMenuOpen(false); }}
-                    className="flex flex-1 flex-col items-center gap-1 rounded-2xl py-2.5 text-muted-foreground/70 transition-colors hover:bg-primary/8 hover:text-primary"
-                  >
-                    <UserCog className="h-5 w-5" />
-                    <span className="text-[0.6rem] font-semibold">Profil</span>
-                  </button>
-                  <EnablePushButton reader={notifReader} asNavButton />
-                  <button
-                    type="button"
-                    onClick={handleLogout}
-                    className="flex flex-1 flex-col items-center gap-1 rounded-2xl py-2.5 text-destructive transition-colors hover:bg-destructive/10 hover:text-destructive"
-                  >
-                    <LogOut className="h-5 w-5" />
-                    <span className="text-[0.6rem] font-semibold">Déconn.</span>
-                  </button>
-                </div>
-              </div>
-            </CardContent>
+        <Suspense fallback={<SectionLoader />}>
+        {!menuItems.length ? (
+          <Card>
+            <CardContent className="p-6"><EmptyState compact title="Aucun onglet n’est actuellement activé pour l’Espace Technicien" /></CardContent>
           </Card>
-        </div>
-      </motion.aside>
-
-      <EditProfileDialog
-        open={isProfileDialogOpen}
-        onOpenChange={setIsProfileDialogOpen}
-        table="techniciens"
-        recordId={userData?.id}
-        withPhoto
-        photoPrefix="photos_techniciens"
-        currentPhotoUrl={userData?.photo_url || null}
-        initialData={{ nom: userData?.nom, prenom: userData?.prenom, telephone: userData?.telephone, email: userData?.email }}
-        onSaved={(fields) => setUserData((prev) => ({ ...(prev || {}), ...fields }))}
-      />
-
-      <main className="app-space-main has-tabbar min-w-0 flex-1 overflow-visible">
-        <NotifEnableBanner reader={notifReader} className="mb-4" />
-        <SwipeTabs items={menuItems.map((item) => ({ key: item.key, active: activeSection === item.key, onClick: () => setActiveSection(item.key) }))}>
-        <PullToRefresh onRefresh={handlePullRefresh}>
-        <motion.div
-          key={`${activeSection}:${refreshKey}`}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          <Suspense fallback={<SectionLoader />}>
-          {!menuItems.length ? (
-            <Card>
-              <CardContent className="p-6 text-center text-muted-foreground">
-                Aucun onglet n’est actuellement activé pour l’Espace Technicien.
-              </CardContent>
+        ) : activeSection === 'demandes-absence' ? (
+          <AbsenceRequestsPanel
+            demandeur={{
+              role: ABSENCE_ROLE_TECHNICIEN,
+              id: userData?.id,
+              matricule: userData?.matricule || null,
+              nom: [userData?.prenom, userData?.nom].filter(Boolean).join(' ') || userData?.matricule || 'Technicien',
+              agence_nom: null,
+              secteur: null,
+              region: null,
+            }}
+          />
+        ) : activeSection === 'tickets' ? (
+          <TicketsPanel
+            mode="technicien"
+            identity={{
+              role: 'Technicien',
+              id: userData?.id,
+              nom: [userData?.prenom, userData?.nom].filter(Boolean).join(' ') || userData?.matricule || 'Technicien',
+            }}
+            filter={{ assigne_a_id: userData?.id }}
+            spaceKey="espace-technicien"
+            title="Mes tickets assignés"
+            description="Incidents qui vous sont assignés : prise en charge et résolution."
+          />
+        ) : activeSection === 'planning' ? (
+          <MonPlanningMaintenancePage technicien={userData} view="reparation" />
+        ) : (
+          <div className="space-y-6">
+            <Card variant="accent">
+              <CardHeader>
+                <PageHeader
+                  icon={<CalendarDays />}
+                  title="Maintenance"
+                  description="Consultez votre planning et effectuez vos interventions de maintenance."
+                />
+              </CardHeader>
             </Card>
-          ) : activeSection === 'demandes-absence' ? (
-            <AbsenceRequestsPanel
-              demandeur={{
-                role: ABSENCE_ROLE_TECHNICIEN,
-                id: userData?.id,
-                matricule: userData?.matricule || null,
-                nom: [userData?.prenom, userData?.nom].filter(Boolean).join(' ') || userData?.matricule || 'Technicien',
-                agence_nom: null,
-                secteur: null,
-                region: null,
-              }}
-            />
-          ) : activeSection === 'tickets' ? (
-            <TicketsPanel
-              mode="technicien"
-              identity={{
-                role: 'Technicien',
-                id: userData?.id,
-                nom: [userData?.prenom, userData?.nom].filter(Boolean).join(' ') || userData?.matricule || 'Technicien',
-              }}
-              filter={{ assigne_a_id: userData?.id }}
-              spaceKey="espace-technicien"
-              title="Mes tickets assignés"
-              description="Incidents qui vous sont assignés : prise en charge et résolution."
-            />
-          ) : activeSection === 'planning' ? (
-            <MonPlanningMaintenancePage technicien={userData} view="reparation" />
-          ) : (
-            <div className="space-y-6">
-              <Card variant="accent">
-                <CardHeader>
-                  <CardTitle className="flex items-center text-3xl font-bold text-primary">
-                    <CalendarDays className="mr-3 h-8 w-8" /> Maintenance
-                  </CardTitle>
-                  <CardDescription>Consultez votre planning et effectuez vos interventions de maintenance.</CardDescription>
-                </CardHeader>
-              </Card>
-              <Tabs defaultValue="maintenance" className="space-y-6">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="maintenance" className="flex items-center gap-2">
-                    <Wrench className="h-4 w-4" /> Faire une Maintenance
-                  </TabsTrigger>
-                  <TabsTrigger value="planning" className="flex items-center gap-2">
-                    <CalendarDays className="h-4 w-4" /> Mon Planning
-                  </TabsTrigger>
-                </TabsList>
-                <TabsContent value="maintenance">
-                  <MaintenanceTab technicien={userData} />
-                </TabsContent>
-                <TabsContent value="planning">
-                  <MonPlanningMaintenancePage technicien={userData} view="planning" hideTitle />
-                </TabsContent>
-              </Tabs>
-            </div>
-          )}
-          </Suspense>
-        </motion.div>
-        </PullToRefresh>
-        </SwipeTabs>
-      </main>
-
-      <MobileTabBar
-        items={menuItems.map((item) => ({
-          key: item.key,
-          label: item.label,
-          icon: item.icon,
-          active: activeSection === item.key,
-          onClick: () => setActiveSection(item.key),
-        }))}
-        onMore={() => setIsMobileMenuOpen(true)}
-        moreActive={isMobileMenuOpen}
-      />
-    </div>
+            <Tabs defaultValue="maintenance" className="space-y-6">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="maintenance" className="flex items-center gap-2">
+                  <Wrench className="h-4 w-4" /> Faire une Maintenance
+                </TabsTrigger>
+                <TabsTrigger value="planning" className="flex items-center gap-2">
+                  <CalendarDays className="h-4 w-4" /> Mon Planning
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="maintenance">
+                <MaintenanceTab technicien={userData} />
+              </TabsContent>
+              <TabsContent value="planning">
+                <MonPlanningMaintenancePage technicien={userData} view="planning" hideTitle />
+              </TabsContent>
+            </Tabs>
+          </div>
+        )}
+        </Suspense>
+      </motion.div>
+      </PullToRefresh>
+    </SpaceShell>
   );
 };
 

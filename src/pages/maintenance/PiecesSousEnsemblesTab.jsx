@@ -3,6 +3,7 @@ import { useConfirm } from '@/components/ConfirmDialogProvider';
 import { describeError } from '@/lib/errors';
 import { supabase } from '@/lib/supabaseClient';
 import { Badge } from '@/components/ui/badge';
+import StatusBadge from '@/components/ui/status-badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -15,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/components/ui/use-toast';
 import { TablePagination } from '@/components/ui/table-pagination';
+import EmptyState from '@/components/ui/empty-state';
 import { usePagination } from '@/hooks/usePagination';
 import {
   AlertTriangle, AlertOctagon, BookOpen, Check, CheckCircle2, ChevronDown, ChevronRight, Download, Edit, FileUp, HelpCircle,
@@ -42,9 +44,9 @@ const DEFAULT_PIECE = { nom: '', reference: '', prix_unitaire_ht: 0, sous_ensemb
 const DEFAULT_MODELE = { nom: '', sous_ensemble: 'imprimante', type_terminal: 'tous' };
 
 const statusBadge = (qty, seuil) => {
-  if (qty === 0) return <Badge className="bg-destructive/10 text-destructive">Rupture</Badge>;
-  if (qty <= seuil) return <Badge className="bg-warning-muted text-warning-muted-foreground">Stock faible</Badge>;
-  return <Badge className="bg-success-muted text-success-muted-foreground">Disponible</Badge>;
+  if (qty === 0) return <StatusBadge tone="danger">Rupture</StatusBadge>;
+  if (qty <= seuil) return <StatusBadge tone="warning">Stock faible</StatusBadge>;
+  return <StatusBadge tone="success">Disponible</StatusBadge>;
 };
 
 const formatPrice = (value) => Number(value || 0).toLocaleString('fr-FR', {
@@ -270,7 +272,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
     await loadHelp(found.id);
   }, [pieces, loadHelp]);
 
-  const showOk = (msg) => toast({ title: msg, className: 'bg-success text-white' });
+  const showOk = (msg) => toast({ title: msg, className: 'bg-success text-success-foreground' });
   const showErr = (msg) => toast({ title: 'Erreur', description: msg, variant: 'destructive' });
 
   const resetPhotoState = () => {
@@ -602,11 +604,11 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                   <CardDescription>Liste de toutes les pièces disponibles, filtrables par sous-ensemble et type de terminal.</CardDescription>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <Button variant="outline" onClick={exportCSV} title="Exporter"><Download className="h-4 w-4" /><span className="ml-2 hidden sm:inline">Exporter</span></Button>
+                  <Button variant="outline" onClick={exportCSV} title="Exporter"><Download className="h-4 w-4" /><span className="sr-only sm:not-sr-only sm:ml-2">Exporter</span></Button>
                   {canManage && (
                     <>
-                      <Button variant="outline" onClick={() => { setImportRows([]); setImportErrors([]); setIsImportOpen(true); }} title="Importer"><FileUp className="h-4 w-4" /><span className="ml-2 hidden sm:inline">Importer</span></Button>
-                      <Button onClick={() => { setPieceForm(DEFAULT_PIECE); setEditingPiece(null); resetPhotoState(); setIsPieceOpen(true); }} title="Ajouter une pièce"><Plus className="h-4 w-4" /><span className="ml-2">Ajouter</span><span className="hidden sm:inline">&nbsp;une pièce</span></Button>
+                      <Button variant="outline" onClick={() => { setImportRows([]); setImportErrors([]); setIsImportOpen(true); }} title="Importer"><FileUp className="h-4 w-4" /><span className="sr-only sm:not-sr-only sm:ml-2">Importer</span></Button>
+                      <Button onClick={() => { setPieceForm(DEFAULT_PIECE); setEditingPiece(null); resetPhotoState(); setIsPieceOpen(true); }} title="Ajouter une pièce"><Plus className="h-4 w-4" /><span className="ml-2">Ajouter</span><span className="sr-only sm:not-sr-only">&nbsp;une pièce</span></Button>
                     </>
                   )}
                 </div>
@@ -784,9 +786,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                 </div>
                 <div className="lg:col-span-2 space-y-5">
                   {!helpPiece ? (
-                    <div className="flex items-center justify-center py-20 text-center text-muted-foreground">
-                      <div><HelpCircle className="mx-auto h-12 w-12 mb-3 opacity-30" /><p>Sélectionnez une pièce pour afficher son aide à la réparation.</p></div>
-                    </div>
+                    <EmptyState icon={HelpCircle} title="Sélectionnez une pièce pour afficher son aide à la réparation" />
                   ) : (
                     <>
                       <Card className="relative overflow-hidden">
@@ -797,7 +797,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                         </CardContent>
                       </Card>
                       <Card className="relative overflow-hidden">
-                        <CardHeader className="relative pb-2"><CardTitle className="text-base flex items-center gap-2"><AlertTriangle className="h-4 w-4 text-warning" /> Types de pannes</CardTitle></CardHeader>
+                        <CardHeader className="relative pb-2"><CardTitle className="text-base flex items-center gap-2"><AlertTriangle className="h-4 w-4 text-warning-muted-foreground" /> Types de pannes</CardTitle></CardHeader>
                         <CardContent className="space-y-3">
                           {pannes.length === 0 && <p className="text-sm text-muted-foreground">Aucune panne renseignée.</p>}
                           <div className="space-y-2">
@@ -821,11 +821,11 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                                       <div className="flex items-center gap-1 shrink-0">
                                         <span className="text-xs text-muted-foreground">Poids</span>
                                         {[1,2,3,4,5].map(n => (
-                                          <button key={n} onClick={() => setEditingPannePoids(n)} className={`h-5 w-5 rounded text-[10px] font-bold border transition-colors ${editingPannePoids === n ? 'bg-warning border-warning text-white' : 'border-warning/30 text-warning-muted-foreground hover:bg-warning-muted'}`}>{n}</button>
+                                          <button key={n} onClick={() => setEditingPannePoids(n)} className={`h-5 w-5 rounded text-[10px] font-bold border transition-colors ${editingPannePoids === n ? 'bg-warning border-warning text-warning-foreground' : 'border-warning/30 text-warning-muted-foreground hover:bg-warning-muted'}`}>{n}</button>
                                         ))}
                                       </div>
-                                      <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0 text-success-muted-foreground" onClick={savePanneEdit} disabled={!editingPanneText.trim()}><Check className="h-3 w-3" /></Button>
-                                      <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0 text-muted-foreground" onClick={() => { setEditingPanneId(null); setEditingPanneText(''); }}><X className="h-3 w-3" /></Button>
+                                      <Button aria-label="Enregistrer la panne" variant="ghost" size="icon" className="h-5 w-5 shrink-0 text-success-muted-foreground" onClick={savePanneEdit} disabled={!editingPanneText.trim()}><Check className="h-3 w-3" /></Button>
+                                      <Button aria-label="Annuler la modification" variant="ghost" size="icon" className="h-5 w-5 shrink-0 text-muted-foreground" onClick={() => { setEditingPanneId(null); setEditingPanneText(''); }}><X className="h-3 w-3" /></Button>
                                     </div>
                                   ) : (
                                     <>
@@ -845,8 +845,8 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                                         </button>
                                         {canManage && (
                                           <>
-                                            <Button variant="ghost" size="icon" className="h-5 w-5 text-info hover:text-info-muted-foreground" onClick={() => { setEditingPanneId(p.id); setEditingPanneText(p.description); setEditingPannePoids(p.poids || 3); }}><Edit className="h-3 w-3" /></Button>
-                                            <Button variant="ghost" size="icon" className="h-5 w-5 text-destructive hover:text-destructive" onClick={() => delPanne(p.id)}><Trash2 className="h-3 w-3" /></Button>
+                                            <Button aria-label="Modifier la panne" variant="ghost" size="icon" className="h-5 w-5 text-info hover:text-info-muted-foreground" onClick={() => { setEditingPanneId(p.id); setEditingPanneText(p.description); setEditingPannePoids(p.poids || 3); }}><Edit className="h-3 w-3" /></Button>
+                                            <Button aria-label="Supprimer la panne" variant="ghost" size="icon" className="h-5 w-5 text-destructive hover:text-destructive" onClick={() => delPanne(p.id)}><Trash2 className="h-3 w-3" /></Button>
                                           </>
                                         )}
                                       </div>
@@ -867,7 +867,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                                           <span className="flex-1">{c.description_verification}</span>
                                           {c.piece && <span className="shrink-0 rounded-full bg-warning-muted px-2 py-0.5 text-[10px] text-warning-muted-foreground">{c.piece.nom}</span>}
                                           {canManage && (
-                                            <Button variant="ghost" size="icon" className="h-4 w-4 shrink-0 text-destructive hover:text-destructive" onClick={() => delPanneCheck(c.id)}>
+                                            <Button aria-label="Supprimer la vérification" variant="ghost" size="icon" className="h-4 w-4 shrink-0 text-destructive hover:text-destructive" onClick={() => delPanneCheck(c.id)}>
                                               <Trash2 className="h-2.5 w-2.5" />
                                             </Button>
                                           )}
@@ -893,7 +893,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                                             {pieces.map(pc => <SelectItem key={pc.id} value={pc.id}>{pc.nom}</SelectItem>)}
                                           </SelectContent>
                                         </Select>
-                                        <Button size="icon" className="h-7 w-7 shrink-0" onClick={() => addPanneCheck(p.id)}>
+                                        <Button aria-label="Ajouter la vérification" size="icon" className="h-7 w-7 shrink-0" onClick={() => addPanneCheck(p.id)}>
                                           <Plus className="h-3 w-3" />
                                         </Button>
                                       </div>
@@ -905,7 +905,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                           </div>
                           {canManage && codesPannes.length > 0 && (
                             <div className="rounded-lg border border-warning/30 bg-warning-muted/50 px-3 py-2.5 space-y-1.5">
-                              <p className="text-[10px] font-semibold uppercase tracking-wide text-warning">Ajouter un type de panne</p>
+                              <p className="text-[10px] font-semibold uppercase tracking-wide text-warning-muted-foreground">Ajouter un type de panne</p>
                               <div className="flex items-center gap-2">
                                 <Select key={panneSelectKey} onValueChange={addPanneFromCode}>
                                   <SelectTrigger className="flex-1 h-8 text-xs bg-card border-warning/30 hover:border-warning transition-colors">
@@ -921,11 +921,11 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                                 </Select>
                                 <div className="flex shrink-0 items-center gap-1">
                                   {[1,2,3,4,5].map(n => (
-                                    <button key={n} onClick={() => setNewPannePoids(n)} className={`h-6 w-6 rounded text-xs font-bold border transition-colors ${newPannePoids === n ? 'bg-warning border-warning text-white' : 'border-warning/30 text-warning-muted-foreground hover:bg-warning-muted'}`}>{n}</button>
+                                    <button key={n} onClick={() => setNewPannePoids(n)} className={`h-6 w-6 rounded text-xs font-bold border transition-colors ${newPannePoids === n ? 'bg-warning border-warning text-warning-foreground' : 'border-warning/30 text-warning-muted-foreground hover:bg-warning-muted'}`}>{n}</button>
                                   ))}
                                 </div>
                               </div>
-                              <p className="text-right text-[10px] text-warning font-medium">
+                              <p className="text-right text-[10px] text-warning-muted-foreground font-medium">
                                 Priorité&nbsp;: {newPannePoids <= 2 ? 'Faible' : newPannePoids === 3 ? 'Moyenne' : newPannePoids === 4 ? 'Élevée' : 'Critique'}
                               </p>
                             </div>
@@ -945,13 +945,13 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                                     <div className="flex items-center gap-0.5">
                                       {editingProcId === p.id ? (
                                         <>
-                                          <Button variant="ghost" size="icon" className="h-6 w-6 text-success-muted-foreground" onClick={saveProcEdit}><Check className="h-3 w-3" /></Button>
-                                          <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground" onClick={() => { setEditingProcId(null); setEditingProcData({ description: '', image_url: '' }); }}><X className="h-3 w-3" /></Button>
+                                          <Button aria-label="Enregistrer l’étape" variant="ghost" size="icon" className="h-6 w-6 text-success-muted-foreground" onClick={saveProcEdit}><Check className="h-3 w-3" /></Button>
+                                          <Button aria-label="Annuler la modification" variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground" onClick={() => { setEditingProcId(null); setEditingProcData({ description: '', image_url: '' }); }}><X className="h-3 w-3" /></Button>
                                         </>
                                       ) : (
                                         <>
-                                          <Button variant="ghost" size="icon" className="h-6 w-6 text-info hover:text-info-muted-foreground" onClick={() => { setEditingProcId(p.id); setEditingProcData({ description: p.description, image_url: p.image_url || '' }); }}><Edit className="h-3 w-3" /></Button>
-                                          <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:text-destructive" onClick={() => delProc(p.id)}><Trash2 className="h-3 w-3" /></Button>
+                                          <Button aria-label="Modifier l’étape" variant="ghost" size="icon" className="h-6 w-6 text-info hover:text-info-muted-foreground" onClick={() => { setEditingProcId(p.id); setEditingProcData({ description: p.description, image_url: p.image_url || '' }); }}><Edit className="h-3 w-3" /></Button>
+                                          <Button aria-label="Supprimer l’étape" variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:text-destructive" onClick={() => delProc(p.id)}><Trash2 className="h-3 w-3" /></Button>
                                         </>
                                       )}
                                     </div>
@@ -963,7 +963,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                                     {(editingProcPreview || editingProcData.image_url) && (
                                       <div className="relative">
                                         <img src={editingProcPreview || editingProcData.image_url} alt="aperçu" className="max-h-36 w-full rounded border object-contain bg-muted/30" onError={e => { e.currentTarget.style.display = 'none'; }} />
-                                        <button type="button" onClick={() => { setEditingProcData(d => ({ ...d, image_url: '' })); if (editingProcPreview) URL.revokeObjectURL(editingProcPreview); setEditingProcFile(null); setEditingProcPreview(null); }} className="absolute right-1 top-1 rounded-full bg-background/90 p-0.5 text-destructive hover:bg-destructive/10 border border-destructive/30 shadow-sm"><X className="h-3 w-3" /></button>
+                                        <button aria-label="Retirer l’image" type="button" onClick={() => { setEditingProcData(d => ({ ...d, image_url: '' })); if (editingProcPreview) URL.revokeObjectURL(editingProcPreview); setEditingProcFile(null); setEditingProcPreview(null); }} className="absolute right-1 top-1 rounded-full bg-background/90 p-0.5 text-destructive hover:bg-destructive/10 border border-destructive/30 shadow-sm"><X className="h-3 w-3" /></button>
                                       </div>
                                     )}
                                     <Label htmlFor={`proc-edit-photo-${editingProcId}`} className="flex cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed border-primary/50 bg-primary/5 px-3 py-2 text-xs font-medium text-primary hover:bg-primary/10 transition-colors">
@@ -992,7 +992,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                               {(newProcPreview || newProc.image_url) && (
                                 <div className="relative">
                                   <img src={newProcPreview || newProc.image_url} alt="aperçu" className="max-h-36 w-full rounded border object-contain bg-muted/30" onError={e => { e.currentTarget.style.display = 'none'; }} />
-                                  <button type="button" onClick={() => { setNewProc(p => ({ ...p, image_url: '' })); if (newProcPreview) URL.revokeObjectURL(newProcPreview); setNewProcFile(null); setNewProcPreview(null); }} className="absolute right-1 top-1 rounded-full bg-background/90 p-0.5 text-destructive hover:bg-destructive/10 border border-destructive/30 shadow-sm"><X className="h-3 w-3" /></button>
+                                  <button aria-label="Retirer l’image" type="button" onClick={() => { setNewProc(p => ({ ...p, image_url: '' })); if (newProcPreview) URL.revokeObjectURL(newProcPreview); setNewProcFile(null); setNewProcPreview(null); }} className="absolute right-1 top-1 rounded-full bg-background/90 p-0.5 text-destructive hover:bg-destructive/10 border border-destructive/30 shadow-sm"><X className="h-3 w-3" /></button>
                                 </div>
                               )}
                               <Label htmlFor="proc-new-photo-tab" className="flex cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed border-primary/50 bg-primary/5 px-3 py-2 text-xs font-medium text-primary hover:bg-primary/10 transition-colors">
@@ -1056,8 +1056,8 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                         <Button variant="outline" size="sm" onClick={() => openCompo(m)}>Composition</Button>
                         {canManage && (
                           <>
-                            <Button variant="ghost" size="icon" className="text-info" onClick={() => { setModeleForm({ nom: m.nom, sous_ensemble: m.sous_ensemble, type_terminal: m.type_terminal }); setEditingModele(m); setIsModeleOpen(true); }}><Edit className="h-4 w-4" /></Button>
-                            <Button variant="ghost" size="icon" className="text-destructive" onClick={() => deleteModele(m.id)}><Trash2 className="h-4 w-4" /></Button>
+                            <Button aria-label={`Modifier le modèle ${m.nom}`} variant="ghost" size="icon" className="text-info" onClick={() => { setModeleForm({ nom: m.nom, sous_ensemble: m.sous_ensemble, type_terminal: m.type_terminal }); setEditingModele(m); setIsModeleOpen(true); }}><Edit className="h-4 w-4" /></Button>
+                            <Button aria-label={`Supprimer le modèle ${m.nom}`} variant="ghost" size="icon" className="text-destructive" onClick={() => deleteModele(m.id)}><Trash2 className="h-4 w-4" /></Button>
                           </>
                         )}
                       </TableCell>
@@ -1153,7 +1153,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input className="pl-10 pr-9" placeholder="Rechercher : nom, référence..." aria-label="Rechercher une pièce" value={stockSearch} onChange={e => setStockSearch(e.target.value)} />
                   {stockSearch && (
-                    <button
+                    <button aria-label="Effacer la recherche"
                       type="button"
                       onClick={() => setStockSearch('')}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
@@ -1247,7 +1247,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                       className="w-full max-h-36 rounded-md border object-contain bg-muted/30"
                       onError={e => { e.currentTarget.style.display = 'none'; }}
                     />
-                    <button
+                    <button aria-label="Retirer la photo"
                       type="button"
                       onClick={() => { setPieceForm(f => ({ ...f, photo_url: '' })); resetPhotoState(); }}
                       className="absolute right-1 top-1 rounded-full bg-background/90 p-0.5 text-destructive hover:bg-destructive/10 border border-destructive/30 shadow-sm"
@@ -1349,7 +1349,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
               {/* Pannes */}
               <div className="space-y-2">
                 <Label className="flex items-center gap-2 text-base font-semibold">
-                  <AlertTriangle className="h-4 w-4 text-warning" /> Types de pannes
+                  <AlertTriangle className="h-4 w-4 text-warning-muted-foreground" /> Types de pannes
                 </Label>
                 <div className="space-y-2">
                   {pannes.length === 0 && <p className="text-sm text-muted-foreground">Aucune panne renseignée.</p>}
@@ -1372,19 +1372,19 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                           <div className="flex items-center gap-1 shrink-0">
                             <span className="text-xs text-muted-foreground">Poids</span>
                             {[1,2,3,4,5].map(n => (
-                              <button key={n} onClick={() => setEditingPannePoids(n)} className={`h-5 w-5 rounded text-[10px] font-bold border transition-colors ${editingPannePoids === n ? 'bg-warning border-warning text-white' : 'border-warning/30 text-warning-muted-foreground hover:bg-warning-muted'}`}>{n}</button>
+                              <button key={n} onClick={() => setEditingPannePoids(n)} className={`h-5 w-5 rounded text-[10px] font-bold border transition-colors ${editingPannePoids === n ? 'bg-warning border-warning text-warning-foreground' : 'border-warning/30 text-warning-muted-foreground hover:bg-warning-muted'}`}>{n}</button>
                             ))}
                           </div>
-                          <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0 text-success-muted-foreground" onClick={savePanneEdit} disabled={!editingPanneText.trim()}><Check className="h-3 w-3" /></Button>
-                          <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0 text-muted-foreground" onClick={() => { setEditingPanneId(null); setEditingPanneText(''); }}><X className="h-3 w-3" /></Button>
+                          <Button aria-label="Enregistrer la panne" variant="ghost" size="icon" className="h-5 w-5 shrink-0 text-success-muted-foreground" onClick={savePanneEdit} disabled={!editingPanneText.trim()}><Check className="h-3 w-3" /></Button>
+                          <Button aria-label="Annuler la modification" variant="ghost" size="icon" className="h-5 w-5 shrink-0 text-muted-foreground" onClick={() => { setEditingPanneId(null); setEditingPanneText(''); }}><X className="h-3 w-3" /></Button>
                         </div>
                       ) : (
                         <>
                           <span className="flex-1">{p.description}</span>
                           {canManage && (
                             <div className="flex items-center gap-0.5 ml-2 shrink-0">
-                              <Button variant="ghost" size="icon" className="h-5 w-5 text-info hover:text-info-muted-foreground" onClick={() => { setEditingPanneId(p.id); setEditingPanneText(p.description); }}><Edit className="h-3 w-3" /></Button>
-                              <Button variant="ghost" size="icon" className="h-5 w-5 text-destructive hover:text-destructive" onClick={() => delPanne(p.id)}><Trash2 className="h-3 w-3" /></Button>
+                              <Button aria-label="Modifier la panne" variant="ghost" size="icon" className="h-5 w-5 text-info hover:text-info-muted-foreground" onClick={() => { setEditingPanneId(p.id); setEditingPanneText(p.description); }}><Edit className="h-3 w-3" /></Button>
+                              <Button aria-label="Supprimer la panne" variant="ghost" size="icon" className="h-5 w-5 text-destructive hover:text-destructive" onClick={() => delPanne(p.id)}><Trash2 className="h-3 w-3" /></Button>
                             </div>
                           )}
                         </>
@@ -1394,7 +1394,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                 </div>
                 {canManage && codesPannes.length > 0 && (
                   <div className="rounded-lg border border-warning/30 bg-warning-muted/50 px-3 py-2.5 space-y-1.5">
-                    <p className="text-[10px] font-semibold uppercase tracking-wide text-warning">Ajouter un type de panne</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-warning-muted-foreground">Ajouter un type de panne</p>
                     <div className="flex items-center gap-2">
                       <Select key={panneSelectKey} onValueChange={addPanneFromCode}>
                         <SelectTrigger className="flex-1 h-8 text-xs bg-card border-warning/30 hover:border-warning transition-colors">
@@ -1410,11 +1410,11 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                       </Select>
                       <div className="flex shrink-0 items-center gap-1">
                         {[1,2,3,4,5].map(n => (
-                          <button key={n} onClick={() => setNewPannePoids(n)} className={`h-6 w-6 rounded text-xs font-bold border transition-colors ${newPannePoids === n ? 'bg-warning border-warning text-white' : 'border-warning/30 text-warning-muted-foreground hover:bg-warning-muted'}`}>{n}</button>
+                          <button key={n} onClick={() => setNewPannePoids(n)} className={`h-6 w-6 rounded text-xs font-bold border transition-colors ${newPannePoids === n ? 'bg-warning border-warning text-warning-foreground' : 'border-warning/30 text-warning-muted-foreground hover:bg-warning-muted'}`}>{n}</button>
                         ))}
                       </div>
                     </div>
-                    <p className="text-right text-[10px] text-warning font-medium">
+                    <p className="text-right text-[10px] text-warning-muted-foreground font-medium">
                       Priorité&nbsp;: {newPannePoids <= 2 ? 'Faible' : newPannePoids === 3 ? 'Moyenne' : newPannePoids === 4 ? 'Élevée' : 'Critique'}
                     </p>
                   </div>
@@ -1434,13 +1434,13 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                           <div className="flex items-center gap-0.5">
                             {editingProcId === p.id ? (
                               <>
-                                <Button variant="ghost" size="icon" className="h-5 w-5 text-success-muted-foreground" onClick={saveProcEdit}><Check className="h-3 w-3" /></Button>
-                                <Button variant="ghost" size="icon" className="h-5 w-5 text-muted-foreground" onClick={() => { setEditingProcId(null); setEditingProcData({ description: '', image_url: '' }); }}><X className="h-3 w-3" /></Button>
+                                <Button aria-label="Enregistrer l’étape" variant="ghost" size="icon" className="h-5 w-5 text-success-muted-foreground" onClick={saveProcEdit}><Check className="h-3 w-3" /></Button>
+                                <Button aria-label="Annuler la modification" variant="ghost" size="icon" className="h-5 w-5 text-muted-foreground" onClick={() => { setEditingProcId(null); setEditingProcData({ description: '', image_url: '' }); }}><X className="h-3 w-3" /></Button>
                               </>
                             ) : (
                               <>
-                                <Button variant="ghost" size="icon" className="h-5 w-5 text-info hover:text-info-muted-foreground" onClick={() => { setEditingProcId(p.id); setEditingProcData({ description: p.description, image_url: p.image_url || '' }); }}><Edit className="h-3 w-3" /></Button>
-                                <Button variant="ghost" size="icon" className="h-5 w-5 text-destructive hover:text-destructive" onClick={() => delProc(p.id)}><Trash2 className="h-3 w-3" /></Button>
+                                <Button aria-label="Modifier l’étape" variant="ghost" size="icon" className="h-5 w-5 text-info hover:text-info-muted-foreground" onClick={() => { setEditingProcId(p.id); setEditingProcData({ description: p.description, image_url: p.image_url || '' }); }}><Edit className="h-3 w-3" /></Button>
+                                <Button aria-label="Supprimer l’étape" variant="ghost" size="icon" className="h-5 w-5 text-destructive hover:text-destructive" onClick={() => delProc(p.id)}><Trash2 className="h-3 w-3" /></Button>
                               </>
                             )}
                           </div>
@@ -1468,7 +1468,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                     {(newProcPreview || newProc.image_url) && (
                       <div className="relative">
                         <img src={newProcPreview || newProc.image_url} alt="aperçu" className="max-h-36 w-full rounded border object-contain bg-muted/30" onError={e => { e.currentTarget.style.display = 'none'; }} />
-                        <button type="button" onClick={() => { setNewProc(p => ({ ...p, image_url: '' })); if (newProcPreview) URL.revokeObjectURL(newProcPreview); setNewProcFile(null); setNewProcPreview(null); }} className="absolute right-1 top-1 rounded-full bg-background/90 p-0.5 text-destructive hover:bg-destructive/10 border border-destructive/30 shadow-sm"><X className="h-3 w-3" /></button>
+                        <button aria-label="Retirer l’image" type="button" onClick={() => { setNewProc(p => ({ ...p, image_url: '' })); if (newProcPreview) URL.revokeObjectURL(newProcPreview); setNewProcFile(null); setNewProcPreview(null); }} className="absolute right-1 top-1 rounded-full bg-background/90 p-0.5 text-destructive hover:bg-destructive/10 border border-destructive/30 shadow-sm"><X className="h-3 w-3" /></button>
                       </div>
                     )}
                     <Label htmlFor="proc-new-photo-dialog" className="flex cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed border-primary/50 bg-primary/5 px-3 py-2 text-xs font-medium text-primary hover:bg-primary/10 transition-colors">
@@ -1538,7 +1538,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
             {/* Liste gauche */}
             <div className="w-1/2 border-r overflow-y-auto">
               {modelePieces.length === 0 ? (
-                <p className="px-4 py-6 text-sm text-muted-foreground text-center">Aucune pièce.</p>
+                <EmptyState compact title="Aucune pièce" />
               ) : modelePieces.map(mp => (
                 <button
                   key={mp.id}
@@ -1553,7 +1553,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                     <div className="flex items-center gap-1 shrink-0">
                       <Badge variant="outline" className="text-xs">×{mp.quantite}</Badge>
                       {canManage && (
-                        <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:text-destructive"
+                        <Button aria-label={`Retirer ${mp.piece?.nom || 'la pièce'}`} variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:text-destructive"
                           onClick={e => { e.stopPropagation(); removePieceModele(mp.id); }}>
                           <Trash2 className="h-3 w-3" />
                         </Button>
@@ -1566,10 +1566,7 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
             {/* Aperçu droite */}
             <div className="w-1/2 flex flex-col items-center justify-center p-4 bg-muted/10">
               {!selectedCompoPiece ? (
-                <div className="text-center text-muted-foreground">
-                  <Package className="mx-auto h-10 w-10 mb-2 opacity-30" />
-                  <p className="text-sm">Sélectionnez une pièce</p>
-                </div>
+                <EmptyState compact plain icon={Package} title="Sélectionnez une pièce" />
               ) : (
                 <div className="text-center space-y-3 w-full">
                   {selectedCompoPiece.piece?.photo_url ? (
@@ -1734,8 +1731,8 @@ const PiecesSousEnsemblesTab = ({ canManage = true }) => {
                         <TableRow key={i} className={r._errors.length ? 'bg-destructive/10' : ''}>
                           <TableCell>
                             {r._errors.length
-                              ? <Badge className="bg-destructive/10 text-destructive text-xs">Erreur</Badge>
-                              : <Badge className="bg-success-muted text-success-muted-foreground text-xs">OK</Badge>}
+                              ? <StatusBadge tone="danger" className="text-xs">Erreur</StatusBadge>
+                              : <StatusBadge tone="success" className="text-xs">OK</StatusBadge>}
                           </TableCell>
                           <TableCell className="text-sm">{r.nom || '—'}</TableCell>
                           <TableCell className="font-mono text-xs">{r.reference || '—'}</TableCell>

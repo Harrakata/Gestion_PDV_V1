@@ -5,12 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import StatusBadge from '@/components/ui/status-badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/components/ui/use-toast';
 import {
   updateTicket, fetchTechniciens, createInterventionFromTicket,
-  TICKET_STATUSES, ticketLabel, getTicketStatusBadgeClass, getTicketPriorityBadgeClass,
+  TICKET_STATUSES, ticketLabel, getTicketStatusTone, getTicketPriorityTone,
 } from '@/lib/tickets';
 import { logAudit, AUDIT_ACTIONS, AUDIT_ENTITIES } from '@/lib/auditLog';
 import { triggerPush } from '@/lib/pushNotifications';
@@ -119,8 +120,8 @@ const TicketProcessDialog = ({ open, onOpenChange, ticket, mode, actor, spaceKey
         <DialogHeader><DialogTitle>{ticket.code || 'Ticket'} — {ticket.titre}</DialogTitle></DialogHeader>
         <div className="space-y-4">
           <div className="flex flex-wrap gap-2 text-sm">
-            <Badge variant="outline" className={getTicketStatusBadgeClass(ticket.statut)}>{ticketLabel(ticket.statut)}</Badge>
-            <Badge variant="outline" className={getTicketPriorityBadgeClass(ticket.priorite)}>{ticketLabel(ticket.priorite)}</Badge>
+            <StatusBadge tone={getTicketStatusTone(ticket.statut)}>{ticketLabel(ticket.statut)}</StatusBadge>
+            <StatusBadge tone={getTicketPriorityTone(ticket.priorite)}>{ticketLabel(ticket.priorite)}</StatusBadge>
             <Badge variant="outline">{ticketLabel(ticket.categorie)}</Badge>
             {ticket.agence_nom && <span className="text-muted-foreground">Agence : {ticket.agence_nom}</span>}
             {ticket.terminal_reference && <span className="text-muted-foreground">Terminal : {ticket.terminal_reference}</span>}

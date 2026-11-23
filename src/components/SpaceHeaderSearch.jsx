@@ -9,20 +9,6 @@ const normalize = (value) => String(value || '')
   .replace(/[̀-ͯ]/g, '')
   .toLowerCase();
 
-// Repli générique : entrées visibles du menu latéral de l'espace courant
-// (espaces dont la navigation est en onglets internes, sans routes dédiées).
-const collectSidebarItems = () => {
-  const nodes = document.querySelectorAll('.app-space-sidebar nav a, .app-space-sidebar nav button:not([aria-expanded])');
-  const seen = new Set();
-  return Array.from(nodes).reduce((items, el) => {
-    const label = (el.innerText || el.textContent || '').split('\n')[0].replace(/\s*\d+$/, '').trim();
-    if (!label || seen.has(label)) return items;
-    seen.add(label);
-    items.push({ key: `dom-${items.length}`, label, group: 'Menu', el });
-    return items;
-  }, []);
-};
-
 /**
  * Recherche de la barre supérieure des espaces connectés : filtre les pages du
  * menu de l'espace courant ; dans l'espace Exploitation, propose aussi la
@@ -32,16 +18,12 @@ export default function SpaceHeaderSearch({ items, enableDataSearch = false, aut
   const navigate = useNavigate();
   const inputRef = React.useRef(null);
   const rootRef = React.useRef(null);
+  const listId = React.useId();
   const [term, setTerm] = React.useState('');
   const [open, setOpen] = React.useState(false);
   const [activeIndex, setActiveIndex] = React.useState(0);
-  const [sourceItems, setSourceItems] = React.useState([]);
   const [dataSearchOpen, setDataSearchOpen] = React.useState(false);
   const [dataSearchTerm, setDataSearchTerm] = React.useState('');
-
-  const refreshSource = React.useCallback(() => {
-    setSourceItems(items?.length ? items : collectSidebarItems());
-  }, [items]);
 
   React.useEffect(() => {
     if (autoFocus) inputRef.current?.focus();
@@ -49,7 +31,7 @@ export default function SpaceHeaderSearch({ items, enableDataSearch = false, aut
 
   React.useEffect(() => {
     const onKey = (event) => {
-      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k' && inputRef.current?.getClientRects().length) {
         event.preventDefault();
         inputRef.current?.focus();
       }
@@ -67,6 +49,7 @@ export default function SpaceHeaderSearch({ items, enableDataSearch = false, aut
 
   const query = normalize(term.trim());
   const results = React.useMemo(() => {
+    const sourceItems = items ?? [];
     const matches = query
       ? sourceItems.filter((item) => normalize(`${item.label} ${item.group || ''} ${item.keywords || ''}`).includes(query))
       : sourceItems;
@@ -75,7 +58,8 @@ export default function SpaceHeaderSearch({ items, enableDataSearch = false, aut
       list.push({ key: 'data-search', label: `Rechercher « ${term.trim()} » dans les données`, group: 'Agences, terminaux, personnes', data: true });
     }
     return list;
-  }, [enableDataSearch, query, sourceItems, term]);
+  }, [enableDataSearch, items, query, term]);
+  const highlightedIndex = Math.min(activeIndex, results.length - 1);
 
   const select = (item) => {
     if (!item) return;
@@ -84,7 +68,7 @@ export default function SpaceHeaderSearch({ items, enableDataSearch = false, aut
     inputRef.current?.blur();
     if (item.data) { setDataSearchTerm(term.trim()); setDataSearchOpen(true); return; }
     if (item.to) navigate(item.to);
-    else item.el?.click();
+    else item.onClick?.();
     onDone?.();
   };
 
@@ -92,13 +76,13 @@ export default function SpaceHeaderSearch({ items, enableDataSearch = false, aut
     if (event.key === 'ArrowDown') {
       event.preventDefault();
       setOpen(true);
-      setActiveIndex((index) => Math.min(index + 1, results.length - 1));
+      setActiveIndex(Math.max(0, Math.min(highlightedIndex + 1, results.length - 1)));
     } else if (event.key === 'ArrowUp') {
       event.preventDefault();
-      setActiveIndex((index) => Math.max(index - 1, 0));
+      setActiveIndex(Math.max(highlightedIndex - 1, 0));
     } else if (event.key === 'Enter') {
       event.preventDefault();
-      select(results[activeIndex]);
+      select(results[highlightedIndex]);
     } else if (event.key === 'Escape') {
       setOpen(false);
       inputRef.current?.blur();
@@ -114,13 +98,14 @@ export default function SpaceHeaderSearch({ items, enableDataSearch = false, aut
           type="search"
           value={term}
           onChange={(event) => { setTerm(event.target.value); setActiveIndex(0); setOpen(true); }}
-          onFocus={() => { refreshSource(); setOpen(true); }}
+          onFocus={() => { setActiveIndex(0); setOpen(true); }}
           onKeyDown={onKeyDown}
           placeholder="Rechercher…"
           aria-label="Rechercher dans l’espace"
           role="combobox"
           aria-expanded={open}
-          aria-controls="space-header-search-results"
+          aria-controls={open ? listId : undefined}
+          aria-activedescendant={open && highlightedIndex >= 0 ? `${listId}-${highlightedIndex}` : undefined}
           className="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground [&::-webkit-search-cancel-button]:hidden"
         />
         <kbd className="hidden shrink-0 rounded-md border border-border px-1.5 py-0.5 text-[0.65rem] font-semibold text-muted-foreground lg:inline">Ctrl K</kbd>
@@ -128,7 +113,7 @@ export default function SpaceHeaderSearch({ items, enableDataSearch = false, aut
 
       {open && (
         <div
-          id="space-header-search-results"
+          id={listId}
           role="listbox"
           className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-50 max-h-[60vh] overflow-y-auto rounded-2xl border border-border bg-popover p-1.5 shadow-floating"
         >
@@ -137,13 +122,14 @@ export default function SpaceHeaderSearch({ items, enableDataSearch = false, aut
           ) : results.map((item, index) => (
             <button
               key={item.key}
+              id={`${listId}-${index}`}
               type="button"
               role="option"
-              aria-selected={index === activeIndex}
+              aria-selected={index === highlightedIndex}
               onMouseEnter={() => setActiveIndex(index)}
               onClick={() => select(item)}
               className={`flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors ${
-                index === activeIndex ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-muted'
+                index === highlightedIndex ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-muted'
               }`}
             >
               {item.data

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { describeError } from '@/lib/errors';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import StatusBadge from '@/components/ui/status-badge';
 import {
   Network, Globe, Building2, User, Loader2, Check, X, Link2, Unlink, EyeOff,
   UserCog, Briefcase, Wrench, ShieldCheck, Layers, Pencil,
@@ -42,8 +43,8 @@ const SPACE_ICONS = {
 };
 
 // ── Interrupteur (switch) ────────────────────────────────────────────────────
-const MiniSwitch = ({ checked, onClick, disabled, busy }) => (
-  <button
+const MiniSwitch = ({ label, checked, onClick, disabled, busy }) => (
+  <button aria-label={label}
     type="button"
     role="switch"
     aria-checked={checked}
@@ -92,7 +93,7 @@ const SpaceChip = ({ spaceKey, enabled, onToggle, disabled, busy, hint }) => (
         {hint ? <span className="text-[10px] font-normal text-muted-foreground">{hint}</span> : null}
       </span>
     </span>
-    <MiniSwitch checked={enabled} onClick={onToggle} disabled={disabled} busy={busy} />
+    <MiniSwitch label={spaceLabel(spaceKey)} checked={enabled} onClick={onToggle} disabled={disabled} busy={busy} />
   </div>
 );
 
@@ -109,7 +110,7 @@ const ManageTabChip = ({ tabKey, label, enabled, onToggle, disabled, busy }) => 
     ].join(' ')}
   >
     <span className="text-[11px] font-medium text-foreground/80">{label || tabLabel(tabKey)}</span>
-    <MiniSwitch checked={enabled} onClick={onToggle} disabled={disabled} busy={busy} />
+    <MiniSwitch label={label || tabLabel(tabKey)} checked={enabled} onClick={onToggle} disabled={disabled} busy={busy} />
   </div>
 );
 
@@ -190,7 +191,7 @@ const Connector = ({ dashed = false, muted = false, label }) => (
 );
 
 const ALWAYS_ACTIVE_BADGE = (
-  <Badge variant="outline" className="border-primary/30 bg-primary/5 text-primary">
+  <Badge variant="secondary">
     Toujours actif
   </Badge>
 );
@@ -222,7 +223,7 @@ const OrgStructureCard = ({
     setPending(key);
     try {
       await setOrgStructure(partial);
-      toast({ title: 'Structure mise à jour', className: 'bg-success text-white' });
+      toast({ title: 'Structure mise à jour', className: 'bg-success text-success-foreground' });
     } catch (error) {
       toast({ title: 'Erreur de sauvegarde', description: describeError(error, 'OrgStructureCard'), variant: 'destructive' });
     }
@@ -375,16 +376,11 @@ const OrgStructureCard = ({
             subtitle="Niveau intermédiaire entre la région et les agences."
             disabled={!secteurEnabled}
             badge={
-              <Badge
-                variant="outline"
-                className={
-                  secteurEnabled
-                    ? 'border-success/30 bg-success-muted text-success-muted-foreground'
-                    : 'border-border bg-muted text-foreground/80'
-                }
+              <StatusBadge
+                tone={secteurEnabled ? 'success' : 'neutral'}
               >
                 {secteurEnabled ? 'Actif' : 'Inactif'}
-              </Badge>
+              </StatusBadge>
             }
           >
             <div className="flex items-center gap-2">

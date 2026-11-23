@@ -26,7 +26,7 @@ export const usePointageReminders = (currentTime, settings, toast, playSound) =>
       if (settings.rappelDebutCreneau && currentMinutes === debutTotalMinutes && !soundPlayedForCreneau[debutKey]) {
         playSound("debut");
         setSoundPlayedForCreneau(prev => ({...prev, [debutKey]: true}));
-        toast({ title: "Rappel Pointage", description: `Le créneau de pointage ${index + 1} (${creneau.debut}-${creneau.fin}) a commencé.`, className:"bg-primary text-white", duration: 7000});
+        toast({ title: "Rappel Pointage", description: `Le créneau de pointage ${index + 1} (${creneau.debut}-${creneau.fin}) a commencé.`, className:"bg-primary text-primary-foreground", duration: 7000});
       }
       if (settings.rappelFinCreneau && currentMinutes === rappelFinTime && !soundPlayedForCreneau[finKey]) {
         playSound("rappelFin");

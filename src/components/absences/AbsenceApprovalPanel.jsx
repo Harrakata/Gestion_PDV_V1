@@ -6,13 +6,15 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import StatusBadge from '@/components/ui/status-badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/components/ui/use-toast';
+import EmptyState from '@/components/ui/empty-state';
 import KpiStatCard from '@/components/analytics/KpiStatCard';
 import {
   fetchAbsences, updateAbsenceStatut,
-  ABSENCE_STATUSES, getAbsenceTypeLabel, getAbsenceCreneauLabel, getAbsenceStatusBadgeClass, absenceDaysCount,
+  ABSENCE_STATUSES, getAbsenceTypeLabel, getAbsenceCreneauLabel, getAbsenceStatusTone, absenceDaysCount,
 } from '@/lib/absences';
 
 const ALL = '__all__';
@@ -85,7 +87,7 @@ const AbsenceApprovalPanel = ({ filter = {}, approver = {}, title = "Demandes d'
         <CardHeader>
           <CardTitle className="flex items-center text-2xl font-bold text-primary sm:text-3xl">
             <CalendarCheck className="mr-2.5 h-7 w-7 sm:h-8 sm:w-8" /> {title}
-            {kpis.pending > 0 && <Badge className="ml-3 bg-warning-muted text-warning-muted-foreground border-warning/30" variant="outline">{kpis.pending} à traiter</Badge>}
+            {kpis.pending > 0 && <Badge className="ml-3" variant="warning">{kpis.pending} à traiter</Badge>}
           </CardTitle>
           <CardDescription>{description}</CardDescription>
         </CardHeader>
@@ -125,7 +127,7 @@ const AbsenceApprovalPanel = ({ filter = {}, approver = {}, title = "Demandes d'
           ) : view === 'calendrier' ? (
             <AbsenceCalendar rows={allRows} />
           ) : rows.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-6 text-center">Aucune demande.</p>
+            <EmptyState compact title="Aucune demande" />
           ) : (
             <div className="overflow-x-auto">
               <Table>
@@ -157,7 +159,7 @@ const AbsenceApprovalPanel = ({ filter = {}, approver = {}, title = "Demandes d'
                         <TableCell>{r.date_fin}</TableCell>
                         <TableCell>{absenceDaysCount(r.date_debut, r.date_fin)}</TableCell>
                         <TableCell className="max-w-[180px] truncate" title={r.motif || ''}>{r.motif || '—'}</TableCell>
-                        <TableCell><Badge variant="outline" className={getAbsenceStatusBadgeClass(r.statut)}>{r.statut}</Badge></TableCell>
+                        <TableCell><StatusBadge tone={getAbsenceStatusTone(r.statut)}>{r.statut}</StatusBadge></TableCell>
                         <TableCell>
                           {isPending ? (
                             <div className="flex flex-col gap-1.5 min-w-[200px]">

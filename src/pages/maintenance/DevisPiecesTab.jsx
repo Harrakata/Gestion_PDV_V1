@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Badge } from '@/components/ui/badge';
+import StatusBadge from '@/components/ui/status-badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -12,6 +13,7 @@ import { TablePagination } from '@/components/ui/table-pagination';
 import { usePagination } from '@/hooks/usePagination';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
+import EmptyState from '@/components/ui/empty-state';
 import KpiStatCard from '@/components/analytics/KpiStatCard';
 import {
   AlertTriangle,
@@ -454,16 +456,16 @@ const DevisPiecesTab = () => {
             <div className="flex flex-wrap items-center gap-2">
               <Button variant="outline" onClick={loadMovements} disabled={isLoading} title="Actualiser">
                 <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-                <span className="ml-2 hidden sm:inline">Actualiser</span>
+                <span className="sr-only sm:not-sr-only sm:ml-2">Actualiser</span>
               </Button>
               <Button variant="outline" onClick={downloadWordQuote} title="Exporter en Word">
                 <Download className="h-4 w-4" />
-                <span className="ml-2 hidden sm:inline">Word</span>
+                <span className="sr-only sm:not-sr-only sm:ml-2">Word</span>
               </Button>
               <Button onClick={printQuote} title="Imprimer / PDF">
                 <Printer className="h-4 w-4" />
                 <span className="ml-2">PDF</span>
-                <span className="hidden sm:inline">&nbsp;/ Imprimer</span>
+                <span className="sr-only sm:not-sr-only">&nbsp;/ Imprimer</span>
               </Button>
             </div>
           </div>
@@ -566,7 +568,7 @@ const DevisPiecesTab = () => {
                 <div key={field.id} className="grid grid-cols-[1fr_120px_32px] items-center gap-2">
                   <Input value={field.libelle} onChange={(e) => updateExtraField(field.id, 'libelle', e.target.value)} placeholder="Frais de transport" />
                   <Input type="number" min={0} step="0.01" value={field.montant_ht} onChange={(e) => updateExtraField(field.id, 'montant_ht', e.target.value)} placeholder="0,00" />
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => removeExtraField(field.id)}>
+                  <Button aria-label="Supprimer ce champ" variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => removeExtraField(field.id)}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
@@ -624,16 +626,14 @@ const DevisPiecesTab = () => {
               <TableBody>
                 {consumedLines.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                      Aucune pièce consommée sur cette période. Ajoutez-en une ci-dessus si besoin.
-                    </TableCell>
+                    <TableCell colSpan={6} className="p-2"><EmptyState compact plain title="Aucune pièce consommée sur cette période" description="Ajoutez-en une ci-dessus si besoin." /></TableCell>
                   </TableRow>
                 ) : consumedLines.map((line) => (
                   <TableRow key={line.key} className={line.source === 'manual' ? 'bg-success-muted/50' : undefined}>
                     <TableCell className="font-medium">
                       {line.nom}
                       {line.source === 'manual' && (
-                        <Badge variant="outline" className="ml-2 border-success/30 text-[0.6rem] text-success-muted-foreground">ajoutée</Badge>
+                        <StatusBadge tone="success" className="ml-2 text-[0.6rem]">ajoutée</StatusBadge>
                       )}
                     </TableCell>
                     <TableCell className="font-mono text-sm">{line.reference}</TableCell>
@@ -720,9 +720,7 @@ const DevisPiecesTab = () => {
               <TableBody>
                 {filteredCatalogPieces.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                      Aucune pièce dans le catalogue.
-                    </TableCell>
+                    <TableCell colSpan={6} className="p-2"><EmptyState compact plain title="Aucune pièce dans le catalogue" /></TableCell>
                   </TableRow>
                 ) : catalogPager.pageItems.map((piece) => (
                   <TableRow key={piece.id}>

@@ -5,6 +5,7 @@ import { addMonths, addWeeks, endOfMonth, endOfWeek, eachDayOfInterval, format, 
 import { fr } from 'date-fns/locale';
 import { CalendarClock, CheckCircle2, ChevronLeft, ChevronRight, ClipboardList, Copy, FileText, MapPinned, Pencil, PlusCircle, Search, ShieldAlert, TimerReset, Wrench } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import StatusBadge from '@/components/ui/status-badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -47,10 +48,10 @@ const ALL_FILTER_VALUE = '__all__';
 // Couleur de la pastille du calendrier selon l'état de réalisation du créneau,
 // pour distinguer d'un coup d'œil les maintenances planifiées des effectuées.
 const EXECUTION_PIN_STYLES = {
-  planifiee: 'bg-primary',
-  effectuee: 'bg-success',
-  non_effectuee: 'bg-destructive',
-  annulee: 'bg-slate-400',
+  planifiee: 'bg-primary text-primary-foreground',
+  effectuee: 'bg-success text-success-foreground',
+  non_effectuee: 'bg-destructive text-destructive-foreground',
+  annulee: 'bg-muted-foreground text-background',
 };
 
 const CALENDAR_LEGEND = [
@@ -652,7 +653,7 @@ const MaintenancePlanningSection = ({
         description: currentPlanning
           ? 'La planification maintenance a été mise à jour.'
           : 'La maintenance a été planifiée avec succès.',
-        className: 'bg-success text-white',
+        className: 'bg-success text-success-foreground',
       });
       // Push au technicien planifié (création OU réassignation) — best-effort, respecte
       // le réglage global « Planning d'intervention ».
@@ -691,7 +692,7 @@ const MaintenancePlanningSection = ({
       toast({
         title: 'Planification annulée',
         description: 'Le créneau a été retiré du planning actif.',
-        className: 'bg-success text-white',
+        className: 'bg-success text-success-foreground',
       });
       loadData();
     }
@@ -805,7 +806,7 @@ const MaintenancePlanningSection = ({
       toast({
         title: 'Planning copié',
         description: `${pendingEntries.length} créneau(x) copiés depuis ${period === 'month' ? 'le mois' : 'la semaine'} précédent(e).${skippedForAbsence > 0 ? ` ${skippedForAbsence} ignoré(s) (absence validée).` : ''}`,
-        className: 'bg-success text-white',
+        className: 'bg-success text-success-foreground',
       });
       loadData();
     }
@@ -892,18 +893,18 @@ const MaintenancePlanningSection = ({
 
               {/* Navigation période — barre intégrée */}
               <div className="flex flex-1 items-center gap-0.5 rounded-lg border border-border bg-muted/20 px-1 py-0.5">
-                <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={handlePrev} disabled={isLoading}>
+                <Button aria-label="Période précédente" variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={handlePrev} disabled={isLoading}>
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
                 <p className="flex-1 px-1 text-center text-sm font-semibold capitalize text-foreground whitespace-nowrap" aria-live="polite">
                   {format(currentCalendarDate, viewMode === 'month' ? 'MMMM yyyy' : "'Semaine du' dd MMMM", { locale: fr })}
                 </p>
-                <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={handleNext} disabled={isLoading}>
+                <Button aria-label="Période suivante" variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={handleNext} disabled={isLoading}>
                   <ChevronRight className="h-4 w-4" />
                 </Button>
                 <Button size="sm" variant="outline" className="h-7 shrink-0 px-2 text-xs" onClick={handleToday} disabled={isLoading}>
                   <span className="sm:hidden">Auj.</span>
-                  <span className="hidden sm:inline">Aujourd&apos;hui</span>
+                  <span className="sr-only sm:not-sr-only">Aujourd&apos;hui</span>
                 </Button>
               </div>
             </div>
@@ -929,19 +930,19 @@ const MaintenancePlanningSection = ({
                 >
                   <MapPinned className="h-4 w-4" />
                   <span className="ml-1.5 sm:hidden">{showPlanningMap ? 'Masquer' : 'Carte'}</span>
-                  <span className="ml-1.5 hidden sm:inline">{showPlanningMap ? 'Masquer la carte' : 'Visualiser sur carte'}</span>
+                  <span className="sr-only sm:not-sr-only sm:ml-1.5">{showPlanningMap ? 'Masquer la carte' : 'Visualiser sur carte'}</span>
                 </Button>
                 {canManage && (
                   <>
                   <Button size="sm" variant="ghost" className="h-7 rounded-none px-2 text-xs" onClick={() => handleCopyPrevious('week')} disabled={isLoading} title="Copier le planning de la semaine précédente">
                     <Copy className="h-4 w-4" />
                     <span className="ml-1.5">Sem.</span>
-                    <span className="hidden sm:inline">&nbsp;précéd.</span>
+                    <span className="sr-only sm:not-sr-only">&nbsp;précéd.</span>
                   </Button>
                   <Button size="sm" variant="ghost" className="h-7 rounded-none px-2 text-xs" onClick={() => handleCopyPrevious('month')} disabled={isLoading} title="Copier le planning du mois précédent">
                     <Copy className="h-4 w-4" />
                     <span className="ml-1.5">Mois</span>
-                    <span className="hidden sm:inline">&nbsp;précéd.</span>
+                    <span className="sr-only sm:not-sr-only">&nbsp;précéd.</span>
                   </Button>
                   </>
                 )}
@@ -1076,13 +1077,13 @@ const MaintenancePlanningSection = ({
                     >
                       {/* Header compact */}
                       <div className={`flex items-center justify-between px-1.5 py-1 ${isToday ? 'bg-primary' : isWeekend && isCurrentMonthDay ? 'bg-muted/20' : ''}`}>
-                        <time dateTime={dateKey} className={`text-xs font-bold ${isToday ? 'text-white' : !isCurrentMonthDay ? 'text-muted-foreground/30' : 'text-foreground'}`}>
+                        <time dateTime={dateKey} className={`text-xs font-bold ${isToday ? 'text-primary-foreground' : !isCurrentMonthDay ? 'text-muted-foreground/30' : 'text-foreground'}`}>
                           {format(day, 'd')}
                         </time>
                         {isCurrentMonthDay && canManage && (
-                          <button
+                          <button aria-label={`Ajouter une planification le ${format(day, 'dd/MM/yyyy')}`}
                             type="button"
-                            className={`flex h-4 w-4 items-center justify-center rounded opacity-0 transition-all group-hover:opacity-100 ${isToday ? 'text-white/70 hover:bg-card/20' : 'text-muted-foreground/30 hover:bg-primary/10 hover:text-primary'}`}
+                            className={`flex h-4 w-4 items-center justify-center rounded opacity-0 transition-all group-hover:opacity-100 ${isToday ? 'text-primary-foreground hover:bg-card/20' : 'text-muted-foreground/30 hover:bg-primary/10 hover:text-primary'}`}
                             onClick={() => openCreateDialogForDate(day)}
                             disabled={isLoading}
                           >
@@ -1111,8 +1112,8 @@ const MaintenancePlanningSection = ({
                             }}
                             className="flex cursor-pointer items-center gap-1 transition-opacity hover:opacity-70"
                           >
-                            <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[0.5rem] font-bold text-white
-                              ${EXECUTION_PIN_STYLES[row.executionStatus] || 'bg-success'}
+                            <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[0.5rem] font-bold
+                              ${EXECUTION_PIN_STYLES[row.executionStatus] || 'bg-success text-success-foreground'}
                               ${String(selectedPlanningId) === String(row.id) ? 'ring-2 ring-offset-1 ring-primary/50' : ''}
                             `}>
                               {row.executionStatus === 'effectuee'
@@ -1128,7 +1129,7 @@ const MaintenancePlanningSection = ({
                               </p>
                             </div>
                             {canManage && (
-                              <button
+                              <button aria-label={`Modifier la planification de ${row.agenceNom}`}
                                 type="button"
                                 className="shrink-0 text-muted-foreground/30 opacity-0 transition-all group-hover:opacity-100 hover:text-info"
                                 onClick={(event) => {
@@ -1164,7 +1165,7 @@ const MaintenancePlanningSection = ({
                               }}
                               className="flex cursor-pointer items-center gap-1 transition-opacity hover:opacity-70"
                             >
-                              <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[0.5rem] font-bold text-white ${hasRealized ? 'bg-success' : 'bg-destructive'}`}>
+                              <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[0.5rem] font-bold ${hasRealized ? 'bg-success text-success-foreground' : 'bg-destructive text-destructive-foreground'}`}>
                                 <CheckCircle2 className="h-2.5 w-2.5" />
                               </span>
                               <div className="min-w-0 flex-1">
@@ -1416,16 +1417,16 @@ const MaintenancePlanningSection = ({
                     </span>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant="outline" className={isCurative ? 'border-destructive/30 bg-destructive/10 text-destructive' : 'border-info/30 bg-info-muted text-info-muted-foreground'}>
+                    <Badge variant={isCurative ? 'danger' : 'info'}>
                       {getMaintenanceInterventionTypeLabel(intervention.type_intervention)}
                     </Badge>
-                    <Badge variant="outline" className="border-success/30 bg-success-muted text-success-muted-foreground">
+                    <Badge variant="success">
                       {creneauLabel}
                     </Badge>
                     {intervention.geo_refused === true ? (
-                      <Badge variant="outline" className="border-destructive/30 bg-destructive/10 text-destructive">Refusée (hors zone)</Badge>
+                      <StatusBadge tone="danger">Refusée (hors zone)</StatusBadge>
                     ) : (
-                      <Badge variant="outline" className="border-border bg-muted text-foreground/80">{intervention.statut}</Badge>
+                      <Badge variant="neutral">{intervention.statut}</Badge>
                     )}
                     {intervention.sous_ensemble && (
                       <Badge variant="outline" className="border-border bg-card text-foreground/80">
@@ -1521,9 +1522,9 @@ const MaintenancePlanningSection = ({
               <div className="rounded-xl border bg-background/70 p-4">
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">Suivi</p>
                 <div className="mt-2">
-                  <Badge variant="outline" className={selectedPlanning.executionMeta.className}>
+                  <StatusBadge tone={selectedPlanning.executionMeta.tone}>
                     {selectedPlanning.executionMeta.label}
-                  </Badge>
+                  </StatusBadge>
                 </div>
               </div>
             </div>
@@ -1556,7 +1557,7 @@ const MaintenancePlanningSection = ({
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">
                   Interventions enregistrées sur ce créneau
                 </p>
-                <Badge variant="outline" className="border-border bg-muted text-foreground/80">
+                <Badge variant="neutral">
                   {selectedPlanning.matchedInterventions.length}
                 </Badge>
               </div>
@@ -1583,10 +1584,10 @@ const MaintenancePlanningSection = ({
                         </div>
                       </div>
                       <div className="mt-3 flex flex-wrap gap-2">
-                        <Badge variant="outline" className="border-border bg-muted text-foreground/80">
+                        <Badge variant="neutral">
                           {getMaintenanceInterventionTypeLabel(intervention.type_intervention)}
                         </Badge>
-                        <Badge variant="outline" className="border-border bg-muted text-foreground/80">
+                        <Badge variant="neutral">
                           {intervention.statut}
                         </Badge>
                       </div>

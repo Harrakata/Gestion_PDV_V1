@@ -5,6 +5,7 @@ import { RefreshCw, Loader2, CheckCircle2, CloudOff } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import StatusBadge from '@/components/ui/status-badge';
 import { getQueued } from '@/lib/offlineQueue';
 import { flushQueue } from '@/lib/offlineSync';
 
@@ -46,9 +47,9 @@ const MaSynchroDialog = ({ open, onOpenChange, online }) => {
         </DialogHeader>
         <div className="space-y-3">
           <div className="flex items-center gap-2 text-sm">
-            <Badge variant="outline" className={online ? 'bg-success-muted text-success-muted-foreground border-success/30' : 'bg-warning-muted text-warning-muted-foreground border-warning/30'}>
+            <StatusBadge tone={online ? 'success' : 'warning'}>
               {online ? 'En ligne' : 'Hors ligne'}
-            </Badge>
+            </StatusBadge>
             <span className="text-muted-foreground">{items.length - failed} en attente{failed > 0 ? ` · ${failed} conflit(s) à résoudre` : ''}</span>
           </div>
           {loading ? (
@@ -70,7 +71,7 @@ const MaSynchroDialog = ({ open, onOpenChange, online }) => {
                     {i.lastError && <div className="mt-0.5 truncate text-destructive" title={i.lastError}>{i.lastError}</div>}
                   </div>
                   {(i.retries || 0) > 0 && (
-                    <Badge variant="outline" className="shrink-0 border-destructive/30 bg-destructive/10 text-destructive">{i.retries} essai(s)</Badge>
+                    <Badge variant="danger" className="shrink-0">{i.retries} essai(s)</Badge>
                   )}
                 </div>
               ))}

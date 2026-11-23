@@ -2,12 +2,13 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { describeError } from '@/lib/errors';
 import { motion } from 'framer-motion';
 import { BarChart3, ClipboardCheck, Clock3, PieChart, Search, Users } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import StatusBadge from '@/components/ui/status-badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/components/ui/use-toast';
+import EmptyState from '@/components/ui/empty-state';
 import StatsChartCard from '@/components/analytics/StatsChartCard';
 import KpiStatCard from '@/components/analytics/KpiStatCard';
 import { ANALYTICS_GRANULARITY_OPTIONS } from '@/lib/analytics';
@@ -525,9 +526,9 @@ const RegionalPointageSection = ({ regionName = '', allowAllRegions = false, hid
                   <TableCell>{row.expectedCount}</TableCell>
                   <TableCell>
                     <div className="space-y-2">
-                      <Badge variant="outline" className={row.statusMeta.className}>
+                      <StatusBadge tone={row.statusMeta.tone}>
                         {row.statusMeta.label}
-                      </Badge>
+                      </StatusBadge>
                       <p className="text-xs text-muted-foreground">{row.completionRate}%</p>
                     </div>
                   </TableCell>
@@ -583,9 +584,7 @@ const RegionalPointageSection = ({ regionName = '', allowAllRegions = false, hid
                 <tbody>
                   {selectedAgenceRow.plannedGuichetieres.length === 0 ? (
                     <tr className="border-t bg-card">
-                      <td colSpan={5} className="px-4 py-6 text-center text-muted-foreground">
-                        Aucune guichetière planifiée sur cette date.
-                      </td>
+                      <td colSpan={5} className="p-2"><EmptyState compact plain title="Aucune guichetière planifiée sur cette date" /></td>
                     </tr>
                   ) : (
                     selectedAgenceRow.plannedGuichetieres.map((entry) => {
@@ -607,9 +606,9 @@ const RegionalPointageSection = ({ regionName = '', allowAllRegions = false, hid
                           <td className="px-4 py-3">{guichetiere?.matricule || 'N/A'}</td>
                           <td className="px-4 py-3">{guichetierePointages.length}</td>
                           <td className="px-4 py-3">
-                            <Badge variant="outline" className={statusMeta.className}>
+                            <StatusBadge tone={statusMeta.tone}>
                               {statusMeta.label}
-                            </Badge>
+                            </StatusBadge>
                           </td>
                           <td className="px-4 py-3">{formatPointageDateTime(latestPointage?.time)}</td>
                         </tr>

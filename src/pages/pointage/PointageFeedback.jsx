@@ -35,7 +35,7 @@ const PointageFeedback = ({ onClose, onSubmit }) => {
     >
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-xl font-bold">Votre avis nous intéresse</h3>
-        <Button variant="ghost" size="icon" onClick={onClose}>
+        <Button aria-label="Fermer" variant="ghost" size="icon" onClick={onClose}>
           <X className="h-5 w-5" />
         </Button>
       </div>
@@ -82,7 +82,7 @@ const PointageFeedback = ({ onClose, onSubmit }) => {
             <p className="text-sm text-muted-foreground mb-3">Évaluez votre expérience (optionnel)</p>
             <div className="flex justify-center gap-2 mb-6">
               {[1, 2, 3, 4, 5].map((star) => (
-                <Button 
+                <Button aria-label={`${star} étoile${star > 1 ? 's' : ''} sur 5`} 
                   key={star}
                   variant="ghost"
                   size="icon"

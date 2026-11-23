@@ -55,7 +55,7 @@ const ClientIdentityCard = ({ canWrite = true }) => {
       } else {
         const { data: pub } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(data.path);
         setLogoUrl(pub.publicUrl);
-        toast({ title: 'Logo importé', description: "Cliquez sur « Sauvegarder l'identité » pour l'appliquer.", className: 'bg-success text-white' });
+        toast({ title: 'Logo importé', description: "Cliquez sur « Sauvegarder l'identité » pour l'appliquer.", className: 'bg-success text-success-foreground' });
       }
     } catch (err) {
       toast({ title: 'Erreur', description: "Échec de l'import du logo.", variant: 'destructive' });
@@ -67,7 +67,7 @@ const ClientIdentityCard = ({ canWrite = true }) => {
     setIsSaving(true);
     try {
       await setBranding({ displayName, logoUrl, currency });
-      toast({ title: 'Identité client sauvegardée', className: 'bg-success text-white' });
+      toast({ title: 'Identité client sauvegardée', className: 'bg-success text-success-foreground' });
     } catch (error) {
       toast({ title: 'Erreur de sauvegarde', description: describeError(error, 'ClientIdentityCard'), variant: 'destructive' });
     }
@@ -83,7 +83,7 @@ const ClientIdentityCard = ({ canWrite = true }) => {
         <CardDescription className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <span>Branding propre à ce client.</span>
           <span className="flex items-center gap-1.5">
-            <Badge variant="outline" className="border-primary/30 bg-primary/5 font-mono text-primary">
+            <Badge variant="secondary" className="font-mono">
               {CLIENT_ID}
             </Badge>
             <span className="text-xs text-muted-foreground">VITE_CLIENT_ID — non modifiable</span>

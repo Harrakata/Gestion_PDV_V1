@@ -3,10 +3,11 @@ import { describeError } from '@/lib/errors';
 import { Ticket, Plus, Loader2, Settings2, X, List, LayoutGrid, AlertTriangle, Inbox, CircleDot, Clock, CheckCircle2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import StatusBadge from '@/components/ui/status-badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/components/ui/use-toast';
+import EmptyState from '@/components/ui/empty-state';
 import KpiStatCard from '@/components/analytics/KpiStatCard';
 import TicketCreateDialog from '@/components/tickets/TicketCreateDialog';
 import TicketProcessDialog from '@/components/tickets/TicketProcessDialog';
@@ -14,7 +15,7 @@ import TicketsKanban from '@/components/tickets/TicketsKanban';
 import {
   fetchTickets, updateTicket,
   TICKET_STATUSES, TICKET_CATEGORY_OPTIONS, TICKET_PRIORITY_OPTIONS,
-  ticketLabel, getTicketStatusBadgeClass, getTicketPriorityBadgeClass, ticketOverdue,
+  ticketLabel, getTicketStatusTone, getTicketPriorityTone, ticketOverdue,
 } from '@/lib/tickets';
 
 const ALL = '__all__';
@@ -175,7 +176,7 @@ const TicketsPanel = ({ mode = 'declarant', identity = {}, filter = {}, spaceKey
           {isLoading ? (
             <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
           ) : displayed.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-6 text-center">Aucun ticket pour ces critères.</p>
+            <EmptyState compact title="Aucun ticket pour ces critères" />
           ) : view === 'kanban' ? (
             <TicketsKanban
               rows={displayed}
@@ -203,11 +204,11 @@ const TicketsPanel = ({ mode = 'declarant', identity = {}, filter = {}, spaceKey
                       <TableCell className="font-mono text-xs">{r.code || r.id}</TableCell>
                       <TableCell className="max-w-[220px] truncate" title={r.titre}>{r.titre}</TableCell>
                       <TableCell>{ticketLabel(r.categorie)}</TableCell>
-                      <TableCell><Badge variant="outline" className={getTicketPriorityBadgeClass(r.priorite)}>{ticketLabel(r.priorite)}</Badge></TableCell>
+                      <TableCell><StatusBadge tone={getTicketPriorityTone(r.priorite)}>{ticketLabel(r.priorite)}</StatusBadge></TableCell>
                       <TableCell>{r.agence_nom || '—'}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1.5">
-                          <Badge variant="outline" className={getTicketStatusBadgeClass(r.statut)}>{ticketLabel(r.statut)}</Badge>
+                          <StatusBadge tone={getTicketStatusTone(r.statut)}>{ticketLabel(r.statut)}</StatusBadge>
                           {ticketOverdue(r) && (
                             <span className="flex items-center gap-0.5 text-xs text-destructive" title="Délai SLA dépassé"><AlertTriangle className="h-3.5 w-3.5" /> En retard</span>
                           )}

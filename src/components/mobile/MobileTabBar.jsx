@@ -11,7 +11,7 @@ import { MoreHorizontal } from 'lucide-react';
  * @param {boolean} moreActive
  * @param {string} [moreLabel]
  */
-const MobileTabBar = ({ items = [], onMore, moreActive = false, moreLabel = 'Plus' }) => {
+const MobileTabBar = ({ items = [], onMore, moreActive = false, moreLabel = 'Plus', menuId }) => {
   // On limite à 4 onglets principaux pour laisser la place au bouton « Plus ».
   const tabs = items.slice(0, 4);
 
@@ -27,6 +27,7 @@ const MobileTabBar = ({ items = [], onMore, moreActive = false, moreLabel = 'Plu
           key={item.key}
           type="button"
           onClick={item.onClick}
+          disabled={item.disabled}
           aria-current={item.active ? 'page' : undefined}
           className={`mobile-tabbar-item ${item.active ? 'is-active' : ''}`}
         >
@@ -38,6 +39,7 @@ const MobileTabBar = ({ items = [], onMore, moreActive = false, moreLabel = 'Plu
         type="button"
         onClick={onMore}
         aria-expanded={moreActive}
+        aria-controls={menuId}
         aria-label="Ouvrir le menu de l’espace"
         className={`mobile-tabbar-item ${moreActive ? 'is-active' : ''}`}
       >

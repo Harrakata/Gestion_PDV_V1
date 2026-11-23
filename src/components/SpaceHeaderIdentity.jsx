@@ -5,8 +5,7 @@ export const SpaceHeaderContext = createContext(null);
 
 // Mounted only by an authenticated space. Keep the live profile and its actions
 // owned by that space while rendering them in the shared desktop header.
-// `searchItems` (optionnel) alimente la recherche de la barre supérieure ;
-// sans lui, la recherche reprend les entrées visibles du menu latéral.
+// La recherche reçoit les destinations autorisées du menu de l'espace.
 export default function SpaceHeaderIdentity({ children, searchItems }) {
   const context = useContext(SpaceHeaderContext);
   const register = context?.register;

@@ -34,6 +34,7 @@ import {
   Wrench,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import StatusBadge from '@/components/ui/status-badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -66,7 +67,7 @@ import {
   isMissingMaintenancePlanningRequestTableError,
   MAINTENANCE_REQUEST_STATUSES,
   MAINTENANCE_REQUEST_TYPES,
-  getMaintenancePlanningRequestStatusBadgeClass,
+  getMaintenancePlanningRequestStatusTone,
   getMaintenancePlanningRequestTypeLabel,
 } from '@/lib/maintenancePlanningRequests';
 
@@ -93,10 +94,10 @@ const SOUS_ENSEMBLE_LABELS_TECH = {
 };
 
 const STATUT_CONFIG_TECH = {
-  defectueux: { label: 'Défectueux', cls: 'bg-destructive/10 text-destructive' },
-  assigne: { label: 'Assigné', cls: 'bg-info-muted text-info-muted-foreground' },
-  a_tester: { label: 'À tester', cls: 'bg-warning-muted text-warning-muted-foreground' },
-  repare: { label: 'Réparé', cls: 'bg-success-muted text-success-muted-foreground' },
+  defectueux: { label: 'Défectueux', tone: 'danger' },
+  assigne: { label: 'Assigné', tone: 'info' },
+  a_tester: { label: 'À tester', tone: 'warning' },
+  repare: { label: 'Réparé', tone: 'success' },
 };
 
 const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => {
@@ -432,7 +433,7 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
         title: 'Demande envoyée',
         description:
           "Votre demande de modification a bien été transmise au chef d'agence puis à l'Exploitation pour validation.",
-        className: 'bg-success text-white',
+        className: 'bg-success text-success-foreground',
       });
       setIsRequestDialogOpen(false);
       setSelectedPlanningEntry(null);
@@ -577,14 +578,14 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
             <CardTitle className="flex items-center gap-2 text-xl text-primary">
               <Package className="h-5 w-5" />
               Mes sous-ensembles à réparer
-              <Badge className="bg-info-muted text-info-muted-foreground ml-2">{assignedDefectueux.length}</Badge>
+              <Badge variant="info" className="ml-2">{assignedDefectueux.length}</Badge>
             </CardTitle>
             <CardDescription>Sous-ensembles défectueux qui vous sont assignés pour réparation.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {assignedDefectueux.map(item => {
               const isExpanded = expandedDefectueuxId === item.id;
-              const cfg = STATUT_CONFIG_TECH[item.statut] || { label: item.statut, cls: 'bg-muted text-foreground' };
+              const cfg = STATUT_CONFIG_TECH[item.statut] || { label: item.statut, tone: 'neutral' };
               return (
                 <div key={item.id} className="rounded-lg border overflow-hidden">
                   <button
@@ -594,7 +595,7 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
                     <div className="flex items-center gap-3 flex-wrap">
                       <span className="font-medium font-mono text-sm">{item.reference_sous_ensemble}</span>
                       <Badge variant="outline">{SOUS_ENSEMBLE_LABELS_TECH[item.type_sous_ensemble] || item.type_sous_ensemble}</Badge>
-                      <Badge className={cfg.cls}>{cfg.label}</Badge>
+                      <StatusBadge tone={cfg.tone}>{cfg.label}</StatusBadge>
                       {item.agence?.nom && <span className="text-xs text-muted-foreground">• {item.agence.nom}</span>}
                     </div>
                     {isExpanded ? <ChevronUp className="h-4 w-4 shrink-0" /> : <ChevronDown className="h-4 w-4 shrink-0" />}
@@ -669,7 +670,7 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
         {/* Barre de contrôle unifiée */}
         <div className="relative flex flex-wrap items-center justify-between gap-2 border-b border-border px-3 py-2.5 sm:gap-3 sm:px-4 sm:py-3">
           <div className="flex items-center gap-1 sm:gap-1.5">
-            <Button
+            <Button aria-label={viewMode === 'month' ? 'Mois précédent' : 'Semaine précédente'}
               variant="ghost" size="icon" className="h-7 w-7 sm:h-8 sm:w-8"
               onClick={() => setCurrentMonth((prev) => viewMode === 'month' ? subMonths(prev, 1) : subWeeks(prev, 1))}
               disabled={isLoading}
@@ -679,7 +680,7 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
             <span className="min-w-[84px] text-center text-xs font-semibold capitalize text-foreground whitespace-nowrap sm:min-w-[120px] sm:text-sm">
               {format(currentMonth, viewMode === 'month' ? 'MMMM yyyy' : "'Sem.' dd MMM", { locale: fr })}
             </span>
-            <Button
+            <Button aria-label={viewMode === 'month' ? 'Mois suivant' : 'Semaine suivante'}
               variant="ghost" size="icon" className="h-7 w-7 sm:h-8 sm:w-8"
               onClick={() => setCurrentMonth((prev) => viewMode === 'month' ? addMonths(prev, 1) : addWeeks(prev, 1))}
               disabled={isLoading}
@@ -746,12 +747,12 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
                       `}
                     >
                       {/* Header compact */}
-                      <div className={`flex items-center justify-between px-1.5 py-1 ${isToday ? 'bg-primary text-white' : isWeekend && isCurrentMonthDay ? 'bg-muted/20' : ''}`}>
-                        <time dateTime={dateStr} className={`text-xs font-bold ${isToday ? 'text-white' : !isCurrentMonthDay ? 'text-muted-foreground/30' : 'text-foreground'}`}>
+                      <div className={`flex items-center justify-between px-1.5 py-1 ${isToday ? 'bg-primary text-primary-foreground' : isWeekend && isCurrentMonthDay ? 'bg-muted/20' : ''}`}>
+                        <time dateTime={dateStr} className={`text-xs font-bold ${isToday ? 'text-primary-foreground' : !isCurrentMonthDay ? 'text-muted-foreground/30' : 'text-foreground'}`}>
                           {format(day, 'd')}
                         </time>
                         {requestCount > 0 && (
-                          <span className={`flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold ${isToday ? 'bg-card/20 text-white' : 'bg-warning-muted text-warning-muted-foreground'}`}>
+                          <span className={`flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold ${isToday ? 'bg-card text-primary' : 'bg-warning-muted text-warning-muted-foreground'}`}>
                             {requestCount}
                           </span>
                         )}
@@ -775,8 +776,8 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
                                 className="flex cursor-pointer items-center gap-1 transition-opacity hover:opacity-70"
                                 onClick={() => !isPending && !isPast && openRequestDialog(entry)}
                               >
-                                <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[0.5rem] font-bold text-white
-                                  ${isPast ? 'bg-muted-foreground/40' : isToday ? 'bg-card/90 !text-primary' : 'bg-primary'}
+                                <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[0.5rem] font-bold
+                                  ${isPast ? 'bg-muted-foreground/40 text-foreground' : isToday ? 'bg-card/90 text-primary' : 'bg-primary text-primary-foreground'}
                                 `}>
                                   <Wrench className="h-2.5 w-2.5" />
                                 </span>
@@ -804,7 +805,7 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
                               className="flex cursor-pointer items-center gap-1 transition-opacity hover:opacity-70"
                               onClick={() => setSelectedGroup(grp)}
                             >
-                              <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-white ${hasRealized ? 'bg-success' : 'bg-destructive'}`}>
+                              <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full ${hasRealized ? 'bg-success text-success-foreground' : 'bg-destructive text-destructive-foreground'}`}>
                                 <CheckCircle2 className="h-2.5 w-2.5" />
                               </span>
                               <div className="min-w-0 flex-1">
@@ -904,9 +905,9 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
                   <TableCell>{getMaintenancePlanningRequestTypeLabel(request.type_demande)}</TableCell>
                   <TableCell>{formatDisplayDate(request.date_souhaitee)}</TableCell>
                   <TableCell>
-                    <Badge className={getMaintenancePlanningRequestStatusBadgeClass(request.statut)}>
+                    <StatusBadge tone={getMaintenancePlanningRequestStatusTone(request.statut)}>
                       {request.statut}
-                    </Badge>
+                    </StatusBadge>
                   </TableCell>
                   <TableCell>{formatDisplayDateTime(request.updated_at || request.created_at)}</TableCell>
                 </TableRow>
@@ -1016,14 +1017,14 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
                     <span className="text-sm text-muted-foreground">{dt ? format(new Date(dt), 'dd/MM/yyyy HH:mm') : '—'}</span>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant="outline" className={isCurative ? 'border-destructive/30 bg-destructive/10 text-destructive' : 'border-info/30 bg-info-muted text-info-muted-foreground'}>
+                    <Badge variant={isCurative ? 'danger' : 'info'}>
                       {isCurative ? 'Curative' : 'Préventive'}
                     </Badge>
-                    <Badge variant="outline" className="border-success/30 bg-success-muted text-success-muted-foreground">{creneauLabel}</Badge>
+                    <Badge variant="success">{creneauLabel}</Badge>
                     {iv.geo_refused ? (
-                      <Badge variant="outline" className="border-destructive/30 bg-destructive/10 text-destructive">Refusée (hors zone)</Badge>
+                      <StatusBadge tone="danger">Refusée (hors zone)</StatusBadge>
                     ) : (
-                      <Badge variant="outline" className="border-success/30 bg-success-muted text-success-muted-foreground">Validée</Badge>
+                      <StatusBadge tone="success">Validée</StatusBadge>
                     )}
                     {iv.sous_ensemble && (
                       <Badge variant="outline" className="border-border bg-card text-foreground/80">{iv.sous_ensemble}</Badge>
@@ -1086,7 +1087,7 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
             )}
             {showAtelier && (
               <TabsContent value="atelier">
-                <ReparationTerminauxTab canManage={true} />
+                <ReparationTerminauxTab canManage={true} assignedOnly technicienId={technicien?.id} />
               </TabsContent>
             )}
             {showStock && (

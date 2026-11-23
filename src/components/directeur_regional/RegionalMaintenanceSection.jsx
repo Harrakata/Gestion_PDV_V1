@@ -3,6 +3,7 @@ import { describeError } from '@/lib/errors';
 import { motion } from 'framer-motion';
 import { CalendarClock, ChevronDown, ChevronUp, List, MapPinned, Search, Wrench } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import StatusBadge from '@/components/ui/status-badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -20,7 +21,7 @@ import { isSupabaseAuthError } from '@/lib/guichetiereSpace';
 import {
   buildTerminalMonitoringGroups,
   formatMaintenanceDateTime,
-  getMaintenanceInterventionStatusClass,
+  getMaintenanceInterventionStatusTone,
   getMaintenanceInterventionTypeLabel,
   normalizeMaintenanceText,
 } from '@/lib/maintenanceMonitoring';
@@ -347,7 +348,7 @@ const RegionalMaintenanceSection = ({ regionName = '', allowAllRegions = false, 
                   type="button"
                   variant={showMaintenanceMap ? 'default' : 'outline'}
                   onClick={() => setShowMaintenanceMap((previousValue) => !previousValue)}
-                  className={showMaintenanceMap ? 'bg-primary text-white' : ''}
+                  className={showMaintenanceMap ? 'bg-primary text-primary-foreground' : ''}
                 >
                   {showMaintenanceMap ? (
                     <List className="mr-2 h-4 w-4" />
@@ -483,9 +484,9 @@ const RegionalMaintenanceSection = ({ regionName = '', allowAllRegions = false, 
                           <TableCell>{formatMaintenanceDateTime(group.latestIntervention?.date_intervention)}</TableCell>
                           <TableCell>
                             <div className="space-y-2">
-                              <Badge variant="outline" className={group.followUp.className}>
+                              <StatusBadge tone={group.followUp.tone}>
                                 {group.followUp.label}
-                              </Badge>
+                              </StatusBadge>
                               <p className="text-xs text-muted-foreground">{group.followUp.detail}</p>
                             </div>
                           </TableCell>
@@ -562,9 +563,9 @@ const RegionalMaintenanceSection = ({ regionName = '', allowAllRegions = false, 
                                           </span>
                                         </div>
                                         <div className="flex shrink-0 items-center gap-2">
-                                          <Badge variant="outline" className={`text-xs ${row.followUp.className}`}>
+                                          <StatusBadge tone={row.followUp.tone} className="text-xs">
                                             {row.followUp.label}
-                                          </Badge>
+                                          </StatusBadge>
                                           {rowInterventions.length > 0 && (
                                             <span className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium transition-colors ${historyOpen ? 'border-border bg-card text-foreground/80' : 'border-border bg-card/70 text-muted-foreground'}`}>
                                               {rowInterventions.length} interv.
@@ -616,12 +617,12 @@ const RegionalMaintenanceSection = ({ regionName = '', allowAllRegions = false, 
                                                 >
                                                   <div className="flex flex-wrap items-center gap-2">
                                                     <span className="font-semibold text-foreground/80">{formatMaintenanceDateTime(i.date_intervention)}</span>
-                                                    <Badge variant="outline" className={`text-[10px] ${isCurative ? 'border-destructive/30 bg-destructive/10 text-destructive' : 'border-info/30 bg-info-muted text-info-muted-foreground'}`}>
+                                                    <Badge variant={isCurative ? 'danger' : 'info'} className="text-[10px]">
                                                       {getMaintenanceInterventionTypeLabel(i.type_intervention)}
                                                     </Badge>
-                                                    <Badge variant="outline" className={`text-[10px] ${getMaintenanceInterventionStatusClass(i.statut)}`}>
+                                                    <StatusBadge tone={getMaintenanceInterventionStatusTone(i.statut)} className="text-[10px]">
                                                       {i.statut}
-                                                    </Badge>
+                                                    </StatusBadge>
                                                     {tech && (
                                                       <span className="text-muted-foreground">{tech.prenom} {tech.nom}{tech.matricule ? ` · ${tech.matricule}` : ''}</span>
                                                     )}

@@ -28,7 +28,7 @@ import {
 } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import StatusBadge from '@/components/ui/status-badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
@@ -52,7 +52,7 @@ import {
   formatDisplayDate,
   formatDisplayDateTime,
   getPlanningRequestTypeLabel,
-  getRequestStatusBadgeClass,
+  getRequestStatusTone,
   isMissingSupabaseTableError,
   isSupabaseAuthError,
   normalizeText,
@@ -280,7 +280,7 @@ const MonPlanningGuichetierePage = () => {
       toast({
         title: 'Demande envoyée',
         description: 'Votre demande de modification a bien été transmise au chef d’agence.',
-        className: 'bg-success text-white',
+        className: 'bg-success text-success-foreground',
       });
       setIsRequestDialogOpen(false);
       setSelectedPlanningEntry(null);
@@ -353,13 +353,13 @@ const MonPlanningGuichetierePage = () => {
         {/* Barre de contrôle unifiée */}
         <div className="relative flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3">
           <div className="flex flex-wrap items-center gap-1.5">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCurrentMonth((prev) => viewMode === 'month' ? subMonths(prev, 1) : subWeeks(prev, 1))} disabled={isLoading}>
+            <Button aria-label={viewMode === 'month' ? 'Mois précédent' : 'Semaine précédente'} variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCurrentMonth((prev) => viewMode === 'month' ? subMonths(prev, 1) : subWeeks(prev, 1))} disabled={isLoading}>
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <span className="min-w-[120px] text-center text-sm font-semibold text-foreground whitespace-nowrap">
               {format(currentMonth, viewMode === 'month' ? 'MMMM yyyy' : "'Sem.' dd MMM", { locale: fr })}
             </span>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCurrentMonth((prev) => viewMode === 'month' ? addMonths(prev, 1) : addWeeks(prev, 1))} disabled={isLoading}>
+            <Button aria-label={viewMode === 'month' ? 'Mois suivant' : 'Semaine suivante'} variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCurrentMonth((prev) => viewMode === 'month' ? addMonths(prev, 1) : addWeeks(prev, 1))} disabled={isLoading}>
               <ChevronRight className="h-4 w-4" />
             </Button>
             <Button variant="outline" size="sm" className="h-7 px-2.5 text-xs" onClick={() => setCurrentMonth(new Date())} disabled={isLoading}>
@@ -411,8 +411,8 @@ const MonPlanningGuichetierePage = () => {
                       `}
                     >
                       {/* Header compact */}
-                      <div className={`flex items-center px-1.5 py-1 ${isToday ? 'bg-primary text-white' : !isCurrentMonthDay ? '' : isWeekend ? 'bg-muted/20' : ''}`}>
-                        <time dateTime={dateStr} className={`text-xs font-bold ${isToday ? 'text-white' : !isCurrentMonthDay ? 'text-muted-foreground/30' : 'text-foreground'}`}>
+                      <div className={`flex items-center px-1.5 py-1 ${isToday ? 'bg-primary text-primary-foreground' : !isCurrentMonthDay ? '' : isWeekend ? 'bg-muted/20' : ''}`}>
+                        <time dateTime={dateStr} className={`text-xs font-bold ${isToday ? 'text-primary-foreground' : !isCurrentMonthDay ? 'text-muted-foreground/30' : 'text-foreground'}`}>
                           {format(day, 'd')}
                         </time>
                       </div>
@@ -431,8 +431,8 @@ const MonPlanningGuichetierePage = () => {
                                 className={`flex cursor-pointer items-center gap-1 transition-opacity hover:opacity-70 ${isPast ? 'opacity-50' : ''}`}
                                 onClick={() => openRequestDialog(entry)}
                               >
-                                <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[0.5rem] font-bold text-white
-                                  ${linkedRequest?.statut === REQUEST_STATUS.PENDING ? 'bg-warning/40' : isToday ? 'bg-card/90 !text-primary' : 'bg-primary'}
+                                <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[0.5rem] font-bold
+                                  ${linkedRequest?.statut === REQUEST_STATUS.PENDING ? 'bg-warning/40 text-foreground' : isToday ? 'bg-card/90 text-primary' : 'bg-primary text-primary-foreground'}
                                 `}>
                                   {linkedRequest?.statut === REQUEST_STATUS.PENDING ? '!' : '✓'}
                                 </span>
@@ -485,7 +485,7 @@ const MonPlanningGuichetierePage = () => {
                     {request.motif || 'Aucun motif précisé'}
                   </TableCell>
                   <TableCell>
-                    <Badge className={getRequestStatusBadgeClass(request.statut)}>{request.statut}</Badge>
+                    <StatusBadge tone={getRequestStatusTone(request.statut)}>{request.statut}</StatusBadge>
                   </TableCell>
                   <TableCell className="max-w-[260px] whitespace-normal text-xs text-muted-foreground">
                     {request.commentaire_traitement || 'En attente de traitement'}

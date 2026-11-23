@@ -28,7 +28,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
+import StatusBadge from '@/components/ui/status-badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -59,7 +59,7 @@ import {
   generateDemandeCode,
   getEffectiveDemandeStatus,
   getEffectiveWorkflowStage,
-  getStatusBadgeClass,
+  getStatusTone,
   getWorkflowStageLabel,
   isChefApprovalPending,
   normalizeText,
@@ -839,7 +839,7 @@ const PaiementGrosGainPage = () => {
         toast({
           title: 'Demande enregistrée hors-ligne',
           description: `La demande ${codeDemande}${photoFile ? ' et sa pièce d’identité seront transmises' : ' sera transmise'} automatiquement au retour de la connexion.`,
-          className: 'bg-primary text-white',
+          className: 'bg-primary text-primary-foreground',
         });
 
         resetForm();
@@ -885,7 +885,7 @@ const PaiementGrosGainPage = () => {
       description: waitingChefApproval
         ? `La demande ${codeDemande} a été créée et attend maintenant la validation du chef d’agence.`
         : `La demande ${codeDemande} a été créée et transmise dans le circuit de validation.`,
-      className: 'bg-success text-white',
+      className: 'bg-success text-success-foreground',
     });
 
     resetForm();
@@ -991,7 +991,7 @@ const PaiementGrosGainPage = () => {
         decision === 'approve'
           ? `La demande ${demandeToHandle.codeDemande} a été transmise au ${nextLabel}.`
           : `La demande ${demandeToHandle.codeDemande} a été refusée par le chef d’agence.`,
-      className: decision === 'approve' ? 'bg-success text-white' : 'bg-destructive text-white',
+      className: decision === 'approve' ? 'bg-success text-success-foreground' : 'bg-destructive text-destructive-foreground',
     });
 
     // Notification SMS du parieur en cas de refus (best-effort).
@@ -1068,7 +1068,7 @@ const PaiementGrosGainPage = () => {
     toast({
       title: 'Paiement final validé',
       description: `Le paiement du gain ${demandeToPay.codeDemande} a été confirmé.`,
-      className: 'bg-success text-white',
+      className: 'bg-success text-success-foreground',
     });
 
     // Notification SMS du parieur (confirmation de paiement, best-effort).
@@ -1125,9 +1125,9 @@ const PaiementGrosGainPage = () => {
         </div>
         <div className="rounded-lg border bg-background/70 p-3 shadow-sm">
           <p className="text-[10px] font-medium uppercase leading-3 text-muted-foreground">Statut global</p>
-          <Badge variant="outline" className={`mt-1 ${getStatusBadgeClass(getEffectiveDemandeStatus(demande))}`}>
+          <StatusBadge tone={getStatusTone(getEffectiveDemandeStatus(demande))} className="mt-1">
             {getEffectiveDemandeStatus(demande)}
-          </Badge>
+          </StatusBadge>
         </div>
         <div className="rounded-lg border bg-background/70 p-3 shadow-sm">
           <p className="text-[10px] font-medium uppercase leading-3 text-muted-foreground">Étape en cours</p>
@@ -1223,7 +1223,7 @@ const PaiementGrosGainPage = () => {
           <p className="text-sm md:text-lg text-muted-foreground mb-4 md:mb-8">
             Connectez-vous d’abord avec votre matricule et votre mot de passe chef d’agence, puis revenez ici pour créer les demandes et finaliser les paiements autorisés.
           </p>
-          <Button asChild className="bg-primary hover:bg-primary/90 text-white text-xs md:text-base w-full md:w-auto">
+          <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs md:text-base w-full md:w-auto">
             <Link to="/espace-chef-agence/paiement-gros-gain">
               <LogIn className="mr-2 h-4 w-4 md:h-5 md:w-5" /> Accéder à l’espace Chef d’agence
             </Link>
@@ -1336,9 +1336,9 @@ const PaiementGrosGainPage = () => {
                         <TableCell>{formatCurrency(demande.montantGain)}</TableCell>
                         <TableCell>{getWorkflowStageLabel(getEffectiveWorkflowStage(demande))}</TableCell>
                         <TableCell>
-                          <Badge variant="outline" className={getStatusBadgeClass(getEffectiveDemandeStatus(demande))}>
+                          <StatusBadge tone={getStatusTone(getEffectiveDemandeStatus(demande))}>
                             {getEffectiveDemandeStatus(demande)}
-                          </Badge>
+                          </StatusBadge>
                         </TableCell>
                         <TableCell>
                           {isChefApprovalPending(demande) ? 'Validation du chef' : 'Paiement final en agence'}
@@ -1392,7 +1392,7 @@ const PaiementGrosGainPage = () => {
                           <Button
                             onClick={() => handleChefDecision('approve')}
                             disabled={isChefDecisionLoading}
-                            className="bg-success text-white hover:bg-success/90"
+                            className="bg-success text-success-foreground hover:bg-success/90"
                           >
                             {isChefDecisionLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
                             Valider et transmettre
@@ -1425,7 +1425,7 @@ const PaiementGrosGainPage = () => {
                       <Button
                         onClick={handleConfirmPayment}
                         disabled={isPaymentSubmitting}
-                        className="bg-success text-white hover:bg-success/90"
+                        className="bg-success text-success-foreground hover:bg-success/90"
                       >
                         {isPaymentSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
                         Confirmer le paiement final
@@ -1526,9 +1526,9 @@ const PaiementGrosGainPage = () => {
                         <TableCell>{formatCurrency(demande.montantGain)}</TableCell>
                         <TableCell>{getWorkflowStageLabel(getEffectiveWorkflowStage(demande))}</TableCell>
                         <TableCell>
-                          <Badge variant="outline" className={getStatusBadgeClass(getEffectiveDemandeStatus(demande))}>
+                          <StatusBadge tone={getStatusTone(getEffectiveDemandeStatus(demande))}>
                             {getEffectiveDemandeStatus(demande)}
-                          </Badge>
+                          </StatusBadge>
                         </TableCell>
                         <TableCell>{formatDisplayDateTime(demande.updated_at)}</TableCell>
                       </motion.tr>
@@ -1971,9 +1971,9 @@ const PaiementGrosGainPage = () => {
                       </TableCell>
                       <TableCell>{formatCurrency(demande.montantGain)}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={getStatusBadgeClass(getEffectiveDemandeStatus(demande))}>
+                        <StatusBadge tone={getStatusTone(getEffectiveDemandeStatus(demande))}>
                           {getEffectiveDemandeStatus(demande)}
-                        </Badge>
+                        </StatusBadge>
                       </TableCell>
                       <TableCell>{demande.agencePaiementNom || 'En attente'}</TableCell>
                       <TableCell className="text-right">
@@ -2020,7 +2020,7 @@ const PaiementGrosGainPage = () => {
                         <Button
                           onClick={() => handleChefDecision('approve')}
                           disabled={isChefDecisionLoading}
-                          className="bg-success text-white hover:bg-success/90"
+                          className="bg-success text-success-foreground hover:bg-success/90"
                         >
                           {isChefDecisionLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
                           Valider et transmettre
@@ -2151,7 +2151,7 @@ const PaiementGrosGainPage = () => {
                 <Button
                   onClick={handleConfirmPayment}
                   disabled={isPaymentSubmitting}
-                  className="bg-success text-white hover:bg-success/90"
+                  className="bg-success text-success-foreground hover:bg-success/90"
                 >
                   {isPaymentSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
                   Confirmer le paiement final
@@ -2210,9 +2210,9 @@ const PaiementGrosGainPage = () => {
                       <TableCell>{formatCurrency(demande.montantGain)}</TableCell>
                       <TableCell>{formatDisplayDateTime(demande.datePaiementFinal)}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={getStatusBadgeClass(getEffectiveDemandeStatus(demande))}>
+                        <StatusBadge tone={getStatusTone(getEffectiveDemandeStatus(demande))}>
                           {getEffectiveDemandeStatus(demande)}
-                        </Badge>
+                        </StatusBadge>
                       </TableCell>
                     </TableRow>
                   ))}

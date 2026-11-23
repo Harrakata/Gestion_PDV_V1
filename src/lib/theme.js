@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient';
+import { buildBrandCss } from './themeContrast';
 
 export const THEME_STORAGE_KEY = 'theme_colors';
 const THEME_LOCAL_KEY = 'app_theme_cache';
@@ -160,10 +161,11 @@ export function applyTheme({
     localStorage.setItem(THEME_LOCAL_KEY, JSON.stringify(next));
   } catch { /* quota exceeded */ }
 
-  // Couleur principale
+  // Couleur principale : tous les jetons de marque en sont dérivés, pour les deux
+  // thèmes. La valeur enregistrée reste celle choisie par le client.
   if (primaryHsl) {
-    root.style.setProperty('--primary', primaryHsl);
-    root.style.setProperty('--ring', primaryHsl);
+    const brandCss = buildBrandCss(primaryHsl);
+    if (brandCss) injectStyle('theme-brand', brandCss);
   }
   // Arrondi
   if (radius !== undefined && radius !== null)

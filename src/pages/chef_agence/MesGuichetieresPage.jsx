@@ -13,6 +13,7 @@ import { format, differenceInDays, parseISO, isValid as isValidDate } from 'date
 import { fr } from 'date-fns/locale';
 import { supabase } from '@/lib/supabaseClient';
 import { useToast } from '@/components/ui/use-toast';
+import EmptyState from '@/components/ui/empty-state';
 import SalaireGuichetiereTab from '@/pages/exploitation/SalaireGuichetiereTab';
 import { isSupabaseAuthError } from '@/lib/guichetiereSpace';
 
@@ -169,7 +170,7 @@ const MesGuichetieresPage = () => {
   const getDisponibiliteInfo = (g) => {
     if (g.disponibilite === 'Disponible') return <span className="text-success">Disponible</span>;
     
-    let infoText = g.disponibilite === 'Absent' ? <span className="text-warning">Absent(e)</span> : <span className="text-destructive">Suspendu(e)</span>;
+    let infoText = g.disponibilite === 'Absent' ? <span className="text-warning-muted-foreground">Absent(e)</span> : <span className="text-destructive">Suspendu(e)</span>;
     
     if (g.dateDebutIndisponibilite && g.dateFinIndisponibilite) {
       const debut = parseISO(g.dateDebutIndisponibilite);
@@ -273,10 +274,7 @@ const MesGuichetieresPage = () => {
               </TableBody>
             </Table>
           ) : (
-             <div className="text-center py-10 text-muted-foreground">
-              <Users2 className="mx-auto h-12 w-12 mb-4" />
-              <p className="text-lg">Aucune guichetière trouvée pour votre agence "{nomAgence}" ou correspondant à votre recherche.</p>
-            </div>
+             <EmptyState icon={Users2} title="Aucune guichetière trouvée" description={`Aucun résultat pour votre agence « ${nomAgence} » ou pour votre recherche.`} />
           )}
           </CardContent>
           </Card>

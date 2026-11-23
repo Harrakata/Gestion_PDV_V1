@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { describeError } from '@/lib/errors';
-import { Badge } from '@/components/ui/badge';
+import StatusBadge from '@/components/ui/status-badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -34,15 +34,15 @@ import {
 import KpiStatCard from '@/components/analytics/KpiStatCard';
 import { supabase } from '@/lib/supabaseClient';
 
-const STATUS_BADGE_COLORS = {
-  Disponible: 'bg-success-muted text-success-muted-foreground',
-  'En service': 'bg-info-muted text-info-muted-foreground',
-  'En panne': 'bg-destructive/10 text-destructive',
-  'En maintenance': 'bg-warning-muted text-warning-muted-foreground',
-  'Hors service': 'bg-muted text-foreground',
+const EQUIPMENT_STATUS_TONES = {
+  Disponible: 'success',
+  'En service': 'info',
+  'En panne': 'danger',
+  'En maintenance': 'warning',
+  'Hors service': 'neutral',
 };
 
-const getStatusBadgeColor = (status) => STATUS_BADGE_COLORS[status] ?? 'bg-muted text-foreground';
+const getEquipmentStatusTone = (status) => EQUIPMENT_STATUS_TONES[status] ?? 'neutral';
 
 const STATUS_OPTIONS = ['Disponible', 'En service', 'En panne', 'En maintenance', 'Hors service'];
 
@@ -197,7 +197,7 @@ const EquipmentTable = ({ type, config, allEquipments, filteredEquipments, hasDa
           </Button>
           <Button
             onClick={() => onOpenDialog(null, type)}
-            className="bg-primary text-white hover:bg-primary/90"
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
             disabled={isLoading || !canManage}
           >
             <PlusCircle className="mr-2 h-4 w-4" />
@@ -253,13 +253,13 @@ const EquipmentTable = ({ type, config, allEquipments, filteredEquipments, hasDa
                 <TableCell>{equipment.modele}</TableCell>
                 <TableCell>{equipment.marque}</TableCell>
                 <TableCell>
-                  <Badge className={getStatusBadgeColor(equipment.statut)}>
+                  <StatusBadge tone={getEquipmentStatusTone(equipment.statut)}>
                     {equipment.statut}
-                  </Badge>
+                  </StatusBadge>
                 </TableCell>
                 <TableCell>{equipment.description || 'N/A'}</TableCell>
                 <TableCell className="space-x-1 text-right">
-                  <Button
+                  <Button aria-label={`Modifier ${equipment.reference}`}
                     variant="ghost"
                     size="icon"
                     onClick={() => onOpenDialog(equipment, type)}
@@ -270,7 +270,7 @@ const EquipmentTable = ({ type, config, allEquipments, filteredEquipments, hasDa
                   </Button>
                   <Dialog>
                     <DialogTrigger asChild>
-                      <Button
+                      <Button aria-label={`Supprimer ${equipment.reference}`}
                         variant="ghost"
                         size="icon"
                         className="text-destructive hover:text-destructive"
@@ -482,7 +482,7 @@ const EquipmentManager = ({ canManage = true, readOnlyMessage = '' }) => {
         toast({
           title: 'Succès',
           description: `${EQUIPMENT_TYPES[currentType].singular} ${currentEquipment ? 'modifié' : 'ajouté'} avec succès.`,
-          className: 'bg-success text-white',
+          className: 'bg-success text-success-foreground',
         });
         setIsDialogOpen(false);
         setCurrentEquipment(null);
@@ -516,7 +516,7 @@ const EquipmentManager = ({ canManage = true, readOnlyMessage = '' }) => {
       if (error) {
         toast({ title: 'Erreur de suppression', description: describeError(error, 'EquipmentManager'), variant: 'destructive' });
       } else {
-        toast({ title: 'Succès', description: `${EQUIPMENT_TYPES[type].singular} supprimé.`, className: 'bg-destructive text-white' });
+        toast({ title: 'Succès', description: `${EQUIPMENT_TYPES[type].singular} supprimé.`, className: 'bg-destructive text-destructive-foreground' });
         loadEquipments();
       }
     } catch {
@@ -559,7 +559,7 @@ const EquipmentManager = ({ canManage = true, readOnlyMessage = '' }) => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    toast({ title: 'Export réussi', description: `${rows.length} ${config.label.toLowerCase()} exporté(s) au format CSV.`, className: 'bg-success text-white' });
+    toast({ title: 'Export réussi', description: `${rows.length} ${config.label.toLowerCase()} exporté(s) au format CSV.`, className: 'bg-success text-success-foreground' });
   };
 
   const handleImportType = (type, file) => {
@@ -599,7 +599,7 @@ const EquipmentManager = ({ canManage = true, readOnlyMessage = '' }) => {
 
         const { error } = await supabase.from(config.table).upsert(dataToUpsert, { onConflict: 'reference' });
         if (error) throw error;
-        toast({ title: 'Import réussi', description: `${dataToUpsert.length} ${config.label.toLowerCase()} importé(s)/mis à jour.`, className: 'bg-success text-white' });
+        toast({ title: 'Import réussi', description: `${dataToUpsert.length} ${config.label.toLowerCase()} importé(s)/mis à jour.`, className: 'bg-success text-success-foreground' });
         loadEquipments();
       } catch (err) {
         toast({ title: "Erreur d'import", description: describeError(err, 'EquipmentManager'), variant: 'destructive' });

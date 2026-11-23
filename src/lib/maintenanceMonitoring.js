@@ -1,6 +1,6 @@
 const ONE_MONTH_IN_MS = 30 * 24 * 60 * 60 * 1000;
-const MAINTENANCE_CURRENT_CLASS = 'border-success/25 bg-success-muted text-success-muted-foreground';
-const MAINTENANCE_DUE_CLASS = 'border-destructive/25 bg-destructive/10 text-destructive';
+const MAINTENANCE_CURRENT_TONE = 'success';
+const MAINTENANCE_DUE_TONE = 'danger';
 
 export const normalizeMaintenanceText = (value) =>
   String(value ?? '')
@@ -20,18 +20,18 @@ export const formatMaintenanceDateTime = (value) => {
 
 export const getMaintenanceInterventionTypeLabel = (type) => (type === 'curative' ? 'Curative' : 'Préventive');
 
-export const getMaintenanceInterventionStatusClass = (status) => {
-  if (status === 'Terminée') return MAINTENANCE_CURRENT_CLASS;
-  if (status === 'En cours') return 'border-warning/25 bg-warning-muted text-warning-muted-foreground';
-  if (status === 'Annulée') return MAINTENANCE_DUE_CLASS;
-  return 'border-border bg-muted text-foreground';
+export const getMaintenanceInterventionStatusTone = (status) => {
+  if (status === 'Terminée') return MAINTENANCE_CURRENT_TONE;
+  if (status === 'En cours') return 'warning';
+  if (status === 'Annulée') return MAINTENANCE_DUE_TONE;
+  return 'neutral';
 };
 
 export const getMaintenanceFollowUp = (latestIntervention, referenceDate = new Date()) => {
   if (!latestIntervention?.date_intervention) {
     return {
       label: 'Faire maintenance préventive',
-      className: MAINTENANCE_DUE_CLASS,
+      tone: MAINTENANCE_DUE_TONE,
       detail: 'Aucune maintenance recensée sur le dernier mois.',
     };
   }
@@ -40,7 +40,7 @@ export const getMaintenanceFollowUp = (latestIntervention, referenceDate = new D
   if (Number.isNaN(interventionDate.getTime())) {
     return {
       label: 'Faire maintenance préventive',
-      className: MAINTENANCE_DUE_CLASS,
+      tone: MAINTENANCE_DUE_TONE,
       detail: 'Date de maintenance non exploitable.',
     };
   }
@@ -53,7 +53,7 @@ export const getMaintenanceFollowUp = (latestIntervention, referenceDate = new D
   if (isRecent) {
     return {
       label: 'Maintenance à jour',
-      className: MAINTENANCE_CURRENT_CLASS,
+      tone: MAINTENANCE_CURRENT_TONE,
       detail: `${getMaintenanceInterventionTypeLabel(latestIntervention.type_intervention)} du ${formatMaintenanceDateTime(
         latestIntervention.date_intervention
       )}`,
@@ -62,7 +62,7 @@ export const getMaintenanceFollowUp = (latestIntervention, referenceDate = new D
 
   return {
     label: 'Faire maintenance préventive',
-    className: MAINTENANCE_DUE_CLASS,
+    tone: MAINTENANCE_DUE_TONE,
     detail: `Derniere maintenance ${formatMaintenanceDateTime(latestIntervention.date_intervention)}`,
   };
 };
@@ -178,7 +178,7 @@ const getTerminalFollowUp = (rows) => {
   if (rowsToHandle === 0) {
     return {
       label: 'Maintenance à jour',
-      className: MAINTENANCE_CURRENT_CLASS,
+      tone: MAINTENANCE_CURRENT_TONE,
       detail:
         totalRows <= 1
           ? 'Le terminal est a jour sur son sous-ensemble suivi.'
@@ -188,7 +188,7 @@ const getTerminalFollowUp = (rows) => {
 
   return {
     label: 'Faire maintenance préventive',
-    className: MAINTENANCE_DUE_CLASS,
+    tone: MAINTENANCE_DUE_TONE,
     detail:
       totalRows <= 1
         ? 'Le terminal doit etre traite.'

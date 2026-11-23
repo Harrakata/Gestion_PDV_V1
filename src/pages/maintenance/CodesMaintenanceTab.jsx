@@ -58,10 +58,10 @@ const CodeTable = ({ title, description, icon, rows, canManage, onAdd, onEdit, o
               {canManage && (
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-1">
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-info" onClick={() => onEdit(row)}>
+                    <Button aria-label={`Modifier le code ${row.code}`} variant="ghost" size="icon" className="h-7 w-7 text-info" onClick={() => onEdit(row)}>
                       <Edit className="h-3.5 w-3.5" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => onDelete(row)}>
+                    <Button aria-label={`Supprimer le code ${row.code}`} variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => onDelete(row)}>
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   </div>
@@ -86,7 +86,7 @@ const CodesMaintenanceTab = ({ canManage = true }) => {
 
   const [dialogState, setDialogState] = useState({ open: false, table: null, editing: null, form: DEFAULT_FORM });
 
-  const showOk = (msg) => toast({ title: msg, className: 'bg-success text-white' });
+  const showOk = (msg) => toast({ title: msg, className: 'bg-success text-success-foreground' });
   const showErr = (msg) => toast({ title: 'Erreur', description: msg, variant: 'destructive' });
 
   const load = useCallback(async () => {

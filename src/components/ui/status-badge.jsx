@@ -39,10 +39,10 @@ export function StatusBadge({
   return (
     <Badge
       variant={VARIANT_BY_TONE[resolvedTone] || 'neutral'}
-      className={cn('whitespace-nowrap', className)}
+      className={cn('max-w-full whitespace-normal leading-tight sm:whitespace-nowrap', className)}
       {...props}
     >
-      {icon || (showDot ? <span aria-hidden="true" className={cn('h-1.5 w-1.5 rounded-full', DOT_BY_TONE[resolvedTone])} /> : null)}
+      {icon || (showDot ? <span aria-hidden="true" className={cn("h-1.5 w-1.5 shrink-0 rounded-full", DOT_BY_TONE[resolvedTone])} /> : null)}
       <span>{label}</span>
     </Badge>
   );

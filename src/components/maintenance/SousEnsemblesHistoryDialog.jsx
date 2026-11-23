@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ArrowRight, History } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import StatusBadge from '@/components/ui/status-badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import EmptyState from '@/components/ui/empty-state';
 import { describeError } from '@/lib/errors';
 import {
   SOUS_ENSEMBLE_CHANGE_TYPES,
@@ -93,9 +94,7 @@ const SousEnsemblesHistoryDialog = ({
     );
   } else if (visibleRows.length === 0) {
     content = (
-      <p className="rounded-lg border border-dashed py-10 text-center text-sm text-muted-foreground">
-        Aucun changement de sous-ensemble enregistré pour ce terminal.
-      </p>
+      <EmptyState compact title="Aucun changement de sous-ensemble enregistré pour ce terminal" />
     );
   } else {
     content = (
@@ -108,7 +107,7 @@ const SousEnsemblesHistoryDialog = ({
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-semibold text-foreground">{labelFor(row.sous_ensemble)}</span>
-                  <Badge className={changeType.className}>{changeType.label}</Badge>
+                  <StatusBadge tone={changeType.tone}>{changeType.label}</StatusBadge>
                 </div>
                 <span className="text-sm text-muted-foreground">{formatDateTime(row.created_at)}</span>
               </div>

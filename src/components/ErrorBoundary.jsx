@@ -15,7 +15,7 @@ class ErrorBoundary extends React.Component {
   componentDidCatch(error, errorInfo) {
     this.setState({ errorInfo });
     // Remontée vers Sentry (no-op si non configuré).
-    captureError(error, { componentStack: errorInfo?.componentStack });
+    captureError(error, { where: this.props.where, componentStack: errorInfo?.componentStack });
     if (import.meta.env.DEV) {
       console.error('ErrorBoundary caught:', error, errorInfo);
     }
@@ -46,7 +46,7 @@ class ErrorBoundary extends React.Component {
         <div className="flex items-center gap-3">
           <button
             onClick={this.reset}
-            className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary/90 transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
           >
             <RefreshCw className="h-4 w-4" /> Réessayer
           </button>

@@ -49,9 +49,9 @@ const PointageTimeline = ({ currentTime, creneaux, guichetieresPlanifiees, point
   const getRandomColor = (matricule) => {
     // Génère une couleur aléatoire mais consistante basée sur le matricule
     const colors = [
-      'bg-primary', 'bg-success', 'bg-purple-500', 
-      'bg-pink-500', 'bg-indigo-500', 'bg-teal-500',
-      'bg-warning', 'bg-cyan-500', 'bg-warning'
+      'bg-primary text-primary-foreground', 'bg-success text-success-foreground', 'bg-purple-700 text-white', 
+      'bg-pink-700 text-white', 'bg-indigo-700 text-white', 'bg-teal-700 text-white',
+      'bg-warning text-warning-foreground', 'bg-cyan-700 text-white', 'bg-warning text-warning-foreground'
     ];
     
     // Hash simple du matricule pour avoir toujours la même couleur
@@ -128,7 +128,7 @@ const PointageTimeline = ({ currentTime, creneaux, guichetieresPlanifiees, point
               />
               {/* Numéro de créneau */}
               <div 
-                className="absolute -top-5 sm:-top-6 text-xs font-semibold px-1 py-0.5 rounded bg-primary/80 text-white"
+                className="absolute -top-5 sm:-top-6 text-xs font-semibold px-1 py-0.5 rounded bg-primary text-primary-foreground"
                 style={{ left: `${debutPercent + ((finPercent - debutPercent) / 2) - 1.5}%` }}
               >
                 {idx + 1}
@@ -170,7 +170,7 @@ const PointageTimeline = ({ currentTime, creneaux, guichetieresPlanifiees, point
           >
             {/* En-tête avec infos guichetière - adapté pour mobile */}
             <div className="flex items-center p-2 sm:p-3 border-b">
-              <div className={`flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full text-white font-medium ${guichetiere.avatarColor}`}>
+              <div className={`flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full font-medium ${guichetiere.avatarColor}`}>
                 {guichetiere.initials}
               </div>
               <div className="ml-2 sm:ml-3 flex-grow min-w-0">
@@ -220,8 +220,8 @@ const PointageTimeline = ({ currentTime, creneaux, guichetieresPlanifiees, point
                             <motion.div 
                               whileHover={{ scale: 1.15 }}
                               className={`w-7 h-7 sm:w-10 sm:h-10 rounded-full flex items-center justify-center 
-                                ${detail.status === 'pointed' ? 'bg-success text-white' : 
-                                  detail.status === 'active' ? 'bg-warning text-white animate-pulse' : 
+                                ${detail.status === 'pointed' ? 'bg-success text-success-foreground' : 
+                                  detail.status === 'active' ? 'bg-warning text-warning-foreground animate-pulse' : 
                                   detail.status === 'missed' ? 'bg-destructive/10 border-2 border-destructive/30 text-destructive' : 
                                   'bg-muted border-2 border-border text-muted-foreground'}`}
                             >
@@ -251,7 +251,7 @@ const PointageTimeline = ({ currentTime, creneaux, guichetieresPlanifiees, point
                                 Pointé à {detail.heurePointage}
                               </p>
                             ) : detail.status === 'active' ? (
-                              <p className="text-[10px] sm:text-xs text-warning">En attente de pointage</p>
+                              <p className="text-[10px] sm:text-xs text-warning-muted-foreground">En attente de pointage</p>
                             ) : detail.status === 'missed' ? (
                               <p className="text-[10px] sm:text-xs text-destructive">Pointage manqué</p>
                             ) : (
@@ -357,7 +357,7 @@ const PointageTimeline = ({ currentTime, creneaux, guichetieresPlanifiees, point
                   guichetiere.statusCreneau === 'missed' ? 'bg-destructive/10 dark:bg-destructive/20 border-destructive/30 dark:border-destructive' :
                   'bg-muted/50 dark:bg-gray-800/30 border-border dark:border-gray-700'}`}
             >
-              <div className={`mx-auto w-10 h-10 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-base sm:text-lg font-medium text-white mb-1 sm:mb-2 ${guichetiere.avatarColor}`}>
+              <div className={`mx-auto w-10 h-10 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-base sm:text-lg font-medium mb-1 sm:mb-2 ${guichetiere.avatarColor}`}>
                 {guichetiere.initials}
               </div>
               

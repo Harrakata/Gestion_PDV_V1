@@ -274,7 +274,7 @@ const EditProfileDialog = ({
         return;
       }
 
-      toast({ title: 'Profil mis à jour', description: 'Vos informations ont été enregistrées.', className: 'bg-success text-white' });
+      toast({ title: 'Profil mis à jour', description: 'Vos informations ont été enregistrées.', className: 'bg-success text-success-foreground' });
       onSaved?.(payload);
       onOpenChange(false);
     } catch (err) {
@@ -308,7 +308,7 @@ const EditProfileDialog = ({
         setIsSavingPassword(false);
         return;
       }
-      toast({ title: 'Mot de passe mis à jour', description: 'Votre mot de passe a été modifié.', className: 'bg-success text-white' });
+      toast({ title: 'Mot de passe mis à jour', description: 'Votre mot de passe a été modifié.', className: 'bg-success text-success-foreground' });
       setNewPassword('');
       setConfirmPassword('');
       onOpenChange(false);
@@ -378,7 +378,7 @@ const EditProfileDialog = ({
                             <button
                               type="button"
                               onClick={() => { setPhotoFile(null); setPhotoUrl(null); }}
-                              className="absolute -right-1 -top-1 rounded-full bg-destructive p-1 text-white shadow hover:bg-destructive/90"
+                              className="absolute -right-1 -top-1 rounded-full bg-destructive p-1 text-destructive-foreground shadow hover:bg-destructive/90"
                               disabled={busy}
                               aria-label="Retirer la photo"
                             >

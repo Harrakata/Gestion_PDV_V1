@@ -12,6 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableCaption } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/use-toast';
+import EmptyState from '@/components/ui/empty-state';
 import { supabase, publicSupabase } from '@/lib/supabaseClient';
 import { STORAGE_BUCKET } from '@/lib/clientConfig';
 import { motion } from 'framer-motion';
@@ -1052,7 +1053,7 @@ const MaintenanceTab = ({ technicien }) => {
     toast({
       title: 'Intervention ajoutée',
       description: `${item.sousEnsemble} est prêt pour la validation finale.`,
-      className: 'bg-primary text-white',
+      className: 'bg-primary text-primary-foreground',
     });
   };
 
@@ -1920,7 +1921,7 @@ const MaintenanceTab = ({ technicien }) => {
         toast({
           title: 'Succès',
           description: 'Intervention enregistrée avec succès',
-          className: "bg-success text-white"
+          className: "bg-success text-success-foreground"
         });
       }
 
@@ -2027,7 +2028,7 @@ const MaintenanceTab = ({ technicien }) => {
         description: savedOffline
           ? `Intervention enregistrée localement (${itemsToSave.length} sous-ensemble(s) concerné(s)). Synchronisation automatique au retour de la connexion.`
           : `Intervention enregistrée pour le terminal (${itemsToSave.length} sous-ensemble(s) concerné(s)).`,
-        className: savedOffline ? 'bg-primary text-white' : 'bg-success text-white',
+        className: savedOffline ? 'bg-primary text-primary-foreground' : 'bg-success text-success-foreground',
       });
 
       return savedInterventions;
@@ -2050,7 +2051,7 @@ const MaintenanceTab = ({ technicien }) => {
     toast({
       title: 'Signature enregistrée',
       description: `${signerLabel} a signé la fiche.`,
-      className: 'bg-primary text-white',
+      className: 'bg-primary text-primary-foreground',
     });
   };
 
@@ -2088,7 +2089,7 @@ const MaintenanceTab = ({ technicien }) => {
       toast({
         title: 'Export alternatif généré',
         description: "L'impression PDF n'a pas pu démarrer. La fiche a été téléchargée en HTML.",
-        className: 'bg-warning text-white',
+        className: 'bg-warning text-warning-foreground',
       });
     }
   };
@@ -2213,7 +2214,7 @@ const MaintenanceTab = ({ technicien }) => {
         description: validationFile.storedInSupabase
           ? 'La fiche de validation a été enregistrée et archivée.'
           : 'La fiche a été générée et téléchargée localement.',
-        className: 'bg-success text-white',
+        className: 'bg-success text-success-foreground',
       });
     } finally {
       setIsLoading(false);
@@ -2560,9 +2561,7 @@ const MaintenanceTab = ({ technicien }) => {
                         </TableRow>
                       )) : (
                         <TableRow>
-                          <TableCell colSpan={6} className="py-6 text-center text-muted-foreground">
-                            Aucun historique disponible pour la sélection actuelle.
-                          </TableCell>
+                          <TableCell colSpan={6} className="p-2"><EmptyState compact plain title="Aucun historique disponible pour la sélection actuelle" /></TableCell>
                         </TableRow>
                       )}
                     </TableBody>
@@ -3090,7 +3089,7 @@ const MaintenanceTab = ({ technicien }) => {
               type="button"
               disabled={!geoJustification.trim()}
               onClick={() => { geoJustifyResolveRef.current?.(geoJustification.trim()); setGeoWarn(null); }}
-              className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+              className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50"
             >
               Valider malgré tout
             </button>

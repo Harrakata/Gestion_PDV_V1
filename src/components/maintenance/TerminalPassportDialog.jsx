@@ -18,15 +18,17 @@ import {
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Badge } from '@/components/ui/badge';
+import StatusBadge from '@/components/ui/status-badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
+import EmptyState from '@/components/ui/empty-state';
 import { supabase } from '@/lib/supabaseClient';
 import {
   formatMaintenanceDateTime,
-  getMaintenanceInterventionStatusClass,
+  getMaintenanceInterventionStatusTone,
   getMaintenanceInterventionTypeLabel,
 } from '@/lib/maintenanceMonitoring';
 
@@ -46,9 +48,9 @@ const EQUIPMENT_TABLES = {
 };
 
 const scoreTone = (score) => {
-  if (score >= 80) return { label: 'Fiable', className: 'text-success-muted-foreground bg-success-muted border-success/30' };
-  if (score >= 55) return { label: 'À surveiller', className: 'text-warning-muted-foreground bg-warning-muted border-warning/30' };
-  return { label: 'Prioritaire', className: 'text-destructive bg-destructive/10 border-destructive/30' };
+  if (score >= 80) return { label: 'Fiable', tone: 'success' };
+  if (score >= 55) return { label: 'À surveiller', tone: 'warning' };
+  return { label: 'Prioritaire', tone: 'danger' };
 };
 
 const Detail = ({ label, value }) => (
@@ -275,7 +277,7 @@ const TerminalPassportDialog = ({
                 Identité, configuration, fiabilité et historique dans une seule fiche.
               </p>
             </div>
-            <Badge variant="outline" className={health.tone.className}>{health.tone.label} · {health.score}/100</Badge>
+            <Badge variant={health.tone.tone}>{health.tone.label} · {health.score}/100</Badge>
           </div>
         </DialogHeader>
 
@@ -343,7 +345,7 @@ const TerminalPassportDialog = ({
                   <div key={`${row.sousEnsembleKey}-${row.sousEnsembleReference}`} className="grid grid-cols-[minmax(0,1fr)_minmax(8rem,0.7fr)_minmax(10rem,1fr)] items-center gap-3 border-b px-4 py-3 last:border-b-0">
                     <span className="font-medium">{row.sousEnsembleLabel}</span>
                     <span className="font-mono text-sm">{row.sousEnsembleReference}</span>
-                    <Badge variant="outline" className={`w-fit ${row.followUp.className}`}>{row.followUp.label}</Badge>
+                    <StatusBadge tone={row.followUp.tone} className="w-fit">{row.followUp.label}</StatusBadge>
                   </div>
                 ))}
                 </div>
@@ -352,13 +354,13 @@ const TerminalPassportDialog = ({
 
             <TabsContent value="history" className="mt-0 space-y-3">
               {terminalInterventions.length === 0 ? (
-                <div className="rounded-lg border border-dashed bg-card/60 py-12 text-center text-sm text-muted-foreground">Aucune intervention enregistrée.</div>
+                <EmptyState compact title="Aucune intervention enregistrée" />
               ) : terminalInterventions.map((item) => (
                 <div key={item.id} className="flex flex-col gap-3 rounded-lg border bg-card/75 p-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-semibold">{getMaintenanceInterventionTypeLabel(item.type_intervention)}</span>
-                      <Badge variant="outline" className={getMaintenanceInterventionStatusClass(item.statut)}>{item.statut || 'N/A'}</Badge>
+                      <StatusBadge tone={getMaintenanceInterventionStatusTone(item.statut)}>{item.statut || 'N/A'}</StatusBadge>
                     </div>
                     <p className="mt-1 text-sm text-muted-foreground">{item.sous_ensemble || 'Terminal'} · {item.description_panne || item.commentaire || 'Sans commentaire'}</p>
                   </div>
@@ -415,7 +417,7 @@ const TerminalPassportDialog = ({
                   </div>
                   <h3 className="font-semibold">2. Effectuez les vérifications</h3>
                   {selectedChecks.length === 0 ? (
-                    <p className="rounded-lg border border-dashed p-5 text-sm text-muted-foreground">Aucune vérification détaillée n’est encore configurée.</p>
+                    <EmptyState compact title="Aucune vérification détaillée n’est encore configurée" />
                   ) : selectedChecks.map((check, index) => {
                     const checked = checkedIds.has(check.id);
                     return (
@@ -424,7 +426,7 @@ const TerminalPassportDialog = ({
                         if (next.has(check.id)) next.delete(check.id); else next.add(check.id);
                         return next;
                       })} className={`flex w-full items-start gap-3 rounded-lg border p-4 text-left transition ${checked ? 'border-success/30 bg-success-muted' : 'bg-card/75 hover:border-primary/40'}`}>
-                        <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${checked ? 'border-success bg-success text-white' : 'border-border'}`}>{checked && <Check className="h-3 w-3" />}</span>
+                        <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${checked ? 'border-success bg-success text-success-foreground' : 'border-border'}`}>{checked && <Check className="h-3 w-3" />}</span>
                         <span className="flex-1"><span className="text-sm font-medium">{index + 1}. {check.description_verification}</span>{check.piece && <span className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><Package2 className="h-3 w-3" />{check.piece.nom}</span>}</span>
                       </button>
                     );

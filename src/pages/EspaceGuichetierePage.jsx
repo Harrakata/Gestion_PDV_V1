@@ -1,19 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { describeError } from '@/lib/errors';
-import SpaceHeaderIdentity from '@/components/SpaceHeaderIdentity';
-import SpaceHeaderProfile from '@/components/SpaceHeaderProfile';
-import SpaceMobileHeader from '@/components/SpaceMobileHeader';
-import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import SpaceShell from '@/components/SpaceShell';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { CalendarDays, LogOut, MapPin, FileText, ShieldCheck, Wallet, AtSign, Loader2, UserCog, Menu, X, Home, CalendarOff, Ticket } from 'lucide-react';
+import { CalendarDays, MapPin, FileText, ShieldCheck, Wallet, AtSign, Loader2, CalendarOff, Ticket } from 'lucide-react';
 import EditProfileDialog from '@/components/EditProfileDialog';
 import ForgotPasswordDialog from '@/components/ForgotPasswordDialog';
 import SpaceLoginCard from '@/components/SpaceLoginCard';
 import NotificationBell from '@/components/NotificationBell';
 import { useSpaceNotifications, clearNotifWatch } from '@/hooks/useSpaceNotifications';
-import MobileTabBar from '@/components/mobile/MobileTabBar';
 import PullToRefresh from '@/components/mobile/PullToRefresh';
-import SwipeTabs from '@/components/mobile/SwipeTabs';
 
 const GUICHETIERE_TAB_LABELS = {
   'mon-planning': 'Planning',
@@ -27,12 +23,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import EmptyState from '@/components/ui/empty-state';
 import { supabase } from '@/lib/supabaseClient';
 import { GUICHETIERE_AUTH_KEY, buildGuichetiereDisplayName } from '@/lib/guichetiereSpace';
 import { useFeature } from '@/hooks/useFeatureFlags';
 import { useSyncHealthHeartbeat } from '@/hooks/useSyncHealthHeartbeat';
 import RemonteeDialog from '@/components/RemonteeDialog';
-import EnablePushButton from '@/components/EnablePushButton';
 import NotifEnableBanner from '@/components/NotifEnableBanner';
 import { isGuichetiereAgenceVisible } from '@/lib/orgStructureConfig';
 import { smartSignIn, fetchAuthLinkedProfile, fetchOrLinkAuthProfile } from '@/lib/smartAuth';
@@ -178,7 +174,7 @@ const LoginPageGuichetiere = ({ onLogin }) => {
     toast({
       title: 'Connexion réussie',
       description: `Bienvenue ${buildGuichetiereDisplayName(profile)} dans votre espace Guichetière.`,
-      className: 'bg-success text-white',
+      className: 'bg-success text-success-foreground',
     });
     setIsLoading(false);
   };
@@ -381,7 +377,7 @@ const EspaceGuichetierePage = () => {
     toast({
       title: 'Déconnexion',
       description: 'Vous avez été déconnectée de votre espace.',
-      className: 'bg-primary text-white',
+      className: 'bg-primary text-primary-foreground',
     });
     navigate('/');
   };
@@ -514,16 +510,23 @@ const EspaceGuichetierePage = () => {
     return <LoginPageGuichetiere onLogin={handleLogin} />;
   }
 
-  return (
-    <div className="app-space-layout has-mobile-header flex flex-col gap-4 md:flex-row lg:gap-8">
+  const navigationItems = menuItems.map((item) => ({
+    key: item.path,
+    label: item.label,
+    mobileLabel: GUICHETIERE_TAB_LABELS[item.path] || item.label,
+    icon: item.icon,
+    active: isMenuItemActive(item.path),
+    to: `/espace-guichetiere/${item.path}`,
+  }));
 
-      {/* En-tête mobile/PWA commun : profil + recherche + actions + menu */}
-      <SpaceMobileHeader
-        photoUrl={guichetiereInfo?.photo_url || guichetiereDetails?.photo_url}
-        initials={guichetiereInfo?.nomComplet?.split(' ').map((part) => part[0]).join('') || 'G'}
-        name={guichetiereInfo?.nomComplet}
-        role="Guichetière"
-        actions={(
+  return (
+    <SpaceShell
+      profile={{
+        photoUrl: guichetiereInfo?.photo_url || guichetiereDetails?.photo_url,
+        initials: guichetiereInfo?.nomComplet?.split(' ').map((part) => part[0]).join('') || 'G',
+        name: guichetiereInfo?.nomComplet,
+        role: 'Guichetière',
+        actions: (
           <>
             <NotificationBell
               notifications={guichetiereNotifications}
@@ -534,167 +537,67 @@ const EspaceGuichetierePage = () => {
             />
             <RemonteeDialog sender={notifReader} iconOnly />
           </>
-        )}
-        menuOpen={isMobileMenuOpen}
-        onToggleMenu={() => setIsMobileMenuOpen((open) => !open)}
-      />
-
-      {isMobileMenuOpen && (
-        <div className="app-space-backdrop md:hidden" onClick={() => setIsMobileMenuOpen(false)} aria-hidden="true" />
+        ),
+      }}
+      menuOpen={isMobileMenuOpen}
+      onMenuOpenChange={setIsMobileMenuOpen}
+      menuItems={navigationItems}
+      reader={notifReader}
+      onProfile={() => setIsProfileDialogOpen(true)}
+      onLogout={handleLogout}
+      contentClassName="md:overflow-hidden"
+      overlays={(
+        <EditProfileDialog
+          open={isProfileDialogOpen}
+          onOpenChange={setIsProfileDialogOpen}
+          table="guichetieres"
+          recordId={guichetiereDetails?.id || guichetiereInfo?.id}
+          withPhoto
+          photoPrefix="photos_guichetieres"
+          currentPhotoUrl={guichetiereDetails?.photo_url || guichetiereInfo?.photo_url || null}
+          initialData={{ nom: guichetiereDetails?.nom, prenom: guichetiereDetails?.prenom, telephone: guichetiereDetails?.telephone, email: guichetiereDetails?.email }}
+          onSaved={(fields) => {
+            setGuichetiereDetails((prev) => ({ ...(prev || {}), ...fields }));
+            const nomComplet = `${fields.prenom} ${fields.nom}`.trim();
+            setGuichetiereInfo((prev) => (prev ? { ...prev, nomComplet, photo_url: fields.photo_url ?? prev.photo_url } : prev));
+            try {
+              const stored = JSON.parse(localStorage.getItem(GUICHETIERE_AUTH_KEY) || 'null');
+              if (stored?.guichetiereInfo) {
+                stored.guichetiereInfo.nomComplet = nomComplet;
+                if ('photo_url' in fields) stored.guichetiereInfo.photo_url = fields.photo_url;
+                stored.guichetiereDetails = { ...(stored.guichetiereDetails || {}), ...fields };
+                localStorage.setItem(GUICHETIERE_AUTH_KEY, JSON.stringify(stored));
+              }
+            } catch {}
+          }}
+        />
       )}
-      <motion.aside
-        initial={{ x: -100, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className={`app-space-sidebar md:w-72 md:shrink-0 ${isMobileMenuOpen ? 'is-open' : ''}`}
+    >
+      <NotifEnableBanner reader={notifReader} className="mb-4" />
+      <PullToRefresh onRefresh={handlePullRefresh}>
+      <motion.div
+        key={`${location.pathname}:${refreshKey}`}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        transition={{ duration: 0.3 }}
       >
-        <div className="app-space-sidebar-scroll sticky top-20 space-y-3 max-h-[calc(100vh-5.5rem)] overflow-y-auto pb-4 pr-1 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
-
-          {/* Carte de profil : masquée sur mobile (déplacée dans l'en-tête mobile), visible en desktop */}
-          <SpaceHeaderIdentity>
-            <SpaceHeaderProfile
-              photoUrl={guichetiereInfo?.photo_url || guichetiereDetails?.photo_url}
-              initials={guichetiereInfo?.nomComplet?.split(' ').map((part) => part[0]).join('') || 'G'}
-              name={guichetiereInfo?.nomComplet}
-              role="Guichetière"
-              actions={(
-                <>
-                  <NotificationBell
-                    notifications={guichetiereNotifications}
-                    totalCount={guichetiereNotifCount}
-                    onNavigate={() => setIsMobileMenuOpen(false)}
-                    reader={notifReader}
-                    storageKey={guichetiereInfo?.matricule ? `g_${guichetiereInfo.matricule}` : null}
-                  />
-                  <RemonteeDialog sender={notifReader} iconOnly />
-                </>
-              )}
-            />
-          </SpaceHeaderIdentity>
-
-          <Card className="relative overflow-hidden">
-            <CardContent className="relative p-3">
-              <nav className="space-y-0.5">
-                {menuItems.map((item) => {
-                  const isActive = isMenuItemActive(item.path);
-                  return (
-                    <Link
-                      key={item.path}
-                      to={item.path}
-                      aria-current={isActive ? 'page' : undefined}
-                      className={`flex items-center gap-2.5 rounded-2xl border border-transparent px-3 py-2.5 text-sm font-semibold transition-all ${
-                        isActive
-                          ? 'bg-primary/10 text-primary shadow-none'
-                          : 'text-foreground/80 hover:bg-primary/10 hover:text-primary'
-                      }`}
-                    >
-                      {React.cloneElement(item.icon, { className: 'h-4 w-4 shrink-0' })}
-                      {item.label}
-                    </Link>
-                  );
-                })}
-              </nav>
-              <div className="mt-1 border-t pt-1">
-                <div className="flex items-center">
-                  <button
-                    type="button"
-                    onClick={() => { navigate('/'); setIsMobileMenuOpen(false); }}
-                    className="flex flex-1 flex-col items-center gap-1 rounded-2xl py-2.5 text-muted-foreground/70 transition-colors hover:bg-primary/8 hover:text-primary"
-                  >
-                    <Home className="h-5 w-5" />
-                    <span className="text-[0.6rem] font-semibold">Accueil</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setIsProfileDialogOpen(true); setIsMobileMenuOpen(false); }}
-                    className="flex flex-1 flex-col items-center gap-1 rounded-2xl py-2.5 text-muted-foreground/70 transition-colors hover:bg-primary/8 hover:text-primary"
-                  >
-                    <UserCog className="h-5 w-5" />
-                    <span className="text-[0.6rem] font-semibold">Profil</span>
-                  </button>
-                  <EnablePushButton reader={notifReader} asNavButton />
-                  <button
-                    type="button"
-                    onClick={handleLogout}
-                    className="flex flex-1 flex-col items-center gap-1 rounded-2xl py-2.5 text-destructive transition-colors hover:bg-destructive/10 hover:text-destructive"
-                  >
-                    <LogOut className="h-5 w-5" />
-                    <span className="text-[0.6rem] font-semibold">Déconn.</span>
-                  </button>
-                </div>
-              </div>
-            </CardContent>
+        {!menuItems.length ? (
+          <Card>
+            <CardContent className="p-6"><EmptyState compact title="Aucun onglet n’est actuellement autorisé pour votre profil Guichetière" /></CardContent>
           </Card>
-          <EditProfileDialog
-            open={isProfileDialogOpen}
-            onOpenChange={setIsProfileDialogOpen}
-            table="guichetieres"
-            recordId={guichetiereDetails?.id || guichetiereInfo?.id}
-            withPhoto
-            photoPrefix="photos_guichetieres"
-            currentPhotoUrl={guichetiereDetails?.photo_url || guichetiereInfo?.photo_url || null}
-            initialData={{ nom: guichetiereDetails?.nom, prenom: guichetiereDetails?.prenom, telephone: guichetiereDetails?.telephone, email: guichetiereDetails?.email }}
-            onSaved={(fields) => {
-              setGuichetiereDetails((prev) => ({ ...(prev || {}), ...fields }));
-              const nomComplet = `${fields.prenom} ${fields.nom}`.trim();
-              setGuichetiereInfo((prev) => (prev ? { ...prev, nomComplet, photo_url: fields.photo_url ?? prev.photo_url } : prev));
-              try {
-                const stored = JSON.parse(localStorage.getItem(GUICHETIERE_AUTH_KEY) || 'null');
-                if (stored?.guichetiereInfo) {
-                  stored.guichetiereInfo.nomComplet = nomComplet;
-                  if ('photo_url' in fields) stored.guichetiereInfo.photo_url = fields.photo_url;
-                  stored.guichetiereDetails = { ...(stored.guichetiereDetails || {}), ...fields };
-                  localStorage.setItem(GUICHETIERE_AUTH_KEY, JSON.stringify(stored));
-                }
-              } catch {}
+        ) : (
+          <Outlet
+            context={{
+              guichetiereInfo,
+              guichetiereDetails,
+              nomAgence: guichetiereInfo?.nomAgence,
             }}
           />
-        </div>
-      </motion.aside>
-
-      <main className="app-space-main has-tabbar flex-1 min-w-0 overflow-visible md:overflow-hidden">
-        <NotifEnableBanner reader={notifReader} className="mb-4" />
-        <SwipeTabs items={menuItems.map((item) => ({ key: item.path, active: isMenuItemActive(item.path), onClick: () => navigate(`/espace-guichetiere/${item.path}`) }))}>
-        <PullToRefresh onRefresh={handlePullRefresh}>
-        <motion.div
-          key={`${location.pathname}:${refreshKey}`}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.3 }}
-        >
-          {!menuItems.length ? (
-            <Card>
-              <CardContent className="p-6 text-center text-muted-foreground">
-                Aucun onglet n’est actuellement autorisé pour votre profil Guichetière.
-              </CardContent>
-            </Card>
-          ) : (
-            <Outlet
-              context={{
-                guichetiereInfo,
-                guichetiereDetails,
-                nomAgence: guichetiereInfo?.nomAgence,
-              }}
-            />
-          )}
-        </motion.div>
-        </PullToRefresh>
-        </SwipeTabs>
-      </main>
-
-      <MobileTabBar
-        items={menuItems.map((item) => ({
-          key: item.path,
-          label: GUICHETIERE_TAB_LABELS[item.path] || item.label,
-          icon: item.icon,
-          active: isMenuItemActive(item.path),
-          onClick: () => navigate(`/espace-guichetiere/${item.path}`),
-        }))}
-        onMore={() => setIsMobileMenuOpen(true)}
-        moreActive={isMobileMenuOpen}
-      />
-    </div>
+        )}
+      </motion.div>
+      </PullToRefresh>
+    </SpaceShell>
   );
 };
 

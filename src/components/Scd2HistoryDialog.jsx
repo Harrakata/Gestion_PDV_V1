@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabaseClient';
 import { useToast } from '@/components/ui/use-toast';
+import EmptyState from '@/components/ui/empty-state';
 import { History, CheckCircle2, ArrowRight, Pencil, Save, AlertTriangle, RefreshCw } from 'lucide-react';
 import { format, parseISO, isValid as isValidDate } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -130,7 +131,7 @@ const Scd2HistoryDialog = ({
     if (error) {
       toast({ title: 'Erreur sauvegarde', description: describeError(error, 'Scd2HistoryDialog'), variant: 'destructive' });
     } else {
-      toast({ title: 'Dates mises à jour', className: 'bg-success text-white' });
+      toast({ title: 'Dates mises à jour', className: 'bg-success text-success-foreground' });
       cancelEdit();
       await load(tableName, keyField, keyValue);
       onChange?.();
@@ -172,7 +173,7 @@ const Scd2HistoryDialog = ({
             <p className="py-6 text-center text-sm text-muted-foreground">Chargement…</p>
           ) : loadError ? (
             <div className="py-6 flex flex-col items-center gap-3 text-center">
-              <AlertTriangle className="h-8 w-8 text-warning" />
+              <AlertTriangle className="h-8 w-8 text-warning-muted-foreground" />
               <div>
                 <p className="text-sm font-semibold text-foreground">Erreur de chargement</p>
                 <p className="mt-1 text-xs text-muted-foreground max-w-xs">{loadError}</p>
@@ -183,7 +184,7 @@ const Scd2HistoryDialog = ({
               </Button>
             </div>
           ) : rows.length === 0 ? (
-            <p className="py-6 text-center text-sm text-muted-foreground">Aucune version trouvée.</p>
+            <EmptyState compact title="Aucune version trouvée" />
           ) : (
             <ol className="relative border-l border-border ml-3 space-y-0">
               {rows.map((row, i) => {
@@ -198,7 +199,7 @@ const Scd2HistoryDialog = ({
                 return (
                   <li key={row.id} className="mb-0 ml-6 py-3 border-b border-border/50 last:border-0">
                     <span className={`absolute -left-3 flex h-6 w-6 items-center justify-center rounded-full border-2 ${
-                      isCurrent ? 'border-primary bg-primary text-white' : 'border-border bg-background text-muted-foreground'
+                      isCurrent ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-background text-muted-foreground'
                     }`}>
                       {isCurrent
                         ? <CheckCircle2 className="h-3.5 w-3.5" />
@@ -315,7 +316,7 @@ const Scd2HistoryDialog = ({
             <Button
               onClick={handleSaveAffectation}
               disabled={!newAffectation || !affectationDate || isSavingAffectation}
-              className="w-full gap-1.5 bg-success hover:bg-success/90 text-white"
+              className="w-full gap-1.5 bg-success hover:bg-success/90 text-success-foreground"
             >
               <ArrowRight className="h-4 w-4" />
               {isSavingAffectation ? 'Enregistrement…' : 'Valider le changement'}

@@ -4,15 +4,15 @@ import { isMissingTableError } from '@/lib/guichetiereSpace';
 export const SOUS_ENSEMBLE_CHANGE_TYPES = {
   maintenance: {
     label: 'Maintenance',
-    className: 'border-warning/25 bg-warning-muted text-warning-muted-foreground',
+    tone: 'warning',
   },
   configuration: {
     label: 'Configuration',
-    className: 'border-info/25 bg-info-muted text-info-muted-foreground',
+    tone: 'info',
   },
   stock: {
     label: 'Stock',
-    className: 'border-border bg-muted text-muted-foreground',
+    tone: 'neutral',
   },
 };
 

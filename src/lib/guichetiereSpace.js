@@ -47,20 +47,20 @@ export const getPlanningRequestTypeLabel = (value) => {
   return value || 'N/A';
 };
 
-export const getRequestStatusBadgeClass = (status) => {
+export const getRequestStatusTone = (status) => {
   if (status === REQUEST_STATUS.APPROVED) {
-    return 'border-success/30 bg-success-muted text-success-muted-foreground';
+    return 'success';
   }
 
   if (status === REQUEST_STATUS.REFUSED) {
-    return 'border-destructive/30 bg-destructive/10 text-destructive';
+    return 'danger';
   }
 
   if (status === REQUEST_STATUS.CANCELLED) {
-    return 'border-border bg-muted text-foreground/80';
+    return 'neutral';
   }
 
-  return 'border-warning/30 bg-warning-muted text-warning-muted-foreground';
+  return 'warning';
 };
 
 export const buildGuichetiereDisplayName = (guichetiere) =>

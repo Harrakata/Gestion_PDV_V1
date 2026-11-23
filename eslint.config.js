@@ -15,11 +15,23 @@ import reactHooks from 'eslint-plugin-react-hooks';
 // Cohérence visuelle : couleurs d'état / neutres via les jetons du thème
 // (destructive, success, warning, info, muted, foreground, border, card) — sinon
 // le mode sombre et le branding client ne s'appliquent pas.
-const RAW_COLOR = String.raw`/\b(text|bg|border|ring)-(red|rose|green|emerald|amber|yellow|orange|blue|sky|slate|gray)-\d{2,3}\b|\bbg-white\b/`;
+// Couvre toutes les palettes Tailwind, les dégradés (from/via/to), les remplissages
+// SVG (fill/stroke) et les couleurs arbitraires (`bg-[#0078D4]`).
+const PALETTE = 'red|rose|green|emerald|amber|yellow|orange|blue|sky|slate|gray|purple|violet|indigo|cyan|teal|lime|pink|fuchsia|zinc|neutral|stone';
+const COLOR_PREFIX = 'text|bg|border(?:-[trblxyse])?|ring(?:-offset)?|from|via|to|fill|stroke|divide|outline|shadow|accent|decoration|placeholder|caret';
+const RAW_COLOR = String.raw`/\b(?:${COLOR_PREFIX})-(?:(?:${PALETTE})-\d{2,3}\b|\[#)|\b(?:bg|from|via|to)-white\b/`;
 const DESIGN_RULES = [
   {
     selector: `:matches(Literal[value=${RAW_COLOR}], TemplateElement[value.raw=${RAW_COLOR}])`,
     message: 'Couleur en dur : utiliser un jeton du thème (text-destructive, bg-success-muted, text-muted-foreground, bg-card…).',
+  },
+  {
+    selector: "JSXOpeningElement[name.name='Badge'] Literal[value=/(bg|border|text)-(success|warning|info|destructive)/]",
+    message: 'Badge coloré à la main : utiliser <StatusBadge tone=…> (statut) ou <Badge variant="success|warning|danger|info|neutral">.',
+  },
+  {
+    selector: "JSXOpeningElement[name.name='Button']:has(> JSXAttribute[name.name='size'] > Literal[value=/^icon/]):not(:has(> JSXAttribute[name.name=/^(aria-label|aria-labelledby|title)$/]))",
+    message: 'Bouton-icône sans nom accessible : ajouter aria-label.',
   },
   {
     selector: String.raw`Literal[value=/absolute inset-x-0 top-0 h-1\.5 bg-primary/]`,

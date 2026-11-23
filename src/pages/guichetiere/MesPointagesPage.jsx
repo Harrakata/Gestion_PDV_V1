@@ -214,7 +214,7 @@ const MesPointagesPage = () => {
                   <TableCell>{pointage.agence || guichetiereInfo?.nomAgence}</TableCell>
                   <TableCell>{pointage.type || 'Présence'}</TableCell>
                   <TableCell>
-                    <Badge className="border-border bg-muted text-foreground/80">
+                    <Badge variant="neutral">
                       Créneau {(pointage.creneauIndex ?? 0) + 1}
                     </Badge>
                   </TableCell>

@@ -15,7 +15,7 @@ const Component = { regions: RegionsPage, secteurs: SecteursPage, agences: Agenc
 createRoot(document.getElementById('root')).render(
   <MemoryRouter>
     <Routes><Route element={<Outlet context={{ canWriteCurrentPage: params.get('readonly') !== '1' }} />}>
-      <Route path="/" element={<main className="app-space-main p-3"><Component /></main>} />
+      <Route path="/" element={<main id="main-content" className="container px-3 py-4"><div className="app-space-main"><Component /></div></main>} />
     </Route></Routes>
   </MemoryRouter>
 );

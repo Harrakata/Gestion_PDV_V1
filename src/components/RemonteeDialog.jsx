@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import StatusBadge from '@/components/ui/status-badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/components/ui/use-toast';
@@ -126,11 +127,11 @@ const RemonteeDialog = ({ sender = {}, iconOnly = false, className = '' }) => {
                       <span className="truncate text-xs font-semibold text-foreground">{r.titre}</span>
                       <Badge variant="outline" className="px-1.5 py-0 text-[0.6rem]">{catLabel(r.categorie)}</Badge>
                       {r.traite ? (
-                        <Badge variant="outline" className="border-success/30 px-1.5 py-0 text-[0.6rem] text-success-muted-foreground">
+                        <Badge variant="success" className="px-1.5 py-0 text-[0.6rem]">
                           <CheckCircle2 className="mr-0.5 h-2.5 w-2.5" /> Traité
                         </Badge>
                       ) : (
-                        <Badge variant="outline" className="border-warning/30 px-1.5 py-0 text-[0.6rem] text-warning-muted-foreground">En attente</Badge>
+                        <StatusBadge tone="warning" className="px-1.5 py-0 text-[0.6rem]">En attente</StatusBadge>
                       )}
                     </div>
                     {r.corps && <p className="line-clamp-2 text-[0.7rem] text-muted-foreground">{r.corps}</p>}

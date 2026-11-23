@@ -19,9 +19,9 @@ const ChefMaintenanceFixture = () => (
 
 const screen = new URLSearchParams(location.search).get('screen');
 createRoot(document.getElementById('root')).render(
-  <main className="app-space-main maintenance-terminal-workspace p-3">
+  <main id="main-content" className="container px-3 py-4"><div className="app-space-main maintenance-terminal-workspace">
     {screen === 'stock' ? <StockDefectueuxTab /> : screen === 'configuration'
       ? <ConfigurationTab showEquipmentManagement={false} /> : screen === 'chef'
         ? <ChefMaintenanceFixture /> : <EquipmentManager />}
-  </main>
+  </div></main>
 );

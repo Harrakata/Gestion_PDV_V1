@@ -59,24 +59,24 @@ const LABELS = {
 };
 export const ticketLabel = (value) => LABELS[value] || value || '—';
 
-export const getTicketStatusBadgeClass = (statut) => {
+export const getTicketStatusTone = (statut) => {
   switch (statut) {
-    case TICKET_STATUSES.OPEN: return 'bg-info-muted text-info-muted-foreground border-info/30';
-    case TICKET_STATUSES.IN_PROGRESS: return 'bg-warning-muted text-warning-muted-foreground border-warning/30';
-    case TICKET_STATUSES.RESOLVED: return 'bg-success-muted text-success-muted-foreground border-success/30';
-    case TICKET_STATUSES.CLOSED: return 'bg-muted text-foreground/80 border-border';
-    case TICKET_STATUSES.CANCELLED: return 'bg-destructive/10 text-destructive border-destructive/30';
-    default: return 'bg-muted text-foreground/80 border-border';
+    case TICKET_STATUSES.OPEN: return 'info';
+    case TICKET_STATUSES.IN_PROGRESS: return 'warning';
+    case TICKET_STATUSES.RESOLVED: return 'success';
+    case TICKET_STATUSES.CLOSED: return 'neutral';
+    case TICKET_STATUSES.CANCELLED: return 'danger';
+    default: return 'neutral';
   }
 };
 
-export const getTicketPriorityBadgeClass = (priorite) => {
+export const getTicketPriorityTone = (priorite) => {
   switch (priorite) {
-    case TICKET_PRIORITIES.URGENTE: return 'bg-destructive/10 text-destructive border-destructive/30';
-    case TICKET_PRIORITIES.HAUTE: return 'bg-warning-muted text-warning-muted-foreground border-warning/30';
-    case TICKET_PRIORITIES.NORMALE: return 'bg-muted text-foreground/80 border-border';
-    case TICKET_PRIORITIES.BASSE: return 'bg-muted/50 text-muted-foreground border-border';
-    default: return 'bg-muted text-foreground/80 border-border';
+    case TICKET_PRIORITIES.URGENTE: return 'danger';
+    case TICKET_PRIORITIES.HAUTE: return 'warning';
+    case TICKET_PRIORITIES.NORMALE: return 'neutral';
+    case TICKET_PRIORITIES.BASSE: return 'neutral';
+    default: return 'neutral';
   }
 };
 

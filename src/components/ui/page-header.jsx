@@ -16,7 +16,7 @@ export function PageHeader({
     <header className={cn('flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between', className)}>
       <div className="flex min-w-0 items-start gap-3">
         {icon ? (
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-primary/15 bg-primary/10 text-primary shadow-soft">
+          <span aria-hidden="true" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-primary/15 bg-primary/10 text-primary shadow-soft">
             {React.isValidElement(icon) ? React.cloneElement(icon, { className: cn('h-5 w-5', icon.props.className) }) : icon}
           </span>
         ) : null}

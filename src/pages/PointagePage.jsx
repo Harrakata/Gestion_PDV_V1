@@ -117,7 +117,7 @@ const PointagePage = () => {
           <p className="text-sm md:text-lg text-muted-foreground mb-4 md:mb-8">
             Pour accéder à la fonctionnalité de pointage pour une agence spécifique, veuillez d'abord vous connecter à votre Espace Chef d'Agence.
           </p>
-          <Button asChild size={isMobile ? "default" : "lg"} className="bg-primary hover:bg-primary/90 text-white text-xs md:text-base w-full md:w-auto">
+          <Button asChild size={isMobile ? "default" : "lg"} className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs md:text-base w-full md:w-auto">
             <Link to="/espace-chef-agence">
               <UserCheck className="mr-2 h-4 w-4 md:h-5 md:w-5" /> Se Connecter (Chef d'Agence)
             </Link>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import EmptyState from '@/components/ui/empty-state';
 import { Users, User, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { format, isValid } from 'date-fns';
@@ -14,9 +15,7 @@ const PointageGuichetieresSummary = ({ guichetieresPlanifiees, pointagesData, cr
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-2">
-          <p className="text-sm text-muted-foreground text-center py-4">
-            Aucune guichetière planifiée pour aujourd'hui.
-          </p>
+          <EmptyState compact title="Aucune guichetière planifiée pour aujourd'hui" />
         </CardContent>
       </Card>
     );
@@ -61,10 +60,10 @@ const PointageGuichetieresSummary = ({ guichetieresPlanifiees, pointagesData, cr
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'complet': return 'bg-success text-white';
-      case 'en-cours': return 'bg-primary text-white';
-      case 'retard': return 'bg-warning text-white';
-      case 'absent': return 'bg-destructive text-white';
+      case 'complet': return 'bg-success text-success-foreground';
+      case 'en-cours': return 'bg-primary text-primary-foreground';
+      case 'retard': return 'bg-warning text-warning-foreground';
+      case 'absent': return 'bg-destructive text-destructive-foreground';
       default: return 'bg-gray-500 text-white';
     }
   };

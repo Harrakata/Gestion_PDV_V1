@@ -42,11 +42,11 @@ const AbsenceCalendar = ({ rows = [], onDayClick }) => {
       <div className="flex items-center justify-between">
         <h4 className="font-semibold capitalize">{format(cursor, 'MMMM yyyy', { locale: fr })}</h4>
         <div className="flex gap-1">
-          <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCursor((d) => subMonths(d, 1))}>
+          <Button aria-label="Mois précédent" variant="outline" size="icon" className="h-8 w-8" onClick={() => setCursor((d) => subMonths(d, 1))}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <Button variant="outline" size="sm" className="h-8" onClick={() => setCursor(new Date())}>Aujourd'hui</Button>
-          <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCursor((d) => addMonths(d, 1))}>
+          <Button aria-label="Mois suivant" variant="outline" size="icon" className="h-8 w-8" onClick={() => setCursor((d) => addMonths(d, 1))}>
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>

@@ -1,19 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { describeError } from '@/lib/errors';
-import SpaceHeaderIdentity from '@/components/SpaceHeaderIdentity';
-import SpaceHeaderProfile from '@/components/SpaceHeaderProfile';
-import SpaceMobileHeader from '@/components/SpaceMobileHeader';
-import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import SpaceShell from '@/components/SpaceShell';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { UserCog, CalendarDays, ShieldCheck, LogOut, Loader2, Camera, RotateCcw, Timer, Wallet, Wrench, MapPin, ClipboardCheck, Menu, X, Home, FileDown, CalendarOff, Ticket } from 'lucide-react';
+import { UserCog, CalendarDays, ShieldCheck, Loader2, Camera, RotateCcw, Timer, Wallet, Wrench, MapPin, ClipboardCheck, FileDown, CalendarOff, Ticket } from 'lucide-react';
 import EditProfileDialog from '@/components/EditProfileDialog';
 import ForgotPasswordDialog from '@/components/ForgotPasswordDialog';
 import NotificationBell from '@/components/NotificationBell';
 import { useSpaceNotifications, clearNotifWatch } from '@/hooks/useSpaceNotifications';
-import MobileTabBar from '@/components/mobile/MobileTabBar';
 import PullToRefresh from '@/components/mobile/PullToRefresh';
-import SwipeTabs from '@/components/mobile/SwipeTabs';
 
 const CHEF_AGENCE_TAB_LABELS = {
   'mon-planning': 'Planning',
@@ -32,11 +28,11 @@ import { useToast } from '@/components/ui/use-toast';
 import { publicSupabase, supabase } from '@/lib/supabaseClient';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar.jsx';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import EmptyState from '@/components/ui/empty-state';
 import { useSessionTimeout } from '@/hooks/useSessionTimeout';
 import { useActivityTracker } from '@/hooks/useActivityTracker';
 import { useSyncHealthHeartbeat } from '@/hooks/useSyncHealthHeartbeat';
 import RemonteeDialog from '@/components/RemonteeDialog';
-import EnablePushButton from '@/components/EnablePushButton';
 import NotifEnableBanner from '@/components/NotifEnableBanner';
 import {
   APP_SPACE_SETTINGS_KEY,
@@ -288,7 +284,7 @@ const LoginPageChef = ({ onLogin }) => {
         toast({ 
           title: "Reconnaissance faciale réussie", 
           description: `Bienvenue ${chefTrouve.prenom} ${chefTrouve.nom} dans votre Espace Chef d'Agence.`, 
-          className: "bg-success text-white" 
+          className: "bg-success text-success-foreground" 
         });
         
         setFacialAuthInProgress(false);
@@ -361,7 +357,7 @@ const LoginPageChef = ({ onLogin }) => {
     toast({
       title: "Connexion réussie",
       description: `Bienvenue ${chefTrouve.prenom} ${chefTrouve.nom} dans votre Espace Chef d'Agence.`,
-      className: "bg-success text-white",
+      className: "bg-success text-success-foreground",
     });
     setIsLoading(false);
   };
@@ -452,7 +448,7 @@ const LoginPageChef = ({ onLogin }) => {
               <div className="grid grid-cols-1 gap-3">
                 <Button 
                   onClick={() => setAuthStep('facial')} 
-                  className="py-6 bg-primary hover:bg-primary/90 text-white"
+                  className="py-6 bg-primary hover:bg-primary/90 text-primary-foreground"
                 >
                   <Camera className="mr-2 h-5 w-5" />
                   Continuer avec la reconnaissance faciale
@@ -569,7 +565,7 @@ const LoginPageChef = ({ onLogin }) => {
                     <Button 
                       type="button"
                       onClick={capturePhoto}
-                      className="px-6 py-2 bg-primary text-white"
+                      className="px-6 py-2 bg-primary text-primary-foreground"
                       disabled={!isCameraActive || facialAuthInProgress}
                     >
                       <Camera className="mr-2 h-4 w-4" />
@@ -589,7 +585,7 @@ const LoginPageChef = ({ onLogin }) => {
                       <Button 
                         type="button"
                         onClick={authenticateWithFacialRecognition}
-                        className="bg-primary hover:bg-primary/90 text-white"
+                        className="bg-primary hover:bg-primary/90 text-primary-foreground"
                         disabled={facialAuthInProgress}
                       >
                         {facialAuthInProgress ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />}
@@ -855,7 +851,7 @@ const EspaceChefAgencePage = () => {
     setChefDetails(null);
     clearNotifWatch('espace-chef-agence');
     localStorage.removeItem('pmuChefAuth');
-    toast({ title: "Déconnexion", description: "Vous avez été déconnecté.", className: "bg-primary text-white" });
+    toast({ title: "Déconnexion", description: "Vous avez été déconnecté.", className: "bg-primary text-primary-foreground" });
     navigate('/');
   };
 
@@ -1014,16 +1010,23 @@ const EspaceChefAgencePage = () => {
     return <LoginPageChef onLogin={handleLogin} />;
   }
 
-  return (
-    <div className="app-space-layout has-mobile-header flex flex-col gap-4 md:flex-row lg:gap-8">
+  const navigationItems = menuItems.map((item) => ({
+    key: item.path,
+    label: item.label,
+    mobileLabel: CHEF_AGENCE_TAB_LABELS[item.path] || item.label,
+    icon: item.icon,
+    active: isMenuItemActive(item.path),
+    to: `/espace-chef-agence/${item.path}`,
+  }));
 
-      {/* En-tête mobile/PWA commun : profil + recherche + actions + menu */}
-      <SpaceMobileHeader
-        photoUrl={chefDetails?.photo_url || chefAgenceInfo?.photo_url}
-        initials={chefAgenceInfo?.nomChef?.split(' ').map(n => n[0]).join('') || 'CA'}
-        name={chefAgenceInfo?.nomChef}
-        role="Chef d'agence"
-        actions={(
+  return (
+    <SpaceShell
+      profile={{
+        photoUrl: chefDetails?.photo_url || chefAgenceInfo?.photo_url,
+        initials: chefAgenceInfo?.nomChef?.split(' ').map(n => n[0]).join('') || 'CA',
+        name: chefAgenceInfo?.nomChef,
+        role: "Chef d'agence",
+        actions: (
           <>
             <NotificationBell
               notifications={chefNotifications}
@@ -1033,170 +1036,74 @@ const EspaceChefAgencePage = () => {
             />
             <RemonteeDialog sender={notifReader} iconOnly />
           </>
-        )}
-        menuOpen={isMobileMenuOpen}
-        onToggleMenu={() => setIsMobileMenuOpen((open) => !open)}
-      />
-      {isMobileMenuOpen && (
-        <div className="app-space-backdrop md:hidden" onClick={() => setIsMobileMenuOpen(false)} aria-hidden="true" />
+        ),
+      }}
+      menuOpen={isMobileMenuOpen}
+      onMenuOpenChange={setIsMobileMenuOpen}
+      menuItems={navigationItems}
+      reader={notifReader}
+      onProfile={() => setIsProfileDialogOpen(true)}
+      onLogout={handleLogout}
+      contentClassName="md:overflow-x-hidden"
+      sidebarNote={sessionExpiring && (
+        <div className="flex items-center gap-2 rounded-xl border border-warning/30 bg-warning-muted p-3">
+          <Timer className="h-4 w-4 shrink-0 text-warning-muted-foreground" />
+          <div className="text-xs font-medium text-warning-muted-foreground">
+            <div>Session expirante</div>
+            <div>{formatTimeRemaining()}</div>
+          </div>
+        </div>
       )}
-      <motion.aside
-        initial={{ x: -100, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className={`app-space-sidebar md:w-72 md:shrink-0 ${isMobileMenuOpen ? 'is-open' : ''}`}
+      overlays={(
+        <EditProfileDialog
+          open={isProfileDialogOpen}
+          onOpenChange={setIsProfileDialogOpen}
+          table="chefs_agence"
+          recordId={chefDetails?.id || chefAgenceInfo?.id}
+          withPhoto
+          photoPrefix="photos_chefs"
+          currentPhotoUrl={chefDetails?.photo_url || null}
+          initialData={{ nom: chefDetails?.nom, prenom: chefDetails?.prenom, telephone: chefDetails?.telephone, email: chefDetails?.email }}
+          onSaved={(fields) => {
+            setChefDetails((prev) => ({ ...(prev || {}), ...fields }));
+            const nomChef = `${fields.prenom} ${fields.nom}`.trim();
+            setChefAgenceInfo((prev) => (prev ? { ...prev, nomChef } : prev));
+            try {
+              const stored = JSON.parse(localStorage.getItem('pmuChefAuth') || 'null');
+              if (stored?.chefInfo) {
+                stored.chefInfo.nomChef = nomChef;
+                localStorage.setItem('pmuChefAuth', JSON.stringify(stored));
+              }
+            } catch {}
+          }}
+        />
+      )}
+    >
+      <NotifEnableBanner reader={notifReader} className="mb-4" />
+      <PullToRefresh onRefresh={handlePullRefresh}>
+      <motion.div
+        key={`${location.pathname}:${refreshKey}`}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        transition={{ duration: 0.3 }}
       >
-        <div className="app-space-sidebar-scroll sticky top-20 space-y-3 max-h-[calc(100vh-5.5rem)] overflow-y-auto pb-4 pr-1 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
-          <SpaceHeaderIdentity>
-            <SpaceHeaderProfile
-              photoUrl={chefDetails?.photo_url || chefAgenceInfo?.photo_url}
-              initials={chefAgenceInfo?.nomChef?.split(' ').map(n => n[0]).join('') || 'CA'}
-              name={chefAgenceInfo?.nomChef}
-              role="Chef d'agence"
-              actions={(
-                <>
-                  <NotificationBell
-                    notifications={chefNotifications}
-                    totalCount={chefNotifCount}
-                    onNavigate={() => setIsMobileMenuOpen(false)}
-                    reader={notifReader}
-                  />
-                  <RemonteeDialog sender={notifReader} iconOnly />
-                </>
-              )}
-            />
-          </SpaceHeaderIdentity>
-
-          <Card className="relative overflow-hidden">
-            <CardContent className="relative p-3">
-              <nav className="space-y-0.5">
-                {menuItems.map((item) => {
-                  const isActive = isMenuItemActive(item.path);
-                  return (
-                    <Link
-                      key={item.path}
-                      to={item.path}
-                      aria-current={isActive ? 'page' : undefined}
-                      className={`flex items-center gap-2.5 rounded-2xl border border-transparent px-3 py-2.5 text-sm font-semibold transition-all ${
-                        isActive
-                          ? 'bg-primary/10 text-primary shadow-none'
-                          : 'text-foreground/80 hover:bg-primary/10 hover:text-primary'
-                      }`}
-                    >
-                      {item.icon && React.cloneElement(item.icon, { className: 'h-4 w-4 shrink-0' })}
-                      {item.label}
-                    </Link>
-                  );
-                })}
-              </nav>
-              <div className="mt-1 border-t pt-1">
-                <div className="flex items-center">
-                  <button
-                    type="button"
-                    onClick={() => { navigate('/'); setIsMobileMenuOpen(false); }}
-                    className="flex flex-1 flex-col items-center gap-1 rounded-2xl py-2.5 text-muted-foreground/70 transition-colors hover:bg-primary/8 hover:text-primary"
-                  >
-                    <Home className="h-5 w-5" />
-                    <span className="text-[0.6rem] font-semibold">Accueil</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setIsProfileDialogOpen(true); setIsMobileMenuOpen(false); }}
-                    className="flex flex-1 flex-col items-center gap-1 rounded-2xl py-2.5 text-muted-foreground/70 transition-colors hover:bg-primary/8 hover:text-primary"
-                  >
-                    <UserCog className="h-5 w-5" />
-                    <span className="text-[0.6rem] font-semibold">Profil</span>
-                  </button>
-                  <EnablePushButton reader={notifReader} asNavButton />
-                  <button
-                    type="button"
-                    onClick={handleLogout}
-                    className="flex flex-1 flex-col items-center gap-1 rounded-2xl py-2.5 text-destructive transition-colors hover:bg-destructive/10 hover:text-destructive"
-                  >
-                    <LogOut className="h-5 w-5" />
-                    <span className="text-[0.6rem] font-semibold">Déconn.</span>
-                  </button>
-                </div>
-              </div>
-            </CardContent>
+        {!menuItems.length ? (
+          <Card>
+            <CardContent className="p-6"><EmptyState compact title="Aucun onglet n’est actuellement autorisé pour votre profil Chef d'agence" /></CardContent>
           </Card>
-          <EditProfileDialog
-            open={isProfileDialogOpen}
-            onOpenChange={setIsProfileDialogOpen}
-            table="chefs_agence"
-            recordId={chefDetails?.id || chefAgenceInfo?.id}
-            withPhoto
-            photoPrefix="photos_chefs"
-            currentPhotoUrl={chefDetails?.photo_url || null}
-            initialData={{ nom: chefDetails?.nom, prenom: chefDetails?.prenom, telephone: chefDetails?.telephone, email: chefDetails?.email }}
-            onSaved={(fields) => {
-              setChefDetails((prev) => ({ ...(prev || {}), ...fields }));
-              const nomChef = `${fields.prenom} ${fields.nom}`.trim();
-              setChefAgenceInfo((prev) => (prev ? { ...prev, nomChef } : prev));
-              try {
-                const stored = JSON.parse(localStorage.getItem('pmuChefAuth') || 'null');
-                if (stored?.chefInfo) {
-                  stored.chefInfo.nomChef = nomChef;
-                  localStorage.setItem('pmuChefAuth', JSON.stringify(stored));
-                }
-              } catch {}
+        ) : (
+          <Outlet
+            context={{
+              nomAgence: chefAgenceInfo?.nomAgence,
+              chefInfo: chefAgenceInfo,
+              chefDetails: chefDetails || { codePDV: chefAgenceInfo?.codePDV },
             }}
           />
-
-          {sessionExpiring && (
-            <div className="flex items-center gap-2 rounded-xl border border-warning/30 bg-warning-muted p-3">
-              <Timer className="h-4 w-4 shrink-0 text-warning-muted-foreground" />
-              <div className="text-xs font-medium text-warning-muted-foreground">
-                <div>Session expirante</div>
-                <div>{formatTimeRemaining()}</div>
-              </div>
-            </div>
-          )}
-        </div>
-      </motion.aside>
-      <main className="app-space-main has-tabbar flex-1 min-w-0 overflow-visible md:overflow-x-hidden">
-        <NotifEnableBanner reader={notifReader} className="mb-4" />
-        <SwipeTabs items={menuItems.map((item) => ({ key: item.path, active: isMenuItemActive(item.path), onClick: () => navigate(`/espace-chef-agence/${item.path}`) }))}>
-        <PullToRefresh onRefresh={handlePullRefresh}>
-        <motion.div
-          key={`${location.pathname}:${refreshKey}`}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.3 }}
-        >
-          {!menuItems.length ? (
-            <Card>
-              <CardContent className="p-6 text-center text-muted-foreground">
-                Aucun onglet n’est actuellement autorisé pour votre profil Chef d'agence.
-              </CardContent>
-            </Card>
-          ) : (
-            <Outlet
-              context={{
-                nomAgence: chefAgenceInfo?.nomAgence,
-                chefInfo: chefAgenceInfo,
-                chefDetails: chefDetails || { codePDV: chefAgenceInfo?.codePDV },
-              }}
-            />
-          )}
-        </motion.div>
-        </PullToRefresh>
-        </SwipeTabs>
-      </main>
-
-      <MobileTabBar
-        items={menuItems.map((item) => ({
-          key: item.path,
-          label: CHEF_AGENCE_TAB_LABELS[item.path] || item.label,
-          icon: item.icon,
-          active: isMenuItemActive(item.path),
-          onClick: () => navigate(`/espace-chef-agence/${item.path}`),
-        }))}
-        onMore={() => setIsMobileMenuOpen(true)}
-        moreActive={isMobileMenuOpen}
-      />
-    </div>
+        )}
+      </motion.div>
+      </PullToRefresh>
+    </SpaceShell>
   );
 };
 

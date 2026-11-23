@@ -25,10 +25,10 @@ sémantiques décrits ici.
 - Un écran utilise au maximum trois niveaux d'élévation : page, carte et fenêtre
   flottante.
 - Les dégradés, halos et rails colorés ne font pas partie des composants
-  standards. Ils nécessitent une justification métier explicite.
+  standards, hors liseré de `Card variant="accent"`. Ils nécessitent une justification métier explicite.
 - Une zone ne possède qu'une action principale visuellement dominante.
-- Les onglets actifs utilisent une surface claire et un texte de marque plutôt
-  qu'un bloc coloré plein.
+- L'onglet actif est plein : `bg-primary` avec `text-primary-foreground`, fourni par
+  `TabsTrigger`. Ne pas le restyler écran par écran.
 - Les barres d'onglets utilisent `bg-card` : fond blanc en thème clair, adapté
   au thème sombre, sans fond teinté ni transparent.
 - Les animations sont courtes et fonctionnelles ; elles n'agrandissent pas les
@@ -54,8 +54,14 @@ Ombres disponibles : `shadow-soft`, `shadow-elevated`, `shadow-floating`.
 
 ### Règles de couleur
 
-- Ne pas utiliser `green-*`, `red-*`, `amber-*`, `blue-*` dans un nouveau
-  composant métier ; utiliser les tokens ci-dessus.
+- Ne pas utiliser de palette Tailwind (`green-*`, `violet-*`…), de dégradé coloré
+  (`from-*`, `to-*`) ni de couleur arbitraire (`bg-[#…]`) dans un composant métier ;
+  utiliser les tokens ci-dessus. ESLint les signale toutes.
+- Sur un fond plein, utiliser le texte associé (`bg-success text-success-foreground`),
+  jamais `text-white` : il devient illisible en thème sombre.
+- Texte d'alerte : `text-warning-muted-foreground` (`warning` seul est trop pâle).
+- Les jetons de marque sont dérivés de la couleur du client par
+  `src/lib/themeContrast.js`, qui garantit un contraste AA en clair et en sombre.
 - Ajouter un texte ou une icône au statut : la couleur seule ne suffit pas.
 - Le rouge est réservé aux erreurs, dangers et actions destructrices.
 - Les graphiques peuvent utiliser une palette plus large, mais leurs légendes
@@ -84,9 +90,9 @@ Ombres disponibles : `shadow-soft`, `shadow-elevated`, `shadow-floating`.
 
 ### Navigation
 
-La navigation repose sur le menu principal, les menus des espaces et les onglets.
-Le fil d'Ariane et les menus de recherche globale ont été retirés, avec leur
-raccourci `Ctrl+K`. Les recherches propres aux listes métier restent disponibles.
+La navigation publique est gérée par `Layout`. Les espaces connectés utilisent
+`SpaceShell` pour la carte latérale, le profil, le tiroir et les onglets mobiles.
+Le nom et le logo du client viennent de `useClient` pour tous les espaces.
 
 - Le menu principal présente uniquement les destinations de premier niveau.
 - L'élément actif doit être identifiable par le texte et la forme, pas uniquement
@@ -95,8 +101,21 @@ raccourci `Ctrl+K`. Les recherches propres aux listes métier restent disponible
   `Layout`. Les titres des pages sont définis dans `navigationConfig.js`.
 - Le lien d'évitement « Aller au contenu principal » doit rester la première
   cible clavier de la page.
+- Chaque espace déclare ses destinations dans `menuItems` après avoir appliqué
+  ses permissions. Un élément porte `key`, `label`, `icon`, `active`, puis
+  `to` pour une route ou `onClick` pour un onglet local. `mobileLabel` et
+  `disabled` sont optionnels.
+- Le menu, la recherche et les gestes mobiles réutilisent ces destinations.
+  Exploitation précise l'ordre de ses raccourcis mobiles et les groupes de recherche.
+- Une erreur de rendu d'un écran est contenue dans la zone de contenu. Le menu
+  reste utilisable et l'erreur est associée à l'espace et à l'onglet dans le
+  suivi d'erreurs, lorsque celui-ci est activé.
 
 ### En-tête de page
+
+Les titres principaux utilisent `PageHeader`. Les titres de cartes à
+l'intérieur de l'écran utilisent `CardTitle`. Les actions d'en-tête
+passent par la prop `actions` pour conserver le même comportement sur mobile.
 
 ```jsx
 import PageHeader from '@/components/ui/page-header';
@@ -122,6 +141,11 @@ import StatusBadge from '@/components/ui/status-badge';
 `red`, mais les nouveaux développements doivent utiliser `success`, `info`,
 `warning` et `danger`.
 
+- Les fonctions métier renvoient un **ton**, jamais des classes :
+  `<StatusBadge tone={getTicketStatusTone(t.statut)}>`.
+- Compteur, catégorie ou badge avec icône : `<Badge variant="success">` (sans pastille).
+- ESLint signale tout `Badge` coloré à la main.
+
 ### Message contextuel
 
 ```jsx
@@ -145,6 +169,9 @@ import EmptyState from '@/components/ui/empty-state';
   action={<Button>Déclarer un incident</Button>}
 />
 ```
+
+- `compact` dans une carte ou une liste ; `plain` (sans cadre) dans une cellule de
+  tableau. Le titre est un paragraphe : il ne modifie pas le plan de la page.
 
 ### Champ de formulaire
 
@@ -196,12 +223,13 @@ import FormActions from '@/components/ui/form-actions';
 - `ghost` : action légère dans une ligne ou un menu.
 - `destructive` : suppression ou action irréversible.
 - `success` / `warning` : seulement lorsque le sens métier l'exige.
-- `size="touch"` et `size="iconTouch"` : actions terrain et navigation mobile.
+- `size="touch"` et `size="iconTouch"` : actions et navigation sur ordinateur et
+  tablette ; sur téléphone, la hauteur commune de 36 px s'applique.
 
 ### Cartes
 
-Les variantes explicites sont `default`, `subtle`, `elevated`, `interactive` et
-`glass`. La prop historique `glass` reste supportée pendant la migration.
+Les variantes explicites sont `default`, `subtle`, `elevated`, `interactive`,
+`accent` (en-tête d'écran, seul liseré autorisé) et `glass`. La prop historique `glass` reste supportée pendant la migration.
 
 ```jsx
 <Card variant="default">...</Card>
@@ -221,9 +249,14 @@ Chaque écran alimenté par des données doit prévoir :
 
 ## Responsive et tactile
 
-- Cible tactile recommandée : 44 × 44 px.
-- Sur téléphone, les boutons communs mesurent au moins 44 px de haut et les
-  contrôles de saisie utilisent une police de 16 px.
+- Sur téléphone, tous les contrôles (boutons, onglets, listes, champs, options de
+  menu, actions de tableau) mesurent **36 px** de haut : variable unique
+  `--mobile-control-h` d'`index.css`. Ne pas fixer de hauteur écran par écran.
+- Le plancher de 36 px est en pixels : il tient aussi avec la taille d'affichage
+  « Compacte » des Paramètres. Il augmente avec la taille « Grande ».
+- Les champs de saisie passent à 16 px de police sur iOS, pour éviter le zoom.
+- Toute page de test doit reproduire `#main-content > .app-space-main` : c'est la
+  portée réelle des règles mobiles.
 - Les fenêtres suivent la hauteur du viewport visuel et restent défilables.
   Les listes flottantes s'ouvrent au-dessus du contrôle si l'espace manque en bas.
 - Une liste ouverte au clavier place le focus dans sa recherche ; `Échap` la
@@ -243,6 +276,7 @@ Chaque écran alimenté par des données doit prévoir :
 - Focus clavier visible et ordre de tabulation logique.
 - `aria-invalid` et `aria-describedby` pour les erreurs de formulaire.
 - Une icône décorative porte `aria-hidden="true"`.
+- Un bouton-icône porte un `aria-label` précis (« Modifier l'agence X »).
 - Respect de `prefers-reduced-motion` ; le socle CSS le gère globalement.
 - Toute carte ou graphique doit disposer d'une alternative textuelle utile.
 - Ne pas masquer visuellement les libellés nécessaires à la compréhension du
@@ -292,6 +326,12 @@ La migration ne doit pas modifier les règles métier ni les permissions.
 - `tests/19-chef-maintenance-accessibility.spec.ts` vérifie les filtres et
   l'ouverture d'une fiche de maintenance au clavier sur téléphone, avec des
   données simulées.
+- `tests/21-mobile-scale.spec.ts` mesure la hauteur des contrôles de douze écrans
+  à 360 px, aux trois tailles d'affichage, dans la page et dans une fenêtre.
+- `tests/unit/themeContrast.test.js` vérifie les contrastes des couleurs proposées.
+- `tests/20-space-shell.spec.ts` couvre l'alignement de la carte sur
+  ordinateur, la navigation du tiroir sur mobile et l'isolation d'une erreur
+  de rendu, sur une fixture sans accès aux données client.
 - Une vérification sur appareils physiques iOS/Android reste à effectuer,
   notamment pour le clavier virtuel et les zones réservées du système.
 
