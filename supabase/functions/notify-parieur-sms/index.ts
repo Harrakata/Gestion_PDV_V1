@@ -64,18 +64,40 @@ function normalizePhone(raw: string, defaultCountryCode: string): string | null 
   return /^\+\d{6,15}$/.test(candidate) ? candidate : null;
 }
 
-function formatAmount(amount: unknown): string {
+function formatAmount(amount: unknown, english: boolean): string {
   const numeric = Number(amount ?? 0);
   if (!Number.isFinite(numeric)) return String(amount ?? "");
-  return `${numeric.toLocaleString("fr-FR")} F CFA`;
+  return `${numeric.toLocaleString(english ? "en-GB" : "fr-FR")} F CFA`;
 }
 
-function buildMessage(event: SmsEvent, demande: Record<string, any>): string {
+// Langue du client : app_settings/app_language (Paramètres → Langue), français par défaut.
+function buildMessage(event: SmsEvent, demande: Record<string, any>, english: boolean): string {
   const prenom = demande.prenomGagnant ? String(demande.prenomGagnant).trim() : "";
   const civilite = prenom ? `${prenom}, ` : "";
-  const montant = formatAmount(demande.montantGain);
+  const montant = formatAmount(demande.montantGain, english);
   const code = demande.codeDemande || "";
-  const agence = demande.agencePaiementNom || "l'agence désignée";
+  const agence = demande.agencePaiementNom || (english ? "designated" : "l'agence désignée");
+
+  if (english) {
+    switch (event) {
+      case "authorized":
+        return (
+          `${civilite}your win of ${montant} (request ${code}) is authorised. ` +
+          `You can collect your payment at the ${agence} branch. ` +
+          `Please bring your ID document and your ticket.`
+        );
+      case "paid":
+        return (
+          `${civilite}your win of ${montant} (request ${code}) has been paid ` +
+          `at the ${agence} branch. Thank you for your trust.`
+        );
+      case "rejected":
+        return (
+          `${civilite}your win payout request ${code} could not be approved. ` +
+          `Please contact your branch for more information.`
+        );
+    }
+  }
 
   switch (event) {
     case "authorized":
@@ -178,7 +200,9 @@ Deno.serve(async (req: Request) => {
     if (demandeErr) return jsonResponse({ error: demandeErr.message }, 400);
     if (!demande) return jsonResponse({ error: "Demande introuvable" }, 404);
 
-    const message = buildMessage(event, demande);
+    const { data: languageRow } = await adminClient
+      .from("app_settings").select("value").eq("key", "app_language").maybeSingle();
+    const message = buildMessage(event, demande, languageRow?.value?.language === "en");
     const defaultCountryCode = Deno.env.get("SMS_DEFAULT_COUNTRY_CODE") || "+226";
     const toNumber = normalizePhone(demande.telephoneGagnant || "", defaultCountryCode);
 

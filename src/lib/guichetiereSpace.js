@@ -1,3 +1,5 @@
+import { appLocale } from '@/i18n/language';
+
 export const GUICHETIERE_AUTH_KEY = 'pmuGuichetiereAuth';
 
 export const REQUEST_STATUS = {
@@ -29,7 +31,7 @@ export const formatDisplayDate = (value) => {
   const parsedDate = new Date(value);
   if (Number.isNaN(parsedDate.getTime())) return value;
 
-  return parsedDate.toLocaleDateString('fr-FR');
+  return parsedDate.toLocaleDateString(appLocale());
 };
 
 export const formatDisplayDateTime = (value) => {
@@ -38,7 +40,7 @@ export const formatDisplayDateTime = (value) => {
   const parsedDate = new Date(value);
   if (Number.isNaN(parsedDate.getTime())) return value;
 
-  return parsedDate.toLocaleString('fr-FR');
+  return parsedDate.toLocaleString(appLocale());
 };
 
 export const getPlanningRequestTypeLabel = (value) => {

@@ -1,3 +1,5 @@
+import { appLocale } from '../i18n/language.js';
+
 export const DEFAULT_CLIENT_CURRENCY = 'XOF';
 
 export const CLIENT_CURRENCY_OPTIONS = [
@@ -34,7 +36,7 @@ export const formatCurrencyValue = (value, currency = DEFAULT_CLIENT_CURRENCY, o
   if (value == null || value === '') return '—';
   const amount = Number(value);
   if (!Number.isFinite(amount)) return '—';
-  return new Intl.NumberFormat('fr-FR', {
+  return new Intl.NumberFormat(appLocale(), {
     style: 'currency',
     currency: normalizeClientCurrency(currency),
     currencyDisplay: 'symbol',

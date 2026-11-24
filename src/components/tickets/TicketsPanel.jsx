@@ -11,9 +11,10 @@ import EmptyState from '@/components/ui/empty-state';
 import KpiStatCard from '@/components/analytics/KpiStatCard';
 import TicketCreateDialog from '@/components/tickets/TicketCreateDialog';
 import TicketProcessDialog from '@/components/tickets/TicketProcessDialog';
+import PhotoGallery from '@/components/photos/PhotoGallery';
 import TicketsKanban from '@/components/tickets/TicketsKanban';
 import {
-  fetchTickets, updateTicket,
+  fetchTechnicienTickets, fetchTickets, updateTicket, TICKET_ROLES,
   TICKET_STATUSES, TICKET_CATEGORY_OPTIONS, TICKET_PRIORITY_OPTIONS,
   ticketLabel, getTicketStatusTone, getTicketPriorityTone, ticketOverdue,
 } from '@/lib/tickets';
@@ -35,7 +36,7 @@ const STATUS_FILTERS = [
  * Panneau Tickets / Incidents, décliné selon le mode :
  *  - 'declarant'   : guichetière / chef d'agence — créer + suivre ses tickets.
  *  - 'traitement'  : exploitation — file complète, assigner + changer statut.
- *  - 'technicien'  : technicien — tickets qui lui sont assignés, traiter.
+ *  - 'technicien'  : technicien — traiter ses tickets assignés, en signaler et suivre les siens.
  */
 const TicketsPanel = ({ mode = 'declarant', identity = {}, filter = {}, spaceKey = 'espace-exploitation', title = 'Tickets / Incidents', description }) => {
   const { toast } = useToast();
@@ -50,18 +51,21 @@ const TicketsPanel = ({ mode = 'declarant', identity = {}, filter = {}, spaceKey
   const [actingId, setActingId] = useState(null);
 
   const filterKey = JSON.stringify(filter);
-  const canCreate = mode === 'declarant';
+  const canCreate = mode === 'declarant' || mode === 'technicien';
   const canProcess = mode === 'traitement' || mode === 'technicien';
+  // Un technicien ne traite que ce qui lui est assigné, pas ce qu'il a seulement signalé.
+  const canProcessRow = (row) => mode === 'traitement'
+    || (mode === 'technicien' && identity.id != null && String(row.assigne_a_id) === String(identity.id));
 
   // On charge TOUT le périmètre (sans filtre de statut) → KPI stables + filtrage client.
   const load = useCallback(async () => {
     setIsLoading(true);
-    const { rows, error } = await fetchTickets(filter);
+    const { rows, error } = mode === 'technicien' ? await fetchTechnicienTickets(identity.id) : await fetchTickets(filter);
     if (error) toast({ title: 'Erreur de chargement', description: describeError(error, 'TicketsPanel'), variant: 'destructive' });
     setAllRows(rows);
     setIsLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filterKey, toast]);
+  }, [filterKey, mode, identity.id, toast]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -91,6 +95,11 @@ const TicketsPanel = ({ mode = 'declarant', identity = {}, filter = {}, spaceKey
   const kanbanRows = useMemo(() => allRows.filter(matchesPC), [allRows, matchesPC]);
 
   const changeStatut = async (id, statut) => {
+    const row = allRows.find((r) => String(r.id) === String(id));
+    if (row && !canProcessRow(row)) {
+      toast({ title: 'Ticket non assigné', description: 'Ce ticket sera traité par la personne à qui il est assigné.', variant: 'destructive' });
+      return;
+    }
     const patch = { statut };
     if (statut === TICKET_STATUSES.RESOLVED) patch.resolu_par = identity.nom || null;
     const { error } = await updateTicket(id, patch);
@@ -180,7 +189,7 @@ const TicketsPanel = ({ mode = 'declarant', identity = {}, filter = {}, spaceKey
           ) : view === 'kanban' ? (
             <TicketsKanban
               rows={displayed}
-              onCardClick={canProcess ? setProcessTicket : undefined}
+              onCardClick={canProcess ? (row) => { if (canProcessRow(row)) setProcessTicket(row); } : undefined}
               onStatusChange={canProcess ? changeStatut : undefined}
             />
           ) : (
@@ -194,7 +203,7 @@ const TicketsPanel = ({ mode = 'declarant', identity = {}, filter = {}, spaceKey
                     <TableHead>Priorité</TableHead>
                     <TableHead>Agence</TableHead>
                     <TableHead>Statut</TableHead>
-                    {mode !== 'technicien' && <TableHead>Assigné à</TableHead>}
+                    <TableHead>Assigné à</TableHead>
                     <TableHead>Action</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -202,7 +211,12 @@ const TicketsPanel = ({ mode = 'declarant', identity = {}, filter = {}, spaceKey
                   {listRows.map((r) => (
                     <TableRow key={r.id}>
                       <TableCell className="font-mono text-xs">{r.code || r.id}</TableCell>
-                      <TableCell className="max-w-[220px] truncate" title={r.titre}>{r.titre}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          <span className="max-w-[220px] truncate" title={r.titre}>{r.titre}</span>
+                          <PhotoGallery photos={r.photos} variant="button" title={`Photos du ticket ${r.code || ''}`.trim()} />
+                        </div>
+                      </TableCell>
                       <TableCell>{ticketLabel(r.categorie)}</TableCell>
                       <TableCell><StatusBadge tone={getTicketPriorityTone(r.priorite)}>{ticketLabel(r.priorite)}</StatusBadge></TableCell>
                       <TableCell>{r.agence_nom || '—'}</TableCell>
@@ -214,9 +228,9 @@ const TicketsPanel = ({ mode = 'declarant', identity = {}, filter = {}, spaceKey
                           )}
                         </div>
                       </TableCell>
-                      {mode !== 'technicien' && <TableCell>{r.assigne_a_nom || '—'}</TableCell>}
+                      <TableCell>{r.assigne_a_nom || '—'}</TableCell>
                       <TableCell>
-                        {canProcess ? (
+                        {canProcessRow(r) ? (
                           <Button size="sm" variant="outline" className="h-8" onClick={() => setProcessTicket(r)}>
                             <Settings2 className="h-4 w-4 mr-1" /> Traiter
                           </Button>
@@ -240,7 +254,7 @@ const TicketsPanel = ({ mode = 'declarant', identity = {}, filter = {}, spaceKey
       {canCreate && (
         <TicketCreateDialog
           open={createOpen} onOpenChange={setCreateOpen}
-          declarant={identity} spaceKey={spaceKey} onCreated={load}
+          declarant={mode === 'technicien' ? { ...identity, role: TICKET_ROLES.TECHNICIEN } : identity} spaceKey={spaceKey} onCreated={load}
         />
       )}
       {canProcess && (

@@ -12,7 +12,8 @@
     "test:e2e:report": "playwright show-report",
     "test:e2e:install": "playwright install",
     "lint": "eslint src",
-    "lint:fix": "eslint src --fix"
+    "lint:fix": "eslint src --fix",
+    "i18n": "node scripts/i18n.mjs"
   },
   "dependencies": {
     "@azure/msal-browser": "^5.11.0",

@@ -1,3 +1,5 @@
+import { appLocale } from '@/i18n/language';
+
 export const VALIDATOR_FUNCTIONS = {
   CHEF: 'Chef d’agence',
   REGIONAL: 'Directeur régional',
@@ -44,7 +46,7 @@ export const formatDisplayDate = (value) => {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
 
-  return date.toLocaleDateString('fr-FR');
+  return date.toLocaleDateString(appLocale());
 };
 
 export const formatDisplayDateTime = (value) => {
@@ -53,13 +55,13 @@ export const formatDisplayDateTime = (value) => {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
 
-  return date.toLocaleString('fr-FR');
+  return date.toLocaleString(appLocale());
 };
 
 export const formatCurrency = (amount) => {
   const numericAmount = Number(amount ?? 0);
 
-  return new Intl.NumberFormat('fr-FR', {
+  return new Intl.NumberFormat(appLocale(), {
     style: 'currency',
     currency: 'XOF',
     maximumFractionDigits: 0,

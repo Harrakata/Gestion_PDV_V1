@@ -59,6 +59,7 @@ import {
   isSupabaseAuthError,
   normalizeText,
 } from '@/lib/guichetiereSpace';
+import { WEEKDAYS_SHORT } from '@/i18n/language';
 
 const defaultRequestForm = {
   type_demande: PLANNING_REQUEST_TYPES.UNAVAILABILITY,
@@ -423,7 +424,7 @@ const MonPlanningGuichetierePage = () => {
               <div className="grid grid-cols-7 bg-muted/60">
                 {(viewMode === 'week'
                   ? days.map((d) => format(d, 'EEE', { locale: fr }))
-                  : ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
+                  : WEEKDAYS_SHORT
                 ).map((dayName, i) => (
                   <div key={i} className="py-2 text-center text-xs font-bold uppercase tracking-widest text-muted-foreground">{dayName}</div>
                 ))}

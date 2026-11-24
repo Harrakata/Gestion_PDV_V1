@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import { loadTranslations } from '@/i18n/translate';
 import SalaryCashAssistant from '../../src/components/analytics/SalaryCashAssistant';
 import { buildReconciliationRows } from '../../src/lib/salaryReconciliation';
 import '../../src/index.css';
@@ -23,4 +24,5 @@ function Fixture() {
   </main>;
 }
 
+await loadTranslations();
 createRoot(document.getElementById('root')).render(<Fixture />);

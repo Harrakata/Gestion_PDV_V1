@@ -11,6 +11,7 @@ import {
   CommandShortcut,
 } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
+import { t } from '@/i18n/translate';
 
 /** Palette de navigation globale, sans accès aux données métier. */
 export default function AppNavigationDialog({ open, onOpenChange, groups, currentPath }) {
@@ -35,7 +36,7 @@ export default function AppNavigationDialog({ open, onOpenChange, groups, curren
               return (
                 <CommandItem
                   key={item.to}
-                  value={`${item.label} ${item.keywords || ''}`}
+                  value={`${item.label} ${t(item.label)} ${item.keywords || ''}`}
                   onSelect={() => goTo(item.to)}
                   className="min-h-11 cursor-pointer gap-3 rounded-lg px-3"
                 >

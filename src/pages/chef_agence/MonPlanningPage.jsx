@@ -30,6 +30,7 @@ import {
   isMissingSupabaseTableError,
   isSupabaseAuthError,
 } from '@/lib/guichetiereSpace';
+import { WEEKDAYS_SHORT } from '@/i18n/language';
 
 const MonPlanningPage = () => {
   const { nomAgence, chefInfo, chefDetails } = useOutletContext();
@@ -691,7 +692,7 @@ const MonPlanningPage = () => {
               <div className="grid grid-cols-7 bg-muted/60">
                 {(viewMode === 'week'
                   ? days.map(d => format(d, 'EEE', { locale: fr }))
-                  : ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
+                  : WEEKDAYS_SHORT
                 ).map((dayName, i) => (
                   <div key={i} className="py-2 text-center text-xs font-bold uppercase tracking-widest text-muted-foreground">{dayName}</div>
                 ))}

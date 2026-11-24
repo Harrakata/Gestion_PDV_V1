@@ -1,5 +1,6 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
+import { loadTranslations } from '@/i18n/translate';
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom';
 import '@/index.css';
 import EquipmentManager from '@/pages/maintenance/EquipmentManager';
@@ -18,6 +19,7 @@ const ChefMaintenanceFixture = () => (
 );
 
 const screen = new URLSearchParams(location.search).get('screen');
+await loadTranslations();
 createRoot(document.getElementById('root')).render(
   <main id="main-content" className="container px-3 py-4"><div className="app-space-main maintenance-terminal-workspace">
     {screen === 'stock' ? <StockDefectueuxTab /> : screen === 'configuration'

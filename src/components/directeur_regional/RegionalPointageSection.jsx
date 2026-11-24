@@ -23,6 +23,7 @@ import {
 import { supabase } from '@/lib/supabaseClient';
 import { isSupabaseAuthError } from '@/lib/guichetiereSpace';
 import { fetchRegions, normalizeRegionText, resolveRegionName } from '@/lib/regions';
+import { appLocale } from '@/i18n/language';
 
 const ALL_FILTER_VALUE = '__all__';
 
@@ -547,7 +548,7 @@ const RegionalPointageSection = ({ regionName = '', allowAllRegions = false, hid
               Détail du pointage - {selectedAgenceRow.agenceNom}
             </CardTitle>
             <CardDescription>
-              Planning du {new Date(`${selectedDate}T00:00:00`).toLocaleDateString('fr-FR')} • {selectedAgenceRow.plannedCount} guichetière(s) • {creneauxCount} créneau(x)
+              Planning du {new Date(`${selectedDate}T00:00:00`).toLocaleDateString(appLocale())} • {selectedAgenceRow.plannedCount} guichetière(s) • {creneauxCount} créneau(x)
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">

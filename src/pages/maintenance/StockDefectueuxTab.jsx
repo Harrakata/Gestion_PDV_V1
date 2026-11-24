@@ -16,6 +16,7 @@ import { useToast } from '@/components/ui/use-toast';
 import KpiStatCard from '@/components/analytics/KpiStatCard';
 import { getStockDefectueuxRecordIds, regrouperStockDefectueuxActif } from '@/lib/stockDefectueux';
 import { AlertTriangle, Package, UserCheck, Wrench, CheckCircle2, Search } from 'lucide-react';
+import { appLocale } from '@/i18n/language';
 
 const ALL = '__all__';
 
@@ -206,7 +207,7 @@ const StockDefectueuxTab = ({ canManage = true, technicienId = null }) => {
     setIsLoadingDetail(false);
   };
 
-  const formatDate = (d) => d ? new Date(d).toLocaleDateString('fr-FR') : '—';
+  const formatDate = (d) => d ? new Date(d).toLocaleDateString(appLocale()) : '—';
 
   return (
     <div className="space-y-6">

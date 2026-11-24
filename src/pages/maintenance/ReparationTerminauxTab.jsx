@@ -13,6 +13,7 @@ import { useToast } from '@/components/ui/use-toast';
 import EmptyState from '@/components/ui/empty-state';
 import { getStockDefectueuxRecordIds, regrouperStockDefectueuxActif } from '@/lib/stockDefectueux';
 import { AlertTriangle, CheckCircle2, HelpCircle, Package2, Wrench, ArrowRight, FlaskConical, ChevronDown, ChevronRight, ChevronLeft, Sparkles, CheckCheck, Search, X, Check, ListChecks, Stethoscope, MessageSquare, CalendarDays } from 'lucide-react';
+import { appLocale } from '@/i18n/language';
 
 const SOUS_ENSEMBLE_LABELS = {
   imprimante: 'Imprimante',
@@ -311,7 +312,7 @@ const ReparationTerminauxTab = ({ canManage = true, assignedOnly = false, techni
 
   const showOk = (msg) => toast({ title: msg, className: 'bg-success text-success-foreground' });
   const showErr = (msg) => toast({ title: 'Erreur', description: msg, variant: 'destructive' });
-  const formatDate = (d) => d ? new Date(d).toLocaleDateString('fr-FR') : '—';
+  const formatDate = (d) => d ? new Date(d).toLocaleDateString(appLocale()) : '—';
 
   const openSousEnsembleHelp = async (item, e) => {
     e?.stopPropagation();

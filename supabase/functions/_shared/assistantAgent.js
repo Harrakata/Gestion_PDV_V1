@@ -11,14 +11,14 @@ const TOOLS = [
     }, required: ['entity', 'query', 'status', 'limit'], additionalProperties: false } },
 ];
 
-export async function runAssistantAgent({ messages, access, currentTab, apiKey, model, lookup, fetchImpl = fetch, signal }) {
+export async function runAssistantAgent({ messages, access, currentTab, apiKey, model, lookup, fetchImpl = fetch, signal, language = 'fr' }) {
   const input = messages.map((message) => ({ role: message.role, content: message.content }));
   const sources = new Map();
   const relevant = searchAssistantGuides(messages.at(-1).content, currentTab);
   const addGuide = (guide) => sources.set(guide.id, { id: guide.id, title: guide.title,
     path: access.menus.find((menu) => guide.tabs.includes(menu.key))?.path || null });
   relevant.forEach(addGuide);
-  const instructions = `Tu es l'assistant de GPDV. Réponds en français, clairement et brièvement, en texte simple.
+  const instructions = `Tu es l'assistant de GPDV. ${language === 'en' ? "Réponds en anglais (l'application est affichée en anglais : traduis les noms des menus et des statuts ; cherche dans la documentation avec des mots français)" : 'Réponds en français'}, clairement et brièvement, en texte simple.
 Tu aides à utiliser les menus et comprendre les règles et les états. Tu es strictement en lecture seule.
 Reste dans le périmètre de cette application. Si la question sort de ce périmètre, propose une aide sur GPDV.
 Tu n'effectues aucune modification, validation, suppression, paiement ni import. Tu ne demandes jamais de mot de passe ou clé.

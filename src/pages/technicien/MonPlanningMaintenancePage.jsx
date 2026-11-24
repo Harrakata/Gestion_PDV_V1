@@ -34,6 +34,8 @@ import {
   Wrench,
 } from 'lucide-react';
 import MobilePlanningCalendar from '@/components/planning/MobilePlanningCalendar';
+import PhotoGallery from '@/components/photos/PhotoGallery';
+import { useInterventionPhotos } from '@/hooks/useInterventionPhotos';
 import { useIsPhone } from '@/hooks/useIsPhone';
 import { Badge } from '@/components/ui/badge';
 import StatusBadge from '@/components/ui/status-badge';
@@ -72,6 +74,8 @@ import {
   getMaintenancePlanningRequestStatusTone,
   getMaintenancePlanningRequestTypeLabel,
 } from '@/lib/maintenancePlanningRequests';
+import { translateHtml } from '@/i18n/translate';
+import { WEEKDAYS_SHORT } from '@/i18n/language';
 
 const defaultRequestForm = {
   type_demande: MAINTENANCE_REQUEST_TYPES.UNAVAILABILITY,
@@ -122,6 +126,7 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
     && isAppSpaceUserTabAllowed(technicien?.appSpaceProfile, key);
   const [planningEntries, setPlanningEntries] = useState([]);
   const [performedInterventions, setPerformedInterventions] = useState([]);
+  const interventionPhotos = useInterventionPhotos(performedInterventions.length);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [ficheDialog, setFicheDialog] = useState({ open: false, html: '', loading: false });
   const [requests, setRequests] = useState([]);
@@ -354,7 +359,7 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
     try {
       const res = await fetch(url);
       const html = await res.text();
-      setFicheDialog({ open: true, html, loading: false });
+      setFicheDialog({ open: true, html: translateHtml(html), loading: false });
     } catch {
       setFicheDialog({ open: false, html: '', loading: false });
       window.open(url, '_blank', 'noreferrer');
@@ -769,7 +774,7 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
               <div className="grid grid-cols-7 bg-muted/60">
                 {(viewMode === 'week'
                   ? days.map((d) => format(d, 'EEE', { locale: fr }))
-                  : ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
+                  : WEEKDAYS_SHORT
                 ).map((dayName, i) => (
                   <div key={i} className="py-2 text-center text-xs font-bold uppercase tracking-widest text-muted-foreground">
                     {dayName}
@@ -1083,6 +1088,7 @@ const MonPlanningMaintenancePage = ({ technicien, view, hideTitle = false }) => 
                   </div>
                   {iv.description_panne && <p className="text-sm text-muted-foreground">{iv.description_panne}</p>}
                   {iv.commentaire && <p className="border-t pt-2 text-sm italic text-foreground/80">{iv.commentaire}</p>}
+                  <PhotoGallery photos={interventionPhotos[String(iv.id)]} title="Photos de l'intervention" className="border-t pt-2" />
                   {iv.geo_refused && (Number.isFinite(Number(iv.geo_distance_m)) || iv.geo_justification) && (
                     <p className="text-xs text-destructive">Hors zone{Number.isFinite(Number(iv.geo_distance_m)) ? ` · ${iv.geo_distance_m} m de l'agence` : ''}{iv.geo_justification ? ` — ${iv.geo_justification}` : ''}</p>
                   )}

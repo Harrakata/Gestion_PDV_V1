@@ -26,6 +26,10 @@ import { APP_SPACE_SETTINGS_KEY } from '@/lib/exploitationProfiles';
 import { getCurrentPosition, checkAgencyProximity, formatDistance, GEO_DEFAULT_RADIUS_M, GEO_FEATURE_KEY } from '@/lib/geolocation';
 import { enqueueOffline, isOfflineEnabledForScreen } from '@/lib/offlineQueue';
 import { cachedQuery } from '@/lib/offlineCache';
+import PhotoGallery from '@/components/photos/PhotoGallery';
+import PhotoPicker from '@/components/photos/PhotoPicker';
+import { usePhotoSelection } from '@/hooks/usePhotoSelection';
+import { PHOTO_FOLDERS, isMissingPhotosColumnError, photoUploadMessage, uploadPhotos } from '@/lib/photos';
 
 // Ouvre une fiche HTML stockée en la RENDANT (et non en affichant la source),
 // quel que soit le type MIME avec lequel le storage la sert.
@@ -35,13 +39,15 @@ const openStoredFiche = async (url) => {
   try {
     const res = await fetch(url);
     const html = await res.text();
-    if (win) { win.document.open(); win.document.write(html); win.document.close(); }
+    if (win) { win.document.open(); win.document.write(translateHtml(html)); win.document.close(); }
     else { window.location.href = url; }
   } catch {
     if (win) win.location.href = url; else window.open(url, '_blank');
   }
 };
 import { isSupabaseAuthError } from '@/lib/guichetiereSpace';
+import { appLocale } from '@/i18n/language';
+import { translateHtml } from '@/i18n/translate';
 
 const normalizeMaintenanceText = (value) =>
   String(value ?? '')
@@ -241,6 +247,11 @@ const MaintenanceTab = ({ technicien }) => {
   });
   const [interventionItems, setInterventionItems] = useState([]);
   const [recap, setRecap] = useState(null);
+  const [photos, setPhotos, clearPhotos] = usePhotoSelection();
+  // Adresses réellement enregistrées avec l'intervention (reprises dans la fiche).
+  const photoUrlsRef = useRef([]);
+  // Un seul message s'affiche à la fois : l'avertissement est gardé pour le récapitulatif.
+  const photoNoticeRef = useRef(null);
   // Visionneuse de fiche d'intervention (même UX que l'onglet Planning)
   const [ficheDialog, setFicheDialog] = useState({ open: false, html: '', loading: false });
   const openFicheInDialog = async (url) => {
@@ -249,7 +260,7 @@ const MaintenanceTab = ({ technicien }) => {
     try {
       const res = await fetch(url);
       const html = await res.text();
-      setFicheDialog({ open: true, html, loading: false });
+      setFicheDialog({ open: true, html: translateHtml(html), loading: false });
     } catch {
       setFicheDialog({ open: false, html: '', loading: false });
       window.open(url, '_blank', 'noreferrer');
@@ -300,6 +311,12 @@ const MaintenanceTab = ({ technicien }) => {
   useEffect(() => {
     loadInitialData();
   }, []);
+
+  // Les photos concernent un terminal : on repart de zéro si on en change.
+  useEffect(() => {
+    clearPhotos();
+    photoUrlsRef.current = [];
+  }, [form.terminal, clearPhotos]);
 
   // Charger les terminaux quand l'agence change
   useEffect(() => {
@@ -865,7 +882,7 @@ const MaintenanceTab = ({ technicien }) => {
       return 'N/A';
     }
 
-    return new Intl.DateTimeFormat('fr-FR', {
+    return new Intl.DateTimeFormat(appLocale(), {
       dateStyle: 'short',
       timeStyle: 'short',
     }).format(new Date(dateValue));
@@ -898,7 +915,7 @@ const MaintenanceTab = ({ technicien }) => {
     : "Chef d'agence non associé";
 
   const formatValidationDate = (dateValue = new Date()) =>
-    new Intl.DateTimeFormat('fr-FR', {
+    new Intl.DateTimeFormat(appLocale(), {
       dateStyle: 'full',
       timeStyle: 'short',
     }).format(new Date(dateValue));
@@ -1130,6 +1147,7 @@ const MaintenanceTab = ({ technicien }) => {
     const sousEnsemble    = p ? p.sousEnsemble    : (validationItems.length > 1 ? `${validationItems.length} sous-ensembles` : (firstItem.sousEnsemble || form.sousEnsemble || 'N/A'));
     const techSig         = p ? p.techSig         : technicienSignature;
     const chefSig         = p ? p.chefSig         : chefAgenceSignature;
+    const photoList       = p ? (p.photos || [])  : photoUrlsRef.current;
     const interventionRows = validationItems.map((item, index) => `
               <tr>
                 <td>${index + 1}</td>
@@ -1142,7 +1160,7 @@ const MaintenanceTab = ({ technicien }) => {
               </tr>
             `).join('');
 
-    return `<!doctype html>
+    return translateHtml(`<!doctype html>
 <html lang="fr">
   <head>
     <meta charset="utf-8" />
@@ -1671,6 +1689,14 @@ const MaintenanceTab = ({ technicien }) => {
           </table>
         </div>
 
+        ${photoList.length ? `<div class="panel detail-panel">
+          <h2 class="panel-title">Photos</h2>
+          <p class="panel-subtitle">${photoList.length} photo(s) jointe(s) a l'intervention.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            ${photoList.map((url, index) => `<img src="${escapeHtml(url)}" alt="Photo ${index + 1}" style="height:150px;max-width:48%;object-fit:contain;border:1px solid #cbd5e1;border-radius:8px;" />`).join('')}
+          </div>
+        </div>` : ''}
+
         <div class="panel detail-panel">
           <h2 class="panel-title">Validation et signatures</h2>
           <p class="panel-subtitle">Les deux parties ci-dessous confirment la conformite des informations portees sur cette fiche.</p>
@@ -1709,7 +1735,7 @@ const MaintenanceTab = ({ technicien }) => {
       </div>
     </div>
   </body>
-</html>`;
+</html>`);
   };
 
   const downloadHistoryPdf = async (intervention) => {
@@ -1847,6 +1873,7 @@ const MaintenanceTab = ({ technicien }) => {
         date_fin: new Date().toISOString(),
         ...(geoDataRef.current || {}),
       };
+      if (interventionData.photos?.length) dataToInsert.photos = interventionData.photos;
 
       // Ajouter les références selon le type d'intervention
       if (interventionData.typeIntervention === 'curative') {
@@ -1884,6 +1911,18 @@ const MaintenanceTab = ({ technicien }) => {
         .insert([dataToInsert])
         .select('id')
         .single();
+
+      // Base pas encore à jour : l'intervention passe avant les photos.
+      if (dataToInsert.photos && isMissingPhotosColumnError(insertResult.error)) {
+        delete dataToInsert.photos;
+        photoUrlsRef.current = [];
+        photoNoticeRef.current = photoUploadMessage({ columnMissing: true });
+        insertResult = await supabase
+          .from('interventions_maintenance')
+          .insert([dataToInsert])
+          .select('id')
+          .single();
+      }
 
       let insertedIntervention = insertResult.data;
       let error = insertResult.error;
@@ -1994,9 +2033,14 @@ const MaintenanceTab = ({ technicien }) => {
       const baseComment = String(form.commentaire || '').trim();
       const replacedItems = itemsToSave.filter((i) => i.remplace === 'oui' && i.remplacement);
 
+      const upload = await uploadPhotos(photos, PHOTO_FOLDERS.MAINTENANCE);
+      photoUrlsRef.current = upload.urls;
+      photoNoticeRef.current = photoUploadMessage(upload);
+
       const mergedData = {
         ...form,
         ...first,
+        photos: upload.urls,
         sousEnsemble: subList,
         typeIntervention: first.typeIntervention,
         code: first.code,
@@ -2208,6 +2252,8 @@ const MaintenanceTab = ({ technicien }) => {
         technicienSignature,
         chefAgenceSignature,
         validationFile,
+        photoUrls: photoUrlsRef.current,
+        photoNotice: photoNoticeRef.current,
       });
 
       toast({
@@ -2238,6 +2284,8 @@ const MaintenanceTab = ({ technicien }) => {
       remplacement: '',
     });
     setInterventionItems([]);
+    clearPhotos();
+    photoUrlsRef.current = [];
     setChefAgence(null);
     setRecap(null);
     setStep(1);
@@ -2273,6 +2321,11 @@ const MaintenanceTab = ({ technicien }) => {
               <div><strong>Technicien :</strong> {technicien?.prenom} {technicien?.nom}</div>
               <div><strong>Chef d'agence :</strong> {recap.chefAgence?.prenom} {recap.chefAgence?.nom}</div>
             </div>
+
+            {recap.photoNotice && (
+              <p role="status" className="rounded-xl border border-warning/30 bg-warning-muted p-3 text-sm text-warning-muted-foreground">{recap.photoNotice}</p>
+            )}
+            <PhotoGallery photos={recap.photoUrls} title="Photos de l'intervention" />
 
             {recap.validationFile?.publicUrl ? (
               <div className="flex flex-col items-center gap-2 rounded-2xl border border-success/30 bg-success-muted/60 p-5 text-center">
@@ -2795,6 +2848,9 @@ const MaintenanceTab = ({ technicien }) => {
                     )}
                   </>
                 )}
+
+                <Separator />
+                <PhotoPicker photos={photos} onChange={(next) => { clearValidationDraft(); setPhotos(next); }} disabled={isLoading} label="Photos de l'intervention (facultatif)" />
               </div>
           </div>
         )}
@@ -2883,6 +2939,17 @@ const MaintenanceTab = ({ technicien }) => {
                         </Table>
                       </div>
                     </div>
+
+                    {photos.length > 0 && (
+                      <div className="space-y-3">
+                        <h5 className="text-sm font-semibold uppercase tracking-wide text-foreground/80">Photos jointes ({photos.length})</h5>
+                        <ul className="flex flex-wrap gap-2" aria-label="Photos jointes">
+                          {photos.map((photo, index) => (
+                            <li key={photo.id}><img src={photo.previewUrl} alt={`Photo ${index + 1}`} className="h-20 w-20 rounded-lg border border-border object-cover" /></li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                 </div>
 

@@ -9,9 +9,10 @@ import { usePageState } from '@/hooks/usePageState';
 import { downloadCsv } from '@/lib/csv';
 import { DEFAULT_RECONCILIATION_FILTERS, filterReconciliationRows, summarizeReconciliation } from '@/lib/salaryReconciliation';
 import KpiStatCard from '@/components/analytics/KpiStatCard';
+import { appLocale } from '@/i18n/language';
 
-const amount = (value) => Number(value || 0).toLocaleString('fr-FR', { maximumFractionDigits: 0 });
-const date = (value) => value ? new Date(value).toLocaleDateString('fr-FR') : 'Aucun';
+const amount = (value) => Number(value || 0).toLocaleString(appLocale(), { maximumFractionDigits: 0 });
+const date = (value) => value ? new Date(value).toLocaleDateString(appLocale()) : 'Aucun';
 const statusLabels = { missing: 'Manque', surplus: 'Surplus', ok: 'Rapproché' };
 
 function FilterSelect({ label, value, onChange, options }) {

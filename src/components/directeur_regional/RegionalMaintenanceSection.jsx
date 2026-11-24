@@ -9,6 +9,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import MobileFilterBar from '@/components/ui/mobile-filter-bar';
+import PhotoGallery from '@/components/photos/PhotoGallery';
+import { useInterventionPhotos } from '@/hooks/useInterventionPhotos';
 import { useIsPhone } from '@/hooks/useIsPhone';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -29,6 +31,7 @@ import {
   normalizeMaintenanceText,
 } from '@/lib/maintenanceMonitoring';
 import { fetchRegions, normalizeRegionText, resolveRegionName } from '@/lib/regions';
+import { translateHtml } from '@/i18n/translate';
 
 const ALL_FILTER_VALUE = '__all__';
 
@@ -38,6 +41,7 @@ const RegionalMaintenanceSection = ({ regionName = '', allowAllRegions = false, 
   const [agences, setAgences] = useState([]);
   const [terminaux, setTerminaux] = useState([]);
   const [interventions, setInterventions] = useState([]);
+  const interventionPhotos = useInterventionPhotos(interventions.length);
   const [codesPannes, setCodesPannes] = useState([]);
   const [techniciens, setTechniciens] = useState([]);
   const isPhone = useIsPhone();
@@ -259,7 +263,7 @@ const RegionalMaintenanceSection = ({ regionName = '', allowAllRegions = false, 
     try {
       const res = await fetch(url);
       const html = await res.text();
-      setFicheDialog({ open: true, html, loading: false });
+      setFicheDialog({ open: true, html: translateHtml(html), loading: false });
     } catch {
       setFicheDialog({ open: false, html: '', loading: false });
       window.open(url, '_blank', 'noreferrer');
@@ -682,6 +686,7 @@ const RegionalMaintenanceSection = ({ regionName = '', allowAllRegions = false, 
                                                   {i.commentaire && (
                                                     <p className="border-t pt-1 italic text-muted-foreground">{i.commentaire}</p>
                                                   )}
+                                                  <PhotoGallery photos={interventionPhotos[String(i.id)]} title="Photos de l'intervention" className="border-t pt-1.5" />
                                                 </div>
                                               );
                                             })}

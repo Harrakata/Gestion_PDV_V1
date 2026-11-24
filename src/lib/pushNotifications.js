@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabaseClient';
+import { t } from '@/i18n/translate';
 
 // ════════════════════════════════════════════════════════════════════════════
 //  Notifications push (Web Push) — abonnement côté client.
@@ -114,7 +115,8 @@ export const unsubscribeFromPush = async () => {
  */
 export const triggerPush = async (target, payload) => {
   try {
-    await supabase.functions.invoke('send-push', { body: { target, payload } });
+    const translated = { ...payload, title: t(payload?.title), body: t(payload?.body) };
+    await supabase.functions.invoke('send-push', { body: { target, payload: translated } });
   } catch {
     /* best-effort : ne bloque jamais le flux applicatif */
   }

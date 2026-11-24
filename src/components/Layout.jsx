@@ -26,6 +26,7 @@ import {
 } from '@/lib/exploitationProfiles';
 import { PRODUCT_LOGO_URL, PRODUCT_NAME, productTitle } from '@/lib/clientConfig';
 import { buildBreadcrumbs } from '@/lib/navigationConfig';
+import { t } from '@/i18n/translate';
 
 const Layout = () => {
   const navigate = useNavigate();
@@ -166,7 +167,7 @@ const Layout = () => {
     const crumbs = buildBreadcrumbs(location.pathname);
     const currentLabel = crumbs.at(-1)?.label;
     document.title = currentLabel && currentLabel !== 'Accueil'
-      ? `${currentLabel} · ${productTitle(client.displayName)}`
+      ? `${t(currentLabel)} · ${productTitle(client.displayName)}`
       : productTitle(client.displayName);
   }, [client.displayName, location.pathname]);
 

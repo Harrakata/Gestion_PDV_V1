@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabaseClient';
 import { getQueued, removeQueued, updateQueued } from '@/lib/offlineQueue';
+import { isMissingPhotosColumnError } from '@/lib/photos';
 
 let syncing = false;
 
@@ -92,7 +93,11 @@ async function replayItem(item) {
     return { ok: true, drop: true };
   }
 
-  const { error } = await supabase.from(item.table).insert(item.payload);
+  let { error } = await supabase.from(item.table).insert(item.payload);
+  if (error && item.payload?.photos && isMissingPhotosColumnError(error)) {
+    const { photos: _photos, ...withoutPhotos } = item.payload;
+    ({ error } = await supabase.from(item.table).insert(withoutPhotos));
+  }
   if (!error) return { ok: true, drop: true };
   if (isDuplicateError(error)) return { ok: false, drop: true }; // déjà inséré → on retire
   return { ok: false, drop: false };

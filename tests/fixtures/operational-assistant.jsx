@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import { loadTranslations } from '@/i18n/translate';
 import AssistantPanel from '../../src/components/assistant/AssistantPanel';
 import '../../src/index.css';
 
@@ -28,4 +29,5 @@ function Fixture() {
     <AssistantPanel key={identity} space="espace-exploitation" currentTab="maintenance-terminaux" authenticated={!params.has('guest')} request={request} onNavigate={setDestination} />
   </main>;
 }
+await loadTranslations();
 createRoot(document.getElementById('root')).render(<Fixture />);

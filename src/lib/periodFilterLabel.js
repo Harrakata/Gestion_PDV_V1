@@ -1,10 +1,12 @@
+import { appLocale } from '@/i18n/language';
+
 const day = (value) => (value ? value.split('-').reverse().join('/') : '…');
 
 /** « 2026-11 » → « novembre 2026 ». */
 export const monthLabel = (value) => {
   if (!value) return '';
   const [year, month] = value.split('-').map(Number);
-  return new Date(year, month - 1, 1).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+  return new Date(year, month - 1, 1).toLocaleDateString(appLocale(), { month: 'long', year: 'numeric' });
 };
 
 /** Rappel court de la période choisie (Tout / Mois / Semaine / Période). */

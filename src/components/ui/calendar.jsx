@@ -6,6 +6,7 @@ import { fr } from 'date-fns/locale';
 
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
+import { t } from '@/i18n/translate';
 
 function Calendar({
   className,
@@ -17,7 +18,7 @@ function Calendar({
     <DayPicker
       locale={fr}
       showOutsideDays={showOutsideDays}
-      labels={{ labelPrevious: () => 'Mois précédent', labelNext: () => 'Mois suivant' }}
+      labels={{ labelPrevious: () => t('Mois précédent'), labelNext: () => t('Mois suivant') }}
       className={cn("rounded-lg bg-popover p-3 text-popover-foreground", className)}
       classNames={{
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",

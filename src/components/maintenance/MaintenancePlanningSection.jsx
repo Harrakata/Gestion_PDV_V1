@@ -6,6 +6,8 @@ import { fr } from 'date-fns/locale';
 import { CalendarClock, CheckCircle2, ChevronLeft, ChevronRight, ClipboardList, Copy, FileText, MapPinned, Pencil, PlusCircle, Search, ShieldAlert, TimerReset, Wrench } from 'lucide-react';
 import MobilePlanningCalendar from '@/components/planning/MobilePlanningCalendar';
 import MobileFilterBar, { filterLabels } from '@/components/ui/mobile-filter-bar';
+import PhotoGallery from '@/components/photos/PhotoGallery';
+import { useInterventionPhotos } from '@/hooks/useInterventionPhotos';
 import { useIsPhone } from '@/hooks/useIsPhone';
 import { Badge } from '@/components/ui/badge';
 import StatusBadge from '@/components/ui/status-badge';
@@ -45,6 +47,8 @@ import {
   getMaintenanceShiftFromDateTime,
   MAINTENANCE_SHIFT_OPTIONS,
 } from '@/lib/maintenancePlanning';
+import { translateHtml } from '@/i18n/translate';
+import { WEEKDAYS_SHORT } from '@/i18n/language';
 
 const ALL_FILTER_VALUE = '__all__';
 
@@ -101,6 +105,7 @@ const MaintenancePlanningSection = ({
   const [techniciens, setTechniciens] = useState([]);
   const [terminaux, setTerminaux] = useState([]);
   const [interventions, setInterventions] = useState([]);
+  const interventionPhotos = useInterventionPhotos(interventions.length);
   const [planningEntries, setPlanningEntries] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -119,7 +124,7 @@ const MaintenancePlanningSection = ({
     try {
       const res = await fetch(url);
       const html = await res.text();
-      setFicheDialog({ open: true, html, loading: false });
+      setFicheDialog({ open: true, html: translateHtml(html), loading: false });
     } catch {
       setFicheDialog({ open: false, html: '', loading: false });
       window.open(url, '_blank', 'noreferrer');
@@ -1128,7 +1133,7 @@ const MaintenancePlanningSection = ({
               <div className="grid grid-cols-7 bg-muted/60">
                 {(viewMode === 'week'
                   ? calendarDays.map(d => format(d, 'EEE', { locale: fr }))
-                  : ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
+                  : WEEKDAYS_SHORT
                 ).map((dayName, i) => (
                   <div key={i} className="py-2 text-center text-xs font-bold uppercase tracking-widest text-muted-foreground">
                     {dayName}
@@ -1520,6 +1525,7 @@ const MaintenancePlanningSection = ({
                   {intervention.commentaire && (
                     <p className="border-t pt-2 text-sm italic text-foreground/80">{intervention.commentaire}</p>
                   )}
+                  <PhotoGallery photos={interventionPhotos[String(intervention.id)]} title="Photos de l'intervention" className="border-t pt-2" />
                   {intervention.fiche_url && (
                     <div className="border-t pt-2">
                       <Button

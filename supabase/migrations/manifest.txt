@@ -56,3 +56,4 @@ add_operational_assistant.sql
 202610201420_use_enjeux_jour_financial_series.sql
 202611161200_reduce_mobi_daily_cache_storage.sql
 202611201200_terminal_sous_ensembles_historique.sql
+202611241200_photos_tickets_interventions.sql

@@ -4,6 +4,7 @@ import { fr } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ABSENCE_STATUSES, ABSENCE_CRENEAUX, getAbsenceTypeLabel, getAbsenceCreneauLabel } from '@/lib/absences';
+import { WEEKDAYS_SHORT } from '@/i18n/language';
 
 const CRENEAU_SHORT = { [ABSENCE_CRENEAUX.MATIN]: 'AM', [ABSENCE_CRENEAUX.APRES_MIDI]: 'PM' };
 
@@ -15,7 +16,7 @@ const STATUS_DOT = {
   [ABSENCE_STATUSES.CANCELLED]: 'bg-muted-foreground/60',
 };
 
-const WEEKDAYS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+const WEEKDAYS = WEEKDAYS_SHORT;
 
 /**
  * Calendrier mensuel des demandes d'absence : chaque jour couvert par une demande

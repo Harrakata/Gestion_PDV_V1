@@ -179,6 +179,7 @@ si besoin). Voir `.env.example` pour la liste de référence.
 | `VITE_CLIENT_ID` | `pmu-niger` | ✅ (doit matcher le `.env` du registre) |
 | `VITE_CLIENT_NAME` | `PMU Niger` | ✅ — titre d'onglet + **nom de la PWA** (build-time → redeploy requis) |
 | `VITE_CLIENT_LOGO_URL` | URL du logo (sinon réglable en base) | optionnel |
+| `VITE_CLIENT_LANGUAGE` | `fr` ou `en` — langue par défaut (sinon réglable dans l'app : Paramètres → Langue) | optionnel, défaut `fr` |
 | `VITE_CLIENT_CURRENCY` | code ISO 4217, ex. `XOF`, `XAF`, `EUR` (sinon réglable dans l'app) | optionnel, défaut `XOF` |
 | `VITE_STORAGE_BUCKET` | nom du bucket si ≠ `pmu-mali-storage` | si nom custom |
 | `VITE_SUPABASE_URL` | Project URL (étape 1.2) | ✅ |

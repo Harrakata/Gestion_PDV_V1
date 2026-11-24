@@ -15,6 +15,7 @@
 
 import { format, parseISO, startOfWeek, isValid } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { appLocale } from '@/i18n/language';
 
 export const VIEW_TYPES = [
   { key: 'detail', label: 'Détail' },
@@ -37,7 +38,7 @@ const DATE_RE = /^\d{4}-\d{2}-\d{2}/;
 const isEmpty = (v) => v == null || v === '';
 const toNumber = (v) => (typeof v === 'number' ? v : typeof v === 'string' && v.trim() !== '' ? Number(v) : NaN);
 const fmtNumber = (v, digits = 0) =>
-  Number.isFinite(v) ? v.toLocaleString('fr-FR', { maximumFractionDigits: digits }) : '';
+  Number.isFinite(v) ? v.toLocaleString(appLocale(), { maximumFractionDigits: digits }) : '';
 
 /** Déduit mesures / dates / dimensions à partir des colonnes et d'un échantillon. */
 export const inferFields = (columns = [], rows = []) => {

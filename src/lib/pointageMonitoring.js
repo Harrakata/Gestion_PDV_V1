@@ -1,4 +1,5 @@
 import { aggregateCountsByLabel, buildAnalyticsBuckets } from '@/lib/analytics';
+import { appLocale } from '@/i18n/language';
 
 export const normalizePointageText = (value) =>
   String(value ?? '')
@@ -10,7 +11,7 @@ export const normalizePointageText = (value) =>
 export const formatPointageDateTime = (value) => {
   if (!value) return 'N/A';
   const parsedDate = new Date(value);
-  return Number.isNaN(parsedDate.getTime()) ? 'N/A' : parsedDate.toLocaleString('fr-FR');
+  return Number.isNaN(parsedDate.getTime()) ? 'N/A' : parsedDate.toLocaleString(appLocale());
 };
 
 export const getPointageStatusMeta = (count, expectedCount) => {

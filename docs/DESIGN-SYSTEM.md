@@ -244,6 +244,14 @@ import FormActions from '@/components/ui/form-actions';
 - La classe `compact-filter-labels` est réservée aux barres de filtres denses ;
   elle ne doit pas être appliquée à un formulaire de saisie.
 
+### Photos
+
+- Choisir : `PhotoPicker` (`src/components/photos/`) avec `usePhotoSelection` dans
+  l'écran ; l'appareil photo n'est proposé que sur un appareil tactile.
+- Enregistrer : `uploadPhotos` (`src/lib/photos.js`) réduit et envoie ; sans réseau, la
+  photo attend dans la file hors-ligne. Ne jamais envoyer un fichier d'origine.
+- Montrer : `PhotoGallery` (miniatures ou bouton compteur, agrandissement).
+
 ### Boutons
 
 - `default` : action principale unique dans la zone.
@@ -275,6 +283,15 @@ Chaque écran alimenté par des données doit prévoir :
 4. erreur avec possibilité de réessayer ;
 5. mode hors ligne et fraîcheur des données ;
 6. accès en lecture seule clairement indiqué.
+
+## Langues
+
+Les textes s'écrivent en français et sont traduits à l'affichage (voir CLAUDE.md, « Langues »). Pour un écran :
+
+- prévoir des libellés qui peuvent s'allonger : ne pas fixer la largeur d'un bouton ou d'un onglet sur son texte français ;
+- écrire une phrase entière dans un seul texte ou modèle (`${n} ligne(s) affichée(s)`) plutôt que des morceaux collés ;
+- pluriels : préférer `ligne(s)` ou deux libellés complets à un `s` ajouté au mot ;
+- ajouter la traduction (`npm run i18n`) dans le même changement.
 
 ## Responsive et tactile
 

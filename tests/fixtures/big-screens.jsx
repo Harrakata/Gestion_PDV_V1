@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import { loadTranslations } from '@/i18n/translate';
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom';
 import '@/index.css';
+import { Toaster } from '@/components/ui/toaster';
 import { ConfirmDialogProvider } from '@/components/ConfirmDialogProvider';
 import { FeatureFlagsProvider } from '@/hooks/useFeatureFlags';
 import { applyTheme } from '@/lib/theme';
@@ -49,6 +51,12 @@ const SCREENS = {
     <C points={[{ pointVenteUid: 'u1', codePointVente: 'PDV-001', region: 'Kinshasa', agenceNom: 'Gombe', agenceCodePDV: '001', terminalReference: 'MOBI-1', guichetiereNom: 'Awa Test', guichetiereMatricule: '101', dateDebutValidite: '2026-01-01' }]}
       terminaux={[{ id: 't1', reference: 'MOBI-1', statut: 'Actif' }]} agences={[{ id: 'a1', nom: 'Gombe', region: 'Kinshasa', codePDV: '001' }]} canWrite onSwitchLegacy={() => {}} />
   )),
+  ticket: () => import('@/components/tickets/TicketsPanel').then(({ default: C }) => (
+    <C mode="declarant" spaceKey="espace-chef-agence" identity={{ id: 'c1', nom: 'Chef Test', role: 'chef_agence', agence_nom: 'Gombe' }} filter={{ createur_id: 'c1' }} />
+  )),
+  traitement: () => import('@/components/tickets/TicketsPanel').then(({ default: C }) => <C mode="traitement" identity={{ id: 'e1', nom: 'Exploitation' }} />),
+  technicienTickets: () => import('@/components/tickets/TicketsPanel').then(({ default: C }) => <C mode="technicien" spaceKey="espace-technicien" identity={{ id: 7, nom: 'Alice Test', role: 'Technicien' }} />),
+  faire: () => import('@/pages/maintenance/MaintenanceTab').then(({ default: C }) => <C technicien={{ id: 7, nom: 'Test', prenom: 'Alice', matricule: 'T7' }} />),
   chronologie: () => import('@/pages/pointage/PointageTimeline').then(({ default: C }) => (
     <C currentTime={new Date(today.setHours(14, 0))} creneaux={creneaux} currentCreneauIndex={1} guichetieresPlanifiees={guichetieres}
       pointagesData={{ M01: [{ creneauIndex: 0, heure: '09:05', timestamp: today.toISOString() }] }} />
@@ -68,6 +76,7 @@ const [screen] = await Promise.all([
   applyTheme({ primaryHsl: '217 91% 60%', appearance: params.get('dark') === '1' ? 'dark' : 'light' }, { persist: false }),
 ]);
 
+await loadTranslations();
 createRoot(document.getElementById('root')).render(
   <FeatureFlagsProvider>
     <ConfirmDialogProvider>
@@ -78,6 +87,7 @@ createRoot(document.getElementById('root')).render(
           </Route>
         </Routes>
       </MemoryRouter>
+      <Toaster />
     </ConfirmDialogProvider>
   </FeatureFlagsProvider>,
 );

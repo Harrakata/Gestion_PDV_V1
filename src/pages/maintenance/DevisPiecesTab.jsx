@@ -28,6 +28,8 @@ import {
   Search,
   Trash2,
 } from 'lucide-react';
+import { appLocale } from '@/i18n/language';
+import { t, translateHtml } from '@/i18n/translate';
 
 const PERIOD_OPTIONS = [
   { value: '1', label: '1 mois' },
@@ -58,14 +60,14 @@ const SOUS_ENSEMBLE_LABELS = {
   ssd: 'SSD',
 };
 
-const moneyFormatter = new Intl.NumberFormat('fr-FR', {
+const moneyFormatter = new Intl.NumberFormat(appLocale(), {
   style: 'currency',
   currency: 'EUR',
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
 });
 
-const dateFormatter = new Intl.DateTimeFormat('fr-FR');
+const dateFormatter = new Intl.DateTimeFormat(appLocale());
 
 const formatMoney = (value) => moneyFormatter.format(Number(value) || 0);
 const formatDate = (value) => (value ? dateFormatter.format(new Date(value)) : '-');
@@ -108,8 +110,8 @@ const DevisPiecesTab = () => {
   const [quoteNumber] = useState(() => `DP-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}`);
   const [quoteMeta, setQuoteMeta] = useState({
     destinataire: '',
-    objet: 'Devis des pièces consommées',
-    validite: '30 jours',
+    objet: t('Devis des pièces consommées'),
+    validite: t('30 jours'),
     notes: '',
   });
   const [extraFields, setExtraFields] = useState([
@@ -321,7 +323,7 @@ const DevisPiecesTab = () => {
       </tr>
     `).join('');
 
-    return `<!doctype html>
+    return translateHtml(`<!doctype html>
 <html>
 <head>
   <meta charset="utf-8" />
@@ -389,7 +391,7 @@ const DevisPiecesTab = () => {
 
   ${quoteMeta.notes ? `<h2>Notes</h2><div class="notes">${escapeHtml(quoteMeta.notes)}</div>` : ''}
 </body>
-</html>`;
+</html>`);
   };
 
   const printQuote = () => {

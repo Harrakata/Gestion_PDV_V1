@@ -1,3 +1,5 @@
+import { appLocale, isEnglish } from '../i18n/language.js';
+
 const ONE_MONTH_IN_MS = 30 * 24 * 60 * 60 * 1000;
 const MAINTENANCE_CURRENT_TONE = 'success';
 const MAINTENANCE_DUE_TONE = 'danger';
@@ -15,7 +17,7 @@ export const formatMaintenanceDateTime = (value) => {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
 
-  return date.toLocaleString('fr-FR');
+  return date.toLocaleString(appLocale());
 };
 
 export const getMaintenanceInterventionTypeLabel = (type) => (type === 'curative' ? 'Curative' : 'Préventive');
@@ -54,7 +56,7 @@ export const getMaintenanceFollowUp = (latestIntervention, referenceDate = new D
     return {
       label: 'Maintenance à jour',
       tone: MAINTENANCE_CURRENT_TONE,
-      detail: `${getMaintenanceInterventionTypeLabel(latestIntervention.type_intervention)} du ${formatMaintenanceDateTime(
+      detail: `${getMaintenanceInterventionTypeLabel(latestIntervention.type_intervention)} ${isEnglish ? 'on' : 'du'} ${formatMaintenanceDateTime(
         latestIntervention.date_intervention
       )}`,
     };

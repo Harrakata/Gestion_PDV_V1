@@ -24,6 +24,7 @@ import {
   ImagePlus, Layers, ListChecks, Package, Plus, Search, Trash2, ArrowUpCircle, ArrowDownCircle, Wrench, X,
 } from 'lucide-react';
 import KpiStatCard from '@/components/analytics/KpiStatCard';
+import { appLocale } from '@/i18n/language';
 
 const SOUS_ENSEMBLE_LABELS = {
   imprimante: 'Imprimante',
@@ -50,7 +51,7 @@ const statusBadge = (qty, seuil) => {
   return <StatusBadge tone="success">Disponible</StatusBadge>;
 };
 
-const formatPrice = (value) => Number(value || 0).toLocaleString('fr-FR', {
+const formatPrice = (value) => Number(value || 0).toLocaleString(appLocale(), {
   style: 'currency',
   currency: 'EUR',
   minimumFractionDigits: 2,

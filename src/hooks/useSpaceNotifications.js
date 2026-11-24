@@ -13,6 +13,7 @@ import { countUntreatedRemontees } from '@/lib/messaging';
 import { isLocalNotifEnabled, notifyLocal } from '@/lib/localNotifications';
 import { hasPushSubscription } from '@/lib/pushNotifications';
 import { isNotifTypeEnabled, isSpaceNotifEnabled } from '@/lib/notificationSettings';
+import { appLocale } from '@/i18n/language';
 
 // Racine de chaque espace (pour ouvrir la cloche à la ré-ouverture depuis une notif message).
 const SPACE_ROOTS = {
@@ -48,7 +49,7 @@ const fmtDate = (value) => {
   if (!value) return null;
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString('fr-FR');
+  return date.toLocaleDateString(appLocale());
 };
 
 // Récupère les demandes en attente d'une table et les met en forme façon « message »

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import { loadTranslations } from '@/i18n/translate';
 import ProfileAccessSummary from '../../src/components/ProfileAccessSummary';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../src/components/ui/table';
 import { APP_SPACE_TAB_FUNCTIONALITIES, flattenSpaceTabItems } from '../../src/lib/exploitationProfiles';
@@ -30,4 +31,5 @@ function Fixture() {
     </Table>
   </main>;
 }
+await loadTranslations();
 createRoot(document.getElementById('root')).render(<Fixture />);

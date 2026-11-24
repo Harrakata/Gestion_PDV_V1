@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { AlertTriangle, GripVertical, MapPin } from 'lucide-react';
+import PhotoGallery from '@/components/photos/PhotoGallery';
 import {
   TICKET_STATUSES, ticketLabel, ticketOverdue,
 } from '@/lib/tickets';
@@ -124,6 +125,7 @@ const TicketsKanban = ({ rows = [], onCardClick, onStatusChange }) => {
                         {r.agence_nom && (
                           <span className="inline-flex items-center gap-0.5 truncate"><MapPin className="h-3 w-3" />{r.agence_nom}</span>
                         )}
+                        <PhotoGallery photos={r.photos} variant="button" title={`Photos du ticket ${r.code || ''}`.trim()} />
                       </div>
 
                       {/* Pied : assigné + retard */}

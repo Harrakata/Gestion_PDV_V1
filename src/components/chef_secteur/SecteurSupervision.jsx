@@ -7,6 +7,7 @@ import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, Tabl
 import EmptyState from '@/components/ui/empty-state';
 import { supabase } from '@/lib/supabaseClient';
 import KpiStatCard from '@/components/analytics/KpiStatCard';
+import { appLocale } from '@/i18n/language';
 
 /**
  * Charge les agences (nom + id) rattachées au secteur du chef.
@@ -53,7 +54,7 @@ const EmptyAgences = () => (
 
 const formatDate = (d) => {
   if (!d) return '';
-  try { return new Date(d).toLocaleDateString('fr-FR'); } catch { return String(d); }
+  try { return new Date(d).toLocaleDateString(appLocale()); } catch { return String(d); }
 };
 
 // ── Pointages ───────────────────────────────────────────────
@@ -209,7 +210,7 @@ export const PaiementsSecteurSection = ({ chef }) => {
 
   const enCours = rows.filter((r) => String(r.statutGlobal || '').toLowerCase().includes('attente')).length;
   const montantTotal = useMemo(() => rows.reduce((s, r) => s + Number(r.montantGain || 0), 0), [rows]);
-  const fmtMontant = (n) => `${Number(n || 0).toLocaleString('fr-FR')} F`;
+  const fmtMontant = (n) => `${Number(n || 0).toLocaleString(appLocale())} F`;
 
   return (
     <SectionShell icon={Wallet} title="Paiements de gain du secteur" secteurName={chef.secteurEnCharge}>

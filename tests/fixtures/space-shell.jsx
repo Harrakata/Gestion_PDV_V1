@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import { loadTranslations } from '@/i18n/translate';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { Calendar, Clipboard, Wrench } from 'lucide-react';
 import Layout from '@/components/Layout';
@@ -51,6 +52,7 @@ function TestSpace() {
   );
 }
 
+await loadTranslations();
 createRoot(document.getElementById('root')).render(
   <MemoryRouter initialEntries={['/espace-guichetiere']}>
     <Routes>

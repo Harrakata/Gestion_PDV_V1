@@ -47,7 +47,7 @@ ViewportDialogContent.displayName = 'ViewportDialogContent';
 // « Fermer ». Seule la barre d'actions compte (DialogFooter, FormActions, [data-dialog-actions]) : un
 // « Annuler » interne (appareil photo, ligne en cours de modification…) ne ferme pas
 // la fenêtre. Échap et l'appui à l'extérieur restent disponibles.
-const CLOSE_LABELS = new Set(['Annuler', 'Fermer']);
+const CLOSE_LABELS = new Set(['Annuler', 'Fermer', 'Cancel', 'Close']);
 const hasCloseAction = (content) => [...content.querySelectorAll('[data-dialog-actions] button')]
   .some((button) => CLOSE_LABELS.has(button.textContent.trim()) && button.getClientRects().length > 0);
 

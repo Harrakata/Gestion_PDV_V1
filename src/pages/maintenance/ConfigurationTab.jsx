@@ -1004,7 +1004,7 @@ const ConfigurationTab = ({
         const conflictAgency = agenciesById[String(conflictTerminal.agence_id)];
         toast({
           title: `${config.label} déjà configuré`,
-          description: `${formData[config.formKey]} est déjà affecté au terminal ${conflictTerminal.reference}${conflictAgency?.nom ? ` de ${conflictAgency.nom}` : ''}.`,
+          description: `${formData[config.formKey]} est déjà affecté au terminal ${conflictTerminal.reference}${conflictAgency?.nom ? ` (${conflictAgency.nom})` : ''}.`,
           variant: 'destructive',
         });
         return;

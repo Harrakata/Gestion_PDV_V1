@@ -35,11 +35,14 @@ Deno.serve(async () => {
   const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
 
   // Réglages (toggles) + config horaires + config pointage (Paramètres → clé 'general').
-  const [{ data: setRow }, { data: cfgRow }, { data: genRow }] = await Promise.all([
+  const [{ data: setRow }, { data: cfgRow }, { data: genRow }, { data: languageRow }] = await Promise.all([
     supabase.from("app_settings").select("value").eq("key", NOTIFICATION_SETTINGS_KEY).maybeSingle(),
     supabase.from("app_settings").select("value").eq("key", REMINDER_CONFIG_KEY).maybeSingle(),
     supabase.from("app_settings").select("value").eq("key", "general").maybeSingle(),
+    supabase.from("app_settings").select("value").eq("key", "app_language").maybeSingle(),
   ]);
+  // Langue du client (Paramètres → Langue), français par défaut.
+  const english = languageRow?.value?.language === "en";
   const settings = (setRow?.value ?? {}) as Record<string, unknown>;
   const spaces = (settings.spaces ?? {}) as Record<string, boolean>;
 
@@ -48,7 +51,7 @@ Deno.serve(async () => {
   const rappelActif = general.rappelActif !== false; // interrupteur pointage côté Paramètres
   const creneauxPointage = Array.isArray(general.creneauxPointage) ? general.creneauxPointage : [];
   const GUICHETIERE_CRENEAUX = creneauxPointage
-    .map((c: { debut?: string }, i: number) => ({ index: i, start: String(c?.debut || ""), label: `N°${i + 1}` }))
+    .map((c: { debut?: string }, i: number) => ({ index: i, start: String(c?.debut || ""), label: english ? `no. ${i + 1}` : `N°${i + 1}` }))
     .filter((c: { start: string }) => /^\d{1,2}:\d{2}$/.test(c.start));
 
   // Rappel actif = type activé ET espace destinataire activé (+ rappelActif Paramètres pour le pointage).
@@ -63,8 +66,8 @@ Deno.serve(async () => {
 
   // Créneaux de MAINTENANCE (planning technicien) : matin / après-midi (valeurs fixes).
   const MAINTENANCE_CRENEAUX = [
-    { value: "matin",      start: matinStart,     label: "Matin" },
-    { value: "apres_midi", start: apresMidiStart, label: "Après-midi" },
+    { value: "matin",      start: matinStart,     label: english ? "Morning" : "Matin" },
+    { value: "apres_midi", start: apresMidiStart, label: english ? "Afternoon" : "Après-midi" },
   ];
 
   // Heure LOCALE courante (minutes depuis minuit) + date du jour (YYYY-MM-DD).
@@ -106,7 +109,7 @@ Deno.serve(async () => {
         if (pointed.has(g.matricule)) continue;
         await sendPush(
           { role: "guichetiere", user_id: String(g.id) },
-          { title: "Rappel de pointage", body: `N'oubliez pas de pointer votre créneau ${cr.label}.`, url: "/pointage", tag: `rappel-pointage-${cr.index}` },
+          { title: english ? "Clock-in reminder" : "Rappel de pointage", body: english ? `Don't forget to clock in for slot ${cr.label}.` : `N'oubliez pas de pointer votre créneau ${cr.label}.`, url: "/pointage", tag: `rappel-pointage-${cr.index}` },
         );
         pointageSent++;
       }
@@ -125,7 +128,7 @@ Deno.serve(async () => {
         if (!r.technicien_id) continue;
         await sendPush(
           { role: "technicien", user_id: String(r.technicien_id) },
-          { title: "Rappel d'intervention", body: `Intervention ${cr.label} — ${r.agence_nom || ""} dans ${PLANNING_LEAD_MIN} min.`.trim(), url: "/espace-technicien", tag: "rappel-planning" },
+          { title: english ? "Intervention reminder" : "Rappel d'intervention", body: `${english ? `${cr.label} intervention` : `Intervention ${cr.label}`} — ${r.agence_nom || ""} ${english ? "in" : "dans"} ${PLANNING_LEAD_MIN} min.`.trim(), url: "/espace-technicien", tag: "rappel-planning" },
         );
         planningSent++;
       }

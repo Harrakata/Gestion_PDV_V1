@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { useFeature, useClient } from '@/hooks/useFeatureFlags';
+import { t } from '@/i18n/translate';
 
 const DEFAULT_URL = 'https://app.powerbi.com/view?r=eyJrIjoiMTMzN2MxNGQtYjcxMy00NWM0LWE3ZGUtMzMxYjA1YWJkMGU0IiwidCI6IjZmNTc4MTczLTJlNGUtNGQ4Ni1hZTU1LWQ2MmFmYTcwYzkyMCIsImMiOjh9';
 
@@ -11,10 +12,10 @@ const PbiViewerPage = () => {
 
   useEffect(() => {
     if (!powerBiEnabled) {
-      document.title = 'Fonctionnalité désactivée';
+      document.title = t('Fonctionnalité désactivée');
       return;
     }
-    document.title = `Rapport BI ${client.displayName}`;
+    document.title = t(`Rapport BI ${client.displayName}`);
     supabase.from('app_settings').select('value').eq('key', 'powerbi_ccope_url').maybeSingle()
       .then(({ data }) => {
         let target = DEFAULT_URL;

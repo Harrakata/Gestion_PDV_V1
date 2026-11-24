@@ -7,6 +7,8 @@
 //  handler `notificationclick` (public/push-sw.js) — sinon repli sur new Notification().
 // ════════════════════════════════════════════════════════════════════════════
 
+import { t } from '@/i18n/translate';
+
 const FLAG = 'local_notif_enabled';
 
 /** Version du service worker push actif (diagnostic). null si indéterminable. */
@@ -43,8 +45,10 @@ export const isLocalNotifEnabled = () => {
 };
 
 /** Affiche une notification OS (via le SW s'il est déjà enregistré, sinon API directe). */
-export const notifyLocal = async (title, { body = '', url = null, tag, openBell = false } = {}) => {
+export const notifyLocal = async (sourceTitle, { body: sourceBody = '', url = null, tag, openBell = false } = {}) => {
   if (getNotifPermission() !== 'granted') return false;
+  const title = t(sourceTitle);
+  const body = t(sourceBody);
   // url null → au clic, on reste sur la page courante (pas de renvoi à l'accueil).
   // openBell → au clic, ouvre la cloche (message sans page dédiée).
   const options = { body, tag, icon: '/pwa-192x192.png', badge: '/pwa-192x192.png', data: { url: url || null, openBell } };

@@ -9,12 +9,13 @@ import {
   SOUS_ENSEMBLE_CHANGE_TYPES,
   fetchTerminalSousEnsemblesHistory,
 } from '@/lib/terminalSousEnsemblesHistory';
+import { appLocale } from '@/i18n/language';
 
 const formatDateTime = (value) => {
   if (!value) return 'Date inconnue';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return 'Date inconnue';
-  return date.toLocaleString('fr-FR', {
+  return date.toLocaleString(appLocale(), {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',

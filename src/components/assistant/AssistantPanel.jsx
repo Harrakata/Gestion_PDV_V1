@@ -4,10 +4,14 @@ import { ArrowLeft, ArrowUp, ArrowUpRight, BookOpen, Bot, Loader2, MessageCircle
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ASSISTANT_GUIDES, assistantGuideReply, assistantSuggestions, guideReply, normalizeAssistantText } from '../../../supabase/functions/_shared/assistantKnowledge.js';
+import { ASSISTANT_GUIDES, assistantGuideReply, assistantSuggestions, guideReply, normalizeAssistantText, setAssistantGuideLanguage } from '../../../supabase/functions/_shared/assistantKnowledge.js';
 import { getCacheSummary, getQueueSummary } from '@/lib/offlineQueue';
 import AssistantGuideBrowser from './AssistantGuideBrowser';
 import './assistant.css';
+import { appLocale, isEnglish } from '@/i18n/language';
+import { t } from '@/i18n/translate';
+
+setAssistantGuideLanguage(t);
 
 const menuCacheKey = (space, identity) => space && identity ? `assistant-menus:${space}:${identity}` : null;
 
@@ -36,12 +40,12 @@ const clearCachedMenus = (space, identity) => {
 
 const localDataReply = async (question, currentTab, menus) => {
   const normalized = normalizeAssistantText(question);
-  const asksForLocalData = /(sans ia|donnees? locales?|cache|synchron|operation.*attente|hors ligne|page actuelle|contexte actuel)/.test(normalized);
+  const asksForLocalData = /(sans ia|donnees? locales?|cache|synchron|operation.*attente|hors ligne|page actuelle|contexte actuel|without ai|local data|\bsync\b|pending operation|offline|current (page|context))/.test(normalized);
   if (!asksForLocalData) return guideReply(question, currentTab, menus);
 
   const [queue, cache] = await Promise.all([getQueueSummary(), getCacheSummary()]);
   const queueTypes = Object.entries(queue.byType || {}).map(([type, count]) => `${type} : ${count}`).join(', ');
-  const cacheDate = cache.latestUpdatedAt ? new Date(cache.latestUpdatedAt).toLocaleString('fr-FR') : 'aucun instantané';
+  const cacheDate = cache.latestUpdatedAt ? new Date(cache.latestUpdatedAt).toLocaleString(appLocale()) : 'aucun instantané';
   const page = String(currentTab || 'page courante').split('-').join(' ');
   return {
     mode: 'guide',
@@ -142,7 +146,7 @@ export default function AssistantPanel({ space, currentTab, authenticated, ident
     const timer = setTimeout(() => controller.abort(), 55000);
     try {
       const reply = effectiveMode === 'ai'
-        ? await request({ action: 'chat', space, currentTab, messages: next.slice(-7).map(({ role, content }) => ({ role, content: content.slice(0, 4000) })) }, controller.signal)
+        ? await request({ action: 'chat', space, currentTab, ...(isEnglish ? { language: 'en' } : {}), messages: next.slice(-7).map(({ role, content }) => ({ role, content: content.slice(0, 4000) })) }, controller.signal)
         : await localDataReply(text, currentTab, menus);
       if (controller.signal.aborted) return;
       if (typeof reply.answer !== 'string') throw new Error('Réponse indisponible.');
@@ -218,7 +222,7 @@ export default function AssistantPanel({ space, currentTab, authenticated, ident
               return <div key={source.id || sourceIndex} className="min-w-0 text-xs text-muted-foreground">
                 {safePath ? <button type="button" className="flex max-w-full items-center gap-1 text-left text-primary hover:underline" onClick={() => { setOpen(false); onNavigate(safePath); }}><BookOpen className="h-3 w-3 shrink-0" /><span className="break-words">{source.title}</span><ArrowUpRight className="h-3 w-3 shrink-0" /></button>
                   : <span className="break-words">Source : {source.title}</span>}
-                {source.consultedAt && <p>Consulté le {new Date(source.consultedAt).toLocaleString('fr-FR')}{source.truncated ? ' · Extrait limité' : ''}</p>}
+                {source.consultedAt && <p>Consulté le {new Date(source.consultedAt).toLocaleString(appLocale())}{source.truncated ? ' · Extrait limité' : ''}</p>}
               </div>;
             })}</div>}
           </article>)}</div>

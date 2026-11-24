@@ -68,7 +68,7 @@ export function createAssistantHandler({ createClient, env, fetchImpl = fetch })
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), 45000);
       try {
-        const reply = await runAssistantAgent({ messages, access, currentTab, apiKey, model, fetchImpl,
+        const reply = await runAssistantAgent({ messages, access, currentTab, apiKey, model, fetchImpl, language: body.language === 'en' ? 'en' : 'fr',
           signal: controller.signal, lookup: (input) => lookupAssistantData(callerClient, access, input) });
         return json(reply);
       } finally { clearTimeout(timer); }

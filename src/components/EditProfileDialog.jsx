@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useRef, useCallback } from 'react';
 import { describeError } from '@/lib/errors';
-import { UserCog, Loader2, Camera, UploadCloud, X, KeyRound, ShieldCheck, User, Bot } from 'lucide-react';
+import { UserCog, Languages, Loader2, Camera, UploadCloud, X, KeyRound, ShieldCheck, User, Bot } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { FormField } from '@/components/ui/form-field';
 import { FormActions } from '@/components/ui/form-actions';
 import { PasswordInput } from '@/components/ui/password-input';
+import PersonalLanguagePicker from '@/components/PersonalLanguagePicker';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabaseClient';
 import { STORAGE_BUCKET } from '@/lib/clientConfig';
@@ -470,6 +471,14 @@ const EditProfileDialog = ({
           </TabsContent>
 
           <TabsContent value="preferences" className="mt-4">
+            <div className="mb-3 rounded-xl border border-border bg-card p-4">
+              <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                <Languages className="h-4 w-4 text-primary" />
+                Langue sur cet appareil
+              </p>
+              <p className="mb-3 mt-1 text-xs text-muted-foreground">L'application se recharge pour appliquer la langue.</p>
+              <PersonalLanguagePicker />
+            </div>
             <div className="flex items-start justify-between gap-4 rounded-xl border border-border bg-card p-4">
               <div className="min-w-0">
                 <p className="flex items-center gap-2 text-sm font-semibold text-foreground">

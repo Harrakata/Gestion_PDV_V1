@@ -444,10 +444,9 @@ const EspaceMaintenancePage = () => {
               id: userData?.id,
               nom: [userData?.prenom, userData?.nom].filter(Boolean).join(' ') || userData?.matricule || 'Technicien',
             }}
-            filter={{ assigne_a_id: userData?.id }}
             spaceKey="espace-technicien"
-            title="Mes tickets assignés"
-            description="Incidents qui vous sont assignés : prise en charge et résolution."
+            title="Mes tickets"
+            description="Signalez un incident, traitez ceux qui vous sont assignés et suivez les vôtres."
           />
         ) : activeSection === 'planning' ? (
           <MonPlanningMaintenancePage technicien={userData} view="reparation" />

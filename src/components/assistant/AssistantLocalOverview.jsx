@@ -3,6 +3,7 @@ import { BookOpen, CloudOff, Database, FileClock, RefreshCw } from 'lucide-react
 import { Button } from '@/components/ui/button';
 import { getCacheSummary, getQueueSummary, subscribeQueue } from '@/lib/offlineQueue';
 import { ASSISTANT_GUIDES } from '../../../supabase/functions/_shared/assistantKnowledge.js';
+import { appLocale } from '@/i18n/language';
 
 const PAGE_LABELS = {
   'centre-operationnel': "Centre d'actions",
@@ -28,7 +29,7 @@ const pageLabel = (key) => PAGE_LABELS[key] || String(key || 'Page courante')
   .split('-').filter(Boolean).map((word) => `${word.charAt(0).toUpperCase()}${word.slice(1)}`).join(' ');
 
 const formatTime = (timestamp) => timestamp
-  ? new Date(timestamp).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })
+  ? new Date(timestamp).toLocaleString(appLocale(), { dateStyle: 'short', timeStyle: 'short' })
   : 'Aucun instantané';
 
 export default function AssistantLocalOverview({ currentTab, online: onlineProp, embedded = false }) {

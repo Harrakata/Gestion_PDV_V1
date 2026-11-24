@@ -23,6 +23,7 @@ import {
 } from '@/lib/pointageMonitoring';
 import { supabase } from '@/lib/supabaseClient';
 import { isSupabaseAuthError } from '@/lib/guichetiereSpace';
+import { appLocale } from '@/i18n/language';
 
 const normalizeAgencyName = (value) => String(value || '').trim();
 
@@ -456,7 +457,7 @@ const SuiviPointagePage = () => {
               Détail du pointage - {selectedGuichetiereRow.nomComplet}
             </CardTitle>
             <CardDescription>
-              {selectedGuichetiereRow.matricule} • Suivi du {new Date(`${selectedDate}T00:00:00`).toLocaleDateString('fr-FR')}
+              {selectedGuichetiereRow.matricule} • Suivi du {new Date(`${selectedDate}T00:00:00`).toLocaleDateString(appLocale())}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">

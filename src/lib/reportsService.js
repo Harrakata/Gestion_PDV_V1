@@ -15,6 +15,7 @@
 
 import { publicSupabase, supabase } from './supabaseClient';
 import { ticketLabel } from './tickets';
+import { appLocale } from '@/i18n/language';
 
 const toDate = (v) => (v ? String(v).slice(0, 10) : '');
 
@@ -32,7 +33,7 @@ const ALL_AGENCE_SCOPES = [
 
 const fmtMontant = (v) => {
   const n = Number(v);
-  return Number.isFinite(n) ? n.toLocaleString('fr-FR') : '';
+  return Number.isFinite(n) ? n.toLocaleString(appLocale()) : '';
 };
 const fullName = (prenom, nom) => [prenom, nom].filter(Boolean).join(' ').trim();
 const hasNames = (agenceNames) => Array.isArray(agenceNames) && agenceNames.length > 0;

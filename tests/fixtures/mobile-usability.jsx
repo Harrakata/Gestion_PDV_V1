@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import { loadTranslations } from '@/i18n/translate';
 import '@/index.css';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -69,4 +70,5 @@ function Fixture() {
     <Button variant="outline" onClick={() => { setStep(0); setInfo(true); }}>Voir la fiche</Button>
   </div></main>;
 }
+await loadTranslations();
 createRoot(document.getElementById('root')).render(<Fixture />);

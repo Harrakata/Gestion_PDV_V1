@@ -198,9 +198,29 @@ logger.error = (msg, options) => {
 	loggerError(msg, options);
 }
 
+// Traduction à l'affichage : le JSX et les dates de l'application passent par src/i18n
+// (les bibliothèques de node_modules gardent les versions d'origine).
+const I18N_DIR = path.resolve(__dirname, 'src/i18n').replace(/\\/g, '/');
+const I18N_MODULES = {
+	'react/jsx-runtime': 'jsx-runtime.js',
+	'react/jsx-dev-runtime': 'jsx-dev-runtime.js',
+	'date-fns/locale': 'dateFnsLocale.js',
+};
+const appTranslation = {
+	name: 'app-translation',
+	enforce: 'pre',
+	resolveId(source, importer) {
+		if (!I18N_MODULES[source] || !importer) return null;
+		const from = importer.replace(/\\/g, '/');
+		if (from.includes('/node_modules/') || from.startsWith(I18N_DIR)) return null;
+		return `${I18N_DIR}/${I18N_MODULES[source]}`;
+	},
+};
+
 export default defineConfig({
 	customLogger: logger,
 	plugins: [
+		appTranslation,
 		react(),
 		addTransformIndexHtml,
 		VitePWA({
@@ -228,6 +248,13 @@ export default defineConfig({
 				// Ne pas intercepter le viewer Power BI ni les appels d'API
 				navigateFallbackDenylist: [/^\/pbi-viewer/],
 				globPatterns: ['**/*.{js,css,html,svg,png,webp,woff,woff2}'],
+				// Dictionnaire anglais : téléchargé seulement par ceux qui l'utilisent, puis gardé hors-ligne.
+				globIgnores: ['**/en-*.js'],
+				runtimeCaching: [{
+					urlPattern: ({ url, sameOrigin }) => sameOrigin && /\/assets\/en-[\w-]+\.js$/.test(url.pathname),
+					handler: 'CacheFirst',
+					options: { cacheName: 'app-english', expiration: { maxEntries: 3 } },
+				}],
 				maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
 				// Le nouveau SW prend la main immédiatement (sinon l'ancien reste actif tant
 				// que des onglets/PWA sont ouverts → ancien comportement de clic conservé).

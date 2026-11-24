@@ -13,6 +13,7 @@ import {
   updateTicket, fetchTechniciens, createInterventionFromTicket,
   TICKET_STATUSES, ticketLabel, getTicketStatusTone, getTicketPriorityTone,
 } from '@/lib/tickets';
+import PhotoGallery from '@/components/photos/PhotoGallery';
 import { logAudit, AUDIT_ACTIONS, AUDIT_ENTITIES } from '@/lib/auditLog';
 import { triggerPush } from '@/lib/pushNotifications';
 import { isNotifTypeEnabled, isRoleNotifEnabled } from '@/lib/notificationSettings';
@@ -127,6 +128,7 @@ const TicketProcessDialog = ({ open, onOpenChange, ticket, mode, actor, spaceKey
             {ticket.terminal_reference && <span className="text-muted-foreground">Terminal : {ticket.terminal_reference}</span>}
           </div>
           {ticket.description && <p className="text-sm text-muted-foreground whitespace-pre-wrap">{ticket.description}</p>}
+          <PhotoGallery photos={ticket.photos} title={`Photos du ticket ${ticket.code || ''}`.trim()} />
           <div className="text-xs text-muted-foreground">
             Déclaré par {ticket.createur_nom || '—'}{ticket.assigne_a_nom ? ` · Assigné à ${ticket.assigne_a_nom}` : ''}
           </div>

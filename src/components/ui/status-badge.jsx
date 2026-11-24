@@ -48,5 +48,7 @@ export function StatusBadge({
   );
 }
 
-export default StatusBadge;
+// La couleur se déduit du texte français : la traduction se fait sur le <span> affiché.
+StatusBadge.readsSourceText = true;
 
+export default StatusBadge;

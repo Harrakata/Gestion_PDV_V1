@@ -15,6 +15,8 @@
 //  alourdir le bundle initial : elles ne chargent qu'au premier export.
 // ════════════════════════════════════════════════════════════════════════════
 
+import { t } from '@/i18n/translate';
+
 /** Coerce une valeur en quelque chose d'affichable (les objets → JSON, jamais "[object Object]"). */
 const coerce = (value) => {
   if (value == null) return '';
@@ -28,11 +30,11 @@ const coerce = (value) => {
 const displayCell = (col, row) => {
   const raw = row?.[col.key];
   const value = typeof col.format === 'function' ? col.format(raw, row) : raw;
-  return coerce(value);
+  return t(coerce(value));
 };
 
 /** Valeur brute pour Excel — conserve les nombres en numérique (somme/tri possibles). */
-const rawCell = (col, row) => coerce(row?.[col.key]);
+const rawCell = (col, row) => t(coerce(row?.[col.key]));
 
 /** Déclenche le téléchargement d'un Blob côté navigateur. */
 const downloadBlob = (blob, filename) => {
@@ -56,7 +58,7 @@ const csvEscape = (value) => {
 };
 
 const exportCsv = ({ columns, rows }, filename) => {
-  const header = columns.map((c) => csvEscape(c.label)).join(',');
+  const header = columns.map((c) => csvEscape(t(c.label))).join(',');
   const body = rows
     .map((row) => columns.map((c) => csvEscape(displayCell(c, row))).join(','))
     .join('\r\n');
@@ -71,20 +73,21 @@ const exportCsv = ({ columns, rows }, filename) => {
 const exportXlsx = async ({ columns, rows, meta }, filename) => {
   const XLSX = await import('xlsx');
   const aoa = [
-    columns.map((c) => c.label),
+    columns.map((c) => t(c.label)),
     ...rows.map((row) => columns.map((c) => rawCell(c, row))),
   ];
   const ws = XLSX.utils.aoa_to_sheet(aoa);
   // Largeurs de colonnes approximatives selon le contenu (longueur affichée).
   ws['!cols'] = columns.map((c) => {
     const maxLen = Math.max(
-      String(c.label).length,
+      String(t(c.label)).length,
       ...rows.map((row) => String(displayCell(c, row)).length)
     );
     return { wch: Math.min(Math.max(maxLen + 2, 10), 40) };
   });
   const wb = XLSX.utils.book_new();
-  const sheetName = (meta?.title || 'Rapport').slice(0, 31); // Excel limite à 31 car.
+  // Excel : 31 caractères au plus, sans : \ / ? * [ ]
+  const sheetName = t(meta?.title || 'Rapport').replace(/[:\\/?*[\]]/g, ' ').slice(0, 31);
   XLSX.utils.book_append_sheet(wb, ws, sheetName);
   XLSX.writeFile(wb, `${filename}.xlsx`);
 };
@@ -141,17 +144,17 @@ const exportPdf = async ({ columns, rows, meta }, filename) => {
   doc.text(clientName, headerLeft, 42);
   doc.setFontSize(11);
   doc.setFont(undefined, 'normal');
-  doc.text(meta?.title || 'Rapport', headerLeft, 58);
+  doc.text(t(meta?.title || 'Rapport'), headerLeft, 58);
   if (meta?.period) {
     doc.setFontSize(9);
     doc.setTextColor(120);
-    doc.text(meta.period, pageWidth - 40, 42, { align: 'right' });
+    doc.text(t(meta.period), pageWidth - 40, 42, { align: 'right' });
     doc.setTextColor(0);
   }
 
   autoTable(doc, {
     startY: 78,
-    head: [columns.map((c) => c.label)],
+    head: [columns.map((c) => t(c.label))],
     body: rows.map((row) => columns.map((c) => String(displayCell(c, row)))),
     styles: { fontSize: 8, cellPadding: 3 },
     headStyles: { fillColor: [30, 41, 59], textColor: 255 },

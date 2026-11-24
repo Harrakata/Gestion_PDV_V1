@@ -3,8 +3,9 @@ import { format, getDay, isSameDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { t } from '@/i18n/translate';
 
-const WEEK_DAYS = [['L', 'Lundi'], ['M', 'Mardi'], ['M', 'Mercredi'], ['J', 'Jeudi'], ['V', 'Vendredi'], ['S', 'Samedi'], ['D', 'Dimanche']];
+const WEEK_DAYS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
 const MAX_DOTS = 3;
 const SWIPE_DISTANCE = 45;   // px
 const SWIPE_RATIO = 1.5;     // mouvement franchement horizontal
@@ -142,8 +143,8 @@ export default function MobilePlanningCalendar({
         <p aria-live="polite" className="truncate text-sm font-semibold text-foreground first-letter:uppercase">{periodLabel}</p>
       </div>
       <div className="grid grid-cols-7 border-b border-border bg-muted/50" aria-hidden="true">
-        {WEEK_DAYS.map(([letter, name]) => (
-          <span key={name} className="py-1 text-center text-xs font-bold text-muted-foreground">{letter}</span>
+        {WEEK_DAYS.map((name) => (
+          <span key={name} className="py-1 text-center text-xs font-bold text-muted-foreground">{t(name)[0]}</span>
         ))}
       </div>
       <div

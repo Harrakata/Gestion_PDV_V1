@@ -14,11 +14,15 @@ import {
 } from "@/components/ui/command"
 import AnchoredPopover from "@/components/ui/AnchoredPopover"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { t } from "@/i18n/translate"
 
 const normalizeValue = (value) => String(value ?? "").trim().toLowerCase();
-const getSearchableValue = (option) => String(
-  option.searchValue ?? `${option.label ?? ""} ${option.value ?? ""}`
-);
+// La recherche accepte le libellé affiché (traduit) et le libellé d'origine.
+const getSearchableValue = (option) => {
+  const value = String(option.searchValue ?? `${option.label ?? ""} ${option.value ?? ""}`);
+  const shown = typeof option.label === 'string' ? t(option.label) : null;
+  return shown && shown !== option.label ? `${shown} ${value}` : value;
+};
 
 // Combobox single OU multi-select.
 // Mode multi : passer `multi={true}` + `value` = array de valeurs + `onSelect(newArray)`.

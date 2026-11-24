@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/use-toast';
+import PhotoGallery from '@/components/photos/PhotoGallery';
 import { supabase } from '@/lib/supabaseClient';
 import KpiStatCard from '@/components/analytics/KpiStatCard';
 import ConfigurationTab from '@/pages/maintenance/ConfigurationTab';
@@ -37,6 +38,7 @@ import {
   normalizeMaintenanceText,
 } from '@/lib/maintenanceMonitoring';
 import { APP_SPACE_TAB_SETTINGS_KEY, isAppSpaceUserTabAllowed, normalizeAppSpaceTabFunctionalities } from '@/lib/exploitationProfiles';
+import { translateHtml } from '@/i18n/translate';
 
 const ALL_FILTER_VALUE = '__all__';
 
@@ -378,7 +380,7 @@ const MaintenanceTerminauxPage = () => {
     try {
       const res = await fetch(url);
       const html = await res.text();
-      setFicheDialog({ open: true, html, loading: false });
+      setFicheDialog({ open: true, html: translateHtml(html), loading: false });
     } catch {
       setFicheDialog({ open: false, html: '', loading: false });
       window.open(url, '_blank', 'noreferrer');
@@ -818,6 +820,7 @@ const MaintenanceTerminauxPage = () => {
                                                   {i.commentaire && (
                                                     <p className="border-t pt-1 italic text-muted-foreground">{i.commentaire}</p>
                                                   )}
+                                                  <PhotoGallery photos={i.photos} title="Photos de l'intervention" className="border-t pt-1.5" />
                                                 </div>
                                               );
                                             })}

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Database, Search } from 'lucide-react';
+import { t } from '@/i18n/translate';
 
 const GlobalSearchDialog = React.lazy(() => import('@/components/GlobalSearchDialog'));
 
@@ -51,7 +52,7 @@ export default function SpaceHeaderSearch({ items, enableDataSearch = false, aut
   const results = React.useMemo(() => {
     const sourceItems = items ?? [];
     const matches = query
-      ? sourceItems.filter((item) => normalize(`${item.label} ${item.group || ''} ${item.keywords || ''}`).includes(query))
+      ? sourceItems.filter((item) => normalize(`${item.label} ${t(item.label)} ${item.group || ''} ${t(item.group || '')} ${item.keywords || ''}`).includes(query))
       : sourceItems;
     const list = matches.slice(0, 8);
     if (enableDataSearch && query.length >= 2) {

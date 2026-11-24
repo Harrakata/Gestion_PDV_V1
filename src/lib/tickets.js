@@ -1,17 +1,18 @@
 import { supabase } from '@/lib/supabaseClient';
 import { isMissingSupabaseTableError } from '@/lib/guichetiereSpace';
+import { isMissingPhotosColumnError, photoUrls } from '@/lib/photos';
 
 // ════════════════════════════════════════════════════════════════════════════
 //  Module Tickets / Incidents — service.
 //
-//  Flux : déclaration (guichetière / chef d'agence) → triage & assignation
+//  Flux : déclaration (guichetière / chef d'agence / technicien) → triage & assignation
 //  (exploitation) → résolution (technicien). Table : tickets_incidents
 //  (cf. supabase/migrations/add_tickets_incidents.sql).
 // ════════════════════════════════════════════════════════════════════════════
 
 export const TICKETS_TABLE = 'tickets_incidents';
 
-export const TICKET_ROLES = { GUICHETIERE: 'guichetiere', CHEF_AGENCE: 'chef_agence' };
+export const TICKET_ROLES = { GUICHETIERE: 'guichetiere', CHEF_AGENCE: 'chef_agence', TECHNICIEN: 'technicien' };
 
 export const TICKET_STATUSES = {
   OPEN: 'ouvert',
@@ -175,11 +176,38 @@ export const fetchTickets = async (filters = {}) => {
   return { rows: data || [], error: null };
 };
 
-/** Crée un ticket (statut initial « ouvert »). */
-export const createTicket = async (payload) => {
+/**
+ * Tickets d'un technicien : ceux qui lui sont assignés et ceux qu'il a signalés
+ * (le rôle est vérifié : un identifiant peut exister dans une autre table).
+ */
+export const fetchTechnicienTickets = async (technicienId) => {
+  if (technicienId == null || technicienId === '') return { rows: [], error: null };
+  const results = await Promise.all([
+    fetchTickets({ assigne_a_id: technicienId }),
+    fetchTickets({ createur_role: TICKET_ROLES.TECHNICIEN, createur_id: technicienId }),
+  ]);
+  const byId = new Map(results.flatMap((result) => result.rows).map((row) => [row.id, row]));
+  const rows = [...byId.values()].sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')));
+  return { rows, error: results.find((result) => result.error)?.error || null };
+};
+
+/** Agences proposées à un déclarant qui n'est rattaché à aucune (technicien). */
+export const fetchTicketAgences = async () => {
+  const { data, error } = await supabase.from('agences').select('nom').eq('is_current', true).order('nom', { ascending: true });
+  return error ? [] : [...new Set((data || []).map((row) => row.nom).filter(Boolean))];
+};
+
+/**
+ * Crée un ticket (statut initial « ouvert »). `photos` n'est transmis que s'il y en a ;
+ * si la base n'a pas encore la colonne, le ticket est créé sans (`photosMissing`).
+ */
+export const createTicket = async ({ photos, ...payload }) => {
   const row = { ...payload, code: payload.code || generateTicketCode(), statut: TICKET_STATUSES.OPEN };
-  const { data, error } = await supabase.from(TICKETS_TABLE).insert(row).select().single();
-  return { data, error };
+  const insert = (values) => supabase.from(TICKETS_TABLE).insert(values).select().single();
+  if (!photos?.length) return insert(row);
+  const { data, error } = await insert({ ...row, photos });
+  if (!isMissingPhotosColumnError(error)) return { data, error };
+  return { ...(await insert(row)), photosMissing: true };
 };
 
 /**
@@ -206,6 +234,9 @@ export const createInterventionFromTicket = async (ticket, { technicienId, comme
     date_intervention: new Date().toISOString(),
     date_fin: new Date().toISOString(),
   };
+  // Les photos du signalement suivent l'intervention.
+  const photos = photoUrls(ticket?.photos);
+  if (photos.length) payload.photos = photos;
   const { data, error } = await supabase.from('interventions_maintenance').insert(payload).select('id').single();
   return { data, error };
 };

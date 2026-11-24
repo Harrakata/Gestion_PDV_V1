@@ -216,6 +216,7 @@ CREATE TABLE IF NOT EXISTS public.interventions_maintenance (
     commentaire TEXT,
     equipement_remplace BOOLEAN DEFAULT FALSE,
     reference_remplacement TEXT,
+    photos JSONB CHECK (photos IS NULL OR jsonb_typeof(photos) = 'array'), -- URL des photos jointes
     statut TEXT NOT NULL DEFAULT 'En cours',
     date_intervention TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     date_fin TIMESTAMP WITH TIME ZONE,

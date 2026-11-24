@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import { loadTranslations } from '@/i18n/translate';
 import { Dialog, DialogContent, DialogTitle } from '../../src/components/ui/dialog';
 import { Combobox } from '../../src/components/ui/Combobox';
 import '../../src/index.css';
@@ -22,4 +23,5 @@ function Fixture() {
   </Dialog>;
 }
 
+await loadTranslations();
 createRoot(document.getElementById('root')).render(<Fixture />);

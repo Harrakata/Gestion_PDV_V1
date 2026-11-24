@@ -50,6 +50,7 @@ import {
 import { buildRegionOptions, fetchRegions } from '@/lib/regions';
 import { fetchAllMobiTerminals } from '@/lib/terminauxMobi';
 import { fetchLatestMobiSuiviRows } from '@/lib/suiviTrmMobi';
+import { appLocale } from '@/i18n/language';
 
 const defaultRequestForm = {
   requested_region: '',
@@ -71,7 +72,7 @@ const formatDisplayDate = (value) => {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
 
-  return date.toLocaleDateString('fr-FR');
+  return date.toLocaleDateString(appLocale());
 };
 
 const formatOptionalDate = (value) => (value ? formatDisplayDate(value) : 'N/A');
@@ -556,7 +557,7 @@ const PointsVenteMobiChefPage = () => {
                   })()}
                   {lastLoadedAt && (
                     <span className="text-xs text-muted-foreground">
-                      Affiché : {lastLoadedAt.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                      Affiché : {lastLoadedAt.toLocaleTimeString(appLocale(), { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   )}
                 </div>

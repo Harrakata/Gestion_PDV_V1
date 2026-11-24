@@ -28,6 +28,7 @@ npm run test:e2e:ui      # Playwright en mode UI
 npm run test:e2e:report  # rapport du dernier run
 npm run lint             # ESLint (0 erreur attendue ; les warnings = dette à résorber)
 npm run lint:fix         # corrections automatiques
+npm run i18n             # textes sans traduction anglaise (0 attendu)
 ```
 
 ## Architecture
@@ -50,6 +51,18 @@ Modèle : **codebase unique**, **un projet Supabase et un déploiement (Vercel) 
 Le hook **`src/hooks/useFeatureFlags.jsx`** unifie le tout : il LIT les fonctionnalités (depuis le `localStorage` alimenté par `Layout.jsx` au boot, event `app-functionalities-updated`), applique l'override env, et charge branding + structure org. Ne pas créer de second fetch des fonctionnalités. Usage : `useFeature('ccope')` → bool ; `useFeatureFlags()` → `{ flags, client, org, ... }`.
 
 Pour ajouter un module : l'ajouter au catalogue `APP_SPACE_FUNCTIONALITIES`, le router dans `App.jsx`, et le garder optionnel via un flag.
+
+## Langues (français / anglais)
+
+Le code s'écrit **en français** ; l'anglais est obtenu **à l'affichage** (`src/i18n/`). Ne pas appeler de fonction de traduction dans les écrans.
+
+- **Comment** : `vite.config.js` fait passer le JSX de l'application par `src/i18n/jsx-runtime.js`, qui traduit les textes et les attributs `placeholder`, `title`, `alt`, `aria-label`, `data-label`. Dictionnaire : `src/i18n/locales/en.json` (`text`, `patterns` pour les textes assemblés, `mixed` pour le JSX entrecoupé de valeurs), téléchargé seulement en anglais. En français, ce sont les fonctions de React, sans surcoût.
+- **Quelle langue** : choix personnel sur l'appareil (Profil → Préférences) → langue du client (Paramètres → Langue, `app_settings/app_language`) → `VITE_CLIENT_LANGUAGE` → français. Fixée au démarrage : en changer recharge la page.
+- **Nouveau texte** : l'écrire en français, lancer `npm run i18n`, ajouter la traduction dans `en.json` (ou dans `ignored.json` s'il ne se traduit pas). Le test `tests/unit/i18n.test.js` échoue s'il en manque.
+- **Hors JSX** (titre d'onglet, export, notification, HTML imprimé) : `t(texte)` ou `translateHtml(html)` de `@/i18n/translate`, appelés au moment de l'affichage (jamais au chargement du module : le dictionnaire n'est pas encore là).
+- **Dates et nombres** : `appLocale()` (`@/i18n/language`), jamais `'fr-FR'` ; `import { fr } from 'date-fns/locale'` suit déjà la langue.
+- **Logique** : comparer des clés ou des valeurs, jamais un texte affiché (`textContent`, `children`, `title`). Un composant qui doit lire le texte d'origine de ses enfants porte `readsSourceText = true` (cf. `StatusBadge`). `translate="no"` exclut un élément.
+- Pas d'entrée d'un seul mot qui soit aussi un prénom (« Rose », « Sam ») : il serait traduit dans les noms.
 
 ## Mode hors-ligne
 
