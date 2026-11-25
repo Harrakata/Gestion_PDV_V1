@@ -1,4 +1,3 @@
-import React from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Wallet } from 'lucide-react';

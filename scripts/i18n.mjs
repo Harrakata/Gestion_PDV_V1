@@ -20,7 +20,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DICTIONARY = path.join(root, 'src/i18n/locales/en.json');
 // Textes à ne pas traduire (identiques, sigles, code) : connus, mais pas livrés avec l'application.
 const IGNORED = path.join(root, 'src/i18n/locales/ignored.json');
-const EXTRA_FILES = ['supabase/functions/_shared/assistantKnowledge.js'];
+const EXTRA_FILES = ['supabase/functions/_shared/assistantKnowledge.js', 'supabase/functions/_shared/accountManager.js'];
 
 const LETTERS = /[A-Za-zÀ-ÿ]{2}/;
 const ACCENT = /[À-ÿ]/;
@@ -56,6 +56,8 @@ const normalizeKey = (key) => key.replace(/[\u2019\u02bc]/g, "'").replace(/[\u00
 const baseKey = (key) => normalizeKey(key).replace(/(\s?\*|\s?:|…|\.\.\.)$/, '').trim();
 
 const calleeName = (node) => node?.callee?.property?.name || node?.callee?.name;
+// describeError(erreur, 'Composant', 'Message de repli') : le 3e argument s'affiche.
+const isFallbackMessage = (call, node) => calleeName(call) === 'describeError' && call.arguments.indexOf(node) >= 2;
 
 const collect = (file, entries) => {
   const code = readFileSync(path.join(root, file), 'utf8');
@@ -87,7 +89,7 @@ const collect = (file, entries) => {
       if (types.isMemberExpression(parent) || types.isDirective(parent)) return;
       if (types.isJSXAttribute(parent) && CODE_ATTRIBUTES.test(parent.name.name?.name || parent.name.name)) return;
       if (types.isJSXExpressionContainer(parent) && types.isJSXElement(p.parentPath.parent)) return;
-      if (types.isCallExpression(parent) || types.isNewExpression(parent)) if (CODE_CALLS.has(calleeName(parent)) && parent.arguments.includes(node)) return;
+      if (types.isCallExpression(parent) || types.isNewExpression(parent)) if (CODE_CALLS.has(calleeName(parent)) && parent.arguments.includes(node) && !isFallbackMessage(parent, node)) return;
       const attribute = p.findParent((x) => x.isJSXAttribute());
       if (attribute && CODE_ATTRIBUTES.test(attribute.node.name.name?.name || attribute.node.name.name)
         && !p.findParent((x) => x.isFunction() && x.findParent((y) => y === attribute))) return;
@@ -101,7 +103,7 @@ const collect = (file, entries) => {
       const attribute = p.findParent((x) => x.isJSXAttribute());
       if (attribute && CODE_ATTRIBUTES.test(attribute.node.name.name?.name || attribute.node.name.name)
         && !p.findParent((x) => x.isFunction() && x.findParent((y) => y === attribute))) return;
-      if (types.isCallExpression(p.parent) && CODE_CALLS.has(calleeName(p.parent))) return;
+      if (types.isCallExpression(p.parent) && CODE_CALLS.has(calleeName(p.parent)) && !isFallbackMessage(p.parent, p.node)) return;
       const pieces = quasis.map((quasi) => quasi.value.cooked);
       const joined = pieces.join(' ');
       if (!expressions.length) {

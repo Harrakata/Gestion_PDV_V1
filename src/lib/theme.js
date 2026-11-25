@@ -1,4 +1,4 @@
-import { supabase } from './supabaseClient';
+import { readAppSetting } from './appSettings';
 import { buildBrandCss, buildBrandTokens, parseHsl } from './themeContrast';
 
 export const THEME_STORAGE_KEY = 'theme_colors';
@@ -331,11 +331,7 @@ export async function loadAndApplyTheme() {
 
   // 2. Synchronisation depuis Supabase (met à jour le cache si modifié)
   try {
-    const { data } = await supabase
-      .from('app_settings')
-      .select('value')
-      .eq('key', THEME_STORAGE_KEY)
-      .maybeSingle();
+    const { data } = await readAppSetting(THEME_STORAGE_KEY);
     if (data?.value) applyTheme(data.value);
   } catch {
     // Silently fail — le cache local garantit l'affichage correct

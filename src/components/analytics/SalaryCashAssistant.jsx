@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowRight, ChevronDown, ChevronLeft, ChevronRight, CircleDollarSign, Download, RotateCcw, Scale, Search, SlidersHorizontal, Sparkles, Wallet, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

@@ -1,4 +1,3 @@
-import React from 'react';
 import { useOutletContext } from 'react-router-dom';
 import RapportsPage from '@/pages/exploitation/RapportsPage';
 import { REPORT_SCOPES } from '@/lib/reportsService';

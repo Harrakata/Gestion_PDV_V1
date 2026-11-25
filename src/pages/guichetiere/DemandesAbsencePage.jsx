@@ -1,4 +1,3 @@
-import React from 'react';
 import { useOutletContext } from 'react-router-dom';
 import AbsenceRequestsPanel from '@/components/absences/AbsenceRequestsPanel';
 import { ABSENCE_ROLES } from '@/lib/absences';

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { format, getDay, isSameDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Plus } from 'lucide-react';

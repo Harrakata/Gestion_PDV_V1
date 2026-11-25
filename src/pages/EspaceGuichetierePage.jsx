@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { describeError } from '@/lib/errors';
 import SpaceShell from '@/components/SpaceShell';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { CalendarDays, MapPin, FileText, ShieldCheck, Wallet, AtSign, Loader2, CalendarOff, Ticket } from 'lucide-react';
+import { CalendarDays, MapPin, FileText, ShieldCheck, Wallet, CalendarOff, Ticket } from 'lucide-react';
 import EditProfileDialog from '@/components/EditProfileDialog';
 import ForgotPasswordDialog from '@/components/ForgotPasswordDialog';
 import SpaceLoginCard from '@/components/SpaceLoginCard';
@@ -18,20 +18,16 @@ const GUICHETIERE_TAB_LABELS = {
   'etat-caisse': 'Caisse',
   'demandes-absence': 'Absences',
 };
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import EmptyState from '@/components/ui/empty-state';
 import { supabase } from '@/lib/supabaseClient';
+import { readAppSetting } from '@/lib/appSettings';
 import { GUICHETIERE_AUTH_KEY, buildGuichetiereDisplayName } from '@/lib/guichetiereSpace';
 import { useFeature } from '@/hooks/useFeatureFlags';
 import { useSyncHealthHeartbeat } from '@/hooks/useSyncHealthHeartbeat';
 import RemonteeDialog from '@/components/RemonteeDialog';
 import NotifEnableBanner from '@/components/NotifEnableBanner';
-import { isGuichetiereAgenceVisible } from '@/lib/orgStructureConfig';
 import { smartSignIn, fetchAuthLinkedProfile, fetchOrLinkAuthProfile } from '@/lib/smartAuth';
 import { useActivityTracker } from '@/hooks/useActivityTracker';
 import { useSessionTimeout } from '@/hooks/useSessionTimeout';
@@ -49,13 +45,8 @@ import {
 } from '@/lib/exploitationProfiles';
 
 const loadSpaceUserProfilesSettings = async () => {
-  const { data, error } = await supabase
-    .from('app_settings')
-    .select('value')
-    .eq('key', APP_SPACE_USER_PROFILES_SETTINGS_KEY)
-    .single();
-
-  if (error && error.code !== 'PGRST116') throw error;
+  const { data, error } = await readAppSetting(APP_SPACE_USER_PROFILES_SETTINGS_KEY);
+  if (error) throw error;
   return normalizeAppSpaceUserProfiles(data?.value);
 };
 
@@ -124,7 +115,7 @@ const LoginPageGuichetiere = ({ onLogin }) => {
 
     // 1) Auth Supabase (smart : accepte email ou matricule)
     const { data: authData, error: authErr } = await smartSignIn({
-      identifier, password, table: 'guichetieres',
+      identifier, password, table: 'guichetieres', statusCol: 'is_current', activeValue: true,
     });
     if (authErr || !authData?.user) {
       toast({

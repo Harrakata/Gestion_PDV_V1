@@ -1,14 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BellRing, BellOff, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import {
   isPushSupported, isPushConfigured, hasPushSubscription,
-  subscribeToPush, unsubscribeFromPush,
+  subscribeToPush, syncPushOwner, unsubscribeFromPush,
 } from '@/lib/pushNotifications';
 import {
-  notificationsSupported, getNotifPermission, requestNotifPermission,
-  setLocalNotifEnabled, isLocalNotifEnabled, notifyLocal,
+  notificationsSupported,
+  requestNotifPermission,
+  setLocalNotifEnabled,
+  isLocalNotifEnabled,
+  notifyLocal,
 } from '@/lib/localNotifications';
 import { isRoleNotifEnabled } from '@/lib/notificationSettings';
 
@@ -32,6 +35,10 @@ const EnablePushButton = ({ reader = {}, className = '', iconOnly = false, asNav
       setEnabled(pushOn || isLocalNotifEnabled());
     })();
   }, [supported]);
+
+  // L'abonnement de l'appareil suit la personne connectée.
+  const { id, role, nom, agence, region } = reader || {};
+  useEffect(() => { syncPushOwner({ id, role, nom, agence, region }); }, [id, role, nom, agence, region]);
 
   if (!supported) return null;
   // Cohérence : si l'exploitation a désactivé les notifs de cet espace, on masque le bouton.

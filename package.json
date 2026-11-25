@@ -11,8 +11,15 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:report": "playwright show-report",
     "test:e2e:install": "playwright install",
+    "test:unit": "node --test --test-isolation=none tests/*.unit.mjs tests/unit/*.test.js",
+    "test:regression:local": "playwright test --config playwright.local.config.ts",
+    "test:regression:authenticated": "node scripts/check-regression-env.mjs && playwright test --config playwright.authenticated.config.ts",
+    "test:regression:mutating": "node scripts/check-regression-env.mjs --mutating && playwright test --config playwright.mutations.config.ts",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
+    "lint:ratchet": "node scripts/lint-ratchet.mjs",
+    "verify:baseline": "npm run test:unit && npm run lint:ratchet && npm run build",
+    "verify:regression:local": "npm run verify:baseline && npm run test:regression:local",
     "i18n": "node scripts/i18n.mjs"
   },
   "dependencies": {
@@ -55,6 +62,7 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.6.0",
     "@eslint/js": "9.17.0",
     "@playwright/test": "^1.60.0",
     "@types/node": "^20.8.3",

@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { STORAGE_BUCKET } from '@/lib/clientConfig';
 import { enqueueOffline } from '@/lib/offlineQueue';
 import { reportError } from '@/lib/errors';
+import { resources } from '@/lib/resourceMode';
 
 // ════════════════════════════════════════════════════════════════════════════
 //  Photos jointes (tickets, interventions de maintenance).
@@ -15,8 +16,7 @@ import { reportError } from '@/lib/errors';
 export const MAX_PHOTOS = 4;
 export const PHOTO_FOLDERS = { TICKET: 'photos_tickets', MAINTENANCE: 'photos_maintenance' };
 
-const MAX_SIDE = 1600;
-const QUALITY = 0.82;
+const PORTRAIT_SIDE = 512; // photo de profil : affichée en vignette
 const MAX_SOURCE_BYTES = 25 * 1024 * 1024;
 
 const newId = () => (typeof crypto !== 'undefined' && crypto.randomUUID
@@ -38,6 +38,38 @@ const decode = async (file) => {
   }
 };
 
+// Image réduite en JPEG, aux dimensions et à la qualité du mode de ressources.
+const toJpeg = async (source, { maxSide, quality } = resources.photo) => {
+  const width = source.naturalWidth || source.width;
+  const height = source.naturalHeight || source.height;
+  const scale = Math.min(1, maxSide / Math.max(width, height));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, Math.round(width * scale));
+  canvas.height = Math.max(1, Math.round(height * scale));
+  const context = canvas.getContext('2d');
+  context.fillStyle = '#fff'; // fond des images transparentes
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.drawImage(source, 0, 0, canvas.width, canvas.height);
+  source.close?.();
+  return new Promise((resolve) => { canvas.toBlob(resolve, 'image/jpeg', quality); });
+};
+
+const lighten = async (file, options) => {
+  if (!/^image\/(jpeg|png|webp|heic|heif|bmp)$/.test(file?.type || '') || file.size > MAX_SOURCE_BYTES) return file;
+  try {
+    const blob = await toJpeg(await decode(file), options);
+    if (!blob || blob.size >= file.size) return file;
+    return new File([blob], `${(file.name || 'photo').replace(/\.[^.]*$/, '')}.jpg`, { type: 'image/jpeg' });
+  } catch {
+    return file;
+  }
+};
+
+/** Photo de profil allégée avant l'envoi (le fichier d'origine si la réduction est impossible). */
+export const lightenPortrait = (file) => lighten(file, { ...resources.photo, maxSide: PORTRAIT_SIDE });
+/** Photo de document (pièce d'identité) allégée, encore lisible. */
+export const lightenDocument = (file) => lighten(file, { maxSide: Math.max(1280, resources.photo.maxSide), quality: Math.max(0.72, resources.photo.quality) });
+
 /**
  * Prépare une photo choisie par l'utilisateur.
  * @returns {Promise<{ id, blob, previewUrl, url: null }>}
@@ -52,18 +84,7 @@ export const preparePhoto = async (file) => {
   } catch {
     throw new Error("Cette image n'a pas pu être lue. Essayez au format JPEG ou PNG.");
   }
-  const width = source.naturalWidth || source.width;
-  const height = source.naturalHeight || source.height;
-  const scale = Math.min(1, MAX_SIDE / Math.max(width, height));
-  const canvas = document.createElement('canvas');
-  canvas.width = Math.max(1, Math.round(width * scale));
-  canvas.height = Math.max(1, Math.round(height * scale));
-  const context = canvas.getContext('2d');
-  context.fillStyle = '#fff'; // fond des images transparentes
-  context.fillRect(0, 0, canvas.width, canvas.height);
-  context.drawImage(source, 0, 0, canvas.width, canvas.height);
-  source.close?.();
-  const blob = await new Promise((resolve) => { canvas.toBlob(resolve, 'image/jpeg', QUALITY); });
+  const blob = await toJpeg(source);
   if (!blob) throw new Error("Cette image n'a pas pu être préparée.");
   return { id: newId(), blob, previewUrl: URL.createObjectURL(blob), url: null };
 };

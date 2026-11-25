@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { describeError } from '@/lib/errors';
 import MobilePlanningCalendar from '@/components/planning/MobilePlanningCalendar';
 import { useIsPhone } from '@/hooks/useIsPhone';

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { BookOpen, CloudOff, Database, FileClock, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getCacheSummary, getQueueSummary, subscribeQueue } from '@/lib/offlineQueue';

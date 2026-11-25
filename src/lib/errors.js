@@ -100,7 +100,7 @@ export const reportError = (error, context = {}) => {
   captureError(err, details);
   pushJournal({ at: new Date().toISOString(), message: messageOf(error), ...details });
   if (import.meta.env.DEV) {
-    // eslint-disable-next-line no-console
+     
     console.error(`[${context.where || 'erreur'}]`, error);
   }
 };

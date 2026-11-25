@@ -1,8 +1,8 @@
-import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import EmptyState from '@/components/ui/empty-state';
 import { Users, User, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { rowEntrance } from '@/lib/rowEntrance';
 import { format, isValid } from 'date-fns';
 
 const PointageGuichetieresSummary = ({ guichetieresPlanifiees, pointagesData, creneauxPointageSettings, currentCreneauIndex }) => {
@@ -112,9 +112,7 @@ const PointageGuichetieresSummary = ({ guichetieresPlanifiees, pointagesData, cr
           {guichetieresStatus.map((g, index) => (
             <motion.div 
               key={g.matricule}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
+              {...rowEntrance(index, { y: 10, step: 0.05 })}
               className="flex items-center bg-background/50 rounded-lg p-2 shadow-sm"
             >
               <div className={`h-8 w-8 flex items-center justify-center rounded-full mr-2 ${getStatusColor(g.status)}`}>

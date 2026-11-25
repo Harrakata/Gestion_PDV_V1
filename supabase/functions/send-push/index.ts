@@ -1,14 +1,20 @@
 // Edge Function : envoi de notifications push (Web Push) ciblées.
 //
 // Rôle :
-//   À partir d'un filtre de cible (rôle / agence / utilisateur) et d'un payload
-//   (titre, corps, url), récupère les abonnements correspondants dans
-//   push_subscriptions et envoie une notification push à chacun via le protocole
-//   Web Push (clés VAPID). Supprime les abonnements expirés (404/410).
+//   Choisit les abonnements concernés (push_subscriptions) et envoie à chacun une
+//   notification push via le protocole Web Push (clés VAPID). Supprime les
+//   abonnements expirés (404/410).
 //
-// Corps attendu (POST JSON) :
-//   { "target": { "role"?: string, "agence_nom"?: string, "user_id"?: string },
+// Corps attendu (POST JSON), au choix :
+//   { "message_id": number, "roles"?: string[] }
+//       Message de l'exploitation : texte et destinataires lus en base, selon la même
+//       règle que la cloche (src/features/notifications/messageAudience.js).
+//   { "target": { "role"?, "agence_nom"?, "region"?, "user_id"? },   (valeur ou liste)
 //     "payload": { "title": string, "body"?: string, "url"?: string, "tag"?: string } }
+//       Au moins un critère : sans critère, l'appel est refusé.
+//
+// Appelant : un utilisateur connecté, ou une autre fonction (clé service_role). La clé
+// publique seule ne suffit pas.
 //
 // Variables d'environnement requises :
 //   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY        (déjà fournies par Supabase)
@@ -24,6 +30,7 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 import webpush from "npm:web-push@3.6.7";
+import { findByMessage, findByTarget, targetFilters } from "../_shared/pushRecipients.js";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -74,42 +81,50 @@ Deno.serve(async (req) => {
     }, 500);
   }
 
-  let target: Record<string, string> = {};
-  let payload: Record<string, unknown> = {};
+  // deno-lint-ignore no-explicit-any
+  let request: any;
   try {
-    const body = await req.json();
-    target = body.target ?? {};
-    payload = body.payload ?? {};
+    request = await req.json();
   } catch {
     return json({ error: "invalid_json" }, 400);
   }
-  if (!payload.title) return json({ error: "missing_title" }, 400);
 
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-  );
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const supabase = createClient(Deno.env.get("SUPABASE_URL")!, serviceKey);
 
-  let query = supabase.from("push_subscriptions").select("id, endpoint, p256dh, auth");
-  for (const col of ["role", "agence_nom", "user_id"]) {
-    const v = (target as Record<string, string>)[col];
-    if (v) query = query.eq(col, v);
+  const token = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "").trim();
+  if (token !== serviceKey) {
+    const { data } = await supabase.auth.getUser(token);
+    if (!data?.user) return json({ error: "unauthorized" }, 401);
   }
-  const { data: subs, error } = await query;
-  if (error) return json({ error: error.message }, 500);
 
-  const notif = JSON.stringify(payload);
+  type Subscription = { id: number; endpoint: string; p256dh: string; auth: string };
+  let deliveries: Array<{ subscription: Subscription; payload: Record<string, unknown> }> = [];
+  try {
+    if (request?.message_id != null) {
+      const roles = Array.isArray(request.roles) ? request.roles.map(String) : null;
+      deliveries = await findByMessage(supabase, request.message_id, roles);
+    } else {
+      const { target, payload } = request ?? {};
+      if (!payload?.title) return json({ error: "missing_title" }, 400);
+      if (!targetFilters(target)) return json({ error: "missing_target" }, 400);
+      deliveries = (await findByTarget(supabase, target)).map((subscription: Subscription) => ({ subscription, payload }));
+    }
+  } catch (e) {
+    return json({ error: String((e as Error)?.message ?? e) }, 500);
+  }
+
   let sent = 0;
   let failed = 0;
   const deadIds: number[] = [];
   const errors: Array<{ id: number; statusCode: number | null; body: string }> = [];
 
   await Promise.all(
-    (subs ?? []).map(async (s: { id: number; endpoint: string; p256dh: string; auth: string }) => {
+    deliveries.map(async ({ subscription: s, payload }) => {
       try {
         await webpush.sendNotification(
           { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
-          notif,
+          JSON.stringify(payload),
           // TTL : le service de push conserve la notif jusqu'à 24 h si l'appareil est
           // hors-ligne (ex. navigateur fermé) → livrée à la reconnexion. urgency high
           // pour réveiller les appareils en veille.
@@ -130,5 +145,5 @@ Deno.serve(async (req) => {
 
   // `found` = nombre d'abonnements ciblés ; `errors` = détail des échecs (ex. 403 = clés
   // front/serveur différentes, 401 = VAPID invalide).
-  return json({ found: (subs ?? []).length, sent, failed, removed: deadIds.length, errors: errors.slice(0, 5) });
+  return json({ found: deliveries.length, sent, failed, removed: deadIds.length, errors: errors.slice(0, 5) });
 });

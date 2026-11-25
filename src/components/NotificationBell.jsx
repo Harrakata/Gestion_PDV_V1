@@ -8,6 +8,7 @@ import {
 import { useFeature } from '@/hooks/useFeatureFlags';
 import { markMessagesRead } from '@/lib/messaging';
 import { isRoleNotifEnabled } from '@/lib/notificationSettings';
+import { BELL_OPENED_EVENT } from '@/hooks/useSpaceNotifications';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import EmptyState from '@/components/ui/empty-state';
@@ -69,6 +70,9 @@ const NotificationBell = ({ notifications = [], totalCount = 0, onNavigate, stor
 
   // Recharge les IDs lus quand l'utilisateur change (login/logout)
   useEffect(() => { setReadIds(loadReadIds(storageKey)); }, [storageKey]);
+
+  // Cloche ouverte : ce qui n'est pas à jour est relu.
+  useEffect(() => { if (open) window.dispatchEvent(new Event(BELL_OPENED_EVENT)); }, [open]);
 
   // Ouvre la cloche quand le service worker le demande (clic sur une notif « message »).
   useEffect(() => {
@@ -144,7 +148,7 @@ const NotificationBell = ({ notifications = [], totalCount = 0, onNavigate, stor
       window.removeEventListener('scroll', place, true);
       window.removeEventListener('keydown', onKey);
     };
-  }, [open, isMobile]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [open, isMobile]);  
 
   // ── Helpers ──────────────────────────────────────────────────────────────
   const isUnread = (msgId) => !readIds.has(msgId);

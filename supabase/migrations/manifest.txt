@@ -57,3 +57,6 @@ add_operational_assistant.sql
 202611161200_reduce_mobi_daily_cache_storage.sql
 202611201200_terminal_sous_ensembles_historique.sql
 202611241200_photos_tickets_interventions.sql
+202611251200_purge_journaux_activite.sql
+202611261200_securite_lot_a.sql
+202611271200_mots_de_passe_en_clair.sql

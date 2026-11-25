@@ -15,6 +15,7 @@ const isLocal = /localhost|127\.0\.0\.1/.test(BASE_URL);
 
 export default defineConfig({
   testDir: './tests',
+  globalSetup: './tests/helpers/guardDefault.ts',
   fullyParallel: false,           // séquentiel : on partage l'état de session multi-espace
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,

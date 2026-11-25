@@ -1,5 +1,3 @@
-import React from 'react';
-
 /**
  * Identité affichée dans la barre supérieure d'un espace connecté (desktop) :
  * les icônes d'action à gauche, puis une pastille arrondie « photo + nom ».

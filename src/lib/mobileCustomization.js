@@ -14,7 +14,7 @@
 // ════════════════════════════════════════════════════════════════════════════
 
 import { useSyncExternalStore } from 'react';
-import { supabase } from '@/lib/supabaseClient';
+import { readAppSetting } from '@/lib/appSettings';
 import { setStatusBarMode } from '@/lib/theme';
 
 export const MOBILE_CUSTOM_KEY = 'mobile_customization';
@@ -117,7 +117,7 @@ export const loadAndApplyMobileCustomization = async () => {
     if (cached) applyMobileCustomization(JSON.parse(cached));
   } catch { /* cache indisponible */ }
   try {
-    const { data } = await supabase.from('app_settings').select('value').eq('key', MOBILE_CUSTOM_KEY).maybeSingle();
+    const { data } = await readAppSetting(MOBILE_CUSTOM_KEY);
     if (data?.value) applyMobileCustomization(data.value, { persist: true });
   } catch { /* hors-ligne : le cache reste appliqué */ }
 };

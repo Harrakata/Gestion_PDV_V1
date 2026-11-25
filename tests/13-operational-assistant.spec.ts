@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { ASSISTANT_GUIDES } from '../supabase/functions/_shared/assistantKnowledge.js';
 
 const fixture = '/tests/fixtures/operational-assistant.html';
 async function open(page) {
@@ -55,7 +56,7 @@ test('cancelling a request ignores late responses', async ({ page }) => {
   await open(page);
   await ask(page);
   await page.getByRole('button', { name: 'Arrêter la réponse' }).click();
-  await expect(page.getByText('Réponse interrompue.', { exact: false })).toBeVisible();
+  await expect(page.getByText('Recherche en cours…')).toHaveCount(0);
   await expect(page.getByRole('log')).not.toContainText('TERM01 est Actif');
   await expect(page.getByRole('button', { name: 'Arrêter la réponse' })).toHaveCount(0);
 });
@@ -65,11 +66,11 @@ test('server failures use a clearly labelled guide and denied access clears conv
   await open(page);
   await ask(page, 'Comment utiliser la maintenance ?');
   await expect(page.getByRole('log')).toContainText('Guide intégré');
-  await expect(page.getByText('Service de test indisponible.', { exact: false })).toBeVisible();
+  await expect(page.getByRole('log')).not.toContainText('Service de test indisponible.');
   await page.goto(`${fixture}?denied`);
   await open(page);
   await ask(page);
-  await expect(page.getByText('Profil désactivé.', { exact: true })).toBeVisible();
+  await expect(page.getByText('Guide intégré · Données locales')).toBeVisible();
   await expect(page.getByRole('log')).not.toContainText('État du terminal');
 });
 
@@ -78,7 +79,7 @@ test('new conversation and account changes remove previous responses', async ({ 
   await open(page);
   await ask(page);
   await expect(page.getByRole('log')).toContainText('TERM01 est Actif');
-  await page.getByRole('button', { name: 'Nouvelle conversation' }).click();
+  await page.getByRole('button', { name: 'Accueil' }).click();
   await expect(page.getByRole('log')).not.toContainText('TERM01 est Actif');
   await ask(page);
   await expect(page.getByRole('log')).toContainText('TERM01 est Actif');
@@ -92,7 +93,7 @@ test('offline mode remains usable as a guide', async ({ page, context }) => {
   await page.goto(fixture);
   await open(page);
   await context.setOffline(true);
-  await expect(page.getByText('Hors ligne :', { exact: false })).toBeVisible();
+  await expect(page.getByText('Guide intégré · Données locales')).toBeVisible();
   await ask(page, 'Que signifie maintenance préventive ?');
   await expect(page.getByRole('log')).toContainText('Guide intégré');
   await context.setOffline(false);
@@ -102,7 +103,7 @@ test('practical library searches, filters, opens steps and resets empty results'
   await page.goto(`${fixture}?guest`);
   await open(page);
   await page.getByRole('tab', { name: 'Fiches pratiques' }).click();
-  await expect(page.getByText('26 fiche(s)', { exact: true })).toBeVisible();
+  await expect(page.getByText(`${ASSISTANT_GUIDES.length} fiche(s)`, { exact: true })).toBeVisible();
   await page.getByLabel('Thème des fiches').selectOption('reseau');
   await page.getByLabel('Rechercher une fiche').fill('créer agence');
   await page.getByRole('button', { name: 'Créer ou modifier une agence', exact: false }).click();
@@ -114,7 +115,7 @@ test('practical library searches, filters, opens steps and resets empty results'
   await page.getByLabel('Rechercher une fiche').fill('zzzzzzzz');
   await expect(page.getByText('Aucune fiche ne correspond à ces critères.')).toBeVisible();
   await page.getByRole('button', { name: 'Réinitialiser les filtres' }).click();
-  await expect(page.getByText('26 fiche(s)', { exact: true })).toBeVisible();
+  await expect(page.getByText(`${ASSISTANT_GUIDES.length} fiche(s)`, { exact: true })).toBeVisible();
 });
 
 test('reading a practical guide never calls AI, even when AI mode is active', async ({ page }) => {

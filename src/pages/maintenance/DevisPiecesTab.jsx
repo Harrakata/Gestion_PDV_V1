@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Badge } from '@/components/ui/badge';
 import StatusBadge from '@/components/ui/status-badge';

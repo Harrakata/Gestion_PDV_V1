@@ -35,12 +35,10 @@ Deno.serve(async () => {
   const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
 
   // Réglages (toggles) + config horaires + config pointage (Paramètres → clé 'general').
-  const [{ data: setRow }, { data: cfgRow }, { data: genRow }, { data: languageRow }] = await Promise.all([
-    supabase.from("app_settings").select("value").eq("key", NOTIFICATION_SETTINGS_KEY).maybeSingle(),
-    supabase.from("app_settings").select("value").eq("key", REMINDER_CONFIG_KEY).maybeSingle(),
-    supabase.from("app_settings").select("value").eq("key", "general").maybeSingle(),
-    supabase.from("app_settings").select("value").eq("key", "app_language").maybeSingle(),
-  ]);
+  const { data: settingRows } = await supabase.from("app_settings").select("key, value")
+    .in("key", [NOTIFICATION_SETTINGS_KEY, REMINDER_CONFIG_KEY, "general", "app_language"]);
+  const settingOf = (key: string) => (settingRows ?? []).find((row: { key: string }) => row.key === key);
+  const [setRow, cfgRow, genRow, languageRow] = [NOTIFICATION_SETTINGS_KEY, REMINDER_CONFIG_KEY, "general", "app_language"].map(settingOf);
   // Langue du client (Paramètres → Langue), français par défaut.
   const english = languageRow?.value?.language === "en";
   const settings = (setRow?.value ?? {}) as Record<string, unknown>;
@@ -80,7 +78,7 @@ Deno.serve(async () => {
   const inWindow = (startMin: number) => minutesOfDay >= startMin && minutesOfDay < startMin + WINDOW_MIN;
 
   // Envoi mutualisé via send-push (réutilise la config VAPID).
-  const sendPush = async (target: Record<string, string>, payload: Record<string, unknown>) => {
+  const sendPush = async (target: Record<string, string | string[]>, payload: Record<string, unknown>) => {
     try {
       await fetch(`${SUPABASE_URL}/functions/v1/send-push`, {
         method: "POST",
@@ -105,13 +103,13 @@ Deno.serve(async () => {
       const { data: pointages } = await supabase.from("pointages")
         .select("guichetiereMatricule").eq("date", todayStr).eq("creneauIndex", cr.index).in("guichetiereMatricule", matricules);
       const pointed = new Set((pointages ?? []).map((p: { guichetiereMatricule: string }) => p.guichetiereMatricule));
-      for (const g of (guichetieres ?? []) as Array<{ id: string; matricule: string }>) {
-        if (pointed.has(g.matricule)) continue;
+      const late = ((guichetieres ?? []) as Array<{ id: string; matricule: string }>).filter((g) => !pointed.has(g.matricule));
+      if (late.length) {
         await sendPush(
-          { role: "guichetiere", user_id: String(g.id) },
+          { role: "guichetiere", user_id: late.map((g) => String(g.id)) },
           { title: english ? "Clock-in reminder" : "Rappel de pointage", body: english ? `Don't forget to clock in for slot ${cr.label}.` : `N'oubliez pas de pointer votre créneau ${cr.label}.`, url: "/pointage", tag: `rappel-pointage-${cr.index}` },
         );
-        pointageSent++;
+        pointageSent += late.length;
       }
     }
   }

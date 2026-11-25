@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { describeError } from '@/lib/errors';
 import { Send, Loader2, MessageSquarePlus, Clock, CheckCircle2, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { describeError } from '@/lib/errors';
 import { Link, useNavigate } from 'react-router-dom';
 import { KeyRound, Loader2, ShieldCheck } from 'lucide-react';

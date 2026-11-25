@@ -2,6 +2,8 @@ import { test, expect } from '@playwright/test';
 import { CREDS, hasCreds } from './helpers/env';
 import { assertNoCrash, settle, loginIfNeeded } from './helpers/actions';
 
+test.skip(process.env.E2E_ISOLATED_ENV !== '1', 'Base de recette isolée requise (les demandes sont enregistrées)');
+
 // ════════════════════════════════════════════════════════════════════════════
 //  Demandes d'absence : flux réel par espace.
 //   - Guichetière : crée une demande (teste aussi l'existence de la table).

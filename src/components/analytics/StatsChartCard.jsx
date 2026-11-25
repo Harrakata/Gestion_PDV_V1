@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Activity, BarChart3, Gauge, PieChart } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

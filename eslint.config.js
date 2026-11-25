@@ -42,10 +42,12 @@ const DESIGN_RULES = [
     message: 'Liseré posé à la main : utiliser <Card variant="accent">.',
   },
 ];
-// Pages : la logique d'accès aux données doit migrer vers des services.
+// Écrans, composants et hooks : l'accès aux données vit dans src/lib ou dans un dépôt
+// (src/features/<domaine>/<domaine>Repository.js). Le nom `client` (client passé en argument)
+// et `.schema('public').from(...)` sont couverts : une requête déplacée reste comptée.
 const DATA_ACCESS_RULE = {
-  selector: "CallExpression[callee.property.name='from'][callee.object.name=/^(supabase|publicSupabase)$/]",
-  message: 'Accès Supabase direct dans une page : déplacer la requête dans un service (src/lib ou src/services).',
+  selector: ":matches(CallExpression[callee.property.name=/^(from|rpc)$/][callee.object.name=/^(supabase|publicSupabase|client)$/], CallExpression[callee.property.name=/^(from|rpc)$/][callee.object.callee.property.name='schema'])",
+  message: 'Accès Supabase direct : déplacer la requête dans un service (src/lib) ou un dépôt (src/features/<domaine>/<domaine>Repository.js).',
 };
 
 export default [
@@ -74,8 +76,8 @@ export default [
       'no-empty': ['warn', { allowEmptyCatch: true }],
       'no-console': ['warn', { allow: ['warn', 'error'] }],
 
-      // NB : une config plus spécifique REMPLACE la règle (pas de fusion) → les
-      // pages reprennent DESIGN_RULES + DATA_ACCESS_RULE ci-dessous.
+      // NB : une config plus spécifique REMPLACE la règle (pas de fusion) → les écrans
+      // reprennent DESIGN_RULES + DATA_ACCESS_RULE ci-dessous.
       'no-restricted-syntax': ['warn', ...DESIGN_RULES],
       'no-restricted-properties': ['error',
         { object: 'window', property: 'confirm', message: 'Utiliser useConfirm().confirm (ConfirmDialogProvider).' },
@@ -85,7 +87,8 @@ export default [
     },
   },
   {
-    files: ['src/pages/**/*.{js,jsx}'],
+    files: ['src/{pages,components,hooks,features}/**/*.{js,jsx}'],
+    ignores: ['src/features/**/*Repository.js'],
     rules: { 'no-restricted-syntax': ['warn', ...DESIGN_RULES, DATA_ACCESS_RULE] },
   },
   // Exceptions légitimes.

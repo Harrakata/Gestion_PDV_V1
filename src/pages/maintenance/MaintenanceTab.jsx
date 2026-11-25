@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { describeError } from '@/lib/errors';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -17,7 +17,7 @@ import { supabase, publicSupabase } from '@/lib/supabaseClient';
 import { STORAGE_BUCKET } from '@/lib/clientConfig';
 import { motion } from 'framer-motion';
 import SignatureCanvas from 'react-signature-canvas';
-import { Building2, CalendarClock, Globe, Wrench, ClipboardList, PlusCircle, Trash2, MapPin, AlertTriangle, FileText, CheckCircle2 } from 'lucide-react';
+import { Building2, CalendarClock, Globe, Wrench, ClipboardList, PlusCircle, Trash2, AlertTriangle, FileText, CheckCircle2 } from 'lucide-react';
 import KpiStatCard from '@/components/analytics/KpiStatCard';
 import { ajouterAuStockDefectueux } from '@/lib/stockDefectueux';
 import { fetchRegions, buildRegionOptions, normalizeRegionText } from '@/lib/regions';

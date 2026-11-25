@@ -219,6 +219,8 @@ const appTranslation = {
 
 export default defineConfig({
 	customLogger: logger,
+	// Cache séparé pour le serveur des tests simulés (playwright.local.config.ts).
+	cacheDir: process.env.VITE_CACHE_DIR || 'node_modules/.vite',
 	plugins: [
 		appTranslation,
 		react(),

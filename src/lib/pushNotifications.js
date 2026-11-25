@@ -39,15 +39,26 @@ const getRegistration = async () => {
 /** Permission de notification courante : 'granted' | 'denied' | 'default' | 'unsupported'. */
 export const getPushPermission = () => (isPushSupported() ? Notification.permission : 'unsupported');
 
-/** Y a-t-il déjà un abonnement actif sur cet appareil ? */
-export const hasPushSubscription = async () => {
+// Abonnement de l'appareil, ou null. Sans service worker enregistré (serveur de développement),
+// `serviceWorker.ready` ne répondrait jamais : on interroge l'enregistrement.
+const currentSubscription = async () => {
   try {
-    const reg = await getRegistration();
-    if (!reg) return false;
-    return !!(await reg.pushManager.getSubscription());
+    const reg = await navigator.serviceWorker.getRegistration();
+    return (await reg?.pushManager.getSubscription()) || null;
   } catch {
-    return false;
+    return null;
   }
+};
+
+/** Y a-t-il déjà un abonnement actif sur cet appareil ? */
+export const hasPushSubscription = async () => Boolean(await currentSubscription());
+
+// Personne à qui l'abonnement de cet appareil est rattaché.
+const OWNER_KEY = 'push_subscription_owner';
+const ownerOf = (endpoint, { id, role, agence, region }) => JSON.stringify([endpoint, id != null ? String(id) : null, role || null, agence || null, region || null]);
+const readOwner = () => { try { return localStorage.getItem(OWNER_KEY); } catch { return null; } };
+const writeOwner = (value) => {
+  try { if (value) localStorage.setItem(OWNER_KEY, value); else localStorage.removeItem(OWNER_KEY); } catch { /* stockage indisponible */ }
 };
 
 const saveSubscription = async (subscription, reader = {}) => {
@@ -63,7 +74,19 @@ const saveSubscription = async (subscription, reader = {}) => {
     user_nom: reader.nom || null,
     updated_at: new Date().toISOString(),
   };
-  await supabase.from(TABLE).upsert(row, { onConflict: 'endpoint' });
+  const { error } = await supabase.from(TABLE).upsert(row, { onConflict: 'endpoint' });
+  if (!error) writeOwner(ownerOf(json.endpoint, reader));
+};
+
+/**
+ * Rattache l'abonnement de cet appareil à la personne connectée (appareil partagé, changement
+ * d'agence, fiche modifiée). N'écrit que si le rattachement a changé.
+ */
+export const syncPushOwner = async (reader = {}) => {
+  if (!reader.role || reader.id == null || !isPushSupported() || !isPushConfigured()) return;
+  const subscription = await currentSubscription();
+  if (!subscription || readOwner() === ownerOf(subscription.endpoint, reader)) return;
+  try { await saveSubscription(subscription, reader); } catch { /* hors-ligne : au prochain affichage */ }
 };
 
 /**
@@ -101,6 +124,7 @@ export const unsubscribeFromPush = async () => {
       const endpoint = subscription.endpoint;
       await subscription.unsubscribe();
       await supabase.from(TABLE).delete().eq('endpoint', endpoint);
+      writeOwner(null);
     }
     return { ok: true };
   } catch (e) {
@@ -110,13 +134,27 @@ export const unsubscribeFromPush = async () => {
 
 /**
  * Déclenche l'envoi d'une notification push ciblée via l'Edge Function `send-push`.
- * @param target { role?, agence_nom?, user_id? } — filtre des abonnés
+ * @param target { role?, agence_nom?, region?, user_id? } — au moins un critère (valeur ou liste)
  * @param payload { title, body, url?, tag? }
  */
 export const triggerPush = async (target, payload) => {
   try {
     const translated = { ...payload, title: t(payload?.title), body: t(payload?.body) };
     await supabase.functions.invoke('send-push', { body: { target, payload: translated } });
+  } catch {
+    /* best-effort : ne bloque jamais le flux applicatif */
+  }
+};
+
+/**
+ * Notification push d'un message de l'exploitation déjà enregistré : la fonction lit elle-même
+ * le texte et les destinataires, selon la même règle que la cloche.
+ * @param roles rôles dont les notifications sont actives
+ */
+export const triggerMessagePush = async (messageId, roles) => {
+  if (messageId == null || !roles?.length) return;
+  try {
+    await supabase.functions.invoke('send-push', { body: { message_id: messageId, roles } });
   } catch {
     /* best-effort : ne bloque jamais le flux applicatif */
   }

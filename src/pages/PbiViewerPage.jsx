@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { useFeature, useClient } from '@/hooks/useFeatureFlags';
 import { t } from '@/i18n/translate';

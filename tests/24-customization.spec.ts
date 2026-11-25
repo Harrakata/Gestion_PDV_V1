@@ -17,7 +17,12 @@ const mockSettings = async (page: Page, store: Store, writes: Array<{ method: st
       store[key] = body.value;
       return route.fulfill({ status: 204, body: '' });
     }
-    const key = (url.searchParams.get('key') || '').replace('eq.', '');
+    const filter = url.searchParams.get('key') || '';
+    if (filter.startsWith('in.')) {
+      const keys = filter.slice(4, -1).split(',').filter(name => name in store);
+      return route.fulfill({ json: keys.map(name => ({ key: name, value: store[name] })) });
+    }
+    const key = filter.replace('eq.', '');
     const row = key in store ? { id: `id-${key}`, key, value: store[key] } : null;
     const single = (request.headers().accept || '').includes('vnd.pgrst.object');
     return single && !row

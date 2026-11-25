@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabaseClient';
+import { readAppSetting } from '@/lib/appSettings';
 
 // ════════════════════════════════════════════════════════════════════════════
 //  Réglages GLOBAUX des notifications (par client) — activer/désactiver par type.
@@ -75,8 +76,7 @@ export const isRoleNotifEnabled = (role) => {
 /** Charge les réglages depuis le serveur → met à jour le cache localStorage. */
 export const loadNotificationSettings = async () => {
   try {
-    const { data, error } = await supabase
-      .from('app_settings').select('value').eq('key', NOTIFICATION_SETTINGS_KEY).maybeSingle();
+    const { data, error } = await readAppSetting(NOTIFICATION_SETTINGS_KEY);
     const settings = (!error && data?.value)
       ? normalizeNotificationSettings(data.value)
       : buildDefaultNotificationSettings();
@@ -132,8 +132,7 @@ export const normalizeReminderConfig = (value) => {
 
 export const loadReminderConfig = async () => {
   try {
-    const { data, error } = await supabase
-      .from('app_settings').select('value').eq('key', REMINDER_CONFIG_KEY).maybeSingle();
+    const { data, error } = await readAppSetting(REMINDER_CONFIG_KEY);
     return (!error && data?.value) ? normalizeReminderConfig(data.value) : buildDefaultReminderConfig();
   } catch {
     return buildDefaultReminderConfig();

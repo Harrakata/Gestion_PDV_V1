@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { AlertTriangle, GripVertical, MapPin } from 'lucide-react';
 import PhotoGallery from '@/components/photos/PhotoGallery';
 import {

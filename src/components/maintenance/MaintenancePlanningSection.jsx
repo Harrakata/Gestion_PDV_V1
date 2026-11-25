@@ -1,9 +1,9 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { describeError } from '@/lib/errors';
 import { motion } from 'framer-motion';
 import { addMonths, addWeeks, endOfMonth, endOfWeek, eachDayOfInterval, format, getDay, isSameDay, isSameMonth, parseISO, startOfMonth, startOfWeek, subMonths, subWeeks } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { CalendarClock, CheckCircle2, ChevronLeft, ChevronRight, ClipboardList, Copy, FileText, MapPinned, Pencil, PlusCircle, Search, ShieldAlert, TimerReset, Wrench } from 'lucide-react';
+import { CheckCircle2, ChevronLeft, ChevronRight, ClipboardList, Copy, FileText, MapPinned, Pencil, PlusCircle, Search, ShieldAlert, TimerReset, Wrench } from 'lucide-react';
 import MobilePlanningCalendar from '@/components/planning/MobilePlanningCalendar';
 import MobileFilterBar, { filterLabels } from '@/components/ui/mobile-filter-bar';
 import PhotoGallery from '@/components/photos/PhotoGallery';

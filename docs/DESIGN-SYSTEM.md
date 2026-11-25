@@ -240,7 +240,7 @@ import FormActions from '@/components/ui/form-actions';
   dans un toast.
 - L'ordre des actions reste « Annuler » puis action principale sur grand écran ;
   la pile mobile place l'action principale à portée de lecture.
-- Les groupes complexes utilisent `FormSection` avec un titre explicite.
+- Les groupes complexes ont un titre explicite.
 - La classe `compact-filter-labels` est réservée aux barres de filtres denses ;
   elle ne doit pas être appliquée à un formulaire de saisie.
 

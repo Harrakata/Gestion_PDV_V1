@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Guide pour travailler efficacement dans ce dépôt. Voir aussi `docs/ONBOARDING-NOUVEAU-CLIENT.md` (mise en service d'un client) et `database_setup.md` (schéma).
+Guide pour travailler efficacement dans ce dépôt. Voir aussi `docs/ONBOARDING-NOUVEAU-CLIENT.md` (mise en service d'un client), `docs/MODES-RESSOURCES.md` (Dev, Démo, Prod) et `database_setup.md` (schéma).
 
 ## Présentation
 
@@ -27,6 +27,10 @@ npm run test:e2e         # tests Playwright
 npm run test:e2e:ui      # Playwright en mode UI
 npm run test:e2e:report  # rapport du dernier run
 npm run lint             # ESLint (0 erreur attendue ; les warnings = dette à résorber)
+npm run lint:ratchet     # échoue si un type d'avertissement augmente (-- --update enregistre une baisse)
+npm run test:unit        # tests unitaires
+npm run verify:baseline  # unitaires + lint à cliquet + build
+npm run test:regression:local  # tests d'interface sur base simulée (aucune base réelle)
 npm run lint:fix         # corrections automatiques
 npm run i18n             # textes sans traduction anglaise (0 attendu)
 ```
@@ -36,8 +40,9 @@ npm run i18n             # textes sans traduction anglaise (0 attendu)
 - `src/App.jsx` — routing. Toutes les pages sont en `lazy()` + `Suspense` + `ErrorBoundary` ; un `Layout` enveloppe les routes authentifiées. `FeatureFlagsProvider` est monté au sommet.
 - `src/pages/` — pages par espace : racine (`Espace*Page.jsx`) puis sous-dossiers `exploitation/`, `chef_agence/`, `guichetiere/`, `maintenance/`, `pointage/`, `technicien/`.
 - `src/components/` — composants partagés ; `ui/` = primitives Radix/Tailwind ; sous-dossiers par domaine (`analytics/`, `maintenance/`, `paiement_gain/`, `mobile/`…).
-- `src/hooks/` — hooks transverses (auth, cache Supabase, online status, feature flags, préférences…).
+- `src/hooks/` — hooks transverses (session, fonctionnalités, notifications, activité, photos…).
 - `src/lib/` — logique métier et services (config client, profils exploitation, offline, géoloc, paiement gain, planning, pointage, audit…).
+- `src/features/<domaine>/` — domaines refondus : `<domaine>Model.js` (règles pures), `<domaine>Repository.js` (seul endroit qui interroge Supabase, client reçu en argument).
 - `supabase/migrations/` — migrations SQL. `supabase/functions/` — Edge Functions.
 
 ## Multi-tenant (1 client = 1 projet Supabase + 1 déploiement)
@@ -83,12 +88,28 @@ Pensé pour le terrain en connexion instable. Voir `src/lib/offlineCache.js`, `o
 - **Erreurs** : ne jamais afficher `error.message` brut. Dans un toast : `description: describeError(error, 'NomDuComposant')` (`src/lib/errors.js`) — signale à Sentry avec l'origine + traduit en message utilisateur. Erreur silencieuse à tracer : `reportError(error, { where })`. Sur appareil, `window.__gpdvErrors()` (console) liste les 30 dernières erreurs.
 - **Confirmations / saisies courtes** : `const { confirm, prompt } = useConfirm()` (`ConfirmDialogProvider`, monté dans `App.jsx`). `window.confirm/prompt/alert` sont interdits par ESLint.
 - **Session** : chaque espace connecté appelle `useSessionTimeout(null, () => handleLogout(), <cléAuth>, { enabled: isAuthenticated })` (durée : Paramètres → `sessionDureeMinutes`). Tout nouvel espace doit faire de même.
+- **Données vivantes** : jamais de `setInterval(charger, …)` vers Supabase (chaque appel est journalisé et facturé). Écran : `useLiveRefresh(nom, sources)` ; cloche : `SPACE_SOURCES` (`src/features/notifications/`). Les deux passent par `src/lib/liveFeed.js` : temps réel, sinon lecture espacée, rien hors-ligne. Une table n'est écoutée que si elle est dans la publication `supabase_realtime` (`enable_realtime_notifications.sql`) : sans elle, repli automatique sur une lecture par minute. Ne pas écouter une table que chaque appareil écrit régulièrement (`sync_health`, `activites_sessions`). Plafonds vérifiés par `tests/34-notification-traffic.spec.ts`.
+- **Listes animées** : `{...rowEntrance(index, { y: 12 })}` (`src/lib/rowEntrance.js`) sur `motion.tr` / `motion.div`, jamais `delay: index * …` (une liste de 900 lignes mettait 18 s à s'afficher). Vérifié par `tests/unit/rowEntrance.test.js`.
+- **Journaux d'activité** : purge faite par la base selon `app_settings/activity_retention` (inactive par défaut, jamais moins de 30 jours) ; voir `docs/MODES-RESSOURCES.md`.
+- **Sécurité de la base** : les écritures sur les profils, fiches, paiements de gain, réglages et salaires sont contrôlées par la base (`app_security`, voir `docs/SECURITE-LOT-A.md`). Une nouvelle écriture sur ces tables doit être prévue dans les règles et testée (`tests/db/securite-lot-a.mjs`). Masquer un bouton ne protège rien.
+- **Comptes d'accès** : créer, changer ou supprimer un compte passe uniquement par `createAccountsRepository(supabase, <table>)` (`src/features/comptes/`) ; les droits sont contrôlés par la fonction serveur (`supabase/functions/_shared/accountManager.js`, voir `docs/MOTS-DE-PASSE.md`). Jamais de mot de passe dans une fiche, un `select` ou un import. Une liste qui ouvre un formulaire charge `email` et `auth_user_id`, sinon l'enregistrement détache le compte.
+- **Changer d'affectation** (chef d'agence, chef de secteur) : `reassign` (`src/features/personnel/reassignRepository.js`). La fiche en cours garde son `id` (compte, droits, demandes et statistiques y sont rattachés) ; l'ancienne affectation est une copie archivée. Une connexion ne lit que la fiche en cours (`statusCol: 'is_current'`).
+- **Lecture seule** : un écran Exploitation lit `canWriteCurrentPage` (`useOutletContext`) ; dans Paramètres, `useReadOnlySettings()` + `<SettingsFields>` (champs désactivés), actions masquées, et refus dans chaque enregistrement. Vérifié par `tests/36-settings-read-only.spec.ts`.
+- **Formules de salaire personnalisées** : uniquement par `src/features/salaires/customFormulasRepository.js` (relit la liste avant d'écrire) ; ne jamais réécrire la liste affichée.
+- **Mode de ressources** : Dev, Démo ou Prod (`src/lib/resourceMode.js`, choix dans Paramètres ou `VITE_RESOURCE_MODE`). Tout appel automatique ou poids d'envoi se règle par `resources.*`, jamais par une durée en dur. Le mode ne change aucun droit ni règle métier.
+- **Réglages** : `loadAppSetting` / `readAppSetting` (`src/lib/appSettings.js`) regroupent les lectures de `app_settings` faites au même moment. Ne pas relire la table une clé à la fois au démarrage.
+- **Photos** : `lightenPortrait` (profil), `lightenDocument` (pièce d'identité) ou `preparePhoto` (`src/lib/photos.js`) avant tout envoi ; jamais le fichier d'origine.
+- **Push** : message de l'exploitation → `triggerMessagePush(id, rôles)` ; la fonction `send-push` choisit les destinataires avec la même règle que la cloche (`src/features/notifications/messageAudience.js`). Autres alertes → `triggerPush(cible, contenu)`, cible obligatoire.
 - **Monitoring** : Sentry actif si `VITE_SENTRY_DSN` est défini ; le contexte (client, espace, id utilisateur) est posé par `useActivityTracker`.
 - **Couleurs** : uniquement les jetons du thème — états : `destructive`, `success`, `warning`, `info`, et `highlight` pour une distinction sans jugement (calculé, national) (+ variantes `-muted` / `-muted-foreground` pour les fonds/textes de badge) ; neutres : `muted`, `muted-foreground`, `foreground`, `border` ; surfaces : `bg-card` (jamais `bg-white`, sauf zone de signature qui doit rester blanche). Sur un fond plein : `text-<jeton>-foreground`, jamais `text-white`. Le mode sombre et le branding client en dépendent. ESLint signale les couleurs en dur (toutes palettes, dégradés, `bg-[#…]`).
 - **Cartes** : bloc principal / en-tête d'écran = `<Card variant="accent">` (le liseré bleu est dessiné par le composant — ne pas l'ajouter à la main, ne pas ajouter d'ombre/bordure/flou : la variante garantit un rendu identique partout). Le style `glassmorphism` est obsolète (rendu = carte standard).
 - **Libellés de champ** : tout `<Label>` directement suivi de son champ (liste, saisie, date, zone de texte, `PasswordInput`) s'affiche automatiquement DANS la zone du champ (CSS global, fin de `src/index.css`). Conserver cette structure `label + champ` (frères directs) ; ne pas re-créer de libellé au-dessus. Une liste `Select` qui contient une option « toutes » (`__all__`/`all`/`tous`) est traitée comme un FILTRE : sur « toutes » → seul le titre ; valeur choisie → seule la valeur, en style « filtre actif » (comme les `Combobox multi`). Sans option « toutes » → champ de formulaire : titre au-dessus de la valeur.
 - **Titres** : tailles imposées globalement (PC : en-tête d'écran 1.5rem, autres titres de carte 1.125rem ; mobile : 1rem / 0.8125rem). Inutile de coder `text-3xl` dans un `CardTitle`.
 - **Mobile / PWA** : l'échelle typographique et le format compact sont centralisés en fin de `src/index.css` (blocs « Mobile / PWA »). Hauteur unique des contrôles : `--mobile-control-h` (36 px). Ne pas ajouter de tailles mobiles écran par écran ; pas de `backdrop-filter` (bug PWA/WebView).
+
+## Tests
+
+Voir `docs/TESTS-REGRESSION.md`. Avant de rendre un changement : `npm run verify:baseline`, puis les tests d'interface concernés (`npx playwright test --config playwright.local.config.ts tests/<n>-*`). Nouvel espace ou nouveau menu : il est parcouru par `tests/33-connected-spaces.spec.ts`. Les tests qui écrivent ne visent jamais la base du `.env`.
 
 ## Git / artefacts
 

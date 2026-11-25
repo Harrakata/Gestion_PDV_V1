@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { describeError } from '@/lib/errors';
 import { useOutletContext } from 'react-router-dom';
 import { usePageState } from '@/hooks/usePageState';
@@ -57,7 +57,6 @@ import {
   getRequestStatusTone,
   isMissingSupabaseTableError,
   isSupabaseAuthError,
-  normalizeText,
 } from '@/lib/guichetiereSpace';
 import { WEEKDAYS_SHORT } from '@/i18n/language';
 

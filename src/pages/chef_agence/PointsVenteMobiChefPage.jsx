@@ -1,9 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { describeError } from '@/lib/errors';
 import { useOutletContext } from 'react-router-dom';
 import { usePageState } from '@/hooks/usePageState';
 import { isMobiPointCurrent, mobiPointDisplayStatus, mobiToday } from '@/lib/mobiPointValidity';
 import { motion } from 'framer-motion';
+import { rowEntrance } from '@/lib/rowEntrance';
 import {
   Building,
   Building2,
@@ -590,9 +591,7 @@ const PointsVenteMobiChefPage = () => {
                   return (
                     <motion.div
                       key={pointVente.id}
-                      initial={{ opacity: 0, x: 8 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.03 }}
+                      {...rowEntrance(index, { x: 8, step: 0.03 })}
                       onClick={() => setSelectedActivePointUid(pointVente.pointVenteUid)}
                       className={`flex cursor-pointer items-center justify-between px-4 py-3 transition-colors hover:bg-muted/40 ${
                         isSelected ? 'border-l-2 border-primary bg-primary/5' : 'border-l-2 border-transparent'
@@ -842,9 +841,7 @@ const PointsVenteMobiChefPage = () => {
                 {displayedActivePoints.map((pointVente, index) => (
                   <motion.tr
                     key={pointVente.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.03 }}
+                    {...rowEntrance(index, { y: 10, step: 0.03 })}
                     className={`cursor-pointer transition-colors hover:bg-primary/5 ${
                       pointVente.pointVenteUid === selectedActivePointUid ? 'bg-primary/5' : ''
                     }`}

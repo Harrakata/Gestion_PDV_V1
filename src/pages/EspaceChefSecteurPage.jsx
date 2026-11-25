@@ -4,16 +4,20 @@ import SpaceShell from '@/components/SpaceShell';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  ListTree, Loader2, AtSign, Building, Smartphone,
-  Globe, ClipboardCheck, Wrench, Wallet, FileDown,
+  ListTree,
+  Building,
+  Smartphone,
+  Globe,
+  ClipboardCheck,
+  Wrench,
+  Wallet,
+  FileDown,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import PageHeader from '@/components/ui/page-header';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabaseClient';
+import { readAppSetting } from '@/lib/appSettings';
 import { smartSignIn, fetchOrLinkAuthProfile } from '@/lib/smartAuth';
 import { useActivityTracker } from '@/hooks/useActivityTracker';
 import { useSessionTimeout } from '@/hooks/useSessionTimeout';
@@ -33,14 +37,14 @@ import {
 const SPACE_KEY = 'espace-chef-secteur';
 
 const loadSpaceUserProfilesSettings = async () => {
-  const { data, error } = await supabase.from('app_settings').select('value').eq('key', APP_SPACE_USER_PROFILES_SETTINGS_KEY).single();
-  if (error && error.code !== 'PGRST116') throw error;
+  const { data, error } = await readAppSetting(APP_SPACE_USER_PROFILES_SETTINGS_KEY);
+  if (error) throw error;
   return normalizeAppSpaceUserProfiles(data?.value);
 };
 
 const loadSpaceTabSettings = async () => {
-  const { data, error } = await supabase.from('app_settings').select('value').eq('key', APP_SPACE_TAB_SETTINGS_KEY).single();
-  if (error && error.code !== 'PGRST116') throw error;
+  const { data, error } = await readAppSetting(APP_SPACE_TAB_SETTINGS_KEY);
+  if (error) throw error;
   return normalizeAppSpaceTabFunctionalities(data?.value);
 };
 import EditProfileDialog from '@/components/EditProfileDialog';
@@ -75,7 +79,7 @@ const LoginPage = ({ onLogin }) => {
       return;
     }
     setIsLoading(true);
-    const { data: authData, error: authErr } = await smartSignIn({ identifier, password, table: 'chefs_secteur' });
+    const { data: authData, error: authErr } = await smartSignIn({ identifier, password, table: 'chefs_secteur', statusCol: 'is_current', activeValue: true });
     if (authErr || !authData?.user) {
       toast({ title: 'Connexion échouée', description: 'Identifiant ou mot de passe incorrect.', variant: 'destructive' });
       setIsLoading(false);
@@ -83,6 +87,7 @@ const LoginPage = ({ onLogin }) => {
     }
     const { data: profile, error: profileErr } = await fetchOrLinkAuthProfile({
       table: 'chefs_secteur', authUserId: authData.user.id, identifier, authEmail: authData.user.email,
+      statusCol: 'is_current', activeValue: true,
     });
     if (profileErr || !profile) {
       await supabase.auth.signOut();

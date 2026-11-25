@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { describeError } from '@/lib/errors';
 import { CalendarCheck, Check, X, Loader2, List, CalendarDays, CalendarRange, Clock, CheckCircle2, XCircle } from 'lucide-react';
 import AbsenceCalendar from '@/components/absences/AbsenceCalendar';

@@ -1,11 +1,10 @@
-import React from 'react';
 import { Bell, CalendarDays, Home, MoreHorizontal, Smartphone, Ticket, Wrench } from 'lucide-react';
 import { useCustomizationDraft } from '@/hooks/useCustomizationDraft';
 import {
   MOBILE_CUSTOM_KEY, MOBILE_OPTIONS, MOBILE_PROFILES, MOBILE_SHADOWS, applyMobileCustomization, normalizeMobile,
 } from '@/lib/mobileCustomization';
 import {
-  CustomizationActions, CustomizationSection, PresetPicker, SettingGroup, ThemeSegmented, ThemeSettingRow, ThemeToggle,
+  CustomizationActions, CustomizationSection, PresetPicker, SettingGroup, SettingsFields, ThemeSegmented, ThemeSettingRow, ThemeToggle,
 } from './SettingControls';
 
 const PREVIEW_TABS = [['Accueil', Home], ['Planning', CalendarDays], ['Tickets', Ticket], ['Réparation', Wrench]];
@@ -78,7 +77,7 @@ const MobileCustomizationSection = ({ isOpen, onToggle }) => {
       control={control}
     >
       <div className="grid gap-6 border-t px-5 py-5 lg:grid-cols-[minmax(0,1fr)_19rem]">
-        <div className="min-w-0 space-y-6">
+        <SettingsFields className="space-y-6">
           <section className="space-y-2">
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Profils d'usage</p>
             <PresetPicker
@@ -114,7 +113,7 @@ const MobileCustomizationSection = ({ isOpen, onToggle }) => {
               <ThemeToggle label="Animations de navigation" checked={settings.animations} onChange={(animations) => update({ animations })} />
             </ThemeSettingRow>
           </SettingGroup>
-        </div>
+        </SettingsFields>
 
         <aside className="space-y-3 lg:sticky lg:top-4 lg:self-start">
           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Aperçu</p>

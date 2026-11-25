@@ -1,4 +1,3 @@
-import React from 'react';
 import { cn } from '@/lib/utils';
 
 /** Zone d'actions cohérente pour formulaires et dialogues. */

@@ -4,6 +4,7 @@ import { describeError } from '@/lib/errors';
 import { useOutletContext } from 'react-router-dom';
 import { usePageState } from '@/hooks/usePageState';
 import { motion } from 'framer-motion';
+import { rowEntrance } from '@/lib/rowEntrance';
 import { Activity, CalendarClock, ChevronDown, ChevronUp, List, MapPinned, Search, Wrench } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -981,9 +982,7 @@ const MaintenanceTerminauxPage = () => {
                     {filteredInterventions.map((intervention, index) => (
                       <motion.tr
                         key={intervention.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.03 }}
+                        {...rowEntrance(index, { y: 10, step: 0.03 })}
                         className={`cursor-pointer transition-colors hover:bg-primary/5 ${
                           String(selectedInterventionId) === String(intervention.id) ? 'bg-primary/5' : ''
                         }`}

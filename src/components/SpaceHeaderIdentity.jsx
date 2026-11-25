@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect } from 'react';
+import { createContext, useContext, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
 export const SpaceHeaderContext = createContext(null);

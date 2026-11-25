@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import { useRef } from 'react';
 import { shouldIgnorePageGesture } from './touchGestures';
 
 const THRESHOLD = 60;        // distance horizontale minimale

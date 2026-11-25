@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabaseClient';
 import { STORAGE_BUCKET } from '@/lib/clientConfig';
+import { lightenDocument } from '@/lib/photos';
 
 export const buildFullName = (prenom, nom) => [prenom, nom].filter(Boolean).join(' ').trim();
 
@@ -86,9 +87,10 @@ export const notifyParieurBySms = async (demandeId, event) => {
   }
 };
 
-export const uploadPaiementGainIdentityPhoto = async (file, codeDemande) => {
-  if (!file) return { data: null, error: null };
+export const uploadPaiementGainIdentityPhoto = async (source, codeDemande) => {
+  if (!source) return { data: null, error: null };
 
+  const file = await lightenDocument(source);
   const extension = file.name.split('.').pop() || 'png';
   const fileName = `paiement_gros_gain/identites/${codeDemande}_${Date.now()}.${extension}`;
 

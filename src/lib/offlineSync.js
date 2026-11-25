@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabaseClient';
+import { chefAgenceSupabase, supabase } from '@/lib/supabaseClient';
 import { getQueued, removeQueued, updateQueued } from '@/lib/offlineQueue';
 import { isMissingPhotosColumnError } from '@/lib/photos';
 
@@ -20,6 +20,10 @@ const dataUrlToBytes = (dataUrl) => {
   for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
   return bytes;
 };
+
+// Une demande de paiement part avec la session du chef d'agence, quel que soit l'écran affiché au
+// retour du réseau (la base refuse une demande sans cette session).
+const clientFor = (item) => (item.table === 'demandes_paiement_gain' ? chefAgenceSupabase : supabase);
 
 /**
  * Rejoue un upload storage différé : envoie le fichier puis renseigne l'URL publique
@@ -43,7 +47,7 @@ async function replayUpload(item) {
   // Renseigner l'URL sur la ligne cible. Si la ligne n'existe pas encore (l'insert
   // de la demande n'est pas encore synchronisé), on garde l'élément pour réessayer.
   if (item.table && item.match && u.urlField) {
-    const { data, error: updErr } = await supabase
+    const { data, error: updErr } = await clientFor(item)
       .from(item.table)
       .update({ [u.urlField]: url })
       .match(item.match)
@@ -65,7 +69,7 @@ async function replayItem(item) {
   }
 
   if (item.op === 'update') {
-    const { error } = await supabase.from(item.table).update(item.payload).match(item.match || {});
+    const { error } = await clientFor(item).from(item.table).update(item.payload).match(item.match || {});
     if (!error) return { ok: true, drop: true };
     return { ok: false, drop: false };
   }
@@ -74,7 +78,7 @@ async function replayItem(item) {
   // référençant l'ID serveur de la ligne insérée (connu seulement après l'insert).
   if (item.event) {
     const idField = item.event.idSelect || 'id';
-    const { data, error } = await supabase.from(item.table).insert(item.payload).select(idField).single();
+    const { data, error } = await clientFor(item).from(item.table).insert(item.payload).select(idField).single();
     if (error) {
       // Déjà inséré (re-synchro) → on retire sans dupliquer l'événement d'audit.
       if (isDuplicateError(error)) return { ok: false, drop: true };
@@ -84,7 +88,7 @@ async function replayItem(item) {
     if (insertedId != null && item.event.table) {
       // L'audit est best-effort : son échec ne doit pas faire revivre l'insert (déjà fait).
       try {
-        await supabase.from(item.event.table).insert({
+        await clientFor(item).from(item.event.table).insert({
           ...item.event.payload,
           [item.event.demandeIdField || 'demandeId']: insertedId,
         });

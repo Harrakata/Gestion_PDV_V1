@@ -1,8 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  Clock, CheckCircle, XCircle, AlertTriangle, User, Users, 
-  ChevronDown, ChevronUp, Filter, Calendar, BarChart, Smartphone, Laptop
+import {
+  Clock,
+  CheckCircle,
+  XCircle,
+  Users,
+  Filter,
+  Calendar,
+  BarChart,
+  Smartphone,
+  Laptop
 } from 'lucide-react';
 import { format, isValid } from 'date-fns';
 import { Tooltip } from '@/components/ui/tooltip';

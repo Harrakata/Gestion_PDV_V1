@@ -1,0 +1,7 @@
+{
+  "acces-supabase": 549,
+  "no-console": 3,
+  "no-restricted-syntax": 3,
+  "no-unused-vars": 31,
+  "react-hooks/exhaustive-deps": 62
+}

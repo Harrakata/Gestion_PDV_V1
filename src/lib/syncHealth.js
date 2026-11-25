@@ -1,6 +1,8 @@
 import { supabase } from '@/lib/supabaseClient';
 import { getQueued } from '@/lib/offlineQueue';
 import { isMissingSupabaseTableError } from '@/lib/guichetiereSpace';
+import { shouldSendSyncHealth, syncHealthSignature } from '@/lib/syncHealthPolicy';
+import { resources } from '@/lib/resourceMode';
 
 // ════════════════════════════════════════════════════════════════════════════
 //  Santé de la synchro hors-ligne — télémétrie par appareil.
@@ -13,6 +15,14 @@ import { isMissingSupabaseTableError } from '@/lib/guichetiereSpace';
 
 export const SYNC_HEALTH_TABLE = 'sync_health';
 const DEVICE_KEY = 'sync_device_id';
+const LAST_SENT_KEY = 'sync_health_sent';
+
+const readLastSent = () => {
+  try { return JSON.parse(localStorage.getItem(LAST_SENT_KEY) || 'null'); } catch { return null; }
+};
+const writeLastSent = (value) => {
+  try { localStorage.setItem(LAST_SENT_KEY, JSON.stringify(value)); } catch { /* stockage indisponible */ }
+};
 const APP_VERSION = import.meta.env.VITE_APP_VERSION || import.meta.env.VITE_CLIENT_ID || null;
 
 /** Identifiant stable de l'appareil (persisté en localStorage). */
@@ -49,12 +59,14 @@ export const computeQueueMetrics = async () => {
 export const isMissingSyncHealthTableError = (error) => isMissingSupabaseTableError(error, SYNC_HEALTH_TABLE);
 
 /**
- * Remonte l'état de synchro de cet appareil (best-effort, jamais bloquant).
+ * Remonte l'état de synchro de cet appareil (best-effort, jamais bloquant), s'il y a du nouveau
+ * (cf. syncHealthPolicy).
  * @param identity { userId, nom, role, agence, region }
  * @param opts     { justSynced } — si vrai, met à jour last_sync_at.
  */
 export const reportSyncHealth = async (identity = {}, opts = {}) => {
   try {
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) return;
     const { pending, failed, oldestIso, lastError } = await computeQueueMetrics();
     const now = new Date().toISOString();
     const row = {
@@ -74,33 +86,17 @@ export const reportSyncHealth = async (identity = {}, opts = {}) => {
     };
     // last_sync_at n'est inclus que si une synchro vient d'aboutir (sinon valeur conservée).
     if (opts.justSynced) row.last_sync_at = now;
-    await supabase.from(SYNC_HEALTH_TABLE).upsert(row, { onConflict: 'device_id' });
+
+    const signature = syncHealthSignature(row);
+    if (!shouldSendSyncHealth({ signature, last: readLastSent(), now: Date.now(), justSynced: opts.justSynced, keepAlive: resources.syncHealthKeepAlive })) return;
+    const { error } = await supabase.from(SYNC_HEALTH_TABLE).upsert(row, { onConflict: 'device_id' });
+    if (!error || isMissingSyncHealthTableError(error)) writeLastSent({ signature, at: Date.now() });
   } catch {
     /* best-effort : jamais bloquant */
   }
 };
 
 export const SYNC_STALE_HOURS = 2; // écritures en attente plus vieilles que X h = « bloqué »
-
-/**
- * Compte les appareils « bloqués » (écritures en attente depuis > SYNC_STALE_HOURS).
- * Pour l'alerte exploitation. Renvoie 0 si la table n'existe pas / erreur.
- */
-export const countBlockedDevices = async (agenceNames = null) => {
-  try {
-    let query = supabase
-      .from(SYNC_HEALTH_TABLE)
-      .select('agence_nom, pending_count, oldest_pending_at')
-      .gt('pending_count', 0);
-    if (Array.isArray(agenceNames) && agenceNames.length) query = query.in('agence_nom', agenceNames);
-    const { data, error } = await query;
-    if (error || !data) return 0;
-    const staleMs = SYNC_STALE_HOURS * 3600 * 1000;
-    return data.filter((r) => r.oldest_pending_at && Date.now() - new Date(r.oldest_pending_at).getTime() > staleMs).length;
-  } catch {
-    return 0;
-  }
-};
 
 /** Lecture du tableau (exploitation). Renvoie [] si la table n'existe pas encore. */
 export const fetchSyncHealth = async () => {

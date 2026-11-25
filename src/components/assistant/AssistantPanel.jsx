@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { ArrowLeft, ArrowUp, ArrowUpRight, BookOpen, Bot, Loader2, MessageCircle, Square, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';

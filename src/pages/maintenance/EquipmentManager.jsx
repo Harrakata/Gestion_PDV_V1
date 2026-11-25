@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { describeError } from '@/lib/errors';
 import StatusBadge from '@/components/ui/status-badge';
 import { Button } from '@/components/ui/button';

@@ -104,7 +104,7 @@ Les fonctions vivent dans `supabase/functions/`. Déployer celles utiles au clie
 
 | Fonction | Utilité | À déployer si… |
 |---|---|---|
-| `admin-manage-user` | création/gestion comptes auth | toujours |
+| `admin-manage-user` | création/gestion comptes auth (droits : `docs/MOTS-DE-PASSE.md`) | toujours |
 | `pbi-proxy` | proxy Power BI | flag `powerbi` actif |
 | `powerquerieCCOPETGLOB`, `sync-ccope`, `sync-ccopeglob` | synchro CCOPE | flag `ccope` actif |
 | `sync-suivi-trm-mobi` | synchro PDV mobi | flag `point-de-vente-mobi` actif |
@@ -180,6 +180,7 @@ si besoin). Voir `.env.example` pour la liste de référence.
 | `VITE_CLIENT_NAME` | `PMU Niger` | ✅ — titre d'onglet + **nom de la PWA** (build-time → redeploy requis) |
 | `VITE_CLIENT_LOGO_URL` | URL du logo (sinon réglable en base) | optionnel |
 | `VITE_CLIENT_LANGUAGE` | `fr` ou `en` — langue par défaut (sinon réglable dans l'app : Paramètres → Langue) | optionnel, défaut `fr` |
+| `VITE_RESOURCE_MODE` | `dev`, `demo` ou `prod` — impose le mode de ressources (sinon réglable dans l'app : Paramètres → Mode de ressources). Voir [MODES-RESSOURCES](MODES-RESSOURCES.md) | optionnel, défaut `demo` ; **`prod` pour un client réel** |
 | `VITE_CLIENT_CURRENCY` | code ISO 4217, ex. `XOF`, `XAF`, `EUR` (sinon réglable dans l'app) | optionnel, défaut `XOF` |
 | `VITE_STORAGE_BUCKET` | nom du bucket si ≠ `pmu-mali-storage` | si nom custom |
 | `VITE_SUPABASE_URL` | Project URL (étape 1.2) | ✅ |
@@ -205,7 +206,8 @@ La base est vide de profils → l'app passe en **mode bootstrap** :
 1. Ouvrir `…/espace-exploitation`.
 2. Créer un utilisateur auth (Dashboard → Authentication → Add user) **ou** se
    connecter : le 1er compte sans profil lié obtient un accès **super-admin**
-   temporaire (cf. logique de `EspaceExploitationPage`).
+   temporaire (cf. logique de `EspaceExploitationPage`). Il n'est accordé que si la base
+   confirme qu'aucun profil n'est encore lié à un compte ; une erreur de lecture vaut refus.
 3. Dans l'app, créer immédiatement votre **profil Exploitation** et le lier à ce
    compte (onglet « Profil et Fonctionnalité »).
 

@@ -1,9 +1,10 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Clock, Languages, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
-import { CustomizationSection, SettingGroup, ThemeSegmented, ThemeSettingRow } from '@/components/parametres/SettingControls';
+import { CustomizationSection, SettingGroup, SettingsFields, ThemeSegmented, ThemeSettingRow } from '@/components/parametres/SettingControls';
 import PersonalLanguagePicker from '@/components/PersonalLanguagePicker';
+import { useReadOnlySettings } from '@/hooks/useReadOnlySettings';
 import { describeError } from '@/lib/errors';
 import { loadAppSetting } from '@/lib/appSettings';
 import { LANGUAGES, getClientLanguage } from '@/i18n/language';
@@ -12,6 +13,7 @@ import { LANGUAGE_SETTING_KEY, saveClientLanguage } from '@/i18n/clientLanguage'
 /** Paramètres → Langue : langue de l'application pour tout le client, et choix personnel. */
 export default function LanguageSection({ isOpen, onToggle }) {
   const { toast } = useToast();
+  const readOnly = useReadOnlySettings();
   const [saved, setSaved] = useState(null);
   const [draft, setDraft] = useState(null);
   const [loadFailed, setLoadFailed] = useState(false);
@@ -62,15 +64,19 @@ export default function LanguageSection({ isOpen, onToggle }) {
       <div className="space-y-5 border-t p-5">
         <SettingGroup title="Pour tous les utilisateurs">
           <ThemeSettingRow title="Langue de l'application" hint="Appliquée à tous les espaces, sur tous les appareils.">
-            <ThemeSegmented ariaLabel="Langue de l'application" options={LANGUAGES} value={draft} onChange={setDraft} />
+            <SettingsFields>
+              <ThemeSegmented ariaLabel="Langue de l'application" options={LANGUAGES} value={draft} onChange={setDraft} />
+            </SettingsFields>
           </ThemeSettingRow>
         </SettingGroup>
-        <div className="flex flex-wrap items-center justify-end gap-3">
-          <p className="text-xs text-muted-foreground">L'application se recharge pour appliquer la langue.</p>
-          <Button type="button" size="sm" onClick={handleSave} disabled={!isDirty || isSaving}>
-            {isSaving ? <Clock className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Save className="h-4 w-4" aria-hidden="true" />} Enregistrer la langue
-          </Button>
-        </div>
+        {!readOnly && (
+          <div className="flex flex-wrap items-center justify-end gap-3">
+            <p className="text-xs text-muted-foreground">L'application se recharge pour appliquer la langue.</p>
+            <Button type="button" size="sm" onClick={handleSave} disabled={!isDirty || isSaving}>
+              {isSaving ? <Clock className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Save className="h-4 w-4" aria-hidden="true" />} Enregistrer la langue
+            </Button>
+          </div>
+        )}
         <SettingGroup title="Pour moi">
           <ThemeSettingRow title="Langue sur cet appareil" hint="Prioritaire sur la langue de tous les utilisateurs.">
             <PersonalLanguagePicker />

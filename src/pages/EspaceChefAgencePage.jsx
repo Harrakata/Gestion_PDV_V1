@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { describeError } from '@/lib/errors';
 import SpaceShell from '@/components/SpaceShell';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { UserCog, CalendarDays, ShieldCheck, Loader2, Camera, RotateCcw, Timer, Wallet, Wrench, MapPin, ClipboardCheck, FileDown, CalendarOff, Ticket } from 'lucide-react';
+import { UserCog, CalendarDays, ShieldCheck, Loader2, Timer, Wallet, Wrench, MapPin, ClipboardCheck, FileDown, CalendarOff, Ticket } from 'lucide-react';
 import EditProfileDialog from '@/components/EditProfileDialog';
 import ForgotPasswordDialog from '@/components/ForgotPasswordDialog';
 import NotificationBell from '@/components/NotificationBell';
@@ -28,9 +28,10 @@ import { FormActions } from '@/components/ui/form-actions';
 import { PasswordInput } from '@/components/ui/password-input';
 import { useToast } from '@/components/ui/use-toast';
 import { publicSupabase, supabase } from '@/lib/supabaseClient';
+import { readAppSetting } from '@/lib/appSettings';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar.jsx';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import EmptyState from '@/components/ui/empty-state';
+import { readChefAuth } from '@/lib/chefSession';
 import { useSessionTimeout } from '@/hooks/useSessionTimeout';
 import { useActivityTracker } from '@/hooks/useActivityTracker';
 import { useSyncHealthHeartbeat } from '@/hooks/useSyncHealthHeartbeat';
@@ -54,13 +55,8 @@ import {
 import { fetchAuthLinkedProfile } from '@/lib/smartAuth';
 
 const loadSpaceUserProfilesSettings = async () => {
-  const { data, error } = await supabase
-    .from('app_settings')
-    .select('value')
-    .eq('key', APP_SPACE_USER_PROFILES_SETTINGS_KEY)
-    .single();
-
-  if (error && error.code !== 'PGRST116') throw error;
+  const { data, error } = await readAppSetting(APP_SPACE_USER_PROFILES_SETTINGS_KEY);
+  if (error) throw error;
   return normalizeAppSpaceUserProfiles(data?.value);
 };
 
@@ -112,12 +108,7 @@ const LoginPageChef = ({ onLogin }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isForgotOpen, setIsForgotOpen] = useState(false);
   const [authStep, setAuthStep] = useState('matricule');
-  const [isCameraActive, setIsCameraActive] = useState(false);
-  const [capturedImage, setCapturedImage] = useState(null);
-  const [facialAuthInProgress, setFacialAuthInProgress] = useState(false);
   const [chefTrouve, setChefTrouve] = useState(null);
-  const videoRef = useRef(null);
-  const canvasRef = useRef(null);
   const { toast } = useToast();
 
   const ensureChefProfileActive = async (chef) => {
@@ -132,66 +123,6 @@ const LoginPageChef = ({ onLogin }) => {
       return null;
     }
     return effectiveProfile;
-  };
-
-  // Activer/désactiver la caméra lorsque nécessaire
-  useEffect(() => {
-    let stream = null;
-    
-    if (isCameraActive && videoRef.current) {
-      navigator.mediaDevices.getUserMedia({ video: true })
-        .then(mediaStream => {
-          stream = mediaStream;
-          videoRef.current.srcObject = mediaStream;
-          videoRef.current.play();
-        })
-        .catch(err => {
-          console.error("Erreur d'accès à la caméra: ", err);
-          toast({ 
-            title: "Erreur d'accès à la caméra", 
-            description: "Veuillez autoriser l'accès à votre caméra ou utiliser la connexion par identifiants.", 
-            variant: "destructive" 
-          });
-          // Repli : le message invite à se connecter par identifiants (formulaire toujours affiché).
-          setIsCameraActive(false);
-        });
-    }
-    
-    return () => {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-      }
-    };
-  }, [isCameraActive, toast]);
-
-  // Activer la caméra quand on passe à l'étape de reconnaissance faciale
-  useEffect(() => {
-    if (authStep === 'facial') {
-      setIsCameraActive(true);
-    } else {
-      setIsCameraActive(false);
-      setCapturedImage(null);
-    }
-  }, [authStep]);
-
-  const capturePhoto = () => {
-    if (!videoRef.current || !canvasRef.current) return;
-    
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    
-    const context = canvas.getContext('2d');
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-    
-    const imageData = canvas.toDataURL('image/png');
-    setCapturedImage(imageData);
-  };
-
-  const resetCamera = () => {
-    setCapturedImage(null);
   };
 
   const verifierMatricule = async (e) => {
@@ -240,67 +171,12 @@ const LoginPageChef = ({ onLogin }) => {
       // Stocker les informations du chef trouvé
       setChefTrouve(chef);
       
-      // Vérifier si le chef a une photo pour la reconnaissance faciale
-      if (chef.photo_url) {
-        setAuthStep('choixMethAuth');
-      } else {
-        // Pas de photo, passer directement à l'authentification par mot de passe
-        setAuthStep('password');
-      }
-      
+      setAuthStep('password');
       setIsLoading(false);
     } catch (error) {
       console.error("Erreur lors de la vérification du matricule:", error);
       toast({ title: "Erreur de connexion", description: "Une erreur est survenue lors de la vérification du matricule.", variant: "destructive" });
       setIsLoading(false);
-    }
-  };
-
-  const authenticateWithFacialRecognition = async () => {
-    if (!capturedImage) {
-      toast({ 
-        title: "Pas d'image capturée", 
-        description: "Veuillez prendre une photo pour vous authentifier.", 
-        variant: "destructive" 
-      });
-      return;
-    }
-    
-    setFacialAuthInProgress(true);
-    
-    try {
-      const effectiveProfile = await ensureChefProfileActive(chefTrouve);
-      if (!effectiveProfile) {
-        setFacialAuthInProgress(false);
-        return;
-      }
-
-      // Dans une vraie implémentation, nous comparerions l'image capturée avec celle du chef d'agence trouvé
-      // Comme c'est une simulation, nous allons simplement simuler une authentification réussie après un délai
-      
-      // Simulation d'une API de reconnaissance faciale
-      setTimeout(() => {
-        // Appel à onLogin qui va gérer l'enregistrement de la connexion
-        onLogin(true, { ...chefTrouve, appSpaceProfile: effectiveProfile });
-        
-        toast({ 
-          title: "Reconnaissance faciale réussie", 
-          description: `Bienvenue ${chefTrouve.prenom} ${chefTrouve.nom} dans votre Espace Chef d'Agence.`, 
-          className: "bg-success text-success-foreground" 
-        });
-        
-        setFacialAuthInProgress(false);
-        setIsCameraActive(false);
-        setCapturedImage(null);
-      }, 2000);
-    } catch (error) {
-      console.error("Erreur lors de l'authentification faciale:", error);
-      toast({ 
-        title: "Échec de l'authentification faciale", 
-        description: "Une erreur est survenue. Veuillez réessayer ou utiliser le mot de passe.", 
-        variant: "destructive" 
-      });
-      setFacialAuthInProgress(false);
     }
   };
 
@@ -370,11 +246,7 @@ const LoginPageChef = ({ onLogin }) => {
     setPassword('');
   };
   
-  const passerAuthentificationMDP = () => {
-    setAuthStep('password');
-  };
-
-  const authStepNumber = authStep === 'matricule' ? 1 : authStep === 'choixMethAuth' ? 2 : 3;
+  const authStepNumber = authStep === 'matricule' ? 1 : 2;
 
   return (
     <motion.div 
@@ -389,17 +261,10 @@ const LoginPageChef = ({ onLogin }) => {
           </div>
           <CardTitle className="text-2xl text-primary sm:text-3xl">Accès Espace Chef d'Agence</CardTitle>
           <CardDescription className="text-center">
-            {authStep === 'matricule' 
-              ? "Entrez votre matricule pour commencer" 
-              : authStep === 'choixMethAuth' 
-                ? "Choisissez votre méthode d'authentification"
-                : authStep === 'password'
-                  ? "Entrez votre mot de passe"
-                  : "Reconnaissance faciale en cours"
-            }
+            {authStep === 'matricule' ? 'Entrez votre matricule pour commencer' : 'Entrez votre mot de passe'}
           </CardDescription>
-          <div className="flex items-center gap-1.5 pt-1" role="progressbar" aria-label="Progression de la connexion" aria-valuemin={1} aria-valuemax={3} aria-valuenow={authStepNumber}>
-            {[1, 2, 3].map((step) => (
+          <div className="flex items-center gap-1.5 pt-1" role="progressbar" aria-label="Progression de la connexion" aria-valuemin={1} aria-valuemax={2} aria-valuenow={authStepNumber}>
+            {[1, 2].map((step) => (
               <span key={step} className={`h-1.5 w-10 rounded-full ${step <= authStepNumber ? 'bg-primary' : 'bg-muted'}`} />
             ))}
           </div>
@@ -431,50 +296,7 @@ const LoginPageChef = ({ onLogin }) => {
             </form>
           )}
 
-          {/* ÉTAPE 2: CHOIX MÉTHODE D'AUTHENTIFICATION */}
-          {authStep === 'choixMethAuth' && chefTrouve && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-center mb-4">
-                <Avatar className="h-20 w-20 border-2 border-primary">
-                  {chefTrouve.photo_url ? (
-                    <AvatarImage src={chefTrouve.photo_url} alt={`${chefTrouve.prenom} ${chefTrouve.nom}`} />
-                  ) : null}
-                  <AvatarFallback className="bg-primary/10 text-primary text-xl font-medium">
-                    {chefTrouve.prenom[0]}{chefTrouve.nom[0]}
-                  </AvatarFallback>
-                </Avatar>
-              </div>
-              <p className="text-center text-lg font-medium mb-4">
-                Bonjour, {chefTrouve.prenom} {chefTrouve.nom}
-              </p>
-              <div className="grid grid-cols-1 gap-3">
-                <Button 
-                  onClick={() => setAuthStep('facial')} 
-                  className="py-6 bg-primary hover:bg-primary/90 text-primary-foreground"
-                >
-                  <Camera className="mr-2 h-5 w-5" />
-                  Continuer avec la reconnaissance faciale
-                </Button>
-                <Button 
-                  onClick={passerAuthentificationMDP} 
-                  variant="outline" 
-                  className="py-6"
-                >
-                  <ShieldCheck className="mr-2 h-5 w-5" />
-                  Continuer avec le mot de passe
-                </Button>
-                <Button 
-                  onClick={retourMatricule} 
-                  variant="ghost" 
-                  className="mt-2"
-                >
-                  Retour
-                </Button>
-              </div>
-            </div>
-          )}
-          
-          {/* ÉTAPE 3A: AUTHENTIFICATION PAR MOT DE PASSE */}
+          {/* ÉTAPE 2: MOT DE PASSE */}
           {authStep === 'password' && chefTrouve && (
             <form onSubmit={authentifierParMotDePasse} className="space-y-6">
               <div className="flex items-center justify-center mb-4">
@@ -524,94 +346,6 @@ const LoginPageChef = ({ onLogin }) => {
           </form>
           )}
 
-          {/* ÉTAPE 3B: AUTHENTIFICATION PAR RECONNAISSANCE FACIALE */}
-          {authStep === 'facial' && chefTrouve && (
-            <div className="space-y-6">
-              {/* Élément vidéo pour le flux de la caméra */}
-              <div className="relative flex flex-col items-center">
-                {!capturedImage ? (
-                  // Afficher le flux vidéo quand pas d'image capturée
-                  <div className="relative w-full h-64 bg-muted rounded-lg overflow-hidden">
-                    <video 
-                      ref={videoRef} 
-                      className="w-full h-full object-cover" 
-                      autoPlay 
-                      muted
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      {!isCameraActive && (
-                        <div className="text-center text-muted-foreground p-4 bg-background/80 rounded-lg">
-                          <Camera className="mx-auto h-10 w-10 mb-2" />
-                          <p>Chargement de la caméra...</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ) : (
-                  // Afficher l'image capturée
-                  <div className="w-full h-64 bg-muted rounded-lg overflow-hidden flex items-center justify-center">
-                    <img 
-                      src={capturedImage} 
-                      alt="Capture" 
-                      className="max-w-full max-h-full object-contain" 
-                    />
-                  </div>
-                )}
-                
-                {/* Canvas caché pour la capture */}
-                <canvas ref={canvasRef} className="hidden" />
-                
-                {/* Boutons pour la caméra */}
-                <div className="flex justify-center mt-4 space-x-4">
-                  {!capturedImage ? (
-                    <Button 
-                      type="button"
-                      onClick={capturePhoto}
-                      className="px-6 py-2 bg-primary text-primary-foreground"
-                      disabled={!isCameraActive || facialAuthInProgress}
-                    >
-                      <Camera className="mr-2 h-4 w-4" />
-                      Prendre une photo
-                    </Button>
-                  ) : (
-                    <>
-                      <Button 
-                        type="button"
-                        onClick={resetCamera}
-                        variant="outline"
-                        disabled={facialAuthInProgress}
-                      >
-                        <RotateCcw className="mr-2 h-4 w-4" />
-                        Reprendre
-                      </Button>
-                      <Button 
-                        type="button"
-                        onClick={authenticateWithFacialRecognition}
-                        className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                        disabled={facialAuthInProgress}
-                      >
-                        {facialAuthInProgress ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />}
-                        {facialAuthInProgress ? "Authentification..." : "S'authentifier"}
-                      </Button>
-                    </>
-                  )}
-                </div>
-              </div>
-              <div className="flex justify-center">
-                <Button 
-                  onClick={passerAuthentificationMDP} 
-                  variant="ghost" 
-                  disabled={facialAuthInProgress}
-                  className="mt-2"
-                >
-                  Utiliser le mot de passe à la place
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground text-center">
-                La reconnaissance faciale compare votre visage avec votre photo de profil.
-              </p>
-            </div>
-          )}
         </CardContent>
       </Card>
     </motion.div>
@@ -622,12 +356,8 @@ const EspaceChefAgencePage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [isAuthenticated, setIsAuthenticated] = useState(
-    JSON.parse(localStorage.getItem('pmuChefAuth'))?.isAuthenticated || false
-  );
-  const [chefAgenceInfo, setChefAgenceInfo] = useState(
-     JSON.parse(localStorage.getItem('pmuChefAuth'))?.chefInfo || null
-  );
+  const [isAuthenticated, setIsAuthenticated] = useState(() => Boolean(readChefAuth()?.isAuthenticated));
+  const [chefAgenceInfo, setChefAgenceInfo] = useState(() => readChefAuth()?.chefInfo || null);
   const [chefDetails, setChefDetails] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -694,11 +424,7 @@ const EspaceChefAgencePage = () => {
   // Charger les paramètres de session
   useEffect(() => {
     const loadSessionSettings = async () => {
-      const { data, error } = await supabase
-        .from('app_settings')
-        .select('value')
-        .eq('key', 'general')
-        .single();
+      const { data, error } = await readAppSetting('general');
 
       if (!error && data && data.value) {
         setSessionDurationMinutes(data.value.sessionDureeMinutes || 30);
@@ -845,7 +571,7 @@ const EspaceChefAgencePage = () => {
       enregistrerDeconnexionChef(chefAgenceInfo.id);
     }
 
-    // Déconnexion Supabase Auth (no-op si auth par face uniquement)
+    // Déconnexion Supabase Auth
     try { await supabase.auth.signOut(); } catch {}
 
     setIsAuthenticated(false);
@@ -862,7 +588,7 @@ const EspaceChefAgencePage = () => {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      if (isAuthenticated) return; // déjà connecté via localStorage (face) ou flux normal
+      if (isAuthenticated) return; // déjà connecté sur cet appareil
       const { data: { session } } = await supabase.auth.getSession();
       if (cancelled || !session?.user) return;
       const { data: chef } = await fetchAuthLinkedProfile({

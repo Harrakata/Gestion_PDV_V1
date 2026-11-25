@@ -1,8 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { describeError } from '@/lib/errors';
 import { Link, useLocation } from 'react-router-dom';
 import { usePageState } from '@/hooks/usePageState';
+import { useLiveRefresh } from '@/hooks/useLiveRefresh';
 import { motion } from 'framer-motion';
+import { rowEntrance } from '@/lib/rowEntrance';
 import {
   Building2,
   ArrowRight,
@@ -13,12 +15,10 @@ import {
   CreditCard,
   FileText,
   History,
-  Landmark,
   Loader2,
   LogIn,
   MapPin,
   Search,
-  ShieldCheck,
   Ticket,
   UploadCloud,
   User,
@@ -77,7 +77,9 @@ import {
   recordPaiementGainEvent,
   uploadPaiementGainIdentityPhoto,
 } from '@/lib/paiementGainService';
+import { lightenDocument } from '@/lib/photos';
 import { isSupabaseAuthError } from '@/lib/guichetiereSpace';
+import { readChefAuth } from '@/lib/chefSession';
 
 const DEFAULT_FORM_DATA = {
   montantGain: '',
@@ -136,8 +138,7 @@ const DetailSection = ({ title, icon: Icon, children, className = '' }) => (
 const PaiementGrosGainPage = () => {
   const location = useLocation();
   const { toast } = useToast();
-  const storedAuth = JSON.parse(localStorage.getItem('pmuChefAuth') || '{}');
-  const chefInfo = storedAuth.chefInfo || null;
+  const chefInfo = readChefAuth()?.chefInfo || null;
   const isChefAgenceWorkspace = location.pathname.startsWith('/espace-chef-agence/');
 
   const [agences, setAgences] = useState([]);
@@ -177,25 +178,20 @@ const PaiementGrosGainPage = () => {
       .catch(() => {});
   }, []);
 
-  const loadData = useCallback(async () => {
+  // Agences, régions, validateurs, règles de validation.
+  const loadReferentiels = useCallback(async () => {
     if (!chefInfo?.id) return;
-
-    setIsLoading(true);
 
     const [
       { data: agencesData, error: agencesError },
       { data: regionsData, error: regionsError },
       { data: validateursData, error: validateursError },
       { data: workflowConfigData, error: workflowConfigError, isMissingTable: workflowConfigMissingTable },
-      { data: demandesData, error: demandesError },
-      { data: eventsData, error: eventsError },
     ] = await Promise.all([
       cachedQuery('paiement:agences', () => supabase.from('agences').select('*').eq('is_current', true).order('nom', { ascending: true })),
       fetchRegions(),
       cachedQuery('paiement:validateurs', () => supabase.from('validateurs_paiement_gain').select('*').eq('statut', 'Actif').order('nom', { ascending: true })),
       fetchPaiementGainWorkflowConfigs(),
-      cachedQuery(`paiement:demandes:${chefInfo.id}`, () => supabase.from('demandes_paiement_gain').select('*').order('updated_at', { ascending: false })),
-      cachedQuery(`paiement:events:${chefInfo.id}`, () => supabase.from('paiement_gain_workflow_events').select('*').order('created_at', { ascending: false })),
     ]);
 
     if (agencesError) {
@@ -239,6 +235,21 @@ const PaiementGrosGainPage = () => {
       });
     }
     setWorkflowConfigs(workflowConfigData || []);
+  }, [chefInfo?.id, toast]);
+
+  // Demandes et historique des validations.
+  const loadDemandes = useCallback(async ({ silent = false } = {}) => {
+    if (!chefInfo?.id) return;
+
+    if (!silent) setIsLoading(true);
+
+    const [
+      { data: demandesData, error: demandesError },
+      { data: eventsData, error: eventsError },
+    ] = await Promise.all([
+      cachedQuery(`paiement:demandes:${chefInfo.id}`, () => supabase.from('demandes_paiement_gain').select('*').order('updated_at', { ascending: false })),
+      cachedQuery(`paiement:events:${chefInfo.id}`, () => supabase.from('paiement_gain_workflow_events').select('*').order('created_at', { ascending: false })),
+    ]);
 
     if (demandesError) {
       setDemandes([]);
@@ -271,11 +282,19 @@ const PaiementGrosGainPage = () => {
     setIsLoading(false);
   }, [chefInfo?.id, toast]);
 
-  useEffect(() => {
-    loadData();
-    const intervalId = window.setInterval(loadData, 15000);
-    return () => window.clearInterval(intervalId);
-  }, [loadData]);
+  const loadData = useCallback(
+    () => Promise.all([loadReferentiels(), loadDemandes()]),
+    [loadReferentiels, loadDemandes]
+  );
+
+  useLiveRefresh(
+    'paiement-gros-gain',
+    [
+      { key: 'referentiels', load: loadReferentiels, minInterval: 5 * 60 * 1000 },
+      { key: 'demandes', tables: ['demandes_paiement_gain'], afterSync: true, load: ({ first }) => loadDemandes({ silent: !first }) },
+    ],
+    { enabled: Boolean(chefInfo?.id), resetKey: chefInfo?.id },
+  );
 
   const currentAgency = useMemo(
     () =>
@@ -807,9 +826,10 @@ const PaiementGrosGainPage = () => {
         //    renseignée sur la demande (retrouvée par codeDemande). Mis en file APRÈS
         //    l'insert pour que la ligne existe quand l'upload renseigne l'URL.
         if (photoFile) {
-          const extension = photoFile.name.split('.').pop() || 'png';
+          const identityPhoto = await lightenDocument(photoFile);
+          const extension = identityPhoto.name.split('.').pop() || 'png';
           const path = `paiement_gros_gain/identites/${codeDemande}_${Date.now()}.${extension}`;
-          const fileBase64 = await fileToDataUrl(photoFile);
+          const fileBase64 = await fileToDataUrl(identityPhoto);
           await enqueueOffline({
             type: 'paiement_gros_gain_photo',
             op: 'upload',
@@ -819,7 +839,7 @@ const PaiementGrosGainPage = () => {
               bucket: STORAGE_BUCKET,
               path,
               fileBase64,
-              contentType: photoFile.type || 'image/png',
+              contentType: identityPhoto.type || 'image/png',
               urlField: 'photoPieceUrl',
             },
           });
@@ -1321,9 +1341,7 @@ const PaiementGrosGainPage = () => {
                     {chefActionDemandes.map((demande, index) => (
                       <motion.tr
                         key={demande.id}
-                        initial={{ opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.03 }}
+                        {...rowEntrance(index, { y: 12, step: 0.03 })}
                         className={`cursor-pointer transition-colors hover:bg-primary/5 ${
                           String(selectedChefActionDemandeId) === String(demande.id) ? 'bg-primary/5' : ''
                         }`}
@@ -1511,9 +1529,7 @@ const PaiementGrosGainPage = () => {
                     {filteredAgencyDemandes.map((demande, index) => (
                       <motion.tr
                         key={demande.id}
-                        initial={{ opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.02 }}
+                        {...rowEntrance(index, { y: 12, step: 0.02 })}
                         className={`cursor-pointer transition-colors hover:bg-primary/5 ${
                           String(selectedAgencyDemandeId) === String(demande.id) ? 'bg-primary/5' : ''
                         }`}
@@ -1957,9 +1973,7 @@ const PaiementGrosGainPage = () => {
                   {filteredOwnDemandes.map((demande, index) => (
                     <motion.tr
                       key={demande.id}
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.02 }}
+                      {...rowEntrance(index, { y: 12, step: 0.02 })}
                       className={`cursor-pointer transition-colors hover:bg-primary/5 ${
                         String(selectedOwnDemandeId) === String(demande.id) ? 'bg-primary/5' : ''
                       }`}
@@ -2079,9 +2093,7 @@ const PaiementGrosGainPage = () => {
                   {authorizedDemandes.map((demande, index) => (
                     <motion.tr
                       key={demande.id}
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.03 }}
+                      {...rowEntrance(index, { y: 12, step: 0.03 })}
                       className={`cursor-pointer transition-colors hover:bg-primary/5 ${
                         String(selectedPaymentDemandeId) === String(demande.id) ? 'bg-primary/5' : ''
                       }`}

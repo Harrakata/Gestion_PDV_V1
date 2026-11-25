@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { describeError } from '@/lib/errors';
 import { useToast } from '@/components/ui/use-toast';
-import { format, parseISO, isWithinInterval, isValid } from 'date-fns';
+import { format, parseISO, isValid } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { supabase } from '@/lib/supabaseClient';
 import { isSupabaseAuthError } from '@/lib/guichetiereSpace';

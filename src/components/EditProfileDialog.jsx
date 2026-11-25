@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useRef, useCallback } from 'react';
+import { useEffect, useMemo, useState, useRef, useCallback } from 'react';
 import { describeError } from '@/lib/errors';
 import { UserCog, Languages, Loader2, Camera, UploadCloud, X, KeyRound, ShieldCheck, User, Bot } from 'lucide-react';
 import {
@@ -17,6 +17,7 @@ import { PasswordInput } from '@/components/ui/password-input';
 import PersonalLanguagePicker from '@/components/PersonalLanguagePicker';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabaseClient';
+import { lightenPortrait } from '@/lib/photos';
 import { STORAGE_BUCKET } from '@/lib/clientConfig';
 import {
   ASSISTANT_VISIBILITY_METADATA_KEY,
@@ -226,8 +227,9 @@ const EditProfileDialog = ({
     return () => stopCamera();
   }, [open, stopCamera]);
 
-  const uploadPhoto = async (file) => {
-    if (!file) return null;
+  const uploadPhoto = async (source) => {
+    if (!source) return null;
+    const file = await lightenPortrait(source);
     const ext = (file.name?.split('.').pop() || 'png').toLowerCase();
     const fileName = `${photoPrefix}/${String(recordId)}_${Date.now()}.${ext}`;
     const { data, error } = await supabase.storage

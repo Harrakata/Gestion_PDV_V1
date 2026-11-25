@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useToast } from '@/components/ui/use-toast';
-import { supabase } from '@/lib/supabaseClient';
+import { readAppSetting } from '@/lib/appSettings';
 
 /**
  * Déconnexion automatique après une période d'inactivité.
@@ -35,11 +35,7 @@ const ACTIVITY_EVENTS = ['mousedown', 'keydown', 'touchstart', 'scroll', 'wheel'
 let configuredMinutesPromise = null;
 const loadConfiguredMinutes = () => {
   if (!configuredMinutesPromise) {
-    configuredMinutesPromise = supabase
-      .from('app_settings')
-      .select('value')
-      .eq('key', 'general')
-      .maybeSingle()
+    configuredMinutesPromise = readAppSetting('general')
       .then(({ data }) => Number(data?.value?.sessionDureeMinutes) || DEFAULT_MINUTES)
       .catch(() => DEFAULT_MINUTES);
   }

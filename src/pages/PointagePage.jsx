@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Info, CalendarCheck2, UserCheck, AlertTriangle, Clock, ChevronDown, ChevronUp, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 import MatriculeStep from '@/pages/pointage/MatriculeStep';

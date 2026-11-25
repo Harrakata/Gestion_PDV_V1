@@ -8,6 +8,8 @@ import { initOfflineSync } from '@/lib/offlineSync';
 import { initAutoHideScrollbars } from '@/lib/scrollbarVisibility';
 import { loadAndApplyMobileCustomization } from '@/lib/mobileCustomization';
 import { syncClientLanguage } from '@/i18n/clientLanguage';
+import { resources } from '@/lib/resourceMode';
+import { syncClientResourceMode } from '@/lib/clientResourceMode';
 import { loadTranslations } from '@/i18n/translate';
 
 // Monitoring d'erreurs optionnel (no-op si VITE_SENTRY_DSN absent).
@@ -20,12 +22,12 @@ initAutoHideScrollbars();
 loadAndApplyMobileCustomization();
 // Langue choisie par le client (Paramètres) : recharge l'app si elle a changé.
 syncClientLanguage();
+// Mode de ressources choisi par le client (Paramètres), appliqué au prochain chargement.
+syncClientResourceMode();
 
 // En anglais, le dictionnaire est chargé avant le premier affichage (immédiat en français).
 loadTranslations().then(() => {
   ReactDOM.createRoot(document.getElementById('root')).render(
-    <React.StrictMode>
-      <App />
-    </React.StrictMode>
+    resources.strictMode ? <React.StrictMode><App /></React.StrictMode> : <App />
   );
 });

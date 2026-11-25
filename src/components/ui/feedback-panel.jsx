@@ -1,4 +1,3 @@
-import React from 'react';
 import { AlertCircle, AlertTriangle, CheckCircle2, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { resolveSemanticTone } from '@/lib/designSystem';

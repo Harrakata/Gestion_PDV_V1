@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { describeError } from '@/lib/errors';
 import { AnimatePresence, motion } from 'framer-motion';
 import { usePageState } from '@/hooks/usePageState';

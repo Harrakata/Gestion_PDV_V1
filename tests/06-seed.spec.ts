@@ -12,16 +12,16 @@ import {
 // ════════════════════════════════════════════════════════════════════════════
 //  Seed du jeu de données de test (création) + teardown (purge).
 //
-//  • Création :   RUN_MUTATING_TESTS=1                       → crée et CONSERVE le jeu.
-//  • Purge :      RUN_MUTATING_TESTS=1  SEED_TEARDOWN=1      → supprime tout E2E_.
+//  • Création :   E2E_ISOLATED_ENV=1 RUN_MUTATING_TESTS=1  → crée et CONSERVE le jeu.
+//  • Purge :      mêmes variables + SEED_TEARDOWN=1       → supprime tout E2E_.
 //
 //  La création laisse les données en place (utiles pour dérouler manuellement les
 //  processus métier — pointage, maintenance…). Lancez la purge quand vous avez fini.
 //
 //  Lancer (PowerShell) :
-//    $env:RUN_MUTATING_TESTS="1"; $env:EXPLOITATION_EMAIL="…"; $env:EXPLOITATION_PASSWORD="…"
-//    npx playwright test tests/06-seed.spec.ts -g "créer"      # création
-//    $env:SEED_TEARDOWN="1"; npx playwright test tests/06-seed.spec.ts -g "purger"  # purge
+//    $env:E2E_ISOLATED_ENV="1"; $env:RUN_MUTATING_TESTS="1"; $env:EXPLOITATION_EMAIL="…"; $env:EXPLOITATION_PASSWORD="…"
+//    npx playwright test --config playwright.mutations.config.ts tests/06-seed.spec.ts -g "créer"      # création
+//    $env:SEED_TEARDOWN="1"; npx playwright test --config playwright.mutations.config.ts tests/06-seed.spec.ts -g "purger"  # purge
 // ════════════════════════════════════════════════════════════════════════════
 
 const MUTATING = process.env.RUN_MUTATING_TESTS === '1';
@@ -35,6 +35,7 @@ async function loginExploitation(page: Page) {
 }
 
 test.describe.serial('Seed des données de test', () => {
+  test.skip(process.env.E2E_ISOLATED_ENV !== '1', 'Base de recette isolée requise');
   test.skip(!MUTATING, 'RUN_MUTATING_TESTS=1 requis (création/suppression en base)');
   test.skip(!hasCreds(CREDS.exploitation), 'Identifiants EXPLOITATION_* non fournis');
 

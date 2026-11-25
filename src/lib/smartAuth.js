@@ -15,6 +15,7 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
  * @param {string} opts.table        - Table à interroger pour le lookup matricule (ex: 'techniciens')
  * @param {string} [opts.matriculeCol='matricule']
  * @param {string} [opts.emailCol='email']
+ * @param {string} [opts.statusCol]      - Colonne à filtrer (ex: 'is_current'), avec activeValue
  *
  * @returns {Promise<{ data, error }>} - Format identique à supabase.auth.signInWithPassword
  */
@@ -24,6 +25,8 @@ export async function smartSignIn({
   table,
   matriculeCol = 'matricule',
   emailCol    = 'email',
+  statusCol   = null,
+  activeValue = 'Actif',
 }) {
   const id = String(identifier ?? '').trim();
   if (!id) {
@@ -35,10 +38,8 @@ export async function smartSignIn({
     emailToUse = id.toLowerCase();
   } else {
     // Lookup par matricule → on récupère l'email lié
-    const { data: row, error: lookupErr } = await publicSupabase
-      .from(table)
-      .select(emailCol)
-      .ilike(matriculeCol, id)
+    const lookup = publicSupabase.from(table).select(emailCol).ilike(matriculeCol, id);
+    const { data: row, error: lookupErr } = await applyStatusFilter(lookup, statusCol, activeValue)
       .limit(1)
       .maybeSingle();
 
@@ -187,29 +188,4 @@ export async function fetchOrLinkAuthProfile({
   }
 
   return { data: candidate, error: null };
-}
-
-/**
- * Extrait le message d'erreur d'une réponse Edge Function (utile car
- * supabase.functions.invoke renvoie un "non-2xx status code" générique).
- *
- * @param {Error|null} error   - L'erreur de supabase.functions.invoke
- * @param {object|null} data   - Le body de réponse si parsé
- * @returns {Promise<string|null>}
- */
-export async function extractEdgeFunctionError(error, data) {
-  if (data?.error) return data.error;
-  if (!error) return null;
-  try {
-    const ctx = error.context;
-    if (ctx && typeof ctx.json === 'function') {
-      const body = await ctx.json();
-      return body?.error ?? body?.message ?? null;
-    }
-    if (ctx && typeof ctx.text === 'function') {
-      const txt = await ctx.text();
-      if (txt) return txt;
-    }
-  } catch {}
-  return error.message ?? null;
 }

@@ -1,9 +1,9 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { describeError } from '@/lib/errors';
 import { useOutletContext } from 'react-router-dom';
 import { isMobiPointCurrent, mobiPointDisplayStatus, mobiToday } from '@/lib/mobiPointValidity';
 import { motion } from 'framer-motion';
-import { Building2, History, MapPin, Send } from 'lucide-react';
+import { History, MapPin, Send } from 'lucide-react';
 import StatusBadge from '@/components/ui/status-badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,7 +15,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';

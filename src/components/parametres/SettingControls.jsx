@@ -1,11 +1,13 @@
-import React, { useId, useRef } from 'react';
+import { useId, useRef } from 'react';
 import { ChevronDown, Clock, Download, RotateCcw, Save, Undo2, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import FeedbackPanel from '@/components/ui/feedback-panel';
 import StatusBadge from '@/components/ui/status-badge';
 import { useToast } from '@/components/ui/use-toast';
+import { useReadOnlySettings } from '@/hooks/useReadOnlySettings';
 import { describeError } from '@/lib/errors';
 import { downloadCustomization, readCustomizationFile } from '@/lib/customizationFile';
+import { cn } from '@/lib/utils';
 
 /** Ligne de réglage : libellé + aide à gauche, contrôle à droite (empilés sur mobile). */
 export const ThemeSettingRow = ({ title, hint, children }) => (
@@ -64,6 +66,19 @@ export const SettingGroup = ({ title, children }) => (
     <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{title}</p>
     <div className="divide-y divide-border">{children}</div>
   </section>
+);
+
+/**
+ * Champs d'un réglage, tous désactivés pour un profil en lecture seule. Les listes Radix
+ * s'ouvrent à l'appui : le pointeur est coupé en plus de l'état désactivé.
+ */
+export const SettingsFields = ({ className, children }) => (
+  <fieldset
+    disabled={useReadOnlySettings()}
+    className={cn('min-w-0 disabled:opacity-75 disabled:[&_button]:pointer-events-none disabled:[&_label]:pointer-events-none', className)}
+  >
+    {children}
+  </fieldset>
 );
 
 /** Choix d'une combinaison prête à l'emploi. */
@@ -131,6 +146,7 @@ export const CustomizationSection = ({ icon, title, hint, isOpen, onToggle, cont
 export const CustomizationActions = ({ kind, control, savedTitle }) => {
   const { toast } = useToast();
   const fileRef = useRef(null);
+  const readOnly = useReadOnlySettings();
   const { draft, isDirty, dirtyKeys, isSaving, isLoaded, save, cancel, reset, replace } = control;
 
   const handleSave = async () => {
@@ -154,6 +170,13 @@ export const CustomizationActions = ({ kind, control, savedTitle }) => {
     }
   };
 
+  const exportButton = (
+    <Button type="button" variant="ghost" size="sm" onClick={() => downloadCustomization(kind, draft)}>
+      <Download className="h-4 w-4" aria-hidden="true" /> Exporter
+    </Button>
+  );
+  if (readOnly) return exportButton;
+
   return (
     <div className="space-y-3">
       <p role="status" className="text-xs text-muted-foreground">
@@ -171,9 +194,7 @@ export const CustomizationActions = ({ kind, control, savedTitle }) => {
         <Button type="button" variant="ghost" size="sm" onClick={reset} disabled={isSaving} className="col-span-2">
           <RotateCcw className="h-4 w-4" aria-hidden="true" /> Valeurs par défaut
         </Button>
-        <Button type="button" variant="ghost" size="sm" onClick={() => downloadCustomization(kind, draft)}>
-          <Download className="h-4 w-4" aria-hidden="true" /> Exporter
-        </Button>
+        {exportButton}
         <Button type="button" variant="ghost" size="sm" onClick={() => fileRef.current?.click()} disabled={isSaving}>
           <Upload className="h-4 w-4" aria-hidden="true" /> Importer
         </Button>

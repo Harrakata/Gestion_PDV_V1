@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { describeError } from '@/lib/errors';
 import { Ticket, Plus, Loader2, Settings2, X, List, LayoutGrid, AlertTriangle, Inbox, CircleDot, Clock, CheckCircle2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';

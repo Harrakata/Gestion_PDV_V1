@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient';
+import { readAppSetting } from './appSettings';
 import { APP_SPACE_FUNCTIONALITIES } from './exploitationProfiles';
 import { DEFAULT_CLIENT_CURRENCY, normalizeClientCurrency } from './currency';
 
@@ -99,11 +100,7 @@ export const clientConfig = getClientConfig();
 // ── Synchronisation du branding depuis Supabase ────────────────────────────────
 export const loadClientBranding = async () => {
   try {
-    const { data } = await supabase
-      .from('app_settings')
-      .select('value')
-      .eq('key', CLIENT_BRANDING_SETTINGS_KEY)
-      .maybeSingle();
+    const { data } = await readAppSetting(CLIENT_BRANDING_SETTINGS_KEY);
 
     if (data?.value && typeof data.value === 'object') {
       _branding = {

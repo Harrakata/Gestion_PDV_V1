@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabaseClient';
+import { presenceThresholds } from '@/lib/resourceMode';
 
 export const ACTIVITY_SESSIONS_TABLE = 'activites_sessions';
 export const ACTIVITY_EVENTS_TABLE = 'activites_evenements';
@@ -16,10 +17,8 @@ export const ACTIVITY_SPACE_LABELS = {
 export const getActivitySpaceLabel = (spaceKey) =>
   ACTIVITY_SPACE_LABELS[spaceKey] || spaceKey || 'Espace inconnu';
 
-// Seuils (ms) de calcul de l'état temps réel.
-// Le heartbeat tourne toutes les 60 s ; on laisse une marge pour les latences.
-export const ACTIVITY_ONLINE_THRESHOLD_MS = 3 * 60 * 1000;   // « En ligne »
-export const ACTIVITY_IDLE_THRESHOLD_MS = 15 * 60 * 1000;    // « Inactif »
+// Seuils (ms) de calcul de l'état temps réel, selon la fréquence du signal (mode de ressources).
+export const { online: ACTIVITY_ONLINE_THRESHOLD_MS, idle: ACTIVITY_IDLE_THRESHOLD_MS } = presenceThresholds();
 
 export const ACTIVITY_STATUS = {
   ONLINE: 'online',
@@ -170,35 +169,48 @@ export const touchActivitySession = async (sessionId, { path } = {}) => {
 };
 
 /**
- * Clôture une session (déconnexion / fermeture).
+ * Clôture une session (déconnexion / fermeture), avec la dernière navigation si elle n'est pas
+ * encore enregistrée.
  */
-export const endActivitySession = async (sessionId) => {
+export const endActivitySession = async (sessionId, { path, navCount } = {}) => {
   if (!sessionId) return;
   try {
     const nowIso = new Date().toISOString();
     await supabase
       .from(ACTIVITY_SESSIONS_TABLE)
-      .update({ ended_at: nowIso, last_seen_at: nowIso })
+      .update({
+        ended_at: nowIso,
+        last_seen_at: nowIso,
+        ...(path ? { current_path: path } : {}),
+        ...(typeof navCount === 'number' ? { nav_count: navCount } : {}),
+      })
       .eq('id', sessionId);
   } catch (err) {
     console.warn('[userActivity] endActivitySession échec :', err?.message || err);
   }
 };
 
+/** Ligne du journal d'activité. `at` : date de l'évènement s'il est enregistré plus tard. */
+const toEventRow = ({ sessionId, spaceKey, identity, eventType, path, label, at }) => ({
+  session_id: sessionId || null,
+  space_key: spaceKey,
+  user_key: identity.userKey,
+  event_type: eventType,
+  path: path || null,
+  label: label || null,
+  ...(at ? { created_at: at } : {}),
+});
+
 /**
- * Journalise un évènement d'activité (login / navigation / logout).
+ * Journalise un ou plusieurs évènements d'activité (login / navigation / logout).
  */
-export const logActivityEvent = async ({ sessionId, spaceKey, identity, eventType, path, label }) => {
-  if (!spaceKey || !identity?.userKey || !eventType) return;
+export const logActivityEvent = async (eventOrEvents) => {
+  const rows = [eventOrEvents].flat()
+    .filter(({ spaceKey, identity, eventType }) => spaceKey && identity?.userKey && eventType)
+    .map(toEventRow);
+  if (!rows.length) return;
   try {
-    await supabase.from(ACTIVITY_EVENTS_TABLE).insert({
-      session_id: sessionId || null,
-      space_key: spaceKey,
-      user_key: identity.userKey,
-      event_type: eventType,
-      path: path || null,
-      label: label || null,
-    });
+    await supabase.from(ACTIVITY_EVENTS_TABLE).insert(rows.length === 1 ? rows[0] : rows);
   } catch (err) {
     console.warn('[userActivity] logActivityEvent échec :', err?.message || err);
   }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { RefreshCw, Loader2, CheckCircle2, CloudOff } from 'lucide-react';

@@ -26,7 +26,7 @@ const prepare = async (page: Page, { user, client, rows = {} }: Options = {}) =>
       return route.fulfill({ status: 201, json: [] });
     }
     let result: any[] = [];
-    if (url.includes('key=eq.app_language') && settings.language) result = [{ id: 1, value: { language: settings.language } }];
+    if (/key=(eq\.|in\.\([^)]*)app_language/.test(url) && settings.language) result = [{ id: 1, key: 'app_language', value: { language: settings.language } }];
     else if (url.includes('/agences?')) result = agences;
     const table = Object.keys(rows).find(name => url.includes(`/${name}?`));
     if (table) result = rows[table];

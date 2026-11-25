@@ -1,27 +1,113 @@
-name: Playwright Tests
+name: Vérification
+
+# Chaque envoi, sur toute branche : tests unitaires, lint à cliquet, build, puis tests
+# d'interface sur base simulée. Aucune de ces étapes ne contacte une base réelle.
+# Les parcours connectés à la base de recette se lancent à la main (Actions → Vérification
+# → Run workflow → « recette ») et demandent l'environnement GitHub « recette ».
 on:
   push:
-    branches: [ main, master ]
   pull_request:
-    branches: [ main, master ]
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      recette:
+        description: Lancer aussi les parcours connectés sur la base de recette
+        type: boolean
+        default: false
+
+concurrency:
+  group: verification-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # Priment sur le fichier .env : le build et les tests n'utilisent jamais la base d'un client.
+  VITE_SUPABASE_URL: https://simulation.supabase.co
+  VITE_SUPABASE_ANON_KEY: simulation
+  VITE_AZURE_TENANT_ID: ''
+  VITE_AZURE_CLIENT_ID: ''
+  VITE_SENTRY_DSN: ''
+
 jobs:
-  test:
-    timeout-minutes: 60
+  reference:
+    name: Unitaires, lint, build
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with:
-        node-version: lts/*
-    - name: Install dependencies
-      run: npm ci
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
-    - name: Run Playwright tests
-      run: npx playwright test
-    - uses: actions/upload-artifact@v4
-      if: ${{ !cancelled() }}
-      with:
-        name: playwright-report
-        path: playwright-report/
-        retention-days: 30
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run test:unit
+      - run: npm run lint:ratchet
+      - run: npm run build
+
+  interface:
+    name: Interface (base simulée) ${{ matrix.shard }}/3
+    # Windows : polices et rendu du poste où les mesures (tailles, débordements) sont vérifiées.
+    runs-on: windows-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:regression:local -- --shard=${{ matrix.shard }}/3
+      - uses: actions/upload-artifact@v4
+        if: ${{ failure() }}
+        with:
+          name: rapport-interface-${{ matrix.shard }}
+          path: playwright-report/
+          retention-days: 14
+
+  recette:
+    name: Parcours connectés (base de recette)
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.recette }}
+    needs: reference
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: recette
+    env:
+      E2E_ISOLATED_ENV: '1'
+      RECETTE_SUPABASE_URL: ${{ secrets.RECETTE_SUPABASE_URL }}
+      RECETTE_SUPABASE_ANON_KEY: ${{ secrets.RECETTE_SUPABASE_ANON_KEY }}
+      EXPLOITATION_EMAIL: ${{ secrets.EXPLOITATION_EMAIL }}
+      EXPLOITATION_PASSWORD: ${{ secrets.EXPLOITATION_PASSWORD }}
+      CHEF_AGENCE_EMAIL: ${{ secrets.CHEF_AGENCE_EMAIL }}
+      CHEF_AGENCE_PASSWORD: ${{ secrets.CHEF_AGENCE_PASSWORD }}
+      CHEF_SECTEUR_EMAIL: ${{ secrets.CHEF_SECTEUR_EMAIL }}
+      CHEF_SECTEUR_PASSWORD: ${{ secrets.CHEF_SECTEUR_PASSWORD }}
+      GUICHETIERE_EMAIL: ${{ secrets.GUICHETIERE_EMAIL }}
+      GUICHETIERE_PASSWORD: ${{ secrets.GUICHETIERE_PASSWORD }}
+      TECHNICIEN_EMAIL: ${{ secrets.TECHNICIEN_EMAIL }}
+      TECHNICIEN_PASSWORD: ${{ secrets.TECHNICIEN_PASSWORD }}
+      DIR_REGIONAL_EMAIL: ${{ secrets.DIR_REGIONAL_EMAIL }}
+      DIR_REGIONAL_PASSWORD: ${{ secrets.DIR_REGIONAL_PASSWORD }}
+      DIR_GENERAL_EMAIL: ${{ secrets.DIR_GENERAL_EMAIL }}
+      DIR_GENERAL_PASSWORD: ${{ secrets.DIR_GENERAL_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:regression:authenticated
+      - uses: actions/upload-artifact@v4
+        if: ${{ failure() }}
+        with:
+          name: rapport-recette
+          path: playwright-report/
+          retention-days: 7

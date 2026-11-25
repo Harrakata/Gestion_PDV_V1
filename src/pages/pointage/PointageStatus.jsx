@@ -1,10 +1,8 @@
 
-import React from 'react';
 import { Label } from '@/components/ui/label';
 import { CardDescription } from '@/components/ui/card';
-import { CheckCircle, AlertTriangle, Info, User, Users, Activity, Target, Clock } from 'lucide-react';
+import { CheckCircle, AlertTriangle, Info, User, Users, Activity, Target } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { format } from 'date-fns';
 import { appLocale } from '@/i18n/language';
 
 const GuichetierePointageItem = ({ guichetiere, pointages, creneauxPointageSettings, isIdentified }) => {

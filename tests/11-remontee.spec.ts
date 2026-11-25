@@ -2,6 +2,8 @@ import { test, expect } from '@playwright/test';
 import { CREDS, hasCreds } from './helpers/env';
 import { settle, loginIfNeeded, assertNoCrash } from './helpers/actions';
 
+test.skip(process.env.E2E_ISOLATED_ENV !== '1', 'Base de recette isolée requise (le message est enregistré)');
+
 // Vérifie que l'envoi d'une remontée (agent → exploitation) aboutit sur la base réelle.
 test('Remontée — envoi depuis Guichetière', async ({ page }) => {
   test.skip(!hasCreds(CREDS.guichetiere), 'GUICHETIERE_* non fournis');

@@ -10,8 +10,25 @@ import {
   touchActivitySession,
 } from '@/lib/userActivity';
 import { setMonitoringContext } from '@/lib/monitoring';
+import { createNavigationLog } from '@/lib/navigationLog';
+import { resources } from '@/lib/resourceMode';
+import { WATCH_EVENT } from '@/hooks/useSpaceNotifications';
 
-const HEARTBEAT_INTERVAL_MS = 60 * 1000;
+const { presence: HEARTBEAT_INTERVAL_MS, presenceWhenHidden, navigation } = resources;
+
+const saveNavigation = (events) => {
+  const { sessionId, path, navCount } = events[events.length - 1];
+  bumpActivityNavigation(sessionId, { path, navCount });
+  logActivityEvent(events);
+};
+
+/** Clôture la session avec les navigations encore en attente. */
+const closeSession = (sessionId, navigationLog) => {
+  const events = navigationLog.take();
+  if (events.length) logActivityEvent(events);
+  endActivitySession(sessionId, events[events.length - 1]);
+};
+
 const SESSION_STORAGE_PREFIX = 'ps:activity:session:';
 
 const readStoredSession = (spaceKey) => {
@@ -56,6 +73,9 @@ export function useActivityTracker({ spaceKey, isAuthenticated, identity }) {
   const lastPathRef = useRef(null);
   const creatingRef = useRef(false);
   const startingPromiseRef = useRef(null);
+  const lastBeatRef = useRef(0);
+  const navigationRef = useRef(null);
+  navigationRef.current ||= createNavigationLog({ ...navigation, save: saveNavigation });
 
   // Identité normalisée (recalculée à chaque rendu mais stable via la clé).
   const normalizedIdentity = buildActivityIdentity(identity);
@@ -73,30 +93,40 @@ export function useActivityTracker({ spaceKey, isAuthenticated, identity }) {
   }, [isAuthenticated, userKey, spaceKey]);
   const active = Boolean(isAuthenticated && spaceKey && userKey);
 
+  // Déconnexion : on clôture la session courante si elle existe.
+  const endOnLogoutRef = useRef(null);
+  endOnLogoutRef.current = () => {
+    const sessionId = sessionIdRef.current || readStoredSession(spaceKey)?.id;
+    if (sessionId) {
+      if (identityRef.current) {
+        logActivityEvent({
+          sessionId,
+          spaceKey,
+          identity: identityRef.current,
+          eventType: 'logout',
+          path: lastPathRef.current,
+          label: 'Déconnexion',
+        });
+      }
+      closeSession(sessionId, navigationRef.current);
+    }
+    sessionIdRef.current = null;
+    navCountRef.current = 0;
+    lastPathRef.current = null;
+    writeStoredSession(spaceKey, null);
+  };
+
+  // Se déconnecter quitte aussitôt l'espace : on n'attend pas le rendu suivant.
+  useEffect(() => {
+    const onLogout = (event) => { if (event.detail === spaceKey) endOnLogoutRef.current(); };
+    window.addEventListener(WATCH_EVENT, onLogout);
+    return () => window.removeEventListener(WATCH_EVENT, onLogout);
+  }, [spaceKey]);
+
   // ── Démarrage / clôture de session ────────────────────────
   useEffect(() => {
     if (!active) {
-      // Déconnexion : on clôture la session courante si elle existe.
-      const stored = readStoredSession(spaceKey);
-      const sessionId = sessionIdRef.current || stored?.id;
-      if (sessionId) {
-        const id = identityRef.current;
-        if (id) {
-          logActivityEvent({
-            sessionId,
-            spaceKey,
-            identity: id,
-            eventType: 'logout',
-            path: lastPathRef.current,
-            label: 'Déconnexion',
-          });
-        }
-        endActivitySession(sessionId);
-      }
-      sessionIdRef.current = null;
-      navCountRef.current = 0;
-      lastPathRef.current = null;
-      writeStoredSession(spaceKey, null);
+      endOnLogoutRef.current();
       return;
     }
 
@@ -150,12 +180,23 @@ export function useActivityTracker({ spaceKey, isAuthenticated, identity }) {
   // ── Heartbeat ─────────────────────────────────────────────
   useEffect(() => {
     if (!active) return undefined;
-    const interval = setInterval(() => {
-      if (sessionIdRef.current) {
-        touchActivitySession(sessionIdRef.current, { path: lastPathRef.current });
-      }
-    }, HEARTBEAT_INTERVAL_MS);
-    return () => clearInterval(interval);
+    lastBeatRef.current = Date.now();
+    const beat = () => {
+      if (!sessionIdRef.current) return;
+      if (!presenceWhenHidden && document.visibilityState === 'hidden') return;
+      lastBeatRef.current = Date.now();
+      touchActivitySession(sessionIdRef.current, { path: lastPathRef.current });
+    };
+    // Retour à l'écran après une pause : le signal manqué part aussitôt.
+    const onVisible = () => {
+      if (document.visibilityState === 'visible' && Date.now() - lastBeatRef.current >= HEARTBEAT_INTERVAL_MS) beat();
+    };
+    const interval = setInterval(beat, HEARTBEAT_INTERVAL_MS);
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
   }, [active]);
 
   // ── Navigation entre onglets de l'espace ──────────────────
@@ -176,14 +217,14 @@ export function useActivityTracker({ spaceKey, isAuthenticated, identity }) {
       if (stored?.id === sessionId) {
         writeStoredSession(spaceKey, { ...stored, navCount: navCountRef.current });
       }
-      bumpActivityNavigation(sessionId, { path: currentPath, navCount: navCountRef.current });
-      logActivityEvent({
+      navigationRef.current.add({
         sessionId,
         spaceKey,
         identity: identityRef.current,
         eventType: 'navigation',
         path: currentPath,
         label: prettifyActivityPath(currentPath),
+        navCount: navCountRef.current,
       });
     };
 
@@ -193,15 +234,21 @@ export function useActivityTracker({ spaceKey, isAuthenticated, identity }) {
       // Session encore en cours de création : on attend son id.
       startingPromiseRef.current.then((id) => applyNavigation(id || sessionIdRef.current));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [location.pathname, active, spaceKey]);
+
+  // ── Sortie de l'espace : navigations en attente ───────────
+  useEffect(() => {
+    const navigationLog = navigationRef.current;
+    return () => navigationLog.flush();
+  }, []);
 
   // ── Clôture best-effort à la fermeture de l'onglet ────────
   useEffect(() => {
     if (!active) return undefined;
     const handlePageHide = () => {
       const sessionId = sessionIdRef.current;
-      if (sessionId) endActivitySession(sessionId);
+      if (sessionId) closeSession(sessionId, navigationRef.current);
     };
     window.addEventListener('pagehide', handlePageHide);
     return () => window.removeEventListener('pagehide', handlePageHide);

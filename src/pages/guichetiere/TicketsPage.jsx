@@ -1,4 +1,3 @@
-import React from 'react';
 import { useOutletContext } from 'react-router-dom';
 import TicketsPanel from '@/components/tickets/TicketsPanel';
 import { TICKET_ROLES } from '@/lib/tickets';

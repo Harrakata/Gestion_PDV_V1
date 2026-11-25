@@ -1,14 +1,11 @@
-import React, { Suspense, lazy, useEffect, useMemo, useState } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import { describeError } from '@/lib/errors';
 import SpaceShell from '@/components/SpaceShell';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import PageHeader from '@/components/ui/page-header';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { Wrench, Loader2, CalendarDays, AtSign, CalendarOff, Ticket } from 'lucide-react';
+import { Wrench, Loader2, CalendarDays, CalendarOff, Ticket } from 'lucide-react';
 import EditProfileDialog from '@/components/EditProfileDialog';
 import ForgotPasswordDialog from '@/components/ForgotPasswordDialog';
 import SpaceLoginCard from '@/components/SpaceLoginCard';
@@ -20,6 +17,7 @@ import { useSyncHealthHeartbeat } from '@/hooks/useSyncHealthHeartbeat';
 import RemonteeDialog from '@/components/RemonteeDialog';
 import NotifEnableBanner from '@/components/NotifEnableBanner';
 import { supabase } from '@/lib/supabaseClient';
+import { readAppSetting } from '@/lib/appSettings';
 import { useToast } from '@/components/ui/use-toast';
 import EmptyState from '@/components/ui/empty-state';
 import { motion } from 'framer-motion';
@@ -57,13 +55,8 @@ const SectionLoader = () => (
 );
 
 const loadSpaceUserProfilesSettings = async () => {
-  const { data, error } = await supabase
-    .from('app_settings')
-    .select('value')
-    .eq('key', APP_SPACE_USER_PROFILES_SETTINGS_KEY)
-    .single();
-
-  if (error && error.code !== 'PGRST116') throw error;
+  const { data, error } = await readAppSetting(APP_SPACE_USER_PROFILES_SETTINGS_KEY);
+  if (error) throw error;
   return normalizeAppSpaceUserProfiles(data?.value);
 };
 

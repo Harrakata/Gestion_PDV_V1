@@ -1,15 +1,10 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Activity } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import StatsChartCard from '@/components/analytics/StatsChartCard';
 import { aggregateCountsByLabel, ANALYTICS_GRANULARITY_OPTIONS, buildAnalyticsBuckets } from '@/lib/analytics';
-import {
-  buildTerminalMonitoringGroups,
-  getMaintenanceFollowUp,
-  getTerminalSousEnsembles,
-  normalizeMaintenanceText,
-} from '@/lib/maintenanceMonitoring';
+import { buildTerminalMonitoringGroups } from '@/lib/maintenanceMonitoring';
 
 const ALL_DIMENSIONS = {
   terminal: 'Terminal',

@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { CardTitle, CardDescription } from '@/components/ui/card';
 import { Fingerprint, Camera, CheckCircle, XCircle, RefreshCw, User, RotateCcw } from 'lucide-react';

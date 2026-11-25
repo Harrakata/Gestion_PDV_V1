@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient';
+import { readAppSetting } from './appSettings';
 
 // ════════════════════════════════════════════════════════════════════════════
 //  Structure organisationnelle (multi-tenant)
@@ -114,11 +115,7 @@ export const isGuichetiereAgenceVisible = (structure = _orgStructure) =>
 // ── Synchronisation depuis Supabase ────────────────────────────────────────────
 export const loadOrgStructure = async () => {
   try {
-    const { data } = await supabase
-      .from('app_settings')
-      .select('value')
-      .eq('key', ORG_STRUCTURE_SETTINGS_KEY)
-      .maybeSingle();
+    const { data } = await readAppSetting(ORG_STRUCTURE_SETTINGS_KEY);
 
     if (data?.value && typeof data.value === 'object') {
       _orgStructure = applyOrgStructureEnvOverrides(normalizeOrgStructure(data.value));

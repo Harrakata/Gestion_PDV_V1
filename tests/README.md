@@ -1,5 +1,7 @@
 # Tests E2E (Playwright)
 
+Pour les commandes de régression locale, authentifiée et avec écriture, ainsi que la matrice de couverture fonctionnelle et visuelle, voir [Tests de régression](../docs/TESTS-REGRESSION.md).
+
 Suite de tests bout-en-bout qui parcourt **toutes les pages, onglets et boutons** de l'application
 sans détruire de données (les actions destructrices / mutations / I-O sont volontairement évitées).
 
@@ -83,17 +85,17 @@ création → modification du nom → suppression, avec un nettoyage automatique
 Il est **désactivé par défaut** (il écrit en base). Pour l'exécuter — de préférence sur la **pré-production** :
 
 ```powershell
-$env:RUN_MUTATING_TESTS="1"
+$env:E2E_ISOLATED_ENV="1"; $env:RUN_MUTATING_TESTS="1"; $env:RECETTE_SUPABASE_URL="https://recette.example"; $env:RECETTE_SUPABASE_ANON_KEY="…"
 $env:EXPLOITATION_EMAIL="admin@exemple.com"
 $env:EXPLOITATION_PASSWORD="motdepasse"
-npx playwright test tests/04-crud-lifecycle.spec.ts
+npx playwright test --config playwright.mutations.config.ts tests/04-crud-lifecycle.spec.ts
 ```
 
 ## Processus métier (`05-workflows.spec.ts`)
 
 Chaque processus vérifie d'abord son **accessibilité** (UI chargée, pas de crash), puis déroule le
 chemin nominal en *best-effort* (sélecteurs tolérants, étapes sautées si la donnée prérequise manque).
-Les écritures réelles sont conditionnées à `RUN_MUTATING_TESTS=1`.
+Les écritures réelles sont conditionnées à `E2E_ISOLATED_ENV=1` et `RUN_MUTATING_TESTS=1`.
 
 | Processus | Couverture automatisée | Limite |
 |-----------|------------------------|--------|
@@ -105,12 +107,12 @@ Les écritures réelles sont conditionnées à `RUN_MUTATING_TESTS=1`.
 
 ```powershell
 # Exemple : dérouler le pointage et les flux mutants en préprod
-$env:RUN_MUTATING_TESTS="1"
+$env:E2E_ISOLATED_ENV="1"; $env:RUN_MUTATING_TESTS="1"; $env:RECETTE_SUPABASE_URL="https://recette.example"; $env:RECETTE_SUPABASE_ANON_KEY="…"
 $env:POINTAGE_MATRICULE="00123"
 $env:EXPLOITATION_EMAIL="..."; $env:EXPLOITATION_PASSWORD="..."
 $env:CHEF_AGENCE_EMAIL="..."; $env:CHEF_AGENCE_PASSWORD="..."
 $env:TECHNICIEN_EMAIL="..."; $env:TECHNICIEN_PASSWORD="..."
-npx playwright test tests/05-workflows.spec.ts
+npx playwright test --config playwright.mutations.config.ts tests/05-workflows.spec.ts
 ```
 
 ## Seed des données de test (`06-seed.spec.ts`)
@@ -120,27 +122,27 @@ Crée un **jeu complet** préfixé `E2E_` pour pouvoir dérouler les processus m
 **Terminal + sous-ensembles** en best-effort (gated séparément).
 
 ```powershell
-$env:RUN_MUTATING_TESTS="1"
+$env:E2E_ISOLATED_ENV="1"; $env:RUN_MUTATING_TESTS="1"; $env:RECETTE_SUPABASE_URL="https://recette.example"; $env:RECETTE_SUPABASE_ANON_KEY="…"
 $env:EXPLOITATION_EMAIL="admin@exemple.com"; $env:EXPLOITATION_PASSWORD="…"
 
 # Créer le jeu (et le CONSERVER pour tester ensuite)
-npx playwright test tests/06-seed.spec.ts -g "créer le jeu"
+npx playwright test --config playwright.mutations.config.ts tests/06-seed.spec.ts -g "créer le jeu"
 
 # Domaine maintenance : codes de pannes + pièces détachées + entrée de stock + équipements (7 sous-ensembles)
-$env:SEED_MAINTENANCE="1"; npx playwright test tests/06-seed.spec.ts -g "jeu maintenance"
+$env:SEED_MAINTENANCE="1"; npx playwright test --config playwright.mutations.config.ts tests/06-seed.spec.ts -g "jeu maintenance"
 
 # Terminal + config sous-ensembles (crée d'abord les équipements pour être pleinement automatique)
-$env:SEED_TERMINAL="1"; npx playwright test tests/06-seed.spec.ts -g "terminal"
+$env:SEED_TERMINAL="1"; npx playwright test --config playwright.mutations.config.ts tests/06-seed.spec.ts -g "terminal"
 
 # Simuler une réparation sur un sous-ensemble défectueux existant (→ À tester → Réparé)
-$env:SEED_REPAIR="1"; npx playwright test tests/06-seed.spec.ts -g "simuler une réparation"
+$env:SEED_REPAIR="1"; npx playwright test --config playwright.mutations.config.ts tests/06-seed.spec.ts -g "simuler une réparation"
 
 # CHAÎNE COMPLÈTE : équipements → terminal → maintenance(défaut) → réparation (nécessite TECHNICIEN_*)
 $env:SEED_REPAIR_CHAIN="1"; $env:TECHNICIEN_EMAIL="…"; $env:TECHNICIEN_PASSWORD="…"
-npx playwright test tests/06-seed.spec.ts -g "bout en bout"
+npx playwright test --config playwright.mutations.config.ts tests/06-seed.spec.ts -g "bout en bout"
 
 # Purger TOUT le jeu E2E (maintenance incluse) une fois terminé
-$env:SEED_TEARDOWN="1"; npx playwright test tests/06-seed.spec.ts -g "purger"
+$env:SEED_TEARDOWN="1"; npx playwright test --config playwright.mutations.config.ts tests/06-seed.spec.ts -g "purger"
 ```
 
 ### Chaîne réparation de bout en bout

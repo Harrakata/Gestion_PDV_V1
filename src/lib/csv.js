@@ -80,6 +80,10 @@ export const assertCsvHeaders = (headers = [], requiredHeaders = []) => {
   }
 };
 
+const PASSWORD_HEADER = /^(mdp|mdpprepose|mot_?de_?passe|password)$/i;
+/** Vrai si le fichier contient une colonne de mots de passe (jamais enregistrée). */
+export const hasPasswordColumn = (headers = []) => headers.some((header) => PASSWORD_HEADER.test(String(header).trim()));
+
 const escapeCsvValue = (value) => `"${String(value ?? '').replace(/"/g, '""')}"`;
 
 export const buildCsv = (rows = [], columns = [], delimiter = ';') => {

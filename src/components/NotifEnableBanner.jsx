@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BellRing, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
@@ -43,7 +43,7 @@ const NotifEnableBanner = ({ reader = {}, className = '' }) => {
     const onFocus = () => check();
     window.addEventListener('focus', onFocus);
     return () => window.removeEventListener('focus', onFocus);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []);
 
   // Cohérence : espace désactivé par l'exploitation → pas d'incitation à activer.

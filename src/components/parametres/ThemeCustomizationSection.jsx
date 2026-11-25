@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Check, Monitor, Moon, Palette, Sun } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useCustomizationDraft } from '@/hooks/useCustomizationDraft';
@@ -8,7 +8,7 @@ import {
   applyTheme, getDisplayedColors, hexToHsl, hslToHex, normalizeTheme, serializeTheme,
 } from '@/lib/theme';
 import {
-  CustomizationActions, CustomizationSection, PresetPicker, SettingGroup, ThemeSegmented, ThemeSettingRow, ThemeToggle,
+  CustomizationActions, CustomizationSection, PresetPicker, SettingGroup, SettingsFields, ThemeSegmented, ThemeSettingRow, ThemeToggle,
 } from './SettingControls';
 
 const toOptions = (presets) => presets.map((p) => ({ value: p.id, label: p.name, title: p.hint }));
@@ -153,7 +153,7 @@ const ThemeCustomizationSection = ({ isOpen, onToggle }) => {
       control={control}
     >
       <div className="grid gap-6 border-t px-5 py-5 lg:grid-cols-[minmax(0,1fr)_19rem]">
-        <div className="min-w-0 space-y-6">
+        <SettingsFields className="space-y-6">
           <section className="space-y-2">
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Ambiances</p>
             <PresetPicker
@@ -253,7 +253,7 @@ const ThemeCustomizationSection = ({ isOpen, onToggle }) => {
               <ThemeToggle label="Animations et transitions" checked={theme.animations} onChange={(animations) => update({ animations })} />
             </ThemeSettingRow>
           </SettingGroup>
-        </div>
+        </SettingsFields>
 
         <aside className="space-y-3 lg:sticky lg:top-4 lg:self-start">
           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Aperçu</p>

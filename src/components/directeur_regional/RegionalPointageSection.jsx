@@ -1,7 +1,7 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { describeError } from '@/lib/errors';
 import { motion } from 'framer-motion';
-import { BarChart3, ClipboardCheck, Clock3, PieChart, Search, Users } from 'lucide-react';
+import { ClipboardCheck, Clock3, Search, Users } from 'lucide-react';
 import StatusBadge from '@/components/ui/status-badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';

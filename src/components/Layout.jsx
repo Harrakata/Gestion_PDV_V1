@@ -18,6 +18,7 @@ import { useClient, useSecteurEnabled } from '@/hooks/useFeatureFlags';
 import { useGlobalNotificationWatcher } from '@/hooks/useSpaceNotifications';
 import { loadNotificationSettings } from '@/lib/notificationSettings';
 import { supabase } from '@/lib/supabaseClient';
+import { readAppSetting } from '@/lib/appSettings';
 import {
   APP_SPACE_SETTINGS_KEY,
   buildDefaultAppSpaceFunctionalities,
@@ -81,11 +82,7 @@ const Layout = () => {
 
   React.useEffect(() => {
     const loadSpaceFunctionalities = async () => {
-      const { data, error } = await supabase
-        .from('app_settings')
-        .select('value')
-        .eq('key', APP_SPACE_SETTINGS_KEY)
-        .single();
+      const { data, error } = await readAppSetting(APP_SPACE_SETTINGS_KEY);
 
       if (!error && data?.value) {
         const normalizedSettings = normalizeAppSpaceFunctionalities(data.value);

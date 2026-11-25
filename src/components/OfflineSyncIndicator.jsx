@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AlertTriangle, CheckCircle2, CloudOff, RefreshCw } from 'lucide-react';
 import { getQueueSummary, subscribeQueue } from '@/lib/offlineQueue';
 import { flushQueue } from '@/lib/offlineSync';

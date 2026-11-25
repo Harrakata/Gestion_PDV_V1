@@ -7,13 +7,13 @@ import { assertNoCrash, settle, loginGeneric } from './helpers/actions';
 //  référentielle SÛRE : les Régions (pas de compte auth, cascade minimale).
 //
 //  ⚠ Ce test MUTE la base. Il est désactivé par défaut et ne s'exécute QUE si :
-//      RUN_MUTATING_TESTS=1   (+ identifiants EXPLOITATION_* fournis)
+//      E2E_ISOLATED_ENV=1 RUN_MUTATING_TESTS=1 (+ identifiants EXPLOITATION_* fournis)
 //  Les enregistrements créés portent le préfixe « E2E_REGION_ » et sont supprimés
 //  en fin de test ; un nettoyage de secours (afterEach) retire tout résidu E2E.
 //
 //  À privilégier sur un environnement de PRÉ-PRODUCTION.
 //
-//  Lancer :  $env:RUN_MUTATING_TESTS="1"; npx playwright test tests/04-crud-lifecycle.spec.ts
+//  Lancer :  $env:E2E_ISOLATED_ENV="1"; $env:RUN_MUTATING_TESTS="1"; npx playwright test --config playwright.mutations.config.ts tests/04-crud-lifecycle.spec.ts
 // ════════════════════════════════════════════════════════════════════════════
 
 const E2E_PREFIX = 'E2E_REGION_';
@@ -82,6 +82,7 @@ async function cleanupE2ERegions(page: Page) {
 }
 
 test.describe.serial('Cycle CRUD Région (création / modification / suppression)', () => {
+  test.skip(process.env.E2E_ISOLATED_ENV !== '1', 'Base de recette isolée requise');
   test.skip(!MUTATING, 'RUN_MUTATING_TESTS=1 requis (ce test modifie la base)');
   test.skip(!hasCreds(CREDS.exploitation), 'Identifiants EXPLOITATION_* non fournis');
 

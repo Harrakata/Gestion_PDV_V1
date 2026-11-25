@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { describeError } from '@/lib/errors';
 import { useOutletContext } from 'react-router-dom';
 import { usePageState } from '@/hooks/usePageState';
@@ -7,8 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableCaption } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, User, Phone, CircleDot, Users2, CalendarOff, Loader2, Wallet } from 'lucide-react';
+import { Search, User, Phone, CircleDot, Users2, Loader2, Wallet } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { rowEntrance } from '@/lib/rowEntrance';
 import { format, differenceInDays, parseISO, isValid as isValidDate } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { supabase } from '@/lib/supabaseClient';
@@ -190,11 +191,6 @@ const MesGuichetieresPage = () => {
     return infoText;
   };
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 },
-  };
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -259,10 +255,7 @@ const MesGuichetieresPage = () => {
                 {filteredGuichetieres.map((g, index) => (
                   <motion.tr 
                     key={g.id}
-                    variants={itemVariants}
-                    initial="hidden"
-                    animate="visible"
-                    transition={{ delay: index * 0.05 }}
+                    {...rowEntrance(index, { y: 20, step: 0.05 })}
                     className="hover:bg-muted/50 dark:hover:bg-muted/20"
                   >
                     <TableCell className="font-medium">{g.matricule}</TableCell>

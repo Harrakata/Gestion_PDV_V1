@@ -1,10 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { describeError } from '@/lib/errors';
 import SpaceShell from '@/components/SpaceShell';
 import PageHeader from '@/components/ui/page-header';
 import { useNavigate } from 'react-router-dom';
 import { usePageState } from '@/hooks/usePageState';
 import { motion } from 'framer-motion';
+import { rowEntrance } from '@/lib/rowEntrance';
 import {
   CheckCircle2,
   ClipboardList,
@@ -30,6 +31,7 @@ import EmptyState from '@/components/ui/empty-state';
 import KpiStatCard from '@/components/analytics/KpiStatCard';
 import { useActivityTracker } from '@/hooks/useActivityTracker';
 import { useSessionTimeout } from '@/hooks/useSessionTimeout';
+import { useLiveRefresh } from '@/hooks/useLiveRefresh';
 import EditProfileDialog from '@/components/EditProfileDialog';
 import ForgotPasswordDialog from '@/components/ForgotPasswordDialog';
 import SpaceLoginCard from '@/components/SpaceLoginCard';
@@ -249,10 +251,10 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
     setActionComment('');
   }, [spaceConfig.expectedFunction, spaceConfig.storageKey]);
 
-  const loadData = useCallback(async () => {
+  const loadData = useCallback(async ({ silent = false } = {}) => {
     if (!validator?.id) return;
 
-    setIsLoading(true);
+    if (!silent) setIsLoading(true);
 
     const [{ data: demandesData, error: demandesError }, { data: eventsData, error: eventsError }] = await Promise.all([
       supabase.from('demandes_paiement_gain').select('*').order('updated_at', { ascending: false }),
@@ -290,11 +292,11 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
     setIsLoading(false);
   }, [toast, validator?.id]);
 
-  useEffect(() => {
-    loadData();
-    const intervalId = window.setInterval(loadData, 15000);
-    return () => window.clearInterval(intervalId);
-  }, [loadData]);
+  useLiveRefresh(
+    'validation-gain',
+    [{ key: 'demandes', tables: ['demandes_paiement_gain'], load: ({ first }) => loadData({ silent: !first }) }],
+    { enabled: Boolean(validator?.id), resetKey: validator?.id },
+  );
 
   useEffect(() => {
     const handleSpaceTabsUpdated = (event) => {
@@ -420,9 +422,15 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      if (validator) return;
-      const { data: { session } } = await supabase.auth.getSession();
-      if (cancelled || !session?.user) return;
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (cancelled) return;
+      // Validateur mémorisé sans session : les actions seraient refusées par la base.
+      if (validator && !session && !error && navigator.onLine) {
+        localStorage.removeItem(spaceConfig.storageKey);
+        setValidator(null);
+        return;
+      }
+      if (validator || !session?.user) return;
       const { data: v } = await supabase
         .from('validateurs_paiement_gain')
         .select('*')
@@ -766,9 +774,7 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
                     {pendingDemandes.map((demande, index) => (
                       <motion.tr
                         key={demande.id}
-                        initial={{ opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.03 }}
+                        {...rowEntrance(index, { y: 12, step: 0.03 })}
                         className={`cursor-pointer transition-colors hover:bg-primary/5 ${
                           String(selectedDemandeId) === String(demande.id) ? 'bg-primary/5' : ''
                         }`}
@@ -901,9 +907,7 @@ const EspaceValidationPaiementGainPage = ({ spaceMode = 'regional' }) => {
                   {historyDemandes.map((demande, index) => (
                     <motion.tr
                       key={demande.id}
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.03 }}
+                      {...rowEntrance(index, { y: 12, step: 0.03 })}
                       className={`cursor-pointer transition-colors hover:bg-primary/5 ${
                         String(selectedDemandeId) === String(demande.id) ? 'bg-primary/5' : ''
                       }`}

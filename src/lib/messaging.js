@@ -129,21 +129,6 @@ export const setRemonteeTraitee = async (id, traite = true) => {
   return { error };
 };
 
-/** Compte les remontées non traitées (actif=true). 0 si indisponible. */
-export const countUntreatedRemontees = async () => {
-  try {
-    const { count, error } = await supabase
-      .from(MESSAGES_TABLE)
-      .select('id', { count: 'exact', head: true })
-      .eq('destinataires', REMONTEE_DESTINATAIRE)
-      .eq('actif', true);
-    if (error) return 0;
-    return count || 0;
-  } catch {
-    return 0;
-  }
-};
-
 /** Liste des lecteurs d'un message (pour le détail). */
 export const fetchReaders = async (messageId) => {
   const { data, error } = await supabase
